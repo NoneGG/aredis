@@ -1,0 +1,10 @@
+*.pyc
+redis.egg-info
+build/
+dist/
+dump.rdb
+/.tox
+env/
+_build
+vagrant/.vagrant
+.python-version
