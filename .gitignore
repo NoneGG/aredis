@@ -2,9 +2,10 @@
 redis.egg-info
 build/
 dist/
+.idea/
+env/
 dump.rdb
 /.tox
-env/
 _build
 vagrant/.vagrant
 .python-version
