@@ -9,9 +9,12 @@ from aredis.connection import Connection
 
 __author__ = 'chenming@bilibili.com'
 
+
+HOST = '172.16.131.222'
+
 async def test_aredis(i):
     start = time.time()
-    a = Connection(host='172.16.131.222')
+    a = Connection(host=HOST)
     res = None
     for i in range(i):
         await a.send_command('keys', '*')
@@ -21,7 +24,7 @@ async def test_aredis(i):
 
 
 async def test_asyncio_redis(i):
-    connection = await asyncio_redis.Connection.create(host='172.16.131.222', port=6379)
+    connection = await asyncio_redis.Connection.create(host=HOST, port=6379)
     start = time.time()
     res = None
     for i in range(i):
@@ -32,7 +35,7 @@ async def test_asyncio_redis(i):
 
 def test_conn(i):
     start = time.time()
-    a = SConnection(host='172.16.131.222')
+    a = SConnection(host=HOST)
     res = None
     for i in range(i):
         a.send_command('keys', '*')
@@ -43,8 +46,7 @@ def test_conn(i):
 
 async def test_aioredis(i, loop):
     start = time.time()
-    redis = await aioredis.create_redis(
-        ('172.16.131.222', 6379), loop=loop)
+    redis = await aioredis.create_redis((HOST, 6379), loop=loop)
     val = None
     for i in range(i):
         val = await redis.keys('*')

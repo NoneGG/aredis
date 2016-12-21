@@ -2,11 +2,19 @@ import asyncio
 import sys
 import socket
 from io import BytesIO
-from aredis.exceptions import (ExecAbortError, BusyLoadingError,
+from aredis.exceptions import (RedisError,
+                               ExecAbortError,
+                               BusyLoadingError,
                                NoScriptError,
                                ReadOnlyError,
                                ResponseError,
                                InvalidResponse)
+
+try:
+    import hiredis
+    HIREDIS_AVAILABLE = True
+except ImportError:
+    HIREDIS_AVAILABLE = False
 
 
 def b(x):
@@ -16,6 +24,7 @@ def b(x):
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
 SYM_CRLF = b('\r\n')
+SYM_LF = b('\n')
 SYM_EMPTY = b('')
 
 
@@ -143,7 +152,57 @@ class PythonParser(BaseParser):
                 response.append(await self.read_response())
         return response
 
-DefaultParser = PythonParser
+
+class HiredisParser(BaseParser):
+    "Parser class for connections using Hiredis"
+    def __init__(self):
+        if not HIREDIS_AVAILABLE:
+            raise RedisError("Hiredis is not installed")
+        self._stream = None
+        self._reader = None
+
+    def __del__(self):
+        try:
+            self.on_disconnect()
+        except Exception:
+            pass
+
+    def on_connect(self, stream_reader):
+        self._stream = stream_reader
+        kwargs = {
+            'protocolError': InvalidResponse,
+            'replyError': ResponseError,
+        }
+        self._reader = hiredis.Reader(**kwargs)
+
+    def on_disconnect(self):
+        self._stream = None
+        self._reader = None
+
+    async def read_response(self):
+        if not self._reader:
+            raise ConnectionError("Socket closed on remote end")
+        response = self._reader.gets()
+        while response is False:
+            try:
+                buffer = await self._stream.readline()
+            except (socket.error, socket.timeout):
+                e = sys.exc_info()[1]
+                raise ConnectionError("Error while reading from socket: %s" %
+                                      (e.args,))
+            if not buffer:
+                raise ConnectionError("Socket closed on remote end")
+            self._reader.feed(buffer)
+            response = self._reader.gets()
+        if isinstance(response, ResponseError):
+            response = self.parse_error(response.args[0])
+        return response
+
+
+if HIREDIS_AVAILABLE:
+    DefaultParser = HiredisParser
+else:
+    DefaultParser = PythonParser
 
 
 class Connection:
