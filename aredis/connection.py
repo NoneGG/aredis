@@ -220,6 +220,12 @@ class BaseConnection:
     def __repr__(self):
         return self.description.format(**self._description_args)
 
+    def __del__(self):
+        try:
+            self.disconnect()
+        except Exception:
+            pass
+
     async def connect(self):
         raise NotImplementedError
 
@@ -294,9 +300,10 @@ class BaseConnection:
         "Disconnects from the Redis server"
         self._parser.on_disconnect()
         try:
-            if not self._reader:
+            if self._reader:
                 self._reader.close()
-            if not self._writer:
+            if self._writer:
+                self._writer.transport.close()
                 self._writer.close()
         except Exception:
             pass
