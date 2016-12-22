@@ -29,6 +29,9 @@ SYM_EMPTY = b('')
 
 
 class BaseParser(object):
+    "Plain Python parsing class"
+    MAX_READ_LENGTH = 65535
+
     EXCEPTION_CLASSES = {
         'ERR': {
             'max number of clients reached': ConnectionError
@@ -52,8 +55,6 @@ class BaseParser(object):
 
 
 class PythonParser(BaseParser):
-    "Plain Python parsing class"
-    MAX_READ_LENGTH = 65535
 
     def __init__(self):
         self._reader = None
@@ -91,7 +92,7 @@ class PythonParser(BaseParser):
                     try:
                         while bytes_left > 0:
                             read_len = min(bytes_left, self.MAX_READ_LENGTH)
-                            buf.write(await self._reader.read())
+                            buf.write(await self._reader.read(read_len))
                             bytes_left -= read_len
                         buf.seek(0)
                         return buf.read(length)
@@ -185,7 +186,7 @@ class HiredisParser(BaseParser):
         response = self._reader.gets()
         while response is False:
             try:
-                buffer = await self._stream.readline()
+                buffer = await self._stream.read(self.MAX_READ_LENGTH)
             except (socket.error, socket.timeout):
                 e = sys.exc_info()[1]
                 raise ConnectionError("Error while reading from socket: %s" %
@@ -205,24 +206,22 @@ else:
     DefaultParser = PythonParser
 
 
-class Connection:
+class BaseConnection:
+    description = 'BaseConnection'
 
-    def __init__(self, host='localhost', port=6379, db=0, password=None,
-                 socket_timeout=None, parser_class=DefaultParser):
-        self.socket_timeout = socket_timeout
-        self.host = host
-        self.port = port
-        self.db = db
-        self.password = password
+    def __init__(self, parser_class=DefaultParser):
+        self._parser = parser_class()
         self._reader = None
         self._writer = None
-        self._parser = parser_class()
+        self.password = ''
+        self.db = ''
+        self._description_args = dict()
+
+    def __repr__(self):
+        return self.description.format(**self._description_args)
 
     async def connect(self):
-        reader, writer = await asyncio.open_connection(host=self.host, port=self.port)
-        self._reader = reader
-        self._writer = writer
-        await self.on_connect()
+        raise NotImplementedError
 
     async def on_connect(self):
         self._parser.on_connect(self._reader)
@@ -334,3 +333,54 @@ class Connection:
                                        SYM_CRLF, b(arg), SYM_CRLF))
         output.append(buff)
         return output
+
+
+class Connection(BaseConnection):
+    description = 'Connection<host={host},port={port},db={db}>'
+
+    def __init__(self, host='127.0.0.1', port=6379,
+                 password=None, db=0,
+                 parser_class=DefaultParser):
+        super(Connection, self).__init__(parser_class)
+        self.host = host
+        self.port = port
+        self.password = password
+        self.db = db
+        self._description_args = {
+            'host': self.host,
+            'port': self.port,
+            'db': self.db
+        }
+
+    async def connect(self):
+        reader, writer = await asyncio.open_connection(host=self.host, port=self.port)
+        self._reader = reader
+        self._writer = writer
+        sock = writer.transport.get_extra_info('socket')
+        if sock is not None:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        await self.on_connect()
+
+
+class UnixDomainSocketConnection(BaseConnection):
+    description = "UnixDomainSocketConnection<path={path},db={db}>"
+
+    def __init__(self, path='', password=None, db=0,
+                 parser_class=DefaultParser):
+        super(UnixDomainSocketConnection, self).__init__(parser_class)
+        self.path = path
+        self.db = db
+        self.password = password
+        self._description_args = {
+            'path': self.path,
+            'db': self.db
+        }
+
+    async def connect(self):
+        reader, writer = await asyncio.open_unix_connection(path=self.path)
+        self._reader = reader
+        self._writer = writer
+        sock = writer.transport.get_extra_info('socket')
+        if sock is not None:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        await self.on_connect()

@@ -10,7 +10,8 @@ from aredis.connection import Connection
 __author__ = 'chenming@bilibili.com'
 
 
-HOST = '172.16.131.222'
+HOST = '172.16.131.254'
+
 
 async def test_aredis(i):
     start = time.time()
@@ -58,11 +59,11 @@ async def test_aioredis(i, loop):
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     print('aredis')
-    loop.run_until_complete(test_aredis(100))
-    print('asyncio_redis')
-    loop.run_until_complete(test_asyncio_redis(100))
-    print('redis-py')
-    test_conn(100)
-    print('aioredis')
-    loop.run_until_complete(test_aioredis(100, loop))
+    loop.run_until_complete(test_aredis(1000))
+    # print('asyncio_redis')
+    # loop.run_until_complete(test_asyncio_redis(1000))
+    # print('redis-py')
+    # assert res == test_conn(1000)
+    # print('aioredis')
+    # loop.run_until_complete(test_aioredis(1000, loop))
 
