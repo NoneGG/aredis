@@ -209,8 +209,9 @@ else:
 class BaseConnection:
     description = 'BaseConnection'
 
-    def __init__(self, parser_class=DefaultParser):
+    def __init__(self, timeout=0, parser_class=DefaultParser):
         self._parser = parser_class()
+        self._timeout = timeout
         self._reader = None
         self._writer = None
         self.password = ''
@@ -246,8 +247,11 @@ class BaseConnection:
 
     async def read_response(self):
         try:
-            response = await self._parser.read_response()
-        except:
+            if self._timeout:
+                response = await asyncio.wait_for(self._parser.read_response(), self._timeout)
+            else:
+                response = await self._parser.read_response()
+        except Exception:
             self.disconnect()
             raise
         if isinstance(response, ResponseError):
@@ -346,9 +350,9 @@ class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
     def __init__(self, host='127.0.0.1', port=6379,
-                 password=None, db=0,
+                 password=None, db=0, timeout=0,
                  parser_class=DefaultParser):
-        super(Connection, self).__init__(parser_class)
+        super(Connection, self).__init__(timeout, parser_class)
         self.host = host
         self.port = port
         self.password = password
@@ -372,9 +376,10 @@ class Connection(BaseConnection):
 class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
-    def __init__(self, path='', password=None, db=0,
+    def __init__(self, path='', password=None,
+                 db=0, timeout=0,
                  parser_class=DefaultParser):
-        super(UnixDomainSocketConnection, self).__init__(parser_class)
+        super(UnixDomainSocketConnection, self).__init__(timeout, parser_class)
         self.path = path
         self.db = db
         self.password = password

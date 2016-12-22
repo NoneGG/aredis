@@ -59,11 +59,11 @@ async def test_aioredis(i, loop):
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     print('aredis')
-    loop.run_until_complete(test_aredis(1000))
-    # print('asyncio_redis')
-    # loop.run_until_complete(test_asyncio_redis(1000))
-    # print('redis-py')
-    # assert res == test_conn(1000)
-    # print('aioredis')
-    # loop.run_until_complete(test_aioredis(1000, loop))
+    res = loop.run_until_complete(test_aredis(2000))
+    print('asyncio_redis')
+    loop.run_until_complete(test_asyncio_redis(2000))
+    print('redis-py')
+    assert res == test_conn(2000)
+    print('aioredis')
+    loop.run_until_complete(test_aioredis(2000, loop))
 
