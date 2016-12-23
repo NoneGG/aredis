@@ -1,11 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import warnings
+import threading
+from itertools import chain
 from urllib.parse import (parse_qs,
                           unquote,
                           urlparse)
-from aredis.connection import (Connection,
+from aredis.connection import (RedisSSLContext,
+                               Connection,
                                UnixDomainSocketConnection)
 
 
@@ -126,24 +130,17 @@ class ConnectionPool(object):
                     pass
 
             if url.scheme == 'rediss':
-                url_options['connection_class'] = SSLConnection
+                keyfile = kwargs.get('keyfile')
+                certfile = kwargs.get('certfile')
+                cert_reqs = kwargs.get('cert_reqs')
+                ca_certs = kwargs.get('ca_certs')
+                url_options['ssl_context'] = RedisSSLContext(keyfile, certfile, cert_reqs, ca_certs).get()
 
         # last shot at the db value
         url_options['db'] = int(url_options.get('db', db or 0))
 
         # update the arguments from the URL values
         kwargs.update(url_options)
-
-        # backwards compatability
-        if 'charset' in kwargs:
-            warnings.warn(DeprecationWarning(
-                '"charset" is deprecated. Use "encoding" instead'))
-            kwargs['encoding'] = kwargs.pop('charset')
-        if 'errors' in kwargs:
-            warnings.warn(DeprecationWarning(
-                '"errors" is deprecated. Use "encoding_errors" instead'))
-            kwargs['encoding_errors'] = kwargs.pop('errors')
-
         return cls(**kwargs)
 
     def __init__(self, connection_class=Connection, max_connections=None,
@@ -159,7 +156,7 @@ class ConnectionPool(object):
         connection_class.
         """
         max_connections = max_connections or 2 ** 31
-        if not isinstance(max_connections, (int, long)) or max_connections < 0:
+        if not isinstance(max_connections, int) or max_connections < 0:
             raise ValueError('"max_connections" must be a positive integer')
 
         self.connection_class = connection_class
@@ -169,9 +166,9 @@ class ConnectionPool(object):
         self.reset()
 
     def __repr__(self):
-        return "%s<%s>" % (
+        return '{}<{}>'.format(
             type(self).__name__,
-            self.connection_class.description_format % self.connection_kwargs,
+            self.connection_class.description.format(self.connection_kwargs),
         )
 
     def reset(self):
@@ -191,7 +188,7 @@ class ConnectionPool(object):
                 self.disconnect()
                 self.reset()
 
-    def get_connection(self, command_name, *keys, **options):
+    def get_connection(self):
         "Get a connection from the pool"
         self._checkpid()
         try:

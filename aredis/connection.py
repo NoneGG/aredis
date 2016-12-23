@@ -1,5 +1,7 @@
 import asyncio
+import os
 import sys
+import ssl
 import socket
 from io import BytesIO
 from aredis.exceptions import (RedisError,
@@ -213,6 +215,39 @@ else:
     DefaultParser = PythonParser
 
 
+class RedisSSLContext:
+
+    def __init__(self, keyfile=None, certfile=None,
+                 cert_reqs=None, ca_certs=None):
+        self.keyfile = keyfile
+        self.certfile = certfile
+        if cert_reqs is None:
+            cert_reqs = ssl.CERT_NONE
+        elif isinstance(cert_reqs, str):
+            CERT_REQS = {
+                'none': ssl.CERT_NONE,
+                'optional': ssl.CERT_OPTIONAL,
+                'required': ssl.CERT_REQUIRED
+            }
+            if cert_reqs not in CERT_REQS:
+                raise RedisError(
+                    "Invalid SSL Certificate Requirements Flag: %s" %
+                    cert_reqs)
+        self.cert_reqs = cert_reqs
+        self.ca_certs = ca_certs
+
+    def get(self):
+        if not self.keyfile:
+            self.context = ssl.create_default_context(cafile=self.ca_certs)
+        else:
+            self.context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            self.context.verify_mode = self.cert_reqs
+            self.context.load_cert_chain(certfile=self.certfile,
+                                         keyfile=self.keyfile)
+            self.context.load_verify_locations(self.ca_certs)
+        return self.context
+
+
 class BaseConnection:
     description = 'BaseConnection'
 
@@ -223,6 +258,7 @@ class BaseConnection:
         self._writer = None
         self.password = ''
         self.db = ''
+        self.pid = os.getpid()
         self._description_args = dict()
 
     def __repr__(self):
@@ -353,14 +389,15 @@ class BaseConnection:
 class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
-    def __init__(self, host='127.0.0.1', port=6379,
-                 password=None, db=0, stream_timeout=0,
-                 connect_timeout=0, parser_class=DefaultParser):
+    def __init__(self, host='127.0.0.1', port=6379, password=None,
+                 db=0, stream_timeout=0, connect_timeout=0,
+                 ssl_context=None, parser_class=DefaultParser):
         super(Connection, self).__init__(stream_timeout, parser_class)
         self.host = host
         self.port = port
         self.password = password
         self.db = db
+        self.ssl_context = ssl_context
         self._connect_timeout = connect_timeout
         self._description_args = {
             'host': self.host,
@@ -370,7 +407,9 @@ class Connection(BaseConnection):
 
     async def connect(self):
         reader, writer = await exec_with_timeout(
-            asyncio.open_connection(host=self.host, port=self.port),
+            asyncio.open_connection(host=self.host,
+                                    port=self.port,
+                                    ssl=self.ssl_context),
             self._connect_timeout
         )
         self._reader = reader
@@ -385,12 +424,13 @@ class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
     def __init__(self, path='', password=None,
-                 db=0, stream_timeout=0,
-                 connect_timeout=0, parser_class=DefaultParser):
+                 db=0, stream_timeout=0, connect_timeout=0,
+                 ssl_context=None, parser_class=DefaultParser):
         super(UnixDomainSocketConnection, self).__init__(stream_timeout, parser_class)
         self.path = path
         self.db = db
         self.password = password
+        self.ssl_context = ssl_context
         self._connect_timeout = connect_timeout
         self._description_args = {
             'path': self.path,
@@ -399,7 +439,8 @@ class UnixDomainSocketConnection(BaseConnection):
 
     async def connect(self):
         reader, writer = await exec_with_timeout(
-            asyncio.open_unix_connection(path=self.path),
+            asyncio.open_unix_connection(path=self.path,
+                                         ssl=self.ssl_context),
             self._connect_timeout
         )
         self._reader = reader
