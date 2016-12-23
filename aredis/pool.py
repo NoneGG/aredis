@@ -75,19 +75,8 @@ class ConnectionPool(object):
         ``UserWarning`` to be raised. In the case of conflicting arguments,
         querystring arguments always win.
         """
-        url_string = url
         url = urlparse(url)
-        qs = ''
-
-        # in python2.6, custom URL schemes don't recognize querystring values
-        # they're left as part of the url.path.
-        if '?' in url.path and not url.query:
-            # chop the querystring including the ? off the end of the url
-            # and reparse it.
-            qs = url.path.split('?', 1)[1]
-            url = urlparse(url_string[:-(len(qs) + 1)])
-        else:
-            qs = url.query
+        qs = url.query
 
         url_options = {}
 

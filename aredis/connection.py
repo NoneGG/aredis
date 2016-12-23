@@ -21,6 +21,13 @@ def b(x):
     return x.encode('latin-1') if not isinstance(x, bytes) else x
 
 
+async def exec_with_timeout(coroutine, timeout):
+    if timeout:
+        return await asyncio.wait_for(coroutine, timeout)
+    else:
+        return await coroutine
+
+
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
 SYM_CRLF = b('\r\n')
@@ -209,9 +216,9 @@ else:
 class BaseConnection:
     description = 'BaseConnection'
 
-    def __init__(self, timeout=0, parser_class=DefaultParser):
+    def __init__(self, stream_timeout=0, parser_class=DefaultParser):
         self._parser = parser_class()
-        self._timeout = timeout
+        self._stream_timeout = stream_timeout
         self._reader = None
         self._writer = None
         self.password = ''
@@ -247,10 +254,7 @@ class BaseConnection:
 
     async def read_response(self):
         try:
-            if self._timeout:
-                response = await asyncio.wait_for(self._parser.read_response(), self._timeout)
-            else:
-                response = await self._parser.read_response()
+            response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout)
         except Exception:
             self.disconnect()
             raise
@@ -350,13 +354,14 @@ class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
     def __init__(self, host='127.0.0.1', port=6379,
-                 password=None, db=0, timeout=0,
-                 parser_class=DefaultParser):
-        super(Connection, self).__init__(timeout, parser_class)
+                 password=None, db=0, stream_timeout=0,
+                 connect_timeout=0, parser_class=DefaultParser):
+        super(Connection, self).__init__(stream_timeout, parser_class)
         self.host = host
         self.port = port
         self.password = password
         self.db = db
+        self._connect_timeout = connect_timeout
         self._description_args = {
             'host': self.host,
             'port': self.port,
@@ -364,7 +369,10 @@ class Connection(BaseConnection):
         }
 
     async def connect(self):
-        reader, writer = await asyncio.open_connection(host=self.host, port=self.port)
+        reader, writer = await exec_with_timeout(
+            asyncio.open_connection(host=self.host, port=self.port),
+            self._connect_timeout
+        )
         self._reader = reader
         self._writer = writer
         sock = writer.transport.get_extra_info('socket')
@@ -377,19 +385,23 @@ class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
     def __init__(self, path='', password=None,
-                 db=0, timeout=0,
-                 parser_class=DefaultParser):
-        super(UnixDomainSocketConnection, self).__init__(timeout, parser_class)
+                 db=0, stream_timeout=0,
+                 connect_timeout=0, parser_class=DefaultParser):
+        super(UnixDomainSocketConnection, self).__init__(stream_timeout, parser_class)
         self.path = path
         self.db = db
         self.password = password
+        self._connect_timeout = connect_timeout
         self._description_args = {
             'path': self.path,
             'db': self.db
         }
 
     async def connect(self):
-        reader, writer = await asyncio.open_unix_connection(path=self.path)
+        reader, writer = await exec_with_timeout(
+            asyncio.open_unix_connection(path=self.path),
+            self._connect_timeout
+        )
         self._reader = reader
         self._writer = writer
         sock = writer.transport.get_extra_info('socket')

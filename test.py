@@ -10,12 +10,12 @@ from aredis.connection import Connection
 __author__ = 'chenming@bilibili.com'
 
 
-HOST = '172.16.131.254'
+HOST = '172.16.131.222'
 
 
 async def test_aredis(i):
     start = time.time()
-    a = Connection(host=HOST)
+    a = Connection(host=HOST, connect_timeout=0.0000001)
     res = None
     for i in range(i):
         await a.send_command('keys', '*')
