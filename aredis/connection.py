@@ -260,6 +260,7 @@ class BaseConnection:
         self.db = ''
         self.pid = os.getpid()
         self._description_args = dict()
+        self._connect_callbacks = list()
 
     def __repr__(self):
         return self.description.format(**self._description_args)
@@ -270,7 +271,20 @@ class BaseConnection:
         except Exception:
             pass
 
+    def register_connect_callback(self, callback):
+        self._connect_callbacks.append(callback)
+
+    def clear_connect_callbacks(self):
+        self._connect_callbacks = list()
+
     async def connect(self):
+        await self._connect()
+        # run any user callbacks. right now the only internal callback
+        # is for pubsub channel/pattern resubscription
+        for callback in self._connect_callbacks:
+            callback(self)
+
+    async def _connect(self):
         raise NotImplementedError
 
     async def on_connect(self):
@@ -405,7 +419,7 @@ class Connection(BaseConnection):
             'db': self.db
         }
 
-    async def connect(self):
+    async def _connect(self):
         reader, writer = await exec_with_timeout(
             asyncio.open_connection(host=self.host,
                                     port=self.port,
@@ -437,7 +451,7 @@ class UnixDomainSocketConnection(BaseConnection):
             'db': self.db
         }
 
-    async def connect(self):
+    async def _connect(self):
         reader, writer = await exec_with_timeout(
             asyncio.open_unix_connection(path=self.path,
                                          ssl=self.ssl_context),
