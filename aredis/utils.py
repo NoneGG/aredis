@@ -1,33 +1,24 @@
-from contextlib import contextmanager
+import asyncio
 
 
-try:
-    import hiredis
-    HIREDIS_AVAILABLE = True
-except ImportError:
-    HIREDIS_AVAILABLE = False
+def b(x):
+    return x.encode('latin-1') if not isinstance(x, bytes) else x
 
 
-def from_url(url, db=None, **kwargs):
-    """
-    Returns an active Redis client generated from the given database URL.
-
-    Will attempt to extract the database id from the path url fragment, if
-    none is provided.
-    """
-    from redis.client import Redis
-    return Redis.from_url(url, db, **kwargs)
+def iteritems(x):
+    return iter(x.items())
 
 
-@contextmanager
-def pipeline(redis_obj):
-    p = redis_obj.pipeline()
-    yield p
-    p.execute()
+def iterkeys(x):
+    return iter(x.keys())
 
 
-class dummy(object):
-    """
-    Instances of this class can be used as an attribute container.
-    """
-    pass
+def itervalues(x):
+    return iter(x.values())
+
+
+async def exec_with_timeout(coroutine, timeout):
+    if timeout:
+        return await asyncio.wait_for(coroutine, timeout)
+    else:
+        return await coroutine

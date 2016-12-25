@@ -1,12 +1,9 @@
-from redis.client import Redis, StrictRedis
-from redis.connection import (
-    BlockingConnectionPool,
-    ConnectionPool,
+from aredis.client import Redis, StrictRedis
+from aredis.connection import (
     Connection,
-    SSLConnection,
     UnixDomainSocketConnection
 )
-from redis.utils import from_url
+from aredis.pool import ConnectionPool
 from redis.exceptions import (
     AuthenticationError,
     BusyLoadingError,
@@ -22,12 +19,12 @@ from redis.exceptions import (
 )
 
 
-__version__ = '2.10.5'
+__version__ = '1.0.0'
 VERSION = tuple(map(int, __version__.split('.')))
 
 __all__ = [
-    'Redis', 'StrictRedis', 'ConnectionPool', 'BlockingConnectionPool',
-    'Connection', 'SSLConnection', 'UnixDomainSocketConnection', 'from_url',
+    'Redis', 'StrictRedis', 'ConnectionPool',
+    'Connection', 'UnixDomainSocketConnection',
     'AuthenticationError', 'BusyLoadingError', 'ConnectionError', 'DataError',
     'InvalidResponse', 'PubSubError', 'ReadOnlyError', 'RedisError',
     'ResponseError', 'TimeoutError', 'WatchError'

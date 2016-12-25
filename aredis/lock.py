@@ -1,9 +1,9 @@
+import asyncio
 import threading
 import time as mod_time
 import uuid
-from redis.exceptions import LockError, WatchError
-from redis.utils import dummy
-from redis._compat import b
+from aredis.exceptions import LockError, WatchError
+from aredis.utils import b
 
 
 class Lock(object):
@@ -78,16 +78,16 @@ class Lock(object):
         if self.timeout and self.sleep > self.timeout:
             raise LockError("'sleep' must be less than 'timeout'")
 
-    def __enter__(self):
+    def __aenter__(self):
         # force blocking, as otherwise the user would have to check whether
         # the lock was actually acquired or not.
         self.acquire(blocking=True)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __aexit__(self, exc_type, exc_value, traceback):
         self.release()
 
-    def acquire(self, blocking=None, blocking_timeout=None):
+    async def acquire(self, blocking=None, blocking_timeout=None):
         """
         Use Redis to hold a shared, distributed lock named ``name``.
         Returns True once the lock is acquired.
@@ -108,44 +108,44 @@ class Lock(object):
         if blocking_timeout is not None:
             stop_trying_at = mod_time.time() + blocking_timeout
         while 1:
-            if self.do_acquire(token):
+            if await self.do_acquire(token):
                 self.local.token = token
                 return True
             if not blocking:
                 return False
             if stop_trying_at is not None and mod_time.time() > stop_trying_at:
                 return False
-            mod_time.sleep(sleep)
+            await asyncio.sleep(sleep)
 
-    def do_acquire(self, token):
-        if self.redis.setnx(self.name, token):
+    async def do_acquire(self, token):
+        if await self.redis.setnx(self.name, token):
             if self.timeout:
                 # convert to milliseconds
                 timeout = int(self.timeout * 1000)
-                self.redis.pexpire(self.name, timeout)
+                await self.redis.pexpire(self.name, timeout)
             return True
         return False
 
-    def release(self):
+    async def release(self):
         "Releases the already acquired lock"
         expected_token = self.local.token
         if expected_token is None:
             raise LockError("Cannot release an unlocked lock")
         self.local.token = None
-        self.do_release(expected_token)
+        await self.do_release(expected_token)
 
-    def do_release(self, expected_token):
+    async def do_release(self, expected_token):
         name = self.name
 
-        def execute_release(pipe):
+        async def execute_release(pipe):
             lock_value = pipe.get(name)
             if lock_value != expected_token:
                 raise LockError("Cannot release a lock that's no longer owned")
-            pipe.delete(name)
+            await pipe.delete(name)
 
-        self.redis.transaction(execute_release, name)
+        await self.redis.transaction(execute_release, name)
 
-    def extend(self, additional_time):
+    async def extend(self, additional_time):
         """
         Adds more time to an already acquired lock.
 
@@ -156,24 +156,24 @@ class Lock(object):
             raise LockError("Cannot extend an unlocked lock")
         if self.timeout is None:
             raise LockError("Cannot extend a lock with no timeout")
-        return self.do_extend(additional_time)
+        return await self.do_extend(additional_time)
 
-    def do_extend(self, additional_time):
+    async def do_extend(self, additional_time):
         pipe = self.redis.pipeline()
-        pipe.watch(self.name)
-        lock_value = pipe.get(self.name)
+        await pipe.watch(self.name)
+        lock_value = await pipe.get(self.name)
         if lock_value != self.local.token:
             raise LockError("Cannot extend a lock that's no longer owned")
-        expiration = pipe.pttl(self.name)
+        expiration = await pipe.pttl(self.name)
         if expiration is None or expiration < 0:
             # Redis evicted the lock key between the previous get() and now
             # we'll handle this when we call pexpire()
             expiration = 0
         pipe.multi()
-        pipe.pexpire(self.name, expiration + int(additional_time * 1000))
+        await pipe.pexpire(self.name, expiration + int(additional_time * 1000))
 
         try:
-            response = pipe.execute()
+            response = await pipe.execute()
         except WatchError:
             # someone else acquired the lock
             raise LockError("Cannot extend a lock that's no longer owned")
@@ -253,20 +253,20 @@ class LuaLock(Lock):
 
     def do_acquire(self, token):
         timeout = self.timeout and int(self.timeout * 1000) or ''
-        return bool(self.lua_acquire(keys=[self.name],
-                                     args=[token, timeout],
-                                     client=self.redis))
+        return bool(self.lua_acquire.register(keys=[self.name],
+                                              args=[token, timeout],
+                                              client=self.redis))
 
     def do_release(self, expected_token):
-        if not bool(self.lua_release(keys=[self.name],
-                                     args=[expected_token],
-                                     client=self.redis)):
+        if not bool(self.lua_release.register(keys=[self.name],
+                                              args=[expected_token],
+                                              client=self.redis)):
             raise LockError("Cannot release a lock that's no longer owned")
 
     def do_extend(self, additional_time):
         additional_time = int(additional_time * 1000)
-        if not bool(self.lua_extend(keys=[self.name],
-                                    args=[self.local.token, additional_time],
-                                    client=self.redis)):
+        if not bool(self.lua_extend.register(keys=[self.name],
+                                             args=[self.local.token, additional_time],
+                                             client=self.redis)):
             raise LockError("Cannot extend a lock that's no longer owned")
         return True

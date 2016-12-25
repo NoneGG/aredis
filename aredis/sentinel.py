@@ -2,11 +2,12 @@ import os
 import random
 import weakref
 
-from redis.client import StrictRedis
-from redis.connection import ConnectionPool, Connection
-from redis.exceptions import (ConnectionError, ResponseError, ReadOnlyError,
+from aredis.client import StrictRedis
+from aredis.connection import Connection
+from aredis.pool import ConnectionPool
+from aredis.exceptions import (ConnectionError, ResponseError, ReadOnlyError,
                               TimeoutError)
-from redis._compat import iteritems, nativestr, xrange
+from aredis.utils import iteritems
 
 
 class MasterNotFoundError(ConnectionError):
@@ -24,36 +25,37 @@ class SentinelManagedConnection(Connection):
 
     def __repr__(self):
         pool = self.connection_pool
-        s = '%s<service=%s%%s>' % (type(self).__name__, pool.service_name)
         if self.host:
             host_info = ',host=%s,port=%s' % (self.host, self.port)
-            s = s % host_info
+        else:
+            host_info = ''
+        s = '{}<service={}{}>'.format(type(self).__name__, pool.service_name, host_info)
         return s
 
-    def connect_to(self, address):
+    async def connect_to(self, address):
         self.host, self.port = address
-        super(SentinelManagedConnection, self).connect()
+        await super(SentinelManagedConnection, self).connect()
         if self.connection_pool.check_connection:
-            self.send_command('PING')
-            if nativestr(self.read_response()) != 'PONG':
+            await self.send_command('PING')
+            if str(await self.read_response()) != 'PONG':
                 raise ConnectionError('PING failed')
 
-    def connect(self):
-        if self._sock:
+    async def connect(self):
+        if self._reader and self._writer:
             return  # already connected
         if self.connection_pool.is_master:
-            self.connect_to(self.connection_pool.get_master_address())
+            await self.connect_to(self.connection_pool.get_master_address())
         else:
             for slave in self.connection_pool.rotate_slaves():
                 try:
-                    return self.connect_to(slave)
+                    return await self.connect_to(slave)
                 except ConnectionError:
                     continue
             raise SlaveNotFoundError  # Never be here
 
-    def read_response(self):
+    async def read_response(self):
         try:
-            return super(SentinelManagedConnection, self).read_response()
+            return await super(SentinelManagedConnection, self).read_response()
         except ReadOnlyError:
             if self.connection_pool.is_master:
                 # When talking to a master, a ReadOnlyError when likely
@@ -85,7 +87,7 @@ class SentinelConnectionPool(ConnectionPool):
         self.sentinel_manager = sentinel_manager
 
     def __repr__(self):
-        return "%s<service=%s(%s)" % (
+        return "{}<service={}({})".format(
             type(self).__name__,
             self.service_name,
             self.is_master and 'master' or 'slave',
@@ -96,8 +98,8 @@ class SentinelConnectionPool(ConnectionPool):
         self.master_address = None
         self.slave_rr_counter = None
 
-    def get_master_address(self):
-        master_address = self.sentinel_manager.discover_master(
+    async def get_master_address(self):
+        master_address = await self.sentinel_manager.discover_master(
             self.service_name)
         if self.is_master:
             if self.master_address is None:
@@ -107,20 +109,23 @@ class SentinelConnectionPool(ConnectionPool):
                 self.disconnect()
         return master_address
 
-    def rotate_slaves(self):
+    async def rotate_slaves(self):
         "Round-robin slave balancer"
-        slaves = self.sentinel_manager.discover_slaves(self.service_name)
+        slaves = await self.sentinel_manager.discover_slaves(self.service_name)
+        slave_address = list()
         if slaves:
             if self.slave_rr_counter is None:
                 self.slave_rr_counter = random.randint(0, len(slaves) - 1)
-            for _ in xrange(len(slaves)):
+            for _ in range(len(slaves)):
                 self.slave_rr_counter = (
                     self.slave_rr_counter + 1) % len(slaves)
-                slave = slaves[self.slave_rr_counter]
-                yield slave
+                slave_address.append(slaves[self.slave_rr_counter])
+                # todo change into generator in Python 3.6
+                # yield slave
+            return slave_address
         # Fallback to the master connection
         try:
-            yield self.get_master_address()
+            return await self.get_master_address()
         except MasterNotFoundError:
             pass
         raise SlaveNotFoundError('No slave found for %r' % (self.service_name))
@@ -185,11 +190,11 @@ class Sentinel(object):
     def __repr__(self):
         sentinel_addresses = []
         for sentinel in self.sentinels:
-            sentinel_addresses.append('%s:%s' % (
+            sentinel_addresses.append('{}:{}'.format(
                 sentinel.connection_pool.connection_kwargs['host'],
                 sentinel.connection_pool.connection_kwargs['port'],
             ))
-        return '%s<sentinels=[%s]>' % (
+        return '{}<sentinels=[{}]>'.format(
             type(self).__name__,
             ','.join(sentinel_addresses))
 
@@ -201,7 +206,7 @@ class Sentinel(object):
             return False
         return True
 
-    def discover_master(self, service_name):
+    async def discover_master(self, service_name):
         """
         Asks sentinel servers for the Redis master's address corresponding
         to the service labeled ``service_name``.
@@ -211,7 +216,7 @@ class Sentinel(object):
         """
         for sentinel_no, sentinel in enumerate(self.sentinels):
             try:
-                masters = sentinel.sentinel_masters()
+                masters = await sentinel.sentinel_masters()
             except (ConnectionError, TimeoutError):
                 continue
             state = masters.get(service_name)
@@ -231,11 +236,11 @@ class Sentinel(object):
             slaves_alive.append((slave['ip'], slave['port']))
         return slaves_alive
 
-    def discover_slaves(self, service_name):
+    async def discover_slaves(self, service_name):
         "Returns a list of alive slaves for service ``service_name``"
         for sentinel in self.sentinels:
             try:
-                slaves = sentinel.sentinel_slaves(service_name)
+                slaves = await sentinel.sentinel_slaves(service_name)
             except (ConnectionError, ResponseError, TimeoutError):
                 continue
             slaves = self.filter_slaves(slaves)
