@@ -4,6 +4,7 @@ import sys
 import ssl
 import socket
 from io import BytesIO
+from aredis.utils import (b, exec_with_timeout)
 from aredis.exceptions import (RedisError,
                                ExecAbortError,
                                BusyLoadingError,
@@ -17,17 +18,6 @@ try:
     HIREDIS_AVAILABLE = True
 except ImportError:
     HIREDIS_AVAILABLE = False
-
-
-def b(x):
-    return x.encode('latin-1') if not isinstance(x, bytes) else x
-
-
-async def exec_with_timeout(coroutine, timeout):
-    if timeout:
-        return await asyncio.wait_for(coroutine, timeout)
-    else:
-        return await coroutine
 
 
 SYM_STAR = b('*')
@@ -67,6 +57,7 @@ class PythonParser(BaseParser):
 
     def __init__(self):
         self._reader = None
+        self._buffer = None
 
     def __del__(self):
         try:
@@ -84,6 +75,12 @@ class PythonParser(BaseParser):
             self._reader.feed_eof()
             self._reader = None
 
+    def can_read(self):
+        try:
+            return self._reader and bool(self._buffer.length)
+        except Exception:
+            return False
+
     async def read(self, length=None):
         """
         Read a line from the socket if no length is specified,
@@ -97,16 +94,16 @@ class PythonParser(BaseParser):
                     # socket can cause MemoryErrors. See:
                     # https://github.com/andymccurdy/redis-py/issues/205
                     # read smaller chunks at a time to work around this
-                    buf = BytesIO()
+                    self._buffer = BytesIO()
                     try:
                         while bytes_left > 0:
                             read_len = min(bytes_left, self.MAX_READ_LENGTH)
-                            buf.write(await self._reader.read(read_len))
+                            self._buffer.write(await self._reader.read(read_len))
                             bytes_left -= read_len
-                        buf.seek(0)
-                        return buf.read(length)
+                        self._buffer.seek(0)
+                        return self._buffer.read(length)
                     finally:
-                        buf.close()
+                        self._buffer.close()
                 return (await self._reader.readline())[:-2]
 
             # no length, read a full line
@@ -176,6 +173,14 @@ class HiredisParser(BaseParser):
             self.on_disconnect()
         except Exception:
             pass
+
+    def can_read(self):
+        if not self._reader:
+            raise ConnectionError("Socket closed on remote end")
+
+        if self._next_response is False:
+            self._next_response = self._reader.gets()
+        return self._next_response is not False
 
     def on_connect(self, stream_reader):
         self._stream = stream_reader
@@ -251,7 +256,8 @@ class RedisSSLContext:
 class BaseConnection:
     description = 'BaseConnection'
 
-    def __init__(self, stream_timeout=0, parser_class=DefaultParser):
+    def __init__(self, retry_on_timeout=0,
+                 stream_timeout=0, parser_class=DefaultParser):
         self._parser = parser_class()
         self._stream_timeout = stream_timeout
         self._reader = None
@@ -259,6 +265,7 @@ class BaseConnection:
         self.password = ''
         self.db = ''
         self.pid = os.getpid()
+        self.retry_on_timeout = retry_on_timeout
         self._description_args = dict()
         self._connect_callbacks = list()
 
@@ -276,6 +283,12 @@ class BaseConnection:
 
     def clear_connect_callbacks(self):
         self._connect_callbacks = list()
+
+    def can_read(self):
+        "See if there's data that can be read."
+        if not self._reader:
+            self.connect()
+        return self._parser.can_read()
 
     async def connect(self):
         await self._connect()
@@ -404,9 +417,9 @@ class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
     def __init__(self, host='127.0.0.1', port=6379, password=None,
-                 db=0, stream_timeout=0, connect_timeout=0,
+                 db=0, retry_on_timeout=0, stream_timeout=0, connect_timeout=0,
                  ssl_context=None, parser_class=DefaultParser):
-        super(Connection, self).__init__(stream_timeout, parser_class)
+        super(Connection, self).__init__(retry_on_timeout, stream_timeout, parser_class)
         self.host = host
         self.port = port
         self.password = password
@@ -438,9 +451,9 @@ class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
     def __init__(self, path='', password=None,
-                 db=0, stream_timeout=0, connect_timeout=0,
+                 db=0, retry_on_timeout=0, stream_timeout=0, connect_timeout=0,
                  ssl_context=None, parser_class=DefaultParser):
-        super(UnixDomainSocketConnection, self).__init__(stream_timeout, parser_class)
+        super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout, parser_class)
         self.path = path
         self.db = db
         self.password = password
