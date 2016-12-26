@@ -483,7 +483,7 @@ class StrictRedis(object):
     def __init__(self, host='localhost', port=6379,
                  db=0, password=None, stream_timeout=None,
                  connect_timeout=None, connection_pool=None,
-                 unix_socket_path=None, decode_responses=False,
+                 unix_socket_path=None,
                  ssl=False, ssl_keyfile=None, ssl_certfile=None,
                  ssl_cert_reqs=None, ssl_ca_certs=None,
                  max_connections=None, retry_on_timeout=False):
@@ -493,7 +493,6 @@ class StrictRedis(object):
                 'password': password,
                 'stream_timeout': stream_timeout,
                 'connect_timeout': connect_timeout,
-                'decode_responses': decode_responses,
                 'max_connections': max_connections,
                 'retry_on_timeout': retry_on_timeout
             }
