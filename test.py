@@ -4,22 +4,22 @@ import time
 import asyncio
 import asyncio_redis
 import aioredis
-from redis.connection import Connection as SConnection
-from aredis.connection import Connection
+import redis
+import aredis
 
 __author__ = 'chenming@bilibili.com'
 
 
-HOST = '172.16.131.222'
+HOST = '172.16.131.254'
+NUM = 100
 
 
 async def test_aredis(i):
     start = time.time()
-    a = Connection(host=HOST, connect_timeout=0.0000001)
+    client = aredis.StrictRedis(host=HOST)
     res = None
     for i in range(i):
-        await a.send_command('keys', '*')
-        res = await a.read_response()
+        res = await client.keys('*')
     print(time.time() - start)
     return res
 
@@ -32,15 +32,15 @@ async def test_asyncio_redis(i):
         res = await connection.keys('*')
     print(time.time() - start)
     connection.close()
+    return res
 
 
 def test_conn(i):
     start = time.time()
-    a = SConnection(host=HOST)
+    client = redis.StrictRedis(host=HOST)
     res = None
     for i in range(i):
-        a.send_command('keys', '*')
-        res = a.read_response()
+        res = client.keys('*')
     print(time.time() - start)
     return res
 
@@ -54,16 +54,17 @@ async def test_aioredis(i, loop):
     print(time.time() - start)
     redis.close()
     await redis.wait_closed()
+    return val
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     print('aredis')
-    res = loop.run_until_complete(test_aredis(2000))
+    print(loop.run_until_complete(test_aredis(NUM)))
     print('asyncio_redis')
-    loop.run_until_complete(test_asyncio_redis(2000))
+    print(loop.run_until_complete(test_asyncio_redis(NUM)))
     print('redis-py')
-    assert res == test_conn(2000)
+    print(test_conn(NUM))
     print('aioredis')
-    loop.run_until_complete(test_aioredis(2000, loop))
+    print(loop.run_until_complete(test_aioredis(NUM, loop)))
 
