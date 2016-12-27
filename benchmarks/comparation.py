@@ -7,11 +7,9 @@ import aioredis
 import redis
 import aredis
 
-__author__ = 'chenming@bilibili.com'
 
-
-HOST = '172.16.131.254'
-NUM = 100
+HOST = '127.0.0.1'
+NUM = 10000
 
 
 async def test_aredis(i):

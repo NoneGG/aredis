@@ -185,13 +185,13 @@ def parse_sentinel_get_master(response):
 def pairs_to_dict(response):
     "Create a dict given a list of key/value pairs"
     it = iter(response)
-    return dict(izip(it, it))
+    return dict(zip(it, it))
 
 
 def pairs_to_dict_typed(response, type_info):
     it = iter(response)
     result = {}
-    for key, value in izip(it, it):
+    for key, value in zip(it, it):
         if key in type_info:
             try:
                 value = type_info[key](value)
@@ -212,7 +212,7 @@ def zset_score_pairs(response, **options):
         return response
     score_cast_func = options.get('score_cast_func', float)
     it = iter(response)
-    return list(izip(it, map(score_cast_func, it)))
+    return list(zip(it, map(score_cast_func, it)))
 
 
 def sort_return_tuples(response, **options):
@@ -223,7 +223,7 @@ def sort_return_tuples(response, **options):
     if not response or not options['groups']:
         return response
     n = options['groups']
-    return list(izip(*[response[i::n] for i in range(n)]))
+    return list(zip(*[response[i::n] for i in range(n)]))
 
 
 def int_or_none(response):
@@ -268,7 +268,7 @@ def parse_zscan(response, **options):
     score_cast_func = options.get('score_cast_func', float)
     cursor, r = response
     it = iter(r)
-    return int(cursor), list(izip(it, map(score_cast_func, it)))
+    return int(cursor), list(zip(it, map(score_cast_func, it)))
 
 
 def parse_slowlog_get(response, **options):
@@ -529,7 +529,7 @@ class StrictRedis(object):
         "Set a custom Response Callback"
         self.response_callbacks[command] = callback
 
-    def pipeline(self, transaction=True, shard_hint=None):
+    async def pipeline(self, transaction=True, shard_hint=None):
         """
         Return a new pipeline object that can queue multiple commands for
         later execution. ``transaction`` indicates whether all commands
@@ -537,11 +537,10 @@ class StrictRedis(object):
         atomic, pipelines are useful for reducing the back-and-forth overhead
         between the client and server.
         """
-        return StrictPipeline(
-            self.connection_pool,
-            self.response_callbacks,
-            transaction,
-            shard_hint)
+        pipeline = StrictPipeline(self.connection_pool, self.response_callbacks,
+                                  transaction, shard_hint)
+        await pipeline.reset()
+        return pipeline
 
     async def transaction(self, func, *watches, **kwargs):
         """
@@ -2146,25 +2145,25 @@ class StrictRedis(object):
 
         for token in ('withdist', 'withcoord', 'withhash'):
             if kwargs[token]:
-                pieces.append(Token(token.upper()))
+                pieces.append(b(token.upper()))
 
         if kwargs['count']:
-            pieces.extend([Token('COUNT'), kwargs['count']])
+            pieces.extend([b('COUNT'), kwargs['count']])
 
         if kwargs['sort'] and kwargs['sort'] not in ('ASC', 'DESC'):
             raise RedisError("GEORADIUS invalid sort")
         elif kwargs['sort']:
-            pieces.append(Token(kwargs['sort']))
+            pieces.append(b(kwargs['sort']))
 
         if kwargs['store'] and kwargs['store_dist']:
             raise RedisError("GEORADIUS store and store_dist cant be set"
                              " together")
 
         if kwargs['store']:
-            pieces.extend([Token('STORE'), kwargs['store']])
+            pieces.extend([b('STORE'), kwargs['store']])
 
         if kwargs['store_dist']:
-            pieces.extend([Token('STOREDIST'), kwargs['store_dist']])
+            pieces.extend([b('STOREDIST'), kwargs['store_dist']])
 
         return await self.execute_command(command, *pieces, **kwargs)
 
@@ -2185,7 +2184,7 @@ class Redis(StrictRedis):
         }
     )
 
-    def pipeline(self, transaction=True, shard_hint=None):
+    async def pipeline(self, transaction=True, shard_hint=None):
         """
         Return a new pipeline object that can queue multiple commands for
         later execution. ``transaction`` indicates whether all commands
@@ -2193,11 +2192,10 @@ class Redis(StrictRedis):
         atomic, pipelines are useful for reducing the back-and-forth overhead
         between the client and server.
         """
-        return Pipeline(
-            self.connection_pool,
-            self.response_callbacks,
-            transaction,
-            shard_hint)
+        pipeline = Pipeline(self.connection_pool, self.response_callbacks,
+                            transaction, shard_hint)
+        await pipeline.reset()
+        return pipeline
 
     async def setex(self, name, value, time):
         """
@@ -2549,28 +2547,19 @@ class BasePipeline(object):
     UNWATCH_COMMANDS = set(('DISCARD', 'EXEC', 'UNWATCH'))
 
     def __init__(self, connection_pool, response_callbacks, transaction,
-                 shard_hint, loop=None):
+                 shard_hint):
         self.connection_pool = connection_pool
         self.connection = None
         self.response_callbacks = response_callbacks
         self.transaction = transaction
         self.shard_hint = shard_hint
-
         self.watching = False
-        self.reset()
-        self.loop = loop or asyncio.get_event_loop()
 
     async def __aenter__(self):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.reset()
-
-    def __del__(self):
-        try:
-            self.loop.run_until_complete(self.reset())
-        except Exception:
-            pass
 
     def __len__(self):
         return len(self.command_stack)
@@ -2666,7 +2655,7 @@ class BasePipeline(object):
     async def _execute_transaction(self, connection, commands, raise_on_error):
         cmds = chain([(('MULTI', ), {})], commands, [(('EXEC', ), {})])
         all_cmds = connection.pack_commands([args for args, _ in cmds])
-        connection.send_packed_command(all_cmds)
+        await connection.send_packed_command(all_cmds)
         errors = []
 
         # parse off the response for MULTI
@@ -2715,7 +2704,7 @@ class BasePipeline(object):
 
         # We have to run response callbacks manually
         data = []
-        for r, cmd in izip(response, commands):
+        for r, cmd in zip(response, commands):
             if not isinstance(r, Exception):
                 args, options = cmd
                 command_name = args[0]
@@ -2775,7 +2764,7 @@ class BasePipeline(object):
         # get buffered in the pipeline.
         exists = await immediate('SCRIPT', 'EXISTS', *shas, **{'parse': 'EXISTS'})
         if not all(exists):
-            for s, exist in izip(scripts, exists):
+            for s, exist in zip(scripts, exists):
                 if not exist:
                     s.sha = await immediate('SCRIPT', 'LOAD', s.script,
                                             **{'parse': 'LOAD'})
@@ -2794,14 +2783,13 @@ class BasePipeline(object):
 
         conn = self.connection
         if not conn:
-            conn = self.connection_pool.get_connection('MULTI',
-                                                       self.shard_hint)
+            conn = self.connection_pool.get_connection()
             # assign to self.connection so reset() releases the connection
             # back to the pool after we're done
             self.connection = conn
 
         try:
-            return execute(conn, stack, raise_on_error)
+            return await execute(conn, stack, raise_on_error)
         except (ConnectionError, TimeoutError) as e:
             conn.disconnect()
             if not conn.retry_on_timeout and isinstance(e, TimeoutError):
@@ -2858,10 +2846,6 @@ class Script(object):
         self.registered_client = registered_client
         self.script = script
         self.sha = ''
-
-    def __call__(self, keys=[], args=[], client=None):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.register(keys, args, client))
 
     async def register(self, keys=[], args=[], client=None):
         "Execute the script, passing any required ``args``"
