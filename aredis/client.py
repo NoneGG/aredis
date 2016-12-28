@@ -644,8 +644,8 @@ class StrictRedis(object):
             connection.disconnect()
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
                 raise
-            connection.send_command(*args)
-            return self.parse_response(connection, command_name, **options)
+            await connection.send_command(*args)
+            return await self.parse_response(connection, command_name, **options)
         finally:
             pool.release(connection)
 
@@ -2616,8 +2616,7 @@ class BasePipeline(object):
         conn = self.connection
         # if this is the first call, we need a connection
         if not conn:
-            conn = self.connection_pool.get_connection(command_name,
-                                                       self.shard_hint)
+            conn = self.connection_pool.get_connection()
             self.connection = conn
         try:
             await conn.send_command(*args)

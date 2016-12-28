@@ -1,0 +1,5 @@
+{
+  "comparation.py::test_aioredis": true,
+  "comparation.py::test_aredis": true,
+  "comparation.py::test_asyncio_redis": true
+}

@@ -188,7 +188,7 @@ class ConnectionPool(object):
                 self.disconnect()
                 self.reset()
 
-    def get_connection(self):
+    def get_connection(self, *args, **kwargs):
         "Get a connection from the pool"
         self._checkpid()
         try:
