@@ -93,7 +93,7 @@ def parse_object(response, infotype):
 def parse_info(response):
     "Parse the result of Redis's INFO command into a Python dict"
     info = {}
-    response = str(response)
+    response = response.decode()
 
     def get_value(value):
         if ',' not in value or '=' not in value:

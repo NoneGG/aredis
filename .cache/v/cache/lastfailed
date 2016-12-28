@@ -1,0 +1,6 @@
+{
+  "tests/test_connection_pool.py::TestConnection::()::test_busy_loading_disconnects_socket": true,
+  "tests/test_connection_pool.py::TestConnection::()::test_busy_loading_from_pipeline": true,
+  "tests/test_connection_pool.py::TestConnection::()::test_busy_loading_from_pipeline_immediate_command": true,
+  "tests/test_connection_pool.py::TestConnection::()::test_read_only_error": true
+}

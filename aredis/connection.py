@@ -228,7 +228,7 @@ class RedisSSLContext:
         self.keyfile = keyfile
         self.certfile = certfile
         if cert_reqs is None:
-            cert_reqs = ssl.CERT_NONE
+            self.cert_reqs = ssl.CERT_NONE
         elif isinstance(cert_reqs, str):
             CERT_REQS = {
                 'none': ssl.CERT_NONE,
@@ -239,8 +239,9 @@ class RedisSSLContext:
                 raise RedisError(
                     "Invalid SSL Certificate Requirements Flag: %s" %
                     cert_reqs)
-        self.cert_reqs = cert_reqs
+            self.cert_reqs = CERT_REQS[cert_reqs]
         self.ca_certs = ca_certs
+        self.context = None
 
     def get(self):
         if not self.keyfile:
@@ -496,7 +497,4 @@ class UnixDomainSocketConnection(BaseConnection):
         )
         self._reader = reader
         self._writer = writer
-        sock = writer.transport.get_extra_info('socket')
-        if sock is not None:
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         await self.on_connect()

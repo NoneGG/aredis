@@ -11,6 +11,7 @@ from urllib.parse import (parse_qs,
 from aredis.connection import (RedisSSLContext,
                                Connection,
                                UnixDomainSocketConnection)
+from aredis.exceptions import ConnectionError
 
 
 FALSE_STRINGS = ('0', 'F', 'FALSE', 'N', 'NO')
@@ -25,9 +26,8 @@ def to_bool(value):
 
 
 URL_QUERY_ARGUMENT_PARSERS = {
-    'socket_timeout': float,
-    'socket_connect_timeout': float,
-    'socket_keepalive': to_bool,
+    'stream_timeout': float,
+    'connect_timeout': float,
     'retry_on_timeout': to_bool
 }
 
@@ -130,10 +130,10 @@ class ConnectionPool(object):
                     pass
 
             if url.scheme == 'rediss':
-                keyfile = kwargs.get('keyfile')
-                certfile = kwargs.get('certfile')
-                cert_reqs = kwargs.get('cert_reqs')
-                ca_certs = kwargs.get('ca_certs')
+                keyfile = url_options.pop('ssl_keyfile', None)
+                certfile = url_options.pop('ssl_certfile', None)
+                cert_reqs = url_options.pop('ssl_cert_reqs', None)
+                ca_certs = url_options.pop('ssl_ca_certs', None)
                 url_options['ssl_context'] = RedisSSLContext(keyfile, certfile, cert_reqs, ca_certs).get()
 
         # last shot at the db value
@@ -168,7 +168,7 @@ class ConnectionPool(object):
     def __repr__(self):
         return '{}<{}>'.format(
             type(self).__name__,
-            self.connection_class.description.format(self.connection_kwargs),
+            self.connection_class.description.format(**self.connection_kwargs),
         )
 
     def reset(self):

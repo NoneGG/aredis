@@ -1,0 +1,4 @@
+uvloop
+hiredis
+pytest
+pytest-asyncio
