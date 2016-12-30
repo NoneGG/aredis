@@ -69,7 +69,7 @@ def parse_debug_object(response):
     "Parse the results of Redis's DEBUG OBJECT command into a Python dict"
     # The 'type' of the object is the first item in the response, but isn't
     # prefixed with a name
-    response = str(response)
+    response = response.decode()
     response = 'type:' + response
     response = dict([kv.split(':') for kv in response.split()])
 
@@ -85,7 +85,7 @@ def parse_debug_object(response):
 
 def parse_object(response, infotype):
     "Parse the results of an OBJECT command"
-    if infotype in ('idletime', 'refcount'):
+    if infotype in (b'idletime', b'refcount'):
         return int_or_none(response)
     return response
 
@@ -239,18 +239,18 @@ def float_or_none(response):
 
 
 def bool_ok(response):
-    return str(response) == 'OK'
+    return response.decode() == 'OK'
 
 
 def parse_client_list(response, **options):
     clients = []
-    for c in str(response).splitlines():
+    for c in response.decode().splitlines():
         clients.append(dict([pair.split('=') for pair in c.split(' ')]))
     return clients
 
 
 def parse_config_get(response, **options):
-    response = [str(i) if i is not None else None for i in response]
+    response = [i.decode() if i is not None else None for i in response]
     return response and pairs_to_dict(response) or {}
 
 
@@ -371,7 +371,7 @@ class StrictRedis(object):
         string_keys_to_dict(
             # these return OK, or int if redis-server is >=1.3.4
             'LPUSH RPUSH',
-            lambda r: isinstance(r, int) and r or str(r) == 'OK'
+            lambda r: isinstance(r, int) and r or r.decode() == 'OK'
         ),
         string_keys_to_dict('SORT', sort_return_tuples),
         string_keys_to_dict('ZSCORE ZINCRBY', float_or_none),
@@ -392,7 +392,7 @@ class StrictRedis(object):
         string_keys_to_dict('ZRANK ZREVRANK', int_or_none),
         string_keys_to_dict('BGREWRITEAOF BGSAVE', lambda r: True),
         {
-            'CLIENT GETNAME': lambda r: r and str(r),
+            'CLIENT GETNAME': lambda r: r and r.decode(),
             'CLIENT KILL': bool_ok,
             'CLIENT LIST': parse_client_list,
             'CLIENT SETNAME': bool_ok,
@@ -405,7 +405,7 @@ class StrictRedis(object):
             'INFO': parse_info,
             'LASTSAVE': timestamp_to_datetime,
             'OBJECT': parse_object,
-            'PING': lambda r: str(r) == 'PONG',
+            'PING': lambda r: r.decode() == 'PONG',
             'RANDOMKEY': lambda r: r and r or None,
             'SCAN': parse_scan,
             'SCRIPT EXISTS': lambda r: list(map(bool, r)),
@@ -420,7 +420,7 @@ class StrictRedis(object):
             'SENTINEL SENTINELS': parse_sentinel_slaves_and_sentinels,
             'SENTINEL SET': bool_ok,
             'SENTINEL SLAVES': parse_sentinel_slaves_and_sentinels,
-            'SET': lambda r: r and str(r) == 'OK',
+            'SET': lambda r: r and r.decode() == 'OK',
             'SLOWLOG GET': parse_slowlog_get,
             'SLOWLOG LEN': int,
             'SLOWLOG RESET': bool_ok,
@@ -918,7 +918,7 @@ class StrictRedis(object):
         Return a serialized version of the value stored at the specified key.
         If key does not exist a nil bulk reply is returned.
         """
-        return self.execute_command('DUMP', name)
+        return await self.execute_command('DUMP', name)
 
     async def exists(self, name):
         "Returns a boolean indicating whether key ``name`` exists"
