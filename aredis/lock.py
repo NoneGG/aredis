@@ -3,7 +3,7 @@ import threading
 import time as mod_time
 import uuid
 from aredis.exceptions import LockError, WatchError
-from aredis.utils import b
+from aredis.utils import b, dummy
 
 
 class Lock(object):
@@ -78,14 +78,14 @@ class Lock(object):
         if self.timeout and self.sleep > self.timeout:
             raise LockError("'sleep' must be less than 'timeout'")
 
-    def __aenter__(self):
+    async def __aenter__(self):
         # force blocking, as otherwise the user would have to check whether
         # the lock was actually acquired or not.
-        self.acquire(blocking=True)
+        await self.acquire(blocking=True)
         return self
 
-    def __aexit__(self, exc_type, exc_value, traceback):
-        self.release()
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.release()
 
     async def acquire(self, blocking=None, blocking_timeout=None):
         """
@@ -107,7 +107,7 @@ class Lock(object):
         stop_trying_at = None
         if blocking_timeout is not None:
             stop_trying_at = mod_time.time() + blocking_timeout
-        while 1:
+        while True:
             if await self.do_acquire(token):
                 self.local.token = token
                 return True
@@ -138,7 +138,7 @@ class Lock(object):
         name = self.name
 
         async def execute_release(pipe):
-            lock_value = pipe.get(name)
+            lock_value = await pipe.get(name)
             if lock_value != expected_token:
                 raise LockError("Cannot release a lock that's no longer owned")
             await pipe.delete(name)
@@ -159,7 +159,7 @@ class Lock(object):
         return await self.do_extend(additional_time)
 
     async def do_extend(self, additional_time):
-        pipe = self.redis.pipeline()
+        pipe = await self.redis.pipeline()
         await pipe.watch(self.name)
         lock_value = await pipe.get(self.name)
         if lock_value != self.local.token:
@@ -251,22 +251,22 @@ class LuaLock(Lock):
         if cls.lua_extend is None:
             cls.lua_extend = redis.register_script(cls.LUA_EXTEND_SCRIPT)
 
-    def do_acquire(self, token):
+    async def do_acquire(self, token):
         timeout = self.timeout and int(self.timeout * 1000) or ''
-        return bool(self.lua_acquire.register(keys=[self.name],
-                                              args=[token, timeout],
-                                              client=self.redis))
+        return bool(await self.lua_acquire.register(keys=[self.name],
+                                                    args=[token, timeout],
+                                                    client=self.redis))
 
-    def do_release(self, expected_token):
-        if not bool(self.lua_release.register(keys=[self.name],
-                                              args=[expected_token],
-                                              client=self.redis)):
+    async def do_release(self, expected_token):
+        if not bool(await self.lua_release.register(keys=[self.name],
+                                                    args=[expected_token],
+                                                    client=self.redis)):
             raise LockError("Cannot release a lock that's no longer owned")
 
-    def do_extend(self, additional_time):
+    async def do_extend(self, additional_time):
         additional_time = int(additional_time * 1000)
-        if not bool(self.lua_extend.register(keys=[self.name],
-                                             args=[self.local.token, additional_time],
-                                             client=self.redis)):
+        if not bool(await self.lua_extend.register(keys=[self.name],
+                                                   args=[self.local.token, additional_time],
+                                                   client=self.redis)):
             raise LockError("Cannot extend a lock that's no longer owned")
         return True

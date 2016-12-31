@@ -412,7 +412,7 @@ class StrictRedis(object):
             'SCRIPT EXISTS': lambda r: list(map(bool, r)),
             'SCRIPT FLUSH': bool_ok,
             'SCRIPT KILL': bool_ok,
-            'SCRIPT LOAD': str,
+            'SCRIPT LOAD': lambda r: r.decode(),
             'SENTINEL GET-MASTER-ADDR-BY-NAME': parse_sentinel_get_master,
             'SENTINEL MASTER': parse_sentinel_master,
             'SENTINEL MASTERS': parse_sentinel_masters,
@@ -552,12 +552,12 @@ class StrictRedis(object):
         shard_hint = kwargs.pop('shard_hint', None)
         value_from_callable = kwargs.pop('value_from_callable', False)
         watch_delay = kwargs.pop('watch_delay', None)
-        async with self.pipeline(True, shard_hint) as pipe:
-            while 1:
+        async with await self.pipeline(True, shard_hint) as pipe:
+            while True:
                 try:
                     if watches:
                         await pipe.watch(*watches)
-                    func_value = func(pipe)
+                    func_value = await func(pipe)
                     exec_value = await pipe.execute()
                     return func_value if value_from_callable else exec_value
                 except WatchError:

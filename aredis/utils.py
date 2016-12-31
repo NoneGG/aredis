@@ -22,3 +22,9 @@ async def exec_with_timeout(coroutine, timeout):
         return await asyncio.wait_for(coroutine, timeout)
     else:
         return await coroutine
+
+class dummy(object):
+    """
+    Instances of this class can be used as an attribute container.
+    """
+    pass
