@@ -346,7 +346,7 @@ class TestConnection(object):
         """
         # this assumes the Redis server being tested against doesn't have
         # 9999 databases ;)
-        bad_connection = aredis.Redis(db=9999)
+        bad_connection = aredis.StrictRedis(db=9999)
         # an error should be raised on connect
         with pytest.raises(RedisError):
             await bad_connection.info()
@@ -362,7 +362,7 @@ class TestConnection(object):
         If Redis raises a LOADING error, the connection should be
         disconnected and a BusyLoadingError raised
         """
-        client = aredis.Redis()
+        client = aredis.StrictRedis()
         with pytest.raises(BusyLoadingError):
             await client.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
         pool = client.connection_pool
@@ -414,7 +414,7 @@ class TestConnection(object):
             await client.execute_command('DEBUG', 'ERROR', 'READONLY blah blah')
 
     def test_connect_from_url_tcp(self):
-        connection = aredis.Redis.from_url('redis://localhost')
+        connection = aredis.StrictRedis.from_url('redis://localhost')
         pool = connection.connection_pool
 
         assert re.match('(.*)<(.*)<(.*)>>', repr(pool)).groups() == (
@@ -424,7 +424,7 @@ class TestConnection(object):
         )
 
     def test_connect_from_url_unix(self):
-        connection = aredis.Redis.from_url('unix:///path/to/socket')
+        connection = aredis.StrictRedis.from_url('unix:///path/to/socket')
         pool = connection.connection_pool
 
         assert re.match('(.*)<(.*)<(.*)>>', repr(pool)).groups() == (
