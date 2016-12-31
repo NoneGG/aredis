@@ -1,7 +1,6 @@
 from __future__ import with_statement
 import pytest
 import time
-import aredis
 
 from aredis.exceptions import LockError, ResponseError
 from aredis.lock import Lock, LuaLock

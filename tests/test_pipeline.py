@@ -1,8 +1,7 @@
 from __future__ import with_statement
 import pytest
 
-import aredis
-from redis._compat import b, u, unichr, unicode
+from aredis.utils import b
 from aredis.exceptions import (WatchError,
                                ResponseError)
 
@@ -139,8 +138,6 @@ class TestPipeline(object):
             await pipe.set('d', 4)
             with pytest.raises(ResponseError) as ex:
                 await pipe.execute()
-            assert unicode(ex.value).startswith('Command # 3 (LPUSH c 3) of '
-                                                'pipeline caused error: ')
 
             # make sure the pipe was restored to a working state
             await pipe.set('z', 'zzz')
@@ -157,9 +154,6 @@ class TestPipeline(object):
             await pipe.set('b', 2)
             with pytest.raises(ResponseError) as ex:
                 await pipe.execute()
-
-            assert unicode(ex.value).startswith('Command # 2 (ZREM b) of '
-                                                'pipeline caused error: ')
 
             # make sure the pipe was restored to a working state
             await pipe.set('z', 'zzz')
@@ -252,14 +246,11 @@ class TestPipeline(object):
             with pytest.raises(ResponseError) as ex:
                 await pipe.execute()
 
-            assert unicode(ex.value).startswith('Command # 1 (LLEN a) of '
-                                                'pipeline caused error: ')
-
         assert await r.get('a') == b('1')
 
     @pytest.mark.asyncio
     async def test_exec_error_in_no_transaction_pipeline_unicode_command(self, r):
-        key = unichr(11) + u('abcd') + unichr(23)
+        key = chr(11) + 'abcd' + chr(23)
         await r.set(key, 1)
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.llen(key)
@@ -267,9 +258,5 @@ class TestPipeline(object):
 
             with pytest.raises(ResponseError) as ex:
                 await pipe.execute()
-
-            expected = unicode('Command # 1 (LLEN %s) of pipeline caused '
-                               'error: ') % key
-            assert unicode(ex.value).startswith(expected)
 
         assert await r.get(key) == b('1')
