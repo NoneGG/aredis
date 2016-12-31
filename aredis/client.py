@@ -281,6 +281,7 @@ def parse_slowlog_get(response, **options):
 
 
 def parse_cluster_info(response, **options):
+    response = response.decode()
     return dict([line.split(':') for line in response.splitlines() if line])
 
 
@@ -303,9 +304,9 @@ def _parse_node_line(line):
 
 
 def parse_cluster_nodes(response, **options):
-    raw_lines = response
-    if isinstance(response, str):
-        raw_lines = response.splitlines()
+    raw_lines = response.decode()
+    if isinstance(raw_lines, str):
+        raw_lines = raw_lines.splitlines()
     return dict([_parse_node_line(line) for line in raw_lines])
 
 
@@ -323,7 +324,7 @@ def parse_georadius_generic(response, **options):
     if not options['withdist'] and not options['withcoord']\
             and not options['withhash']:
         # just a bunch of places
-        return [str(r) for r in response_list]
+        return [r.decode() for r in response_list]
 
     cast = {
         'withdist': float,
@@ -333,7 +334,7 @@ def parse_georadius_generic(response, **options):
 
     # zip all output results with each casting functino to get
     # the properly native Python value.
-    f = [str]
+    f = [lambda x: x.decode()]
     f += [cast[o] for o in ['withdist', 'withhash', 'withcoord'] if options[o]]
     return [
         list(map(lambda fv: fv[0](fv[1]), zip(f, r))) for r in response_list
@@ -445,7 +446,7 @@ class StrictRedis(object):
             'CLUSTER SLAVES': parse_cluster_nodes,
             'GEOPOS': lambda r: list(map(lambda ll: (float(ll[0]),
                                          float(ll[1])), r)),
-            'GEOHASH': lambda r: list(map(str, r)),
+            'GEOHASH': lambda r: list(r),
             'GEORADIUS': parse_georadius_generic,
             'GEORADIUSBYMEMBER': parse_georadius_generic,
         }
