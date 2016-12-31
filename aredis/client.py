@@ -2692,7 +2692,7 @@ class BasePipeline(object):
         if not stack:
             return []
         if self.scripts:
-            self.load_scripts()
+            await self.load_scripts()
         if self.transaction or self.explicit_transaction:
             execute = self._execute_transaction
         else:
