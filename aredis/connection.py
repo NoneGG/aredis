@@ -5,7 +5,8 @@ import ssl
 import socket
 from io import BytesIO
 from aredis.utils import (b, exec_with_timeout)
-from aredis.exceptions import (RedisError,
+from aredis.exceptions import (ConnectionError,
+                               RedisError,
                                ExecAbortError,
                                BusyLoadingError,
                                NoScriptError,
@@ -25,6 +26,102 @@ SYM_DOLLAR = b('$')
 SYM_CRLF = b('\r\n')
 SYM_LF = b('\n')
 SYM_EMPTY = b('')
+
+
+class SocketBuffer(object):
+    def __init__(self, stream_reader, read_size):
+        self._stream = stream_reader
+        self.read_size = read_size
+        self._buffer = BytesIO()
+        # number of bytes written to the buffer from the socket
+        self.bytes_written = 0
+        # number of bytes read from the buffer
+        self.bytes_read = 0
+
+    @property
+    def length(self):
+        return self.bytes_written - self.bytes_read
+
+    async def _read_from_socket(self, length=None):
+        socket_read_size = self.read_size
+        buf = self._buffer
+        buf.seek(self.bytes_written)
+        marker = 0
+
+        try:
+            while True:
+                data = await self._stream.read(self.read_size)
+                # an empty string indicates the server shutdown the socket
+                if isinstance(data, bytes) and len(data) == 0:
+                    raise ConnectionError('Socket closed on remote end')
+                buf.write(data)
+                data_length = len(data)
+                self.bytes_written += data_length
+                marker += data_length
+
+                if length is not None and length > marker:
+                    continue
+                break
+        except socket.error:
+            e = sys.exc_info()[1]
+            raise ConnectionError("Error while reading from socket: %s" %
+                                  (e.args,))
+
+    async def read(self, length):
+        length = length + 2  # make sure to read the \r\n terminator
+        # make sure we've read enough data from the socket
+        if length > self.length:
+            await self._read_from_socket(length - self.length)
+
+        self._buffer.seek(self.bytes_read)
+        data = self._buffer.read(length)
+        self.bytes_read += len(data)
+
+        # purge the buffer when we've consumed it all so it doesn't
+        # grow forever
+        if self.bytes_read == self.bytes_written:
+            self.purge()
+
+        return data[:-2]
+
+    async def readline(self):
+        buf = self._buffer
+        buf.seek(self.bytes_read)
+        data = buf.readline()
+        while not data.endswith(SYM_CRLF):
+            # there's more data in the socket that we need
+            await self._read_from_socket()
+            buf.seek(self.bytes_read)
+            data = buf.readline()
+
+        self.bytes_read += len(data)
+
+        # purge the buffer when we've consumed it all so it doesn't
+        # grow forever
+        if self.bytes_read == self.bytes_written:
+            self.purge()
+
+        return data[:-2]
+
+    def purge(self):
+        self._buffer.seek(0)
+        self._buffer.truncate()
+        self.bytes_written = 0
+        self.bytes_read = 0
+
+    def close(self):
+        try:
+            self.purge()
+            self._buffer.close()
+        except:
+            # issue #633 suggests the purge/close somehow raised a
+            # BadFileDescriptor error. Perhaps the client ran out of
+            # memory or something else? It's probably OK to ignore
+            # any error being raised from purge/close since we're
+            # removing the reference to the instance below.
+            pass
+        self._buffer = None
+        self._sock = None
 
 
 class BaseParser(object):
@@ -55,7 +152,7 @@ class BaseParser(object):
 class PythonParser(BaseParser):
 
     def __init__(self, read_size):
-        self._reader = None
+        self._stream = None
         self._buffer = None
         self._read_size = read_size
 
@@ -65,58 +162,27 @@ class PythonParser(BaseParser):
         except Exception:
             pass
 
-    def on_connect(self, reader):
+    def on_connect(self, stream_reader):
         "Called when the stream connects"
-        self._reader = reader
+        self._stream = stream_reader
+        self._buffer = SocketBuffer(self._stream, self._read_size)
 
     def on_disconnect(self):
         "Called when the stream disconnects"
-        if self._reader is not None:
-            self._reader.feed_eof()
-            self._reader = None
+        if self._stream is not None:
+            self._stream.feed_eof()
+            self._stream = None
+        if self._buffer is not None:
+            self._buffer.close()
+            self._buffer = None
 
     def can_read(self):
-        try:
-            return self._reader and bool(self._buffer.length)
-        except Exception:
-            return False
-
-    async def read(self, length=None):
-        """
-        Read a line from the stream if no length is specified,
-        otherwise read ``length`` bytes. Always strip away the newlines.
-        """
-        try:
-            if length is not None:
-                bytes_left = length + 2  # read the line ending
-                if length > self._read_size:
-                    # apparently reading more than 1MB or so from a windows
-                    # socket can cause MemoryErrors. See:
-                    # https://github.com/andymccurdy/redis-py/issues/205
-                    # read smaller chunks at a time to work around this
-                    self._buffer = BytesIO()
-                    try:
-                        while bytes_left > 0:
-                            read_len = min(bytes_left, self._read_size)
-                            self._buffer.write(await self._reader.read(read_len))
-                            bytes_left -= read_len
-                        self._buffer.seek(0)
-                        return self._buffer.read(length)
-                    finally:
-                        self._buffer.close()
-                return (await self._reader.readline())[:-2]
-
-            # no length, read a full line
-            return (await self._reader.readline())[:-2]
-        except Exception:
-            e = sys.exc_info()[1]
-            raise ConnectionError("Error while reading from stream: %s" %
-                                  (e.args,))
+        return self._buffer and bool(self._buffer.length)
 
     async def read_response(self):
-        response = await self.read()
+        response = await self._buffer.readline()
         if not response:
-            raise ConnectionError("Socket closed on remote end")
+            raise ConnectionError('Socket closed on remote end')
 
         byte, response = chr(response[0]), response[1:]
 
@@ -126,7 +192,7 @@ class PythonParser(BaseParser):
 
         # server returned an error
         if byte == '-':
-            response = str(response)
+            response = response.decode()
             error = self.parse_error(response)
             # if the error is a ConnectionError, raise immediately so the user
             # is notified
@@ -148,14 +214,14 @@ class PythonParser(BaseParser):
             length = int(response)
             if length == -1:
                 return None
-            response = await self.read(length)
+            response = await self._buffer.read(length)
         # multi-bulk response
         elif byte == '*':
             length = int(response)
             if length == -1:
                 return None
-            response = list()
-            for _ in range(length):
+            response = []
+            for i in range(length):
                 response.append(await self.read_response())
         return response
 
@@ -190,14 +256,23 @@ class HiredisParser(BaseParser):
             'replyError': ResponseError,
         }
         self._reader = hiredis.Reader(**kwargs)
+        self._next_response = False
 
     def on_disconnect(self):
         self._stream = None
         self._reader = None
+        self._next_response = False
 
     async def read_response(self):
-        if not self._reader:
+        if not self._stream:
             raise ConnectionError("Socket closed on remote end")
+
+        # _next_response might be cached from a can_read() call
+        if self._next_response is not False:
+            response = self._next_response
+            self._next_response = False
+            return response
+
         response = self._reader.gets()
         while response is False:
             try:
@@ -289,7 +364,7 @@ class BaseConnection:
 
     def can_read(self):
         "See if there's data that can be read."
-        if not self._reader:
+        if not (self._reader and self._writer):
             self.connect()
         return self._parser.can_read()
 

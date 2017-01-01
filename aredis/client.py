@@ -2265,6 +2265,8 @@ class PubSub(object):
             raise RuntimeError(
                 'pubsub connection not set: '
                 'did you forget to call subscribe() or psubscribe()?')
+        if not connection.can_read():
+            return None
         return await self._execute(connection, connection.read_response)
 
     async def psubscribe(self, *args, **kwargs):
@@ -2352,8 +2354,8 @@ class PubSub(object):
         with a message handler, the handler is invoked instead of a parsed
         message being returned.
         """
-        message_type = str(response[0])
-        if message_type == 'pmessage':
+        message_type = response[0]
+        if message_type == b'pmessage':
             message = {
                 'type': message_type,
                 'pattern': response[1],
@@ -2371,22 +2373,22 @@ class PubSub(object):
         # if this is an unsubscribe message, remove it from memory
         if message_type in self.UNSUBSCRIBE_MESSAGE_TYPES:
             subscribed_dict = None
-            if message_type == 'punsubscribe':
+            if message_type == b'punsubscribe':
                 subscribed_dict = self.patterns
             else:
                 subscribed_dict = self.channels
             try:
-                del subscribed_dict[message['channel']]
+                del subscribed_dict[message[b'channel']]
             except KeyError:
                 pass
 
         if message_type in self.PUBLISH_MESSAGE_TYPES:
             # if there's a message handler, invoke it
             handler = None
-            if message_type == 'pmessage':
-                handler = self.patterns.get(message['pattern'], None)
+            if message_type == b'pmessage':
+                handler = self.patterns.get(message[b'pattern'], None)
             else:
-                handler = self.channels.get(message['channel'], None)
+                handler = self.channels.get(message[b'channel'], None)
             if handler:
                 handler(message)
                 return None

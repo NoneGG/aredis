@@ -397,7 +397,7 @@ class TestConnection(object):
         client = aredis.StrictRedis()
         pipe = await client.pipeline()
         await pipe.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
-        with pytest.raises(ResponseError):
+        with pytest.raises(RedisError):
             await pipe.execute()
         pool = client.connection_pool
         assert not pipe.connection
