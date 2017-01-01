@@ -37,16 +37,16 @@ class SentinelManagedConnection(Connection):
         await super(SentinelManagedConnection, self).connect()
         if self.connection_pool.check_connection:
             await self.send_command('PING')
-            if str(await self.read_response()) != 'PONG':
+            if await self.read_response() != b'PONG':
                 raise ConnectionError('PING failed')
 
     async def connect(self):
         if self._reader and self._writer:
             return  # already connected
         if self.connection_pool.is_master:
-            await self.connect_to(self.connection_pool.get_master_address())
+            await self.connect_to(await self.connection_pool.get_master_address())
         else:
-            for slave in self.connection_pool.rotate_slaves():
+            for slave in await self.connection_pool.rotate_slaves():
                 try:
                     return await self.connect_to(slave)
                 except ConnectionError:
