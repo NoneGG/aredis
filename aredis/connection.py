@@ -3,6 +3,7 @@ import os
 import sys
 import ssl
 import socket
+import types
 from io import BytesIO
 from aredis.utils import (b, exec_with_timeout)
 from aredis.exceptions import (ConnectionError,
@@ -362,18 +363,20 @@ class BaseConnection:
     def clear_connect_callbacks(self):
         self._connect_callbacks = list()
 
-    def can_read(self):
+    async def can_read(self):
         "See if there's data that can be read."
         if not (self._reader and self._writer):
-            self.connect()
-        return self._parser.can_read()
+            await self.connect()
+        return self._parser.can_read() or (not self._reader.at_eof())
 
     async def connect(self):
         await self._connect()
         # run any user callbacks. right now the only internal callback
         # is for pubsub channel/pattern resubscription
         for callback in self._connect_callbacks:
-            callback(self)
+            task = callback(self)
+            if isinstance(task, types.CoroutineType):
+                await task
 
     async def _connect(self):
         raise NotImplementedError

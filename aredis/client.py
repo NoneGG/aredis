@@ -2207,7 +2207,7 @@ class PubSub(object):
     def close(self):
         self.reset()
 
-    def on_connect(self, connection):
+    async def on_connect(self, connection):
         "Re-subscribe to any channels and patterns previously subscribed to"
         # NOTE: for python3, we can't pass bytestrings as keyword arguments
         # so we need to decode channel/pattern names back to str strings
@@ -2216,15 +2216,14 @@ class PubSub(object):
             channels = {}
             for k, v in iteritems(self.channels):
                 channels[k] = v
-            self.subscribe(**channels)
+            await self.subscribe(**channels)
         if self.patterns:
             patterns = {}
             for k, v in iteritems(self.patterns):
                 patterns[k] = v
-            self.psubscribe(**patterns)
+            await self.psubscribe(**patterns)
 
-    @property
-    def subscribed(self):
+    async def subscribed(self):
         "Indicates if there are subscriptions to any channels or patterns"
         return bool(self.channels or self.patterns)
 
@@ -2252,20 +2251,20 @@ class PubSub(object):
                 raise
             # Connect manually here. If the Redis server is down, this will
             # fail and raise a ConnectionError as desired.
-            connection.connect()
+            await connection.connect()
             # the ``on_connect`` callback should haven been called by the
             # connection to resubscribe us to any channels and patterns we were
             # previously listening to
             return await command(*args)
 
-    async def parse_response(self):
+    async def parse_response(self, block=True):
         "Parse the response from a publish/subscribe command"
         connection = self.connection
         if connection is None:
             raise RuntimeError(
                 'pubsub connection not set: '
                 'did you forget to call subscribe() or psubscribe()?')
-        if not connection.can_read():
+        if not block and not await connection.can_read():
             return None
         return await self._execute(connection, connection.read_response)
 
@@ -2332,8 +2331,8 @@ class PubSub(object):
     # todo: change to generator after Python 3.6
     async def listen(self):
         "Listen for messages on channels this client has been subscribed to"
-        if self.subscribed:
-            return self.handle_message(await self.parse_response())
+        if await self.subscribed():
+            return self.handle_message(await self.parse_response(block=True))
 
     async def get_message(self, ignore_subscribe_messages=False):
         """
@@ -2343,7 +2342,7 @@ class PubSub(object):
         before returning. Timeout should be specified as a floating point
         number.
         """
-        response = await self.parse_response()
+        response = await self.parse_response(block=False)
         if response:
             return self.handle_message(response, ignore_subscribe_messages)
         return None
@@ -2354,8 +2353,9 @@ class PubSub(object):
         with a message handler, the handler is invoked instead of a parsed
         message being returned.
         """
+        response = [x.decode() if isinstance(x, bytes) else x for x in response]
         message_type = response[0]
-        if message_type == b'pmessage':
+        if message_type == 'pmessage':
             message = {
                 'type': message_type,
                 'pattern': response[1],
@@ -2373,22 +2373,25 @@ class PubSub(object):
         # if this is an unsubscribe message, remove it from memory
         if message_type in self.UNSUBSCRIBE_MESSAGE_TYPES:
             subscribed_dict = None
-            if message_type == b'punsubscribe':
+            if message_type == 'punsubscribe':
                 subscribed_dict = self.patterns
             else:
                 subscribed_dict = self.channels
             try:
-                del subscribed_dict[message[b'channel']]
+                key = message['channel']
+                if isinstance(key, bytes):
+                    key = key.decode()
+                del subscribed_dict[key]
             except KeyError:
                 pass
 
         if message_type in self.PUBLISH_MESSAGE_TYPES:
             # if there's a message handler, invoke it
             handler = None
-            if message_type == b'pmessage':
-                handler = self.patterns.get(message[b'pattern'], None)
+            if message_type == 'pmessage':
+                handler = self.patterns.get(message['pattern'], None)
             else:
-                handler = self.channels.get(message[b'channel'], None)
+                handler = self.channels.get(message['channel'], None)
             if handler:
                 handler(message)
                 return None
@@ -2423,7 +2426,7 @@ class PubSubWorkerThread(threading.Thread):
 
     async def _run(self):
         pubsub = self.pubsub
-        while pubsub.subscribed:
+        while await pubsub.subscribed():
             await pubsub.get_message(ignore_subscribe_messages=True)
         pubsub.close()
         self._running = False
