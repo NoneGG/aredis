@@ -370,7 +370,10 @@ class BaseConnection:
         return self._parser.can_read() or (not self._reader.at_eof())
 
     async def connect(self):
-        await self._connect()
+        try:
+            await self._connect()
+        except Exception as exc:
+            raise ConnectionError()
         # run any user callbacks. right now the only internal callback
         # is for pubsub channel/pattern resubscription
         for callback in self._connect_callbacks:
