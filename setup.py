@@ -44,7 +44,7 @@ setup(
     keywords=['Redis', 'key-value store', 'asyncio'],
     license='MIT',
     packages=['aredis'],
-    tests_require=['pytest',
+    tests_require=['pytest>=3.0.2',
                    'pytest_asyncio'],
     cmdclass={'test': PyTest},
     classifiers=[
