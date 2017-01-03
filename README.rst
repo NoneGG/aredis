@@ -52,7 +52,9 @@ API Reference
 The connection part is rewritten to make client async, and most API is ported from redis-py.
 So most API and usage are the same as redis-py.
 If you use redis-py in your code, just use async/await syntax with your code.
-* PAY ATTENTION: iter functions are not supported now
+
+* iter functions are not supported now
+
 * doc in detail is coming soon
 
 
@@ -61,8 +63,7 @@ Advantage
 
 1. aredis can be used howerver you install hiredis or not.
 2. aredis' API are mostly ported from redis-py, which is easy to use indeed and make it easy to port your code with asyncio
-3. according to my test, aredis is efficient enough
-(please run benchmarks/comparation.py to see which async redis client is suitable for you)
+3. according to my test, aredis is efficient enough (please run benchmarks/comparation.py to see which async redis client is suitable for you)
 4. aredis can be run both with asyncio and uvloop, the latter can double the speed of your async code.
 
 Disadvantage & TODO
@@ -77,6 +78,9 @@ Author
 ^^^^^^
 
 aredis is developed and maintained by Jason Chen (jason0916phoenix@gmail.com, please use 847671011@qq.com in case your email is not responsed)
+
 It can be found here: https://github.com/NoneGG/aredis
+
 and most its code come from redis-py written by Andy McCurdy (sedrik@gmail.com).
+
 It can be found here: http://github.com/andymccurdy/redis-py
