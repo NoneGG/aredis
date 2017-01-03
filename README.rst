@@ -51,12 +51,29 @@ API Reference
 
 The connection part is rewritten to make client async, and most API is ported from redis-py.
 So most API and usage are the same as redis-py.
-If you use redis-py in your code, just use async/await syntax with your code.
+If you use redis-py in your code, just use `async/await` syntax with your code.
 
 * iter functions are not supported now
 
 * doc in detail is coming soon
 
+
+Benchmark
+^^^^^^^^^
+benchmark/comparation.py run on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser
+redis server is also on that machine
+
++-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
+|num of query\time|aredis(asyncio)|aredis(uvloop)|aioredis(asyncio)|aioredis(uvloop)|asyncio_redis(asyncio)|asyncio_redis(uvloop)|redis-py|
++=================+===============+==============+=================+================+======================+=====================+========+
+|100              | 0.0190        |   0.01802    |     0.0400      |      0.01989   |       0.0391         |        0.0326       | 0.0111 |
++-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
+|1000             | 0.0917        |   0.05998    |     0.1237      |      0.05866   |       0.1838         |        0.1397       | 0.0396 |
++-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
+|10000            | 1.0614        |   0.66423    |     1.2277      |      0.62957   |       1.9061         |        1.5464       | 0.3944 |
++-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
+|100000           | 10.228        |   6.13821    |     10.400      |      6.06872   |       19.982         |        15.252       | 3.6307 |
++-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
 
 Advantage
 ^^^^^^^^^
