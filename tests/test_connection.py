@@ -20,19 +20,20 @@ async def test_connect_tcp():
     assert (conn._reader is None) and (conn._writer is None)
 
 
-@pytest.mark.asyncio
-async def test_connect_unix_socket():
-    # to run this test case you should change your redis configuration
-    # unixsocket /var/run/redis/redis.sock
-    # unixsocketperm 777
-    path = '/var/run/redis/redis.sock'
-    conn = UnixDomainSocketConnection(path)
-    await conn.connect()
-    assert conn.path == path
-    assert str(conn) == 'UnixDomainSocketConnection<path={},db=0>'.format(path)
-    await conn.send_command('PING')
-    res = await conn.read_response()
-    assert res == b'PONG'
-    assert (conn._reader is not None) and (conn._writer is not None)
-    conn.disconnect()
-    assert (conn._reader is None) and (conn._writer is None)
+# only test during dev
+# @pytest.mark.asyncio
+# async def test_connect_unix_socket():
+#     # to run this test case you should change your redis configuration
+#     # unixsocket /var/run/redis/redis.sock
+#     # unixsocketperm 777
+#     path = '/var/run/redis/redis.sock'
+#     conn = UnixDomainSocketConnection(path)
+#     await conn.connect()
+#     assert conn.path == path
+#     assert str(conn) == 'UnixDomainSocketConnection<path={},db=0>'.format(path)
+#     await conn.send_command('PING')
+#     res = await conn.read_response()
+#     assert res == b'PONG'
+#     assert (conn._reader is not None) and (conn._writer is not None)
+#     conn.disconnect()
+#     assert (conn._reader is None) and (conn._writer is None)
