@@ -3,7 +3,7 @@ import pytest
 
 from aredis.exceptions import (NoScriptError,
                                ResponseError)
-from redis._compat import b
+from aredis.utils import b
 
 
 multiply_script = """

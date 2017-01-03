@@ -4,7 +4,7 @@ from aredis.connection import (
     UnixDomainSocketConnection
 )
 from aredis.pool import ConnectionPool
-from redis.exceptions import (
+from aredis.exceptions import (
     AuthenticationError,
     BusyLoadingError,
     ConnectionError,

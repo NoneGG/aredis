@@ -146,13 +146,13 @@ class Sentinel(object):
     """
     Redis Sentinel cluster client
 
-    >>> from redis.sentinel import Sentinel
+    >>> from aredis.sentinel import Sentinel
     >>> sentinel = Sentinel([('localhost', 26379)], socket_timeout=0.1)
-    >>> master = sentinel.master_for('mymaster', socket_timeout=0.1)
-    >>> master.set('foo', 'bar')
-    >>> slave = sentinel.slave_for('mymaster', socket_timeout=0.1)
-    >>> slave.get('foo')
-    'bar'
+    >>> async def test():
+    >>>     master = await sentinel.master_for('mymaster', socket_timeout=0.1)
+    >>>     await master.set('foo', 'bar')
+    >>>     slave = await sentinel.slave_for('mymaster', socket_timeout=0.1)
+    >>>     await slave.get('foo')
 
     ``sentinels`` is a list of sentinel nodes. Each node is represented by
     a pair (hostname, port).
