@@ -12,6 +12,7 @@ before_install:
 install:
   - pip install -e .
   - "if [[ $TEST_HIREDIS == '1' ]]; then pip install hiredis; fi"
+script: "python setup.py test"
 matrix:
   include:
     - python: "3.5"
