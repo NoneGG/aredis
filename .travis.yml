@@ -7,6 +7,8 @@ services:
 env:
   - TEST_HIREDIS=0
   - TEST_HIREDIS=1
+before_install:
+  - pip install --upgrade pytest
 install:
   - pip install -e .
   - "if [[ $TEST_PEP8 == '1' ]]; then pip install pep8; fi"
