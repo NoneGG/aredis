@@ -3,5 +3,6 @@ include INSTALL
 include LICENSE
 include README.rst
 exclude __pycache__
+exclude benchmarks
 recursive-include tests *
 recursive-exclude tests *.pyc

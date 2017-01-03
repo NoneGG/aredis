@@ -5,8 +5,6 @@ import pytest
 from aredis import (Connection,
                     UnixDomainSocketConnection)
 
-__author__ = 'chenming@bilibili.com'
-
 
 @pytest.mark.asyncio
 async def test_connect_tcp():

@@ -6,8 +6,6 @@ import pytest
 from unittest.mock import Mock
 from distutils.version import StrictVersion
 
-__author__ = 'chenming@bilibili.com'
-
 
 _REDIS_VERSIONS = {}
 
