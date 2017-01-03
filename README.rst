@@ -64,7 +64,7 @@ benchmark/comparation.py run on virtual machine(ubuntu, 4G memory and 2 cpu) wit
 redis server is also on that machine
 
 +-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
-|num of query\time|aredis(asyncio)|aredis(uvloop)|aioredis(asyncio)|aioredis(uvloop)|asyncio_redis(asyncio)|asyncio_redis(uvloop)|redis-py|
+|num of query/time|aredis(asyncio)|aredis(uvloop)|aioredis(asyncio)|aioredis(uvloop)|asyncio_redis(asyncio)|asyncio_redis(uvloop)|redis-py|
 +=================+===============+==============+=================+================+======================+=====================+========+
 |100              | 0.0190        |   0.01802    |     0.0400      |      0.01989   |       0.0391         |        0.0326       | 0.0111 |
 +-----------------+---------------+--------------+-----------------+----------------+----------------------+---------------------+--------+
