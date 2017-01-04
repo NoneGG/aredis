@@ -6,8 +6,6 @@ import time
 import aredis
 from aredis.exceptions import ConnectionError
 
-from .conftest import r as _redis_client
-
 
 async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False):
     now = time.time()
@@ -115,7 +113,6 @@ class TestPubSubSubscribeUnsubscribe(object):
         for channel in unique_channels:
             assert channel in keys
         await p.unsubscribe()
-        await p.punsubscribe()
 
     @pytest.mark.asyncio
     async def test_resubscribe_to_channels_on_reconnection(self, r):
@@ -173,7 +170,6 @@ class TestPubSubSubscribeUnsubscribe(object):
         # now we're finally unsubscribed
         assert await p.subscribed() is False
         await p.unsubscribe()
-        await p.punsubscribe()
 
     @pytest.mark.asyncio
     async def test_subscribe_property_with_channels(self, r):
@@ -243,7 +239,6 @@ class TestPubSubMessages(object):
         assert isinstance(message, dict)
         assert message == make_message('message', 'foo', 'test message')
         await p.unsubscribe()
-        await p.punsubscribe()
 
     # @pytest.mark.asyncio
     # async def test_published_message_to_pattern(self, r):
@@ -267,7 +262,6 @@ class TestPubSubMessages(object):
     #     assert message2 in expected
     #     assert message1 != message2
     #     await p.unsubscribe()
-    #     await p.punsubscribe()
 
     # @pytest.mark.asyncio
     # async def test_channel_message_handler(self, r):
@@ -277,7 +271,6 @@ class TestPubSubMessages(object):
     #     assert await wait_for_message(p) is None
     #     assert self.message == make_message('message', 'foo', 'test message')
     #     await p.unsubscribe()
-    #     await p.punsubscribe()
 
     # @pytest.mark.asyncio
     # async def test_pattern_message_handler(self, r):
@@ -318,7 +311,6 @@ class TestPubSubMessages(object):
                   'did you forget to call subscribe() or psubscribe()?')
         assert expect in info.exconly()
         await p.unsubscribe()
-        await p.punsubscribe()
 
 
 # class TestPubSubAutoDecoding(object):
