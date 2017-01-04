@@ -52,7 +52,7 @@ API Reference
 The connection part is rewritten to make client async, and most API is ported from redis-py.
 So most API and usage are the same as redis-py.
 If you use redis-py in your code, just use `async/await` syntax with your code.
-`for more examples<https://github.com/NoneGG/aredis/tree/master/examples>`_
+`for more examples <https://github.com/NoneGG/aredis/tree/master/examples>`_
 
 * iter functions are not supported now
 

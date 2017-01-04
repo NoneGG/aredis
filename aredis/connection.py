@@ -260,8 +260,9 @@ class HiredisParser(BaseParser):
         self._next_response = False
 
     def on_disconnect(self):
-        self._stream.feed_eof()
-        self._stream = None
+        if self._stream is not None:
+            self._stream.feed_eof()
+            self._stream = None
         self._reader = None
         self._next_response = False
 
