@@ -6,15 +6,16 @@ from aredis import StrictRedis
 
 
 async def example(client):
-    res = None
     async with await client.pipeline(transaction=True) as pipe:
-        await client.flushdb()
-        await client.set('foo', 'bar')
-        await client.set('bar', 'foo')
-        res = await client.keys('*')
-        print(res)
-    # results should be in corresponding
-    assert res == [b'bar', b'foo']
+        # will return self to send another command
+        pipe = await pipe.flushdb()
+        pipe = await pipe.set('foo', 'bar')
+        # can also directly send command
+        await pipe.set('bar', 'foo')
+        await pipe.keys('*')
+        res = await pipe.execute()
+    # results should be in order corresponding to your command
+    assert res == [True, True, True, [b'bar', b'foo']]
 
 
 if __name__ == '__main__':
