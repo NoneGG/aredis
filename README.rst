@@ -1,12 +1,9 @@
 aredis
 ======
+|pypi-ver| |travis-status| |downloads-count| |python-ver|
 
 An async version of `redis-py <https://github.com/andymccurdy/redis-py>`_
-(which is a Python interface to the Redis key-value store).
-
-.. image:: https://secure.travis-ci.org/NoneGG/aredis.png?branch=master
-        :target: http://travis-ci.org/NoneGG/aredis
-
+(which is a Python interface to the Redis key-value
 Installation
 ------------
 
@@ -123,3 +120,20 @@ It can be found here: https://github.com/NoneGG/aredis
 and most its code come from redis-py written by Andy McCurdy (sedrik@gmail.com).
 
 It can be found here: http://github.com/andymccurdy/redis-py
+
+.. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
+    :alt: Travis build status
+    :scale: 100%
+    :target: https://travis-ci.org/NoneGG/aredis
+
+.. |pypi-ver| image::  https://img.shields.io/pypi/v/aredis.svg
+    :target: https://pypi.python.org/pypi/aredis/
+    :alt: Latest Version in PyPI
+
+.. |python-ver| image:: https://img.shields.io/pypi/pyversions/aredis.svg
+    :target: https://pypi.python.org/pypi/aredis/
+    :alt: Supported Python versions
+
+.. |downloads-count| image:: https://img.shields.io/pypi/dm/aredis.svg?period=week
+    :target: https://pypi.python.org/pypi/aredis/
+    :alt: Downloads
