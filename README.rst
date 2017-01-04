@@ -4,6 +4,7 @@ aredis
 
 An async version of `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value
+
 Installation
 ------------
 
