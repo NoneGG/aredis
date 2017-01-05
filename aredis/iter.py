@@ -1,0 +1,73 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+
+async def scan_iter(self, match=None, count=None):
+    """
+    Make an iterator using the SCAN command so that the client doesn't
+    need to remember the cursor position.
+
+    ``match`` allows for filtering the keys by pattern
+
+    ``count`` allows for hint the minimum number of returns
+    """
+    cursor = '0'
+    while cursor != 0:
+        cursor, data = await self.scan(cursor=cursor, match=match, count=count)
+        for item in data:
+            yield item
+
+
+async def sscan_iter(self, name, match=None, count=None):
+    """
+    Make an iterator using the SSCAN command so that the client doesn't
+    need to remember the cursor position.
+
+    ``match`` allows for filtering the keys by pattern
+
+    ``count`` allows for hint the minimum number of returns
+    """
+    cursor = '0'
+    while cursor != 0:
+        cursor, data = await self.sscan(name, cursor=cursor,
+                                        match=match, count=count)
+        for item in data:
+            yield item
+
+
+async def hscan_iter(self, name, match=None, count=None):
+    """
+    Make an iterator using the HSCAN command so that the client doesn't
+    need to remember the cursor position.
+
+    ``match`` allows for filtering the keys by pattern
+
+    ``count`` allows for hint the minimum number of returns
+    """
+    cursor = '0'
+    while cursor != 0:
+        cursor, data = await self.hscan(name, cursor=cursor,
+                                        match=match, count=count)
+        for item in data.items():
+            yield item
+
+
+async def zscan_iter(self, name, match=None, count=None,
+                     score_cast_func=float):
+    """
+    Make an iterator using the ZSCAN command so that the client doesn't
+    need to remember the cursor position.
+
+    ``match`` allows for filtering the keys by pattern
+
+    ``count`` allows for hint the minimum number of returns
+
+    ``score_cast_func`` a callable used to cast the score return value
+    """
+    cursor = '0'
+    while cursor != 0:
+        cursor, data = await self.zscan(name, cursor=cursor, match=match,
+                                        count=count,
+                                        score_cast_func=score_cast_func)
+        for item in data:
+            yield item

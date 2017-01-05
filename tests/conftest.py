@@ -3,6 +3,7 @@
 import aredis
 import asyncio
 import pytest
+import sys
 from unittest.mock import Mock
 from distutils.version import StrictVersion
 
@@ -26,6 +27,15 @@ def skip_if_server_version_lt(min_version):
     version = StrictVersion(loop.run_until_complete(get_version()))
     check = version < StrictVersion(min_version)
     return pytest.mark.skipif(check, reason="")
+
+
+def skip_python_vsersion_lt(min_version):
+    min_version = tuple(map(int, min_version.split('.')))
+    check = sys.version_info[:2] < min_version
+    return pytest.mark.skipif(check, reason="")
+
+
+
 
 
 @pytest.fixture()
