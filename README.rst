@@ -1,6 +1,6 @@
 aredis
 ======
-|pypi-ver| |travis-status| |downloads-count| |python-ver|
+|pypi-ver| |travis-status||python-ver|
 
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value)
@@ -651,7 +651,6 @@ Disadvantage & TODO
 
 1. the package only support Python 3.5 and above
 2. the encode part is not supported very well now (will try to fix it in next version)
-3. iter functions are not supported now (will be added in Python 3.6)
 
 
 Author
@@ -675,7 +674,3 @@ and most its code come from `redis-py <https://github.com/andymccurdy/redis-py>`
 .. |python-ver| image:: https://img.shields.io/pypi/pyversions/aredis.svg
     :target: https://pypi.python.org/pypi/aredis/
     :alt: Supported Python versions
-
-.. |downloads-count| image:: https://img.shields.io/pypi/dm/aredis.svg?period=week
-    :target: https://pypi.python.org/pypi/aredis/
-    :alt: Downloads
