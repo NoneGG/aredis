@@ -76,7 +76,7 @@ to the official command syntax. There are a few exceptions:
   In addition, each command has an equivilant iterator method.
   These are purely for convenience so the user doesn't have to keep
   track of the cursor while iterating. (Use Python 3.6 and the scan_iter/sscan_iter/hscan_iter/zscan_iter
-  methods for this behavior. The *_iter functions are not supported in Python 3.5)
+  methods for this behavior. **iter functions are not supported in Python 3.5**)
 
 Connections
 ^^^^^^^^^^^
@@ -512,8 +512,8 @@ function. Script instances accept the following optional arguments:
   created the Script instance (the one that `register_script` was
   invoked from) will be used.
 
-**Notice that the `Srcipt.__call__`is no longer useful(`async/await` can't be used in magic method),
-please use `Script.register` instead**
+Notice that the `Srcipt.__call__` is no longer useful(`async/await` can't be used in magic method),
+please use `Script.register` instead
 
 Continuing the example from above:
 
@@ -661,9 +661,7 @@ aredis is developed and maintained by Jason Chen (jason0916phoenix@gmail.com, pl
 
 It can be found here: https://github.com/NoneGG/aredis
 
-and most its code come from redis-py written by Andy McCurdy (sedrik@gmail.com).
-
-It can be found here: http://github.com/andymccurdy/redis-py
+and most its code come from `redis-py <https://github.com/andymccurdy/redis-py>`_ written by Andy McCurdy (sedrik@gmail.com).
 
 .. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
     :alt: Travis build status
