@@ -2410,19 +2410,19 @@ class PubSub(object):
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
                 raise PubSubError("Pattern: '%s' has no handler registered")
-
-        thread = PubSubWorkerThread(self, daemon=daemon)
+        loop = asyncio.get_event_loop()
+        thread = PubSubWorkerThread(self, loop, daemon=daemon)
         thread.start()
         return thread
 
 
 class PubSubWorkerThread(threading.Thread):
-    def __init__(self, pubsub, daemon=False):
+    def __init__(self, pubsub, loop, daemon=False):
         super(PubSubWorkerThread, self).__init__()
         self.daemon = daemon
         self.pubsub = pubsub
         self._running = False
-        self.loop = None
+        self.loop = loop
 
     async def _run(self):
         pubsub = self.pubsub
@@ -2431,21 +2431,19 @@ class PubSubWorkerThread(threading.Thread):
         pubsub.close()
         self._running = False
 
-
     def run(self):
         if self._running:
             return
         self._running = True
-        self.loop = asyncio.get_event_loop()
-        self.loop.run_until_complete(self._run())
+        asyncio.run_coroutine_threadsafe(self._run(), self.loop)
 
     def stop(self):
         # stopping simply unsubscribes from all channels and patterns.
         # the unsubscribe responses that are generated will short circuit
         # the loop in run(), calling pubsub.close() to clean up the connection
         if self.loop:
-            self.loop.run_until_complete(self.pubsub.unsubscribe())
-            self.loop.run_until_complete(self.pubsub.punsubscribe())
+            asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
+            asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
 
 
 class BasePipeline(object):
@@ -2764,7 +2762,7 @@ class Script(object):
         self.script = script
         self.sha = ''
 
-    async def register(self, keys=[], args=[], client=None):
+    async def execute(self, keys=[], args=[], client=None):
         "Execute the script, passing any required ``args``"
         if client is None:
             client = self.registered_client

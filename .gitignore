@@ -4,6 +4,7 @@ build/
 dist/
 .idea/
 env/
+env3.6/
 dump.rdb
 /.tox
 _build

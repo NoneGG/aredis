@@ -63,11 +63,11 @@ class TestScripting(object):
         multiply = r.register_script(multiply_script)
         assert not multiply.sha
         # test evalsha fail -> script load + retry
-        assert await multiply.register(keys=['a'], args=[3]) == 6
+        assert await multiply.execute(keys=['a'], args=[3]) == 6
         assert multiply.sha
         assert await r.script_exists(multiply.sha) == [True]
         # test first evalsha
-        assert await multiply.register(keys=['a'], args=[3]) == 6
+        assert await multiply.execute(keys=['a'], args=[3]) == 6
 
     @pytest.mark.asyncio
     async def test_script_object_in_pipeline(self, r):
@@ -76,7 +76,7 @@ class TestScripting(object):
         pipe = await r.pipeline()
         await pipe.set('a', 2)
         await pipe.get('a')
-        await multiply.register(keys=['a'], args=[3], client=pipe)
+        await multiply.execute(keys=['a'], args=[3], client=pipe)
         # even though the pipeline wasn't executed yet, we made sure the
         # script was loaded and got a valid sha
         assert multiply.sha
@@ -92,7 +92,7 @@ class TestScripting(object):
         await pipe.set('a', 2)
         await pipe.get('a')
         assert multiply.sha
-        await multiply.register(keys=['a'], args=[3], client=pipe)
+        await multiply.execute(keys=['a'], args=[3], client=pipe)
         assert await r.script_exists(multiply.sha) == [False]
         # [SET worked, GET 'a', result of multiple script]
         assert await pipe.execute() == [True, b('2'), 6]
@@ -108,14 +108,14 @@ class TestScripting(object):
         # msgpack.dumps({"name": "joe"})
         msgpack_message_1 = b'\x81\xa4name\xa3Joe'
 
-        await msgpack_hello.register(args=[msgpack_message_1], client=pipe)
+        await msgpack_hello.execute(args=[msgpack_message_1], client=pipe)
 
         assert await r.script_exists(msgpack_hello.sha) == [True]
         assert (await pipe.execute())[0] == b'hello Joe'
 
         msgpack_hello_broken = r.register_script(msgpack_hello_script_broken)
 
-        await msgpack_hello_broken.register(args=[msgpack_message_1], client=pipe)
+        await msgpack_hello_broken.execute(args=[msgpack_message_1], client=pipe)
         with pytest.raises(ResponseError) as excinfo:
             await pipe.execute()
         assert excinfo.type == ResponseError

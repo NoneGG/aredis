@@ -253,20 +253,20 @@ class LuaLock(Lock):
 
     async def do_acquire(self, token):
         timeout = self.timeout and int(self.timeout * 1000) or ''
-        return bool(await self.lua_acquire.register(keys=[self.name],
-                                                    args=[token, timeout],
-                                                    client=self.redis))
+        return bool(await self.lua_acquire.execute(keys=[self.name],
+                                                   args=[token, timeout],
+                                                   client=self.redis))
 
     async def do_release(self, expected_token):
-        if not bool(await self.lua_release.register(keys=[self.name],
-                                                    args=[expected_token],
-                                                    client=self.redis)):
+        if not bool(await self.lua_release.execute(keys=[self.name],
+                                                   args=[expected_token],
+                                                   client=self.redis)):
             raise LockError("Cannot release a lock that's no longer owned")
 
     async def do_extend(self, additional_time):
         additional_time = int(additional_time * 1000)
-        if not bool(await self.lua_extend.register(keys=[self.name],
-                                                   args=[self.local.token, additional_time],
-                                                   client=self.redis)):
+        if not bool(await self.lua_extend.execute(keys=[self.name],
+                                                  args=[self.local.token, additional_time],
+                                                  client=self.redis)):
             raise LockError("Cannot extend a lock that's no longer owned")
         return True
