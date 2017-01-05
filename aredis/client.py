@@ -1429,22 +1429,6 @@ class StrictRedis(object):
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('SCAN', *pieces)
 
-    # todo: may be back in Python 3.6
-    # async def scan_iter(self, match=None, count=None):
-    #     """
-    #     Make an iterator using the SCAN command so that the client doesn't
-    #     need to remember the cursor position.
-    #
-    #     ``match`` allows for filtering the keys by pattern
-    #
-    #     ``count`` allows for hint the minimum number of returns
-    #     """
-    #     cursor = '0'
-    #     while cursor != 0:
-    #         cursor, data = await self.scan(cursor=cursor, match=match, count=count)
-    #         for item in data:
-    #             yield item
-
     async def sscan(self, name, cursor=0, match=None, count=None):
         """
         Incrementally return lists of elements in a set. Also return a cursor
@@ -1460,23 +1444,6 @@ class StrictRedis(object):
         if count is not None:
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('SSCAN', *pieces)
-
-    # todo: may be back in Python 3.6
-    # async def sscan_iter(self, name, match=None, count=None):
-    #     """
-    #     Make an iterator using the SSCAN command so that the client doesn't
-    #     need to remember the cursor position.
-    #
-    #     ``match`` allows for filtering the keys by pattern
-    #
-    #     ``count`` allows for hint the minimum number of returns
-    #     """
-    #     cursor = '0'
-    #     while cursor != 0:
-    #         cursor, data = self.sscan(name, cursor=cursor,
-    #                                   match=match, count=count)
-    #         for item in data:
-    #             yield item
 
     async def hscan(self, name, cursor=0, match=None, count=None):
         """
@@ -1494,25 +1461,8 @@ class StrictRedis(object):
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('HSCAN', *pieces)
 
-    # may be back in Python 3.6
-    # async def hscan_iter(self, name, match=None, count=None):
-    #     """
-    #     Make an iterator using the HSCAN command so that the client doesn't
-    #     need to remember the cursor position.
-    #
-    #     ``match`` allows for filtering the keys by pattern
-    #
-    #     ``count`` allows for hint the minimum number of returns
-    #     """
-    #     cursor = '0'
-    #     while cursor != 0:
-    #         cursor, data = self.hscan(name, cursor=cursor,
-    #                                   match=match, count=count)
-    #         for item in data.items():
-    #             yield item
-
     async def zscan(self, name, cursor=0, match=None, count=None,
-              score_cast_func=float):
+                    score_cast_func=float):
         """
         Incrementally return lists of elements in a sorted set. Also return a
         cursor indicating the scan position.
@@ -1530,27 +1480,6 @@ class StrictRedis(object):
             pieces.extend([b('COUNT'), count])
         options = {'score_cast_func': score_cast_func}
         return await self.execute_command('ZSCAN', *pieces, **options)
-
-    # may be back in Python 3.6
-    # def zscan_iter(self, name, match=None, count=None,
-    #                score_cast_func=float):
-    #     """
-    #     Make an iterator using the ZSCAN command so that the client doesn't
-    #     need to remember the cursor position.
-    #
-    #     ``match`` allows for filtering the keys by pattern
-    #
-    #     ``count`` allows for hint the minimum number of returns
-    #
-    #     ``score_cast_func`` a callable used to cast the score return value
-    #     """
-    #     cursor = '0'
-    #     while cursor != 0:
-    #         cursor, data = self.zscan(name, cursor=cursor, match=match,
-    #                                   count=count,
-    #                                   score_cast_func=score_cast_func)
-    #         for item in data:
-    #             yield item
 
     # SET COMMANDS
     async def sadd(self, name, *values):
@@ -2169,6 +2098,18 @@ class StrictRedis(object):
         return await self.execute_command(command, *pieces, **kwargs)
 
 
+# dirty work around, or python will raise SyntaxError when loading .py files
+if sys.version_info[:2] >= (3, 6):
+    from aredis.iter import (scan_iter,
+                             sscan_iter,
+                             hscan_iter,
+                             zscan_iter)
+    StrictRedis.scan_iter = scan_iter
+    StrictRedis.sscan_iter = sscan_iter
+    StrictRedis.hscan_iter = hscan_iter
+    StrictRedis.zscan_iter = zscan_iter
+
+
 class PubSub(object):
     """
     PubSub provides publish, subscribe and listen support to Redis channels.
@@ -2328,7 +2269,6 @@ class PubSub(object):
             args = list_or_args(args[0], args[1:])
         return await self.execute_command('UNSUBSCRIBE', *args)
 
-    # todo: change to generator after Python 3.6
     async def listen(self):
         "Listen for messages on channels this client has been subscribed to"
         if await self.subscribed():
@@ -2410,19 +2350,19 @@ class PubSub(object):
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
                 raise PubSubError("Pattern: '%s' has no handler registered")
-
-        thread = PubSubWorkerThread(self, daemon=daemon)
+        loop = asyncio.get_event_loop()
+        thread = PubSubWorkerThread(self, loop, daemon=daemon)
         thread.start()
         return thread
 
 
 class PubSubWorkerThread(threading.Thread):
-    def __init__(self, pubsub, daemon=False):
+    def __init__(self, pubsub, loop, daemon=False):
         super(PubSubWorkerThread, self).__init__()
         self.daemon = daemon
         self.pubsub = pubsub
         self._running = False
-        self.loop = None
+        self.loop = loop
 
     async def _run(self):
         pubsub = self.pubsub
@@ -2431,21 +2371,19 @@ class PubSubWorkerThread(threading.Thread):
         pubsub.close()
         self._running = False
 
-
     def run(self):
         if self._running:
             return
         self._running = True
-        self.loop = asyncio.get_event_loop()
-        self.loop.run_until_complete(self._run())
+        asyncio.run_coroutine_threadsafe(self._run(), self.loop)
 
     def stop(self):
         # stopping simply unsubscribes from all channels and patterns.
         # the unsubscribe responses that are generated will short circuit
         # the loop in run(), calling pubsub.close() to clean up the connection
         if self.loop:
-            self.loop.run_until_complete(self.pubsub.unsubscribe())
-            self.loop.run_until_complete(self.pubsub.punsubscribe())
+            asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
+            asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
 
 
 class BasePipeline(object):
@@ -2764,7 +2702,7 @@ class Script(object):
         self.script = script
         self.sha = ''
 
-    async def register(self, keys=[], args=[], client=None):
+    async def execute(self, keys=[], args=[], client=None):
         "Execute the script, passing any required ``args``"
         if client is None:
             client = self.registered_client

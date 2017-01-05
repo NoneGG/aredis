@@ -13,7 +13,8 @@ from aredis.exceptions import (RedisError,
                                ResponseError,
                                DataError)
 
-from .conftest import skip_if_server_version_lt
+from .conftest import (skip_if_server_version_lt,
+                       skip_python_vsersion_lt)
 
 
 async def redis_server_time(client):
@@ -877,6 +878,21 @@ class TestRedisCommands(object):
         assert set(keys) == set([b('a')])
 
     @skip_if_server_version_lt('2.8.0')
+    @skip_python_vsersion_lt('3.6')
+    @pytest.mark.asyncio
+    async def test_scan_iter(self, r):
+        await r.flushdb()
+        await r.set('a', 1)
+        await r.set('b', 2)
+        await r.set('c', 3)
+        keys = set()
+        async for key in r.scan_iter():
+            keys.add(key)
+        assert keys == set([b('a'), b('b'), b('c')])
+        async for key in r.scan_iter(match='a'):
+            assert key == b('a')
+
+    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio
     async def test_sscan(self, r):
         await r.flushdb()
@@ -886,6 +902,19 @@ class TestRedisCommands(object):
         assert set(members) == set([b('1'), b('2'), b('3')])
         _, members = await r.sscan('a', match=b('1'))
         assert set(members) == set([b('1')])
+
+    @skip_if_server_version_lt('2.8.0')
+    @skip_python_vsersion_lt('3.6')
+    @pytest.mark.asyncio
+    async def test_sscan_iter(self, r):
+        await r.flushdb()
+        await r.sadd('a', 1, 2, 3)
+        members = set()
+        async for member in r.sscan_iter('a'):
+            members.add(member)
+        assert members == set([b('1'), b('2'), b('3')])
+        async for member in r.sscan_iter('a', match=b('1')):
+            assert member == b('1')
 
     @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio
@@ -899,6 +928,19 @@ class TestRedisCommands(object):
         assert dic == {b('a'): b('1')}
 
     @skip_if_server_version_lt('2.8.0')
+    @skip_python_vsersion_lt('3.6')
+    @pytest.mark.asyncio
+    async def test_hscan_iter(self, r):
+        await r.flushdb()
+        await r.hmset('a', {'a': 1, 'b': 2, 'c': 3})
+        dic = dict()
+        async for data in r.hscan_iter('a'):
+            dic.update(dict([data]))
+        assert dic == {b('a'): b('1'), b('b'): b('2'), b('c'): b('3')}
+        async for data in r.hscan_iter('a', match='a'):
+            assert dict([data]) == {b('a'): b('1')}
+
+    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio
     async def test_zscan(self, r):
         await r.flushdb()
@@ -908,6 +950,18 @@ class TestRedisCommands(object):
         assert set(pairs) == set([(b('a'), 1), (b('b'), 2), (b('c'), 3)])
         _, pairs = await r.zscan('a', match='a')
         assert set(pairs) == set([(b('a'), 1)])
+
+    @skip_if_server_version_lt('2.8.0')
+    @skip_python_vsersion_lt('3.6')
+    @pytest.mark.asyncio
+    async def test_zscan_iter(self, r):
+        await r.zadd('a', 1, 'a', 2, 'b', 3, 'c')
+        pairs = set()
+        async for pair in r.zscan_iter('a'):
+            pairs.add(pair)
+        assert pairs == set([(b('a'), 1), (b('b'), 2), (b('c'), 3)])
+        async for pair in r.zscan_iter('a', match='a'):
+            assert pair == (b('a'), 1)
 
     # SET COMMANDS
     @pytest.mark.asyncio
