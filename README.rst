@@ -651,6 +651,8 @@ Disadvantage & TODO
 
 1. the package only support Python 3.5 and above
 2. the encode part is not supported very well now (will try to fix it in next version)
+3. add support for common cluster operation
+4. simple cache support
 
 
 Author
