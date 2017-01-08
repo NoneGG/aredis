@@ -2164,7 +2164,7 @@ class PubSub(object):
                 patterns[k] = v
             await self.psubscribe(**patterns)
 
-    async def subscribed(self):
+    def subscribed(self):
         "Indicates if there are subscriptions to any channels or patterns"
         return bool(self.channels or self.patterns)
 
@@ -2271,7 +2271,7 @@ class PubSub(object):
 
     async def listen(self):
         "Listen for messages on channels this client has been subscribed to"
-        if await self.subscribed():
+        if self.subscribed():
             return self.handle_message(await self.parse_response(block=True))
 
     async def get_message(self, ignore_subscribe_messages=False):
@@ -2319,9 +2319,11 @@ class PubSub(object):
                 subscribed_dict = self.channels
             try:
                 key = message['channel']
+                print(key)
                 if isinstance(key, bytes):
                     key = key.decode()
                 del subscribed_dict[key]
+                print(subscribed_dict)
             except KeyError:
                 pass
 
@@ -2366,7 +2368,7 @@ class PubSubWorkerThread(threading.Thread):
 
     async def _run(self):
         pubsub = self.pubsub
-        while await pubsub.subscribed():
+        while pubsub.subscribed():
             await pubsub.get_message(ignore_subscribe_messages=True)
         pubsub.close()
         self._running = False
@@ -2375,15 +2377,18 @@ class PubSubWorkerThread(threading.Thread):
         if self._running:
             return
         self._running = True
-        asyncio.run_coroutine_threadsafe(self._run(), self.loop)
+        future = asyncio.run_coroutine_threadsafe(self._run(), self.loop)
+        return future.result()
 
     def stop(self):
         # stopping simply unsubscribes from all channels and patterns.
         # the unsubscribe responses that are generated will short circuit
         # the loop in run(), calling pubsub.close() to clean up the connection
         if self.loop:
-            asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
-            asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
+            unsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
+            punsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
+            asyncio.wait(unsubscribed)
+            asyncio.wait(punsubscribed)
 
 
 class BasePipeline(object):
