@@ -1,4 +1,5 @@
 import hashlib
+import time
 import zlib
 try:
     import ujson as json
@@ -11,7 +12,8 @@ from aredis.exceptions import CompressError
 
 class IdentityGenerator(object):
     """
-    Generator of identity for unique key
+    Generator of identity for unique key,
+    you may overwrite it to meet your customize requirements.
     """
 
     TEMPLATE = '{app}:{key}:{content}'
@@ -44,7 +46,18 @@ class Compressor(object):
     min_length = 15
     preset = 6
 
+    def __init__(self, encoding='utf-8'):
+        self.encoding = encoding
+
     def compress(self, content):
+        if isinstance(content, str):
+            content = content.encode(self.encoding)
+        elif isinstance(content, int):
+            content = b(str(content))
+        elif isinstance(content, float):
+            content = b(repr(content))
+        if not isinstance(content, bytes):
+            raise TypeError('Wrong data type({}) to compress'.format(type(content)))
         if len(content) > self.min_length:
             return zlib.compress(content, self.preset)
         return content
@@ -70,14 +83,15 @@ class Serializer(object):
         return json.loads(content)
 
 
-class Cache(object):
-    """Basic cache class which provides basic function"""
+class BasicCache(object):
+    """Basic cache class, should not be used explicitly"""
 
     def __init__(self, client, app='', identity_generator_class=IdentityGenerator,
                  compressor_class=Compressor, serializer_class=Serializer,
                  encoding='utf-8'):
         self.client = client
         self.identity_generator = self.compressor = self.serializer = None
+        # set identity generator, compressor and serializer to None if not needed
         if identity_generator_class:
             self.identity_generator = identity_generator_class(app, encoding)
         if compressor_class:
@@ -88,7 +102,7 @@ class Cache(object):
     def __repr__(self):
         return "{}<{}>".format(type(self).__name__, repr(self.client))
 
-    def _gen_identity(self, key, value=None):
+    def _gen_identity(self, key, value=None, *args, **kwargs):
         if self.identity_generator and value:
             if self.serializer:
                 value = self.serializer.serialize(value)
@@ -99,37 +113,21 @@ class Cache(object):
             identity = key
         return identity
 
-    def _transfer_content(self, content):
+    def _pack(self, content, *args, **kwargs):
+        """pack the content using serializer and compressor"""
         if self.serializer:
             content = self.serializer.serialize(content)
         if self.compressor:
             content = self.compressor.compress(content)
         return content
 
-    def _recover_cache(self, content):
+    def _unpack(self, content, *args, **kwargs):
+        """unpack cache using serializer and compressor"""
         if self.compressor:
             content = self.compressor.decompress(content)
         if self.serializer:
             content = self.serializer.deserialize(content)
         return content
-
-    async def get(self, key, value=None):
-        identity = self._gen_identity(key, value)
-        res = await self.client.get(identity)
-        self._recover_cache(res)
-        return res
-
-    async def set(self, key, value, expire_time=None):
-        identity = self._gen_identity(key, value)
-        self._transfer_content(value)
-        return await self.client.set(identity, value, ex=expire_time)
-
-    async def set_many(self, data, expire_time=None):
-        pipeline = await self.client.pipeline()
-        for key, value in data.items():
-            self._transfer_content(value)
-            await pipeline.set(key, value, expire_time)
-        return await pipeline.execute()
 
     async def delete(self, key, value=None):
         identity = self._gen_identity(key, value)
@@ -155,14 +153,80 @@ class Cache(object):
         return await self.client.ttl(identity)
 
 
-class HerdCache(Cache):
-    """Cache that won't cause herd problem, but may use more memory in redis"""
+class Cache(BasicCache):
+    """cache provides basic function"""
+
+    async def get(self, key, value=None):
+        identity = self._gen_identity(key, value)
+        res = await self.client.get(identity)
+        if res:
+            res = self._unpack(res)
+        return res
+
+    async def set(self, key, value, expire_time=None):
+        identity = self._gen_identity(key, value)
+        value = self._pack(value)
+        return await self.client.set(identity, value, ex=expire_time)
+
+    async def set_many(self, data, expire_time=None):
+        pipeline = await self.client.pipeline()
+        for key, value in data.items():
+            value = self._pack(value)
+            await pipeline.set(key, value, expire_time)
+        return await pipeline.execute()
+
+
+class HerdCache(BasicCache):
+    """
+    Cache that handle thundering herd problem
+    (https://en.wikipedia.org/wiki/Thundering_herd_problem)
+    by cache expire time in set instead directly
+    using expire operation of redis.
+    This kind of cache is suitable for low consistency scene
+    where update work is expensive
+    """
 
     def __init__(self, client, app='', identity_generator_class=IdentityGenerator,
                  compressor_class=Compressor, serializer_class=Serializer,
-                 encoding='utf-8'):
+                 default_herd_timeout=5, extend_herd_timeout=5, encoding='utf-8'):
+        self.default_herd_timeout = default_herd_timeout
+        self.extend_herd_timeout = extend_herd_timeout
         super(HerdCache, self).__init__(client, app, identity_generator_class,
-                                        compressor_class, serializer_class, encoding)
+                                        compressor_class, serializer_class,
+                                        encoding)
 
-    def _transfer_content(self, content):
-        
+    async def set(self, key, value, expire_time=None, herd_timeout=None):
+        """
+        Use key:value to generate identity and pack the content,
+        expire the key within real_timeout if expire_time is given.
+        real_timeout is equal to the sum of expire_time and herd_time.
+        The content is cached with expire_time.
+        """
+        identity = self._gen_identity(key, value)
+        expected_expired_ts = int(time.time())
+        if expire_time:
+            expected_expired_ts += expire_time
+        expected_expired_ts += herd_timeout or self.default_herd_timeout
+        value = self._pack([value, expected_expired_ts])
+        return await self.client.set(identity, value, ex=expire_time)
+
+    async def get(self, key, value=None, extend_herd_timeout=None):
+        """
+        Use key or identity generate from key:value to
+        get cached content and expire time.
+        Compare expire time with time.now(), return None and
+        set cache with extended timeout if cache is expired,
+        else, return unpacked content
+        """
+        identity = self._gen_identity(key, value)
+        res = await self.client.get(identity)
+        if res:
+            res, timeout = self._unpack(res)
+            now = int(time.time())
+            if timeout < now:
+                extend_timeout = extend_herd_timeout or self.extend_herd_timeout
+                expected_expired_ts = now + extend_timeout
+                value = self._pack([res, expected_expired_ts])
+                await self.client.set(identity, value, extend_timeout)
+                return None
+        return res
