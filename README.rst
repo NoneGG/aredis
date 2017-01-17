@@ -10,7 +10,7 @@ Installation
 
 aredis requires a running Redis server.
 
-To install redis-py, simply:
+To install aredis, simply:
 
 .. code-block:: bash
 
