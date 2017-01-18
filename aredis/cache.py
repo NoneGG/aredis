@@ -132,18 +132,18 @@ class BasicCache(object):
     def __repr__(self):
         return "{}<{}>".format(type(self).__name__, repr(self.client))
 
-    def _gen_identity(self, key, value=None, *args, **kwargs):
-        if self.identity_generator and value is not None:
+    def _gen_identity(self, key, param=None):
+        if self.identity_generator and param is not None:
             if self.serializer:
-                value = self.serializer.serialize(value)
+                param = self.serializer.serialize(param)
             if self.compressor:
-                value = self.compressor.compress(value)
-            identity = self.identity_generator.generate(key, value)
+                param = self.compressor.compress(param)
+            identity = self.identity_generator.generate(key, param)
         else:
             identity = key
         return identity
 
-    def _pack(self, content, *args, **kwargs):
+    def _pack(self, content):
         """pack the content using serializer and compressor"""
         if self.serializer:
             content = self.serializer.serialize(content)
@@ -151,7 +151,7 @@ class BasicCache(object):
             content = self.compressor.compress(content)
         return content
 
-    def _unpack(self, content, *args, **kwargs):
+    def _unpack(self, content):
         """unpack cache using serializer and compressor"""
         if self.compressor:
             try:
@@ -162,8 +162,8 @@ class BasicCache(object):
             content = self.serializer.deserialize(content)
         return content
 
-    async def delete(self, key, value=None):
-        identity = self._gen_identity(key, value)
+    async def delete(self, key, param=None):
+        identity = self._gen_identity(key, param)
         return await self.client.delete(identity)
 
     async def delete_pattern(self, pattern, count=None):
@@ -176,34 +176,34 @@ class BasicCache(object):
             count_deleted += await self.client.delete(*identities)
         return count_deleted
 
-    async def exist(self, key, value=None):
-        identity = self._gen_identity(key, value)
+    async def exist(self, key, param=None):
+        identity = self._gen_identity(key, param)
         return await self.client.exists(identity)
 
-    async def ttl(self, key, value=None):
-        identity = self._gen_identity(key, value)
+    async def ttl(self, key, param=None):
+        identity = self._gen_identity(key, param)
         return await self.client.ttl(identity)
 
 
 class Cache(BasicCache):
     """cache provides basic function"""
 
-    async def get(self, key, value=None):
-        identity = self._gen_identity(key, value)
+    async def get(self, key, param=None):
+        identity = self._gen_identity(key, param)
         res = await self.client.get(identity)
         if res:
             res = self._unpack(res)
         return res
 
-    async def set(self, key, value, expire_time=None):
-        identity = self._gen_identity(key, value)
+    async def set(self, key, value, param=None, expire_time=None):
+        identity = self._gen_identity(key, param)
         value = self._pack(value)
         return await self.client.set(identity, value, ex=expire_time)
 
-    async def set_many(self, data, expire_time=None):
+    async def set_many(self, data, param=None, expire_time=None):
         async with await self.client.pipeline() as pipeline:
             for key, value in data.items():
-                identity = self._gen_identity(key, value)
+                identity = self._gen_identity(key, param)
                 value = self._pack(value)
                 await pipeline.set(identity, value, expire_time)
             return await pipeline.execute()
@@ -221,21 +221,21 @@ class HerdCache(BasicCache):
 
     def __init__(self, client, app='', identity_generator_class=IdentityGenerator,
                  compressor_class=Compressor, serializer_class=Serializer,
-                 default_herd_timeout=5, extend_herd_timeout=5, encoding='utf-8'):
+                 default_herd_timeout=1, extend_herd_timeout=1, encoding='utf-8'):
         self.default_herd_timeout = default_herd_timeout
         self.extend_herd_timeout = extend_herd_timeout
         super(HerdCache, self).__init__(client, app, identity_generator_class,
                                         compressor_class, serializer_class,
                                         encoding)
 
-    async def set(self, key, value, expire_time=None, herd_timeout=None):
+    async def set(self, key, value, param=None, expire_time=None, herd_timeout=None):
         """
         Use key:value to generate identity and pack the content,
         expire the key within real_timeout if expire_time is given.
         real_timeout is equal to the sum of expire_time and herd_time.
         The content is cached with expire_time.
         """
-        identity = self._gen_identity(key, value)
+        identity = self._gen_identity(key, param)
         expected_expired_ts = int(time.time())
         if expire_time:
             expected_expired_ts += expire_time
@@ -243,10 +243,10 @@ class HerdCache(BasicCache):
         value = self._pack([value, expected_expired_ts])
         return await self.client.set(identity, value, ex=expire_time)
 
-    async def set_many(self, data, expire_time=None, herd_timeout=None):
+    async def set_many(self, data, param=None, expire_time=None, herd_timeout=None):
         async with await self.client.pipeline() as pipeline:
             for key, value in data.items():
-                identity = self._gen_identity(key, value)
+                identity = self._gen_identity(key, param)
                 expected_expired_ts = int(time.time())
                 if expire_time:
                     expected_expired_ts += expire_time
@@ -255,7 +255,7 @@ class HerdCache(BasicCache):
                 await pipeline.set(identity, value, ex=expire_time)
             return await pipeline.execute()
 
-    async def get(self, key, value=None, extend_herd_timeout=None):
+    async def get(self, key, param=None, extend_herd_timeout=None):
         """
         Use key or identity generate from key:value to
         get cached content and expire time.
@@ -263,7 +263,7 @@ class HerdCache(BasicCache):
         set cache with extended timeout if cache is expired,
         else, return unpacked content
         """
-        identity = self._gen_identity(key, value)
+        identity = self._gen_identity(key, param)
         res = await self.client.get(identity)
         if res:
             res, timeout = self._unpack(res)
