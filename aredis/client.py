@@ -11,6 +11,8 @@ import time as mod_time
 from aredis.connection import UnixDomainSocketConnection
 from aredis.pool import ConnectionPool
 from aredis.lock import Lock, LuaLock
+from aredis.cache import (Cache, IdentityGenerator,
+                          Serializer, Compressor)
 from aredis.utils import (iterkeys, itervalues,
                           iteritems, b)
 from aredis.exceptions import (
@@ -564,6 +566,32 @@ class StrictRedis(object):
                     if watch_delay is not None and watch_delay > 0:
                         await asyncio.sleep(watch_delay)
                     continue
+
+    def cache(self, name, cache_class=Cache,
+              identity_generator_class=IdentityGenerator,
+              compressor_class=Compressor,
+              serializer_class=Serializer, *args, **kwargs):
+        """
+        Return a cache object using default identity generator,
+        serializer and compressor.
+
+        ``name`` is used to identify the series of your cache
+        ``cache_class`` Cache is for normal use and HerdCache
+        is used in case of Thundering Herd Problem
+        ``identity_generator_class`` is the class used to generate
+        the real unique key in cache, can be overwritten to
+        meet your special needs. It should provide `generate` API
+        ``compressor_class`` is the class used to compress cache in redis,
+        can be overwritten with API `compress` and `decompress` retained.
+        ``serializer_class`` is the class used to serialize
+        content before compress, can be overwritten with API
+        `serialize` and `deserialize` retained.
+        """
+        return cache_class(self, app=name,
+                           identity_generator_class=identity_generator_class,
+                           compressor_class=compressor_class,
+                           serializer_class=serializer_class,
+                           *args, **kwargs)
     
     def lock(self, name, timeout=None, sleep=0.1, blocking_timeout=None,
              lock_class=None, thread_local=True):
@@ -2164,7 +2192,7 @@ class PubSub(object):
                 patterns[k] = v
             await self.psubscribe(**patterns)
 
-    async def subscribed(self):
+    def subscribed(self):
         "Indicates if there are subscriptions to any channels or patterns"
         return bool(self.channels or self.patterns)
 
@@ -2271,7 +2299,7 @@ class PubSub(object):
 
     async def listen(self):
         "Listen for messages on channels this client has been subscribed to"
-        if await self.subscribed():
+        if self.subscribed():
             return self.handle_message(await self.parse_response(block=True))
 
     async def get_message(self, ignore_subscribe_messages=False):
@@ -2319,9 +2347,11 @@ class PubSub(object):
                 subscribed_dict = self.channels
             try:
                 key = message['channel']
+                print(key)
                 if isinstance(key, bytes):
                     key = key.decode()
                 del subscribed_dict[key]
+                print(subscribed_dict)
             except KeyError:
                 pass
 
@@ -2366,7 +2396,7 @@ class PubSubWorkerThread(threading.Thread):
 
     async def _run(self):
         pubsub = self.pubsub
-        while await pubsub.subscribed():
+        while pubsub.subscribed():
             await pubsub.get_message(ignore_subscribe_messages=True)
         pubsub.close()
         self._running = False
@@ -2375,15 +2405,18 @@ class PubSubWorkerThread(threading.Thread):
         if self._running:
             return
         self._running = True
-        asyncio.run_coroutine_threadsafe(self._run(), self.loop)
+        future = asyncio.run_coroutine_threadsafe(self._run(), self.loop)
+        return future.result()
 
     def stop(self):
         # stopping simply unsubscribes from all channels and patterns.
         # the unsubscribe responses that are generated will short circuit
         # the loop in run(), calling pubsub.close() to clean up the connection
         if self.loop:
-            asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
-            asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
+            unsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
+            punsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
+            asyncio.wait(unsubscribed)
+            asyncio.wait(punsubscribed)
 
 
 class BasePipeline(object):

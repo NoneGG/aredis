@@ -56,3 +56,16 @@ class LockError(RedisError, ValueError):
     # NOTE: For backwards compatability, this class derives from ValueError.
     # This was originally chosen to behave like threading.Lock.
     pass
+
+
+class CacheError(RedisError):
+    """Basic error of aredis.cache"""
+    pass
+
+
+class SerializeError(CacheError):
+    pass
+
+
+class CompressError(CacheError):
+    pass

@@ -10,7 +10,7 @@ Installation
 
 aredis requires a running Redis server.
 
-To install redis-py, simply:
+To install aredis, simply:
 
 .. code-block:: bash
 
@@ -646,13 +646,12 @@ Advantage
 3. according to my test, aredis is efficient enough (please run benchmarks/comparation.py to see which async redis client is suitable for you)
 4. aredis can be run both with asyncio and uvloop, the latter can double the speed of your async code.
 
-Disadvantage & TODO
--------------------
+TODO
+----
 
-1. the package only support Python 3.5 and above
-2. the encode part is not supported very well now (will try to fix it in next version)
-3. add support for common cluster operation
-4. simple cache support
+1. add support for common cluster operation
+2. simple cache support
+3. support for redis 4.0
 
 
 Author

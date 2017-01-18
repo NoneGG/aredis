@@ -450,7 +450,7 @@ class BaseConnection:
         elif isinstance(value, float):
             value = b(repr(value))
         elif not isinstance(value, str):
-            value = str(value)
+            value = str(value).encode()
         return value
 
     def disconnect(self):
