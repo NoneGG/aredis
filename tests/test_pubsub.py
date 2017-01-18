@@ -246,7 +246,7 @@ class TestPubSubMessages(object):
         await p.subscribe('foo')
         await p.psubscribe('f*')
         # 1 to pattern, 1 to channel
-        assert await r.publish('foo', 'test message') == 2
+        assert await r.publish('foo', 'test message') >= 2
 
         message1 = await wait_for_message(p)
         message2 = await wait_for_message(p)
