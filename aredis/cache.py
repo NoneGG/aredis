@@ -173,8 +173,7 @@ class BasicCache(object):
             cursor, identities = await self.client.scan(
                 cursor=cursor, match=pattern, count=count
             )
-            await self.client.delete(identities)
-            count_deleted += len(identities)
+            count_deleted += await self.client.delete(*identities)
         return count_deleted
 
     async def exist(self, key, value=None):
@@ -269,7 +268,7 @@ class HerdCache(BasicCache):
         if res:
             res, timeout = self._unpack(res)
             now = int(time.time())
-            if timeout < now:
+            if timeout <= now:
                 extend_timeout = extend_herd_timeout or self.extend_herd_timeout
                 expected_expired_ts = now + extend_timeout
                 value = self._pack([res, expected_expired_ts])
