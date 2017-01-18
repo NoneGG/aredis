@@ -7,7 +7,8 @@ except ImportError:
     import json
 
 from aredis.utils import b
-from aredis.exceptions import CompressError
+from aredis.exceptions import (SerializeError,
+                               CompressError)
 
 
 class IdentityGenerator(object):
@@ -22,13 +23,17 @@ class IdentityGenerator(object):
         self.app = app
         self.encoding = encoding
 
-    def generate(self, key, content):
+    def _trans_type(self, content):
         if isinstance(content, str):
             content = content.encode(self.encoding)
         elif isinstance(content, int):
             content = b(str(content))
         elif isinstance(content, float):
             content = b(repr(content))
+        return content
+
+    def generate(self, key, content):
+        content = self._trans_type(content)
         md5 = hashlib.md5()
         md5.update(content)
         hash = md5.hexdigest()
@@ -49,7 +54,7 @@ class Compressor(object):
     def __init__(self, encoding='utf-8'):
         self.encoding = encoding
 
-    def compress(self, content):
+    def _trans_type(self, content):
         if isinstance(content, str):
             content = content.encode(self.encoding)
         elif isinstance(content, int):
@@ -58,15 +63,23 @@ class Compressor(object):
             content = b(repr(content))
         if not isinstance(content, bytes):
             raise TypeError('Wrong data type({}) to compress'.format(type(content)))
+        return content
+
+    def compress(self, content):
+        content = self._trans_type(content)
         if len(content) > self.min_length:
-            return zlib.compress(content, self.preset)
+            try:
+                return zlib.compress(content, self.preset)
+            except zlib.error as exc:
+                raise CompressError('Content can not be compressed.')
         return content
 
     def decompress(self, content):
+        content = self._trans_type(content)
         try:
             return zlib.decompress(content)
         except zlib.error as exc:
-            raise CompressError(exc)
+            raise CompressError('Content can not be decompressed.')
 
 
 class Serializer(object):
@@ -76,11 +89,28 @@ class Serializer(object):
     with api serialize and deserialize
     """
 
+    def __init__(self, encoding='utf-8'):
+        self.encoding = encoding
+
+    def _trans_type(self, content):
+        if isinstance(content, bytes):
+            content = content.decode(self.encoding)
+        if not isinstance(content, str):
+            raise TypeError('Wrong data type({}) to compress'.format(type(content)))
+        return content
+
     def serialize(self, content):
-        return json.dumps(content)
+        try:
+            return json.dumps(content)
+        except Exception as exc:
+            raise SerializeError('Content can not be serialized.')
 
     def deserialize(self, content):
-        return json.loads(content)
+        content = self._trans_type(content)
+        try:
+            return json.loads(content)
+        except Exception as exc:
+            raise SerializeError('Content can not be deserialized.')
 
 
 class BasicCache(object):
@@ -95,15 +125,15 @@ class BasicCache(object):
         if identity_generator_class:
             self.identity_generator = identity_generator_class(app, encoding)
         if compressor_class:
-            self.compressor = compressor_class()
+            self.compressor = compressor_class(encoding)
         if serializer_class:
-            self.serializer = serializer_class()
+            self.serializer = serializer_class(encoding)
 
     def __repr__(self):
         return "{}<{}>".format(type(self).__name__, repr(self.client))
 
     def _gen_identity(self, key, value=None, *args, **kwargs):
-        if self.identity_generator and value:
+        if self.identity_generator and value is not None:
             if self.serializer:
                 value = self.serializer.serialize(value)
             if self.compressor:
@@ -124,7 +154,10 @@ class BasicCache(object):
     def _unpack(self, content, *args, **kwargs):
         """unpack cache using serializer and compressor"""
         if self.compressor:
-            content = self.compressor.decompress(content)
+            try:
+                content = self.compressor.decompress(content)
+            except CompressError:
+                pass
         if self.serializer:
             content = self.serializer.deserialize(content)
         return content

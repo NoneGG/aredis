@@ -58,6 +58,14 @@ class LockError(RedisError, ValueError):
     pass
 
 
-class CompressError(RedisError):
-    """Errors compressing content"""
+class CacheError(RedisError):
+    """Basic error of aredis.cache"""
+    pass
+
+
+class SerializeError(CacheError):
+    pass
+
+
+class CompressError(CacheError):
     pass
