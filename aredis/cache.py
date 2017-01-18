@@ -169,11 +169,12 @@ class Cache(BasicCache):
         return await self.client.set(identity, value, ex=expire_time)
 
     async def set_many(self, data, expire_time=None):
-        pipeline = await self.client.pipeline()
-        for key, value in data.items():
-            value = self._pack(value)
-            await pipeline.set(key, value, expire_time)
-        return await pipeline.execute()
+        async with await self.client.pipeline() as pipeline:
+            for key, value in data.items():
+                identity = self._gen_identity(key, value)
+                value = self._pack(value)
+                await pipeline.set(identity, value, expire_time)
+            return await pipeline.execute()
 
 
 class HerdCache(BasicCache):
@@ -209,6 +210,18 @@ class HerdCache(BasicCache):
         expected_expired_ts += herd_timeout or self.default_herd_timeout
         value = self._pack([value, expected_expired_ts])
         return await self.client.set(identity, value, ex=expire_time)
+
+    async def set_many(self, data, expire_time=None, herd_timeout=None):
+        async with await self.client.pipeline() as pipeline:
+            for key, value in data.items():
+                identity = self._gen_identity(key, value)
+                expected_expired_ts = int(time.time())
+                if expire_time:
+                    expected_expired_ts += expire_time
+                expected_expired_ts += herd_timeout or self.default_herd_timeout
+                value = self._pack([value, expected_expired_ts])
+                await pipeline.set(identity, value, ex=expire_time)
+            return await pipeline.execute()
 
     async def get(self, key, value=None, extend_herd_timeout=None):
         """

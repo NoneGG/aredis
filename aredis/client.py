@@ -11,6 +11,8 @@ import time as mod_time
 from aredis.connection import UnixDomainSocketConnection
 from aredis.pool import ConnectionPool
 from aredis.lock import Lock, LuaLock
+from aredis.cache import (Cache, IdentityGenerator,
+                          Serializer, Compressor)
 from aredis.utils import (iterkeys, itervalues,
                           iteritems, b)
 from aredis.exceptions import (
@@ -564,6 +566,32 @@ class StrictRedis(object):
                     if watch_delay is not None and watch_delay > 0:
                         await asyncio.sleep(watch_delay)
                     continue
+
+    def cache(self, name, cache_class=Cache,
+              identity_generator_class=IdentityGenerator,
+              compressor_class=Compressor,
+              serializer_class=Serializer, *args, **kwargs):
+        """
+        Return a cache object using default identity generator,
+        serializer and compressor.
+
+        ``name`` is used to identify the series of your cache
+        ``cache_class`` Cache is for normal use and HerdCache
+        is used in case of Thundering Herd Problem
+        ``identity_generator_class`` is the class used to generate
+        the real unique key in cache, can be overwritten to
+        meet your special needs. It should provide `generate` API
+        ``compressor_class`` is the class used to compress cache in redis,
+        can be overwritten with API `compress` and `decompress` retained.
+        ``serializer_class`` is the class used to serialize
+        content before compress, can be overwritten with API
+        `serialize` and `deserialize` retained.
+        """
+        return cache_class(self, app=name,
+                           identity_generator_class=identity_generator_class,
+                           compressor_class=compressor_class,
+                           serializer_class=serializer_class,
+                           *args, **kwargs)
     
     def lock(self, name, timeout=None, sleep=0.1, blocking_timeout=None,
              lock_class=None, thread_local=True):
