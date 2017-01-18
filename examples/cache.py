@@ -23,7 +23,7 @@ async def example():
     cache = client.cache('example_cache',
                          identity_generator_class=CustomIdentityGenerator)
     data = {1: 1}
-    await cache.set('example_key', data, expensive_work(data))
+    await cache.set('example_key', expensive_work(data), data)
     res = await cache.get('example_key', data)
     assert res == expensive_work(data)
 
