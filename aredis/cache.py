@@ -133,6 +133,7 @@ class BasicCache(object):
         return "{}<{}>".format(type(self).__name__, repr(self.client))
 
     def _gen_identity(self, key, param=None):
+        """generate identity according to key and param given"""
         if self.identity_generator and param is not None:
             if self.serializer:
                 param = self.serializer.serialize(param)
@@ -163,10 +164,18 @@ class BasicCache(object):
         return content
 
     async def delete(self, key, param=None):
+        """
+        delete cache corresponding to identity
+        generated from key and param
+        """
         identity = self._gen_identity(key, param)
         return await self.client.delete(identity)
 
     async def delete_pattern(self, pattern, count=None):
+        """
+        delete cache according to pattern in redis,
+        delete `count` keys each time
+        """
         cursor = '0'
         count_deleted = 0
         while cursor != 0:
@@ -177,10 +186,12 @@ class BasicCache(object):
         return count_deleted
 
     async def exist(self, key, param=None):
+        """see if specific identity exists"""
         identity = self._gen_identity(key, param)
         return await self.client.exists(identity)
 
     async def ttl(self, key, param=None):
+        """get time to live of a specific identity"""
         identity = self._gen_identity(key, param)
         return await self.client.ttl(identity)
 
@@ -230,7 +241,7 @@ class HerdCache(BasicCache):
 
     async def set(self, key, value, param=None, expire_time=None, herd_timeout=None):
         """
-        Use key:value to generate identity and pack the content,
+        Use key and param to generate identity and pack the content,
         expire the key within real_timeout if expire_time is given.
         real_timeout is equal to the sum of expire_time and herd_time.
         The content is cached with expire_time.
@@ -257,7 +268,7 @@ class HerdCache(BasicCache):
 
     async def get(self, key, param=None, extend_herd_timeout=None):
         """
-        Use key or identity generate from key:value to
+        Use key or identity generate from key and param to
         get cached content and expire time.
         Compare expire time with time.now(), return None and
         set cache with extended timeout if cache is expired,
