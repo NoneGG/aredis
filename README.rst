@@ -517,6 +517,21 @@ cannot be delivered. When you're finished with a PubSub object, call its
     >>> ...
     >>> p.close()
 
+The PUBSUB set of subcommands CHANNELS, NUMSUB and NUMPAT are also
+supported:
+
+.. code-block:: pycon
+
+    >>> await r.pubsub_channels()
+    ['foo', 'bar']
+    >>> await r.pubsub_numsub('foo', 'bar')
+    [('foo', 9001), ('bar', 42)]
+    >>> await r.pubsub_numsub('baz')
+    [('baz', 0)]
+    >>> await r.pubsub_numpat()
+    1204
+
+
 LUA Scripting
 ^^^^^^^^^^^^^
 

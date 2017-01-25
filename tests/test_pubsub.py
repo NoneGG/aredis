@@ -4,7 +4,9 @@ import asyncio
 import time
 
 import aredis
+from aredis.utils import b
 from aredis.exceptions import ConnectionError
+from .conftest import skip_if_server_version_lt
 
 
 async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False):
@@ -421,3 +423,39 @@ class TestPubSubRedisDown(object):
         p = r.pubsub()
         with pytest.raises(ConnectionError):
             await p.subscribe('foo')
+
+
+class TestPubSubPubSubSubcommands(object):
+
+    @skip_if_server_version_lt('2.8.0')
+    @pytest.mark.asyncio
+    async def test_pubsub_channels(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        await p.subscribe('foo', 'bar', 'baz', 'quux')
+        channels = sorted(await r.pubsub_channels())
+        assert channels == [b('bar'), b('baz'), b('foo'), b('quux')]
+        await p.unsubscribe()
+
+    @skip_if_server_version_lt('2.8.0')
+    @pytest.mark.asyncio
+    async def test_pubsub_numsub(self, r):
+        p1 = r.pubsub(ignore_subscribe_messages=True)
+        await p1.subscribe('foo', 'bar', 'baz')
+        p2 = r.pubsub(ignore_subscribe_messages=True)
+        await p2.subscribe('bar', 'baz')
+        p3 = r.pubsub(ignore_subscribe_messages=True)
+        await p3.subscribe('baz')
+
+        channels = [(b('foo'), 1), (b('bar'), 2), (b('baz'), 3)]
+        assert channels == await r.pubsub_numsub('foo', 'bar', 'baz')
+        await p1.unsubscribe()
+        await p2.unsubscribe()
+        await p3.unsubscribe()
+
+    @skip_if_server_version_lt('2.8.0')
+    @pytest.mark.asyncio
+    async def test_pubsub_numpat(self, r):
+        pubsub_count = await r.pubsub_numpat()
+        p = r.pubsub(ignore_subscribe_messages=True)
+        await p.psubscribe('*oo', '*ar', 'b*z')
+        assert await r.pubsub_numpat() == 3 + pubsub_count
