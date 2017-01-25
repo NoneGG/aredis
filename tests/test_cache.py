@@ -205,4 +205,4 @@ class TestHerdCache(object):
         identity = cache._gen_identity(self.key, self.data)
         content = await r.get(identity)
         content, new_expire_time = cache._unpack(content)
-        assert new_expire_time == expect_expire_time + 1
+        assert new_expire_time >= expect_expire_time + 1

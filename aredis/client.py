@@ -343,6 +343,10 @@ def parse_georadius_generic(response, **options):
     ]
 
 
+def parse_pubsub_numsub(response, **options):
+    return list(zip(response[0::2], response[1::2]))
+
+
 class StrictRedis(object):
     """
     Implementation of the Redis protocol.
@@ -451,6 +455,7 @@ class StrictRedis(object):
             'GEOHASH': lambda r: list(r),
             'GEORADIUS': parse_georadius_generic,
             'GEORADIUSBYMEMBER': parse_georadius_generic,
+            'PUBSUB NUMSUB': parse_pubsub_numsub,
         }
     )
 
@@ -1940,6 +1945,25 @@ class StrictRedis(object):
         Returns the number of subscribers the message was delivered to.
         """
         return await self.execute_command('PUBLISH', channel, message)
+
+    async def pubsub_channels(self):
+        """
+        Return a list of channels that have at least one subscriber
+        """
+        return await self.execute_command('PUBSUB CHANNELS')
+
+    async def pubsub_numpat(self):
+        """
+        Returns the number of subscriptions to patterns
+        """
+        return await self.execute_command('PUBSUB NUMPAT')
+
+    async def pubsub_numsub(self, *args):
+        """
+        Return a list of (channel, number of subscribers) tuples
+        for each channel given in ``*args``
+        """
+        return await self.execute_command('PUBSUB NUMSUB', *args)
 
     async def cluster(self, cluster_arg, *args):
         return await self.execute_command('CLUSTER %s' % cluster_arg.upper(), *args)
