@@ -2216,6 +2216,7 @@ class PubSub(object):
                 patterns[k] = v
             await self.psubscribe(**patterns)
 
+    @property
     def subscribed(self):
         "Indicates if there are subscriptions to any channels or patterns"
         return bool(self.channels or self.patterns)
@@ -2250,7 +2251,7 @@ class PubSub(object):
             # previously listening to
             return await command(*args)
 
-    async def parse_response(self, block=True):
+    async def parse_response(self, block=True, timeout=0):
         "Parse the response from a publish/subscribe command"
         connection = self.connection
         if connection is None:
@@ -2259,6 +2260,12 @@ class PubSub(object):
                 'did you forget to call subscribe() or psubscribe()?')
         if not block and not await connection.can_read():
             return None
+        now = mod_time.time()
+        while now + timeout > mod_time.time():
+            res = await self._execute(connection, connection.read_response)
+            print('a')
+            if res:
+                return res
         return await self._execute(connection, connection.read_response)
 
     async def psubscribe(self, *args, **kwargs):
@@ -2323,7 +2330,7 @@ class PubSub(object):
 
     async def listen(self):
         "Listen for messages on channels this client has been subscribed to"
-        if self.subscribed():
+        if self.subscribed:
             return self.handle_message(await self.parse_response(block=True))
 
     async def get_message(self, ignore_subscribe_messages=False):
@@ -2420,7 +2427,7 @@ class PubSubWorkerThread(threading.Thread):
 
     async def _run(self):
         pubsub = self.pubsub
-        while pubsub.subscribed():
+        while pubsub.subscribed:
             await pubsub.get_message(ignore_subscribe_messages=True)
         pubsub.close()
         self._running = False
