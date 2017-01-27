@@ -2251,7 +2251,7 @@ class PubSub(object):
             # previously listening to
             return await command(*args)
 
-    async def parse_response(self, block=True, timeout=0):
+    async def parse_response(self, block=True):
         "Parse the response from a publish/subscribe command"
         connection = self.connection
         if connection is None:
@@ -2260,12 +2260,6 @@ class PubSub(object):
                 'did you forget to call subscribe() or psubscribe()?')
         if not block and not await connection.can_read():
             return None
-        now = mod_time.time()
-        while now + timeout > mod_time.time():
-            res = await self._execute(connection, connection.read_response)
-            print('a')
-            if res:
-                return res
         return await self._execute(connection, connection.read_response)
 
     async def psubscribe(self, *args, **kwargs):
