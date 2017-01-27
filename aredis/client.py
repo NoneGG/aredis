@@ -2216,6 +2216,7 @@ class PubSub(object):
                 patterns[k] = v
             await self.psubscribe(**patterns)
 
+    @property
     def subscribed(self):
         "Indicates if there are subscriptions to any channels or patterns"
         return bool(self.channels or self.patterns)
@@ -2323,7 +2324,7 @@ class PubSub(object):
 
     async def listen(self):
         "Listen for messages on channels this client has been subscribed to"
-        if self.subscribed():
+        if self.subscribed:
             return self.handle_message(await self.parse_response(block=True))
 
     async def get_message(self, ignore_subscribe_messages=False):
@@ -2420,7 +2421,7 @@ class PubSubWorkerThread(threading.Thread):
 
     async def _run(self):
         pubsub = self.pubsub
-        while pubsub.subscribed():
+        while pubsub.subscribed:
             await pubsub.get_message(ignore_subscribe_messages=True)
         pubsub.close()
         self._running = False

@@ -26,7 +26,7 @@ async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False)
 async def subscribe(client):
     await client.flushdb()
     pubsub = client.pubsub()
-    assert await pubsub.subscribed() is False
+    assert pubsub.subscribed is False
     await pubsub.subscribe('foo')
     # assert await pubsub.subscribe() is True
     message = await wait_for_message(pubsub)
