@@ -6,8 +6,7 @@ import re
 
 from aredis.pool import to_bool
 from aredis.exceptions import (ConnectionError, RedisError,
-                               BusyLoadingError, ReadOnlyError,
-                               ResponseError)
+                               BusyLoadingError, ReadOnlyError)
 from .conftest import skip_if_server_version_lt
 
 

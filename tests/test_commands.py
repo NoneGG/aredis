@@ -8,7 +8,7 @@ from string import ascii_letters
 
 from aredis.utils import (b, iteritems,
                           iterkeys, itervalues)
-from aredis.client import parse_info
+from aredis.commands.server import parse_info
 from aredis.exceptions import (RedisError,
                                ResponseError,
                                DataError)

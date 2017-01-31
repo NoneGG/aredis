@@ -48,3 +48,46 @@ class dummy(object):
     Instances of this class can be used as an attribute container.
     """
     pass
+
+
+# ++++++++++ functions to parse response ++++++++++++++
+def string_keys_to_dict(key_string, callback):
+    return dict.fromkeys(key_string.split(), callback)
+
+
+def dict_merge(*dicts):
+    merged = {}
+    for d in dicts:
+        merged.update(d)
+    return merged
+
+
+def bool_ok(response):
+    return response == b'OK'
+
+
+def list_or_args(keys, args):
+    # returns a single list combining keys and args
+    try:
+        iter(keys)
+        # a string or bytes instance can be iterated, but indicates
+        # keys wasn't passed as a list
+        if isinstance(keys, (str, bytes)):
+            keys = [keys]
+    except TypeError:
+        keys = [keys]
+    if args:
+        keys.extend(args)
+    return keys
+
+
+def int_or_none(response):
+    if response is None:
+        return None
+    return int(response)
+
+
+def pairs_to_dict(response):
+    "Create a dict given a list of key/value pairs"
+    it = iter(response)
+    return dict(zip(it, it))
