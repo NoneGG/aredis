@@ -120,8 +120,6 @@ class SentinelConnectionPool(ConnectionPool):
                 self.slave_rr_counter = (
                     self.slave_rr_counter + 1) % len(slaves)
                 slave_address.append(slaves[self.slave_rr_counter])
-                # todo change into generator in Python 3.6
-                # yield slave
             return slave_address
         # Fallback to the master connection
         try:
