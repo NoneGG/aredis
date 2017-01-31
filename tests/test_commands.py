@@ -63,6 +63,17 @@ class TestRedisCommands(object):
         assert await r.client_setname('redis_py_test')
         assert await r.client_getname() == 'redis_py_test'
 
+    @skip_if_server_version_lt('2.9.5')
+    @pytest.mark.asyncio
+    async def test_client_pause(self, r):
+        await r.flushdb()
+        key = 'key_should_expire'
+        another_client = aredis.StrictRedis()
+        await r.set(key, 1, px=100)
+        assert await r.client_pause(100)
+        res = await another_client.get(key)
+        assert not res
+
     @pytest.mark.asyncio
     async def test_config_get(self, r):
         data = await r.config_get()

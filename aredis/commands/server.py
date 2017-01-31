@@ -105,6 +105,7 @@ class ServerCommandMixin:
             'CLIENT KILL': bool_ok,
             'CLIENT LIST': parse_client_list,
             'CLIENT SETNAME': bool_ok,
+            'CLIENT PAUSE': bool_ok,
             'CONFIG GET': parse_config_get,
             'CONFIG RESETSTAT': bool_ok,
             'CONFIG SET': bool_ok,
@@ -142,9 +143,10 @@ class ServerCommandMixin:
         "Sets the current connection name"
         return await self.execute_command('CLIENT SETNAME', name)
 
-    # todo
-    async def client_pause(self):
-        pass
+    async def client_pause(self, timeout=0):
+        """suspend all the Redis clients for the
+        specified amount of time (in milliseconds)."""
+        return await self.execute_command('CLIENT PAUSE', timeout)
 
     # todo
     async def client_reply(self):
