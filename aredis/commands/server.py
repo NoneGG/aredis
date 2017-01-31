@@ -106,6 +106,7 @@ class ServerCommandMixin:
             'CLIENT LIST': parse_client_list,
             'CLIENT SETNAME': bool_ok,
             'CLIENT PAUSE': bool_ok,
+            'CLIENT REPLY': lambda r: r == b'OK' if r else None,
             'CONFIG GET': parse_config_get,
             'CONFIG RESETSTAT': bool_ok,
             'CONFIG SET': bool_ok,
@@ -148,9 +149,18 @@ class ServerCommandMixin:
         specified amount of time (in milliseconds)."""
         return await self.execute_command('CLIENT PAUSE', timeout)
 
-    # todo
-    async def client_reply(self):
-        pass
+    # problem
+    async def client_reply(self, mode='ON'):
+        """
+        controls whether the server will reply the client's commands.
+        ON. This is the default mode in which the server returns a reply to every command.
+        OFF. In this mode the server will not reply to client commands.
+        SKIP. This mode skips the reply of command immediately after it.
+        """
+        mode = mode.upper()
+        if mode not in ['ON', 'OFF', 'SKIP']:
+            raise ValueError('Wrong mode({}) chosen'.format(mode))
+        return await self.execute_command('CLIENT REPLY', mode)
 
     async def config_get(self, pattern="*"):
         "Return a dictionary of configuration based on the ``pattern``"
