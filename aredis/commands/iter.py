@@ -7,6 +7,8 @@ class IterCommandMixin:
     convenient function of scan iter, make it a class separately
     because yield can not be used in async function in Python3.6
     """
+    RESPONSE_CALLBACKS = {}
+    
     async def scan_iter(self, match=None, count=None):
         """
         Make an iterator using the SCAN command so that the client doesn't
