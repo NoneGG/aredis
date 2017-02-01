@@ -5,8 +5,9 @@ import ssl
 import socket
 import types
 from io import BytesIO
-from aredis.utils import (b, exec_with_timeout)
+from aredis.utils import b
 from aredis.exceptions import (ConnectionError,
+                               TimeoutError,
                                RedisError,
                                ExecAbortError,
                                BusyLoadingError,
@@ -27,6 +28,13 @@ SYM_DOLLAR = b('$')
 SYM_CRLF = b('\r\n')
 SYM_LF = b('\n')
 SYM_EMPTY = b('')
+
+
+async def exec_with_timeout(coroutine, timeout):
+    try:
+        return await asyncio.wait_for(coroutine, timeout)
+    except asyncio.TimeoutError as exc:
+        raise TimeoutError(exc)
 
 
 class SocketBuffer(object):
@@ -336,7 +344,7 @@ class RedisSSLContext:
 class BaseConnection:
     description = 'BaseConnection'
 
-    def __init__(self, retry_on_timeout=False, stream_timeout=0,
+    def __init__(self, retry_on_timeout=False, stream_timeout=None,
                  parser_class=DefaultParser,
                  reader_read_size=65535):
         self._parser = parser_class(reader_read_size)
@@ -523,7 +531,7 @@ class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
     def __init__(self, host='127.0.0.1', port=6379, password=None,
-                 db=0, retry_on_timeout=False, stream_timeout=0, connect_timeout=0,
+                 db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
                                          parser_class, reader_read_size)
@@ -558,7 +566,7 @@ class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
     def __init__(self, path='', password=None,
-                 db=0, retry_on_timeout=False, stream_timeout=0, connect_timeout=0,
+                 db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535):
         super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
                                                          parser_class, reader_read_size)
