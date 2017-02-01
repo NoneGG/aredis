@@ -1,6 +1,7 @@
 import asyncio
 import sys
 from functools import wraps
+from aredis.exceptions import TimeoutError
 
 
 def b(x):
@@ -38,7 +39,10 @@ def ban_python_version_lt(min_version):
 
 async def exec_with_timeout(coroutine, timeout):
     if timeout:
-        return await asyncio.wait_for(coroutine, timeout)
+        try:
+            return await asyncio.wait_for(coroutine, timeout)
+        except asyncio.TimeoutError as exc:
+            raise TimeoutError(exc)
     else:
         return await coroutine
 

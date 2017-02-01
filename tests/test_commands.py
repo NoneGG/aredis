@@ -74,21 +74,6 @@ class TestRedisCommands(object):
         res = await another_client.get(key)
         assert not res
 
-    @skip_if_server_version_lt('3.2')
-    @pytest.mark.asyncio
-    async def test_client_reply(self, r):
-        await r.flushdb()
-        with pytest.raises(ValueError):
-            await r.client_reply('WRONG MODE')
-        await r.client_reply('skip')
-        assert not await r.keys('*')
-        assert not await r.client_reply('off')
-        for _ in range(10):
-            assert not await r.keys()
-        assert not await r.client_reply('on')
-        assert await r.set('test_key', 1)
-        assert await r.get('test_key') == 1
-
     @pytest.mark.asyncio
     async def test_config_get(self, r):
         data = await r.config_get()
