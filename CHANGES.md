@@ -12,3 +12,6 @@
 * add support for command "pubsub channel", "pubsub numpat" and "pubsub numsub"
 * add support for command "client pause"
 * reconsitution of commands to make develop easier(which is apparent to user)
+
+### 1.0.5
+* fix bug in setup.py when using pip to install aredis

@@ -32,7 +32,7 @@ f.close()
 
 setup(
     name='aredis',
-    version='1.0.4',
+    version='1.0.5',
     description='Python async client for Redis key-value store',
     long_description=long_description,
     url='https://github.com/NoneGG/aredis',
