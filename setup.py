@@ -2,7 +2,6 @@
 import os
 import sys
 
-from aredis import __version__
 
 try:
     from setuptools import setup
@@ -33,7 +32,7 @@ f.close()
 
 setup(
     name='aredis',
-    version=__version__,
+    version='1.0.4',
     description='Python async client for Redis key-value store',
     long_description=long_description,
     url='https://github.com/NoneGG/aredis',
