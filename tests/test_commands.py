@@ -304,6 +304,42 @@ class TestRedisCommands(object):
         with pytest.raises(RedisError):
             await r.bitpos(key, 7) == 12
 
+    @skip_if_server_version_lt('3.2.0')
+    @pytest.mark.asyncio
+    async def test_bitfield_set(self, r):
+        key = 'key:bitfield:set'
+        assert [0] == await r.bitfield(key).set('i4', '#1', 100).exc()
+        assert [4] == await r.bitfield(key).set('i4', '4', 101).exc()
+
+    @skip_if_server_version_lt('3.2.0')
+    @pytest.mark.asyncio
+    async def test_bitfield_set(self, r):
+        key = 'key:bitfield:get'
+        await r.set(key, '\x00d')
+        assert [100] == await r.bitfield(key).get('i8', '#1').exc()
+
+    @skip_if_server_version_lt('3.2.0')
+    @pytest.mark.asyncio
+    async def test_bitfield_incrby(self, r):
+        key = 'key:bitfield:incrby'
+        await r.bitfield(key).incrby('u2', 10, 1).exc()
+        assert await r.get(key) == b'\x00\x10'
+        # overflow
+        await r.delete(key)
+        assert [-128] == await r.bitfield(key).incrby('i8', 0, 128).exc()
+
+    @skip_if_server_version_lt('3.2.0')
+    @pytest.mark.asyncio
+    async def test_bitfield_overflow(self, r):
+        key = 'key:bitfield:overflow'
+        # nothing too happen
+        assert not await r.bitfield(key).overflow().exc()
+        assert [-128] == await r.bitfield(key).overflow('WRAP').incrby('i8', 0, 128).exc()
+        await r.delete(key)
+        assert [127] == await r.bitfield(key).overflow('SAT').incrby('i8', 0, 128).exc()
+        await r.delete(key)
+        assert [None] == await r.bitfield(key).overflow('fail').incrby('i8', 0, 128).exc()
+
     @pytest.mark.asyncio
     async def test_decr(self, r):
         await r.flushdb()
