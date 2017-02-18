@@ -15,3 +15,7 @@
 
 ### 1.0.5
 * fix bug in setup.py when using pip to install aredis
+
+### 1.0.6
+* bitfield set/get/incrby/overflow supported
+* hstrlen supported
