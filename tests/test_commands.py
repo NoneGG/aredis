@@ -749,6 +749,26 @@ class TestRedisCommands(object):
         await r.zadd('a', **{'1': 1})
         assert await r.type('a') == b('zset')
 
+    @skip_if_server_version_lt('3.2.1')
+    @pytest.mark.asyncio
+    async def test_touch(self, r):
+        await r.flushdb()
+        keys = ['a', 'b', 'c', 'd']
+        for index, key in enumerate(keys):
+            await r.set(key, index)
+        assert await r.touch(keys) == len(keys)
+
+    @skip_if_server_version_lt('4.0.0')
+    @pytest.mark.asyncio
+    async def test_unlink(self, r):
+        await r.flushdb()
+        keys = ['a', 'b', 'c', 'd']
+        for index, key in enumerate(keys):
+            await r.set(key, index)
+        await r.unlink(keys)
+        for key in keys:
+            assert r.get(key) is None
+
     # LIST COMMANDS
     @pytest.mark.asyncio
     async def test_blpop(self, r):

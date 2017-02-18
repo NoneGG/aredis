@@ -18,4 +18,6 @@
 
 ### 1.0.6
 * bitfield set/get/incrby/overflow supported
-* hstrlen supported
+* new command hstrlen supported
+* new command unlink supported
+* new command touch supported
