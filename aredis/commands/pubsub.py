@@ -26,11 +26,11 @@ class PubSubCommanMixin:
         """
         return await self.execute_command('PUBLISH', channel, message)
 
-    async def pubsub_channels(self):
+    async def pubsub_channels(self, pattern='*'):
         """
         Return a list of channels that have at least one subscriber
         """
-        return await self.execute_command('PUBSUB CHANNELS')
+        return await self.execute_command('PUBSUB CHANNELS', pattern)
 
     async def pubsub_numpat(self):
         """
