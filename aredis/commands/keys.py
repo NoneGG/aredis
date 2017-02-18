@@ -214,9 +214,12 @@ class KeysCommandMixin:
         options = {'groups': len(get) if groups else None}
         return await self.execute_command('SORT', *pieces, **options)
 
-    # todo
-    async def touch(self):
-        pass
+    async def touch(self, keys):
+        """
+        Alters the last access time of a key(s).
+        A key is ignored if it does not exist.
+        """
+        return await self.execute_command('TOUCH', *keys)
 
     async def ttl(self, name):
         "Returns the number of seconds until the key ``name`` will expire"
@@ -226,9 +229,9 @@ class KeysCommandMixin:
         "Returns the type of key ``name``"
         return await self.execute_command('TYPE', name)
 
-    # todo:
-    async def unlink(self):
-        pass
+    async def unlink(self, *keys):
+        """removes the specified keys in a different thread, not blocking"""
+        return await self.execute_command('UNLINK', *keys)
 
     async def wait(self, num_replicas, timeout):
         """
