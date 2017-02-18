@@ -23,7 +23,6 @@ class HashCommandMixin:
         }
     )
 
-    # HASH COMMANDS
     async def hdel(self, name, *keys):
         "Delete ``keys`` from hash ``name``"
         return await self.execute_command('HDEL', name, *keys)
@@ -109,6 +108,10 @@ class HashCommandMixin:
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('HSCAN', *pieces)
 
-    # todo
-    async def hstrlen(self):
-        pass
+    async def hstrlen(self, name, key):
+        """
+        Returns the string length of the value associated
+        with field in the hash stored at key.
+        If the key or the field do not exist, 0 is returned.
+        """
+        return await self.execute_command('HSTRLEN', name, key)

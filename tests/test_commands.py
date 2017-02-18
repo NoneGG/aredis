@@ -1558,6 +1558,19 @@ class TestRedisCommands(object):
         remote_vals = await r.hvals('a')
         assert sorted(local_vals) == sorted(remote_vals)
 
+    @skip_if_server_version_lt('3.2.0')
+    @pytest.mark.asyncio
+    async def test_hstrlen(self, r):
+        await r.flushdb()
+        key = 'myhash'
+        myhash = {'f1': 'HelloWorld', 'f2': 99, 'f3': -256}
+        await r.hmset(key, myhash)
+        assert await r.hstrlen('key_not_exist', 'f1') == 0
+        assert await r.hstrlen(key, 'f4') == 0
+        assert await r.hstrlen(key, 'f1') == 10
+        assert await r.hstrlen(key, 'f2') == 2
+        assert await r.hstrlen(key, 'f3') == 4
+
     # SORT
     @pytest.mark.asyncio
     async def test_sort_basic(self, r):
