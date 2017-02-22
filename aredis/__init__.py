@@ -19,7 +19,7 @@ from aredis.exceptions import (
 )
 
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 
 VERSION = tuple(map(int, __version__.split('.')))
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+from aredis import __version__
 
 
 try:
@@ -32,7 +33,7 @@ f.close()
 
 setup(
     name='aredis',
-    version='1.0.5',
+    version=__version__,
     description='Python async client for Redis key-value store',
     long_description=long_description,
     url='https://github.com/NoneGG/aredis',
