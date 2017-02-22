@@ -42,7 +42,7 @@ setup(
     maintainer_email='847671011@qq.com',
     keywords=['Redis', 'key-value store', 'asyncio'],
     license='MIT',
-    packages=['aredis'],
+    packages=['aredis', 'aredis.commands'],
     tests_require=['pytest',
                    'pytest_asyncio'],
     cmdclass={'test': PyTest},
