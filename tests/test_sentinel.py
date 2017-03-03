@@ -65,23 +65,23 @@ def cluster(request):
 
 
 @pytest.fixture()
-def sentinel(request, cluster):
-    return Sentinel([('foo', 26379), ('bar', 26379)])
+def sentinel(request, cluster, event_loop):
+    return Sentinel([('foo', 26379), ('bar', 26379)], loop=event_loop)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_discover_master(sentinel):
     address = await sentinel.discover_master('mymaster')
     assert address == ('127.0.0.1', 6379)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_discover_master_error(sentinel):
     with pytest.raises(MasterNotFoundError):
         await sentinel.discover_master('xxx')
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_discover_master_sentinel_down(cluster, sentinel):
     # Put first sentinel 'foo' down
     cluster.nodes_down.add(('foo', 26379))
@@ -91,7 +91,7 @@ async def test_discover_master_sentinel_down(cluster, sentinel):
     assert sentinel.sentinels[0].id == ('bar', 26379)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_discover_master_sentinel_timeout(cluster, sentinel):
     # Put first sentinel 'foo' down
     cluster.nodes_timeout.add(('foo', 26379))
@@ -101,7 +101,7 @@ async def test_discover_master_sentinel_timeout(cluster, sentinel):
     assert sentinel.sentinels[0].id == ('bar', 26379)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_master_min_other_sentinels(cluster):
     sentinel = Sentinel([('foo', 26379)], min_other_sentinels=1)
     # min_other_sentinels
@@ -112,21 +112,21 @@ async def test_master_min_other_sentinels(cluster):
     assert address == ('127.0.0.1', 6379)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_master_odown(cluster, sentinel):
     cluster.master['is_odown'] = True
     with pytest.raises(MasterNotFoundError):
         await sentinel.discover_master('mymaster')
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_master_sdown(cluster, sentinel):
     cluster.master['is_sdown'] = True
     with pytest.raises(MasterNotFoundError):
         await sentinel.discover_master('mymaster')
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_discover_slaves(cluster, sentinel):
     assert await sentinel.discover_slaves('mymaster') == []
 
@@ -161,7 +161,7 @@ async def test_discover_slaves(cluster, sentinel):
         ('slave0', 1234), ('slave1', 1234)]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_master_for(cluster, sentinel):
     master = sentinel.master_for('mymaster')
     assert await master.ping()
@@ -172,7 +172,7 @@ async def test_master_for(cluster, sentinel):
     assert await master.ping()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_slave_for(cluster, sentinel):
     cluster.slaves = [
         {'ip': '127.0.0.1', 'port': 6379,
@@ -182,7 +182,7 @@ async def test_slave_for(cluster, sentinel):
     assert await slave.ping()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_slave_for_slave_not_found_error(cluster, sentinel):
     cluster.master['is_odown'] = True
     slave = sentinel.slave_for('mymaster', db=9)
@@ -190,7 +190,7 @@ async def test_slave_for_slave_not_found_error(cluster, sentinel):
         await slave.ping()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(forbid_global_loop=True)
 async def test_slave_round_robin(cluster, sentinel):
     cluster.slaves = [
         {'ip': 'slave0', 'port': 6379, 'is_odown': False, 'is_sdown': False},
