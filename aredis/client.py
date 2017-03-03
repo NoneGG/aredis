@@ -87,7 +87,8 @@ class StrictRedis(*mixins):
                  unix_socket_path=None,
                  ssl=False, ssl_keyfile=None, ssl_certfile=None,
                  ssl_cert_reqs=None, ssl_ca_certs=None,
-                 max_connections=None, retry_on_timeout=False):
+                 max_connections=None, retry_on_timeout=False,
+                 *, loop=None):
         if not connection_pool:
             kwargs = {
                 'db': db,
@@ -95,7 +96,8 @@ class StrictRedis(*mixins):
                 'stream_timeout': stream_timeout,
                 'connect_timeout': connect_timeout,
                 'max_connections': max_connections,
-                'retry_on_timeout': retry_on_timeout
+                'retry_on_timeout': retry_on_timeout,
+                'loop': loop
             }
             # based on input, setup appropriate connection args
             if unix_socket_path is not None:
