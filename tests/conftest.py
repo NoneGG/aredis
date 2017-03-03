@@ -49,54 +49,54 @@ class AsyncMock(Mock):
         super(AsyncMock, self).__init__(*args, **kwargs)
 
     def __await__(self):
-        future = asyncio.Future()
+        future = asyncio.Future(loop=self.loop)
         future.set_result(self)
         result = yield from future
         return result
 
     @staticmethod
-    def pack_response(response):
-        future = asyncio.Future()
+    def pack_response(response, *, loop):
+        future = asyncio.Future(loop=loop)
         future.set_result(response)
         return future
 
 
-def _gen_cluster_mock_resp(r, response):
-    mock_connection_pool = AsyncMock()
-    connection = AsyncMock()
-    connection.read_response.return_value = AsyncMock.pack_response(response)
+def _gen_cluster_mock_resp(r, response, *, loop):
+    mock_connection_pool = AsyncMock(loop=loop)
+    connection = AsyncMock(loop=loop)
+    connection.read_response.return_value = AsyncMock.pack_response(response, loop=loop)
     mock_connection_pool.get_connection.return_value = connection
     r.connection_pool = mock_connection_pool
     return r
 
 
 @pytest.fixture()
-def mock_cluster_resp_ok():
-    r = aredis.StrictRedis()
-    return _gen_cluster_mock_resp(r, b'OK')
+def mock_cluster_resp_ok(event_loop):
+    r = aredis.StrictRedis(loop=event_loop)
+    return _gen_cluster_mock_resp(r, b'OK', loop=event_loop)
 
 
 @pytest.fixture()
-def mock_cluster_resp_int():
-    r = aredis.StrictRedis()
-    return _gen_cluster_mock_resp(r, b'2')
+def mock_cluster_resp_int(event_loop):
+    r = aredis.StrictRedis(loop=event_loop)
+    return _gen_cluster_mock_resp(r, b'2', loop=event_loop)
 
 
 @pytest.fixture()
-def mock_cluster_resp_info():
-    r = aredis.StrictRedis()
+def mock_cluster_resp_info(event_loop):
+    r = aredis.StrictRedis(loop=event_loop)
     response = (b'cluster_state:ok\r\ncluster_slots_assigned:16384\r\n'
                 b'cluster_slots_ok:16384\r\ncluster_slots_pfail:0\r\n'
                 b'cluster_slots_fail:0\r\ncluster_known_nodes:7\r\n'
                 b'cluster_size:3\r\ncluster_current_epoch:7\r\n'
                 b'cluster_my_epoch:2\r\ncluster_stats_messages_sent:170262\r\n'
                 b'cluster_stats_messages_received:105653\r\n')
-    return _gen_cluster_mock_resp(r, response)
+    return _gen_cluster_mock_resp(r, response, loop=event_loop)
 
 
 @pytest.fixture()
-def mock_cluster_resp_nodes():
-    r = aredis.StrictRedis()
+def mock_cluster_resp_nodes(event_loop):
+    r = aredis.StrictRedis(loop=event_loop)
     response = (b'c8253bae761cb1ecb2b61857d85dfe455a0fec8b 172.17.0.7:7006 '
                 b'slave aa90da731f673a99617dfe930306549a09f83a6b 0 '
                 b'1447836263059 5 connected\n'
@@ -114,13 +114,13 @@ def mock_cluster_resp_nodes():
                 b'fbb23ed8cfa23f17eaf27ff7d0c410492a1093d6 172.17.0.7:7002 '
                 b'master,fail - 1447829446956 1447829444948 1 disconnected\n'
                 )
-    return _gen_cluster_mock_resp(r, response)
+    return _gen_cluster_mock_resp(r, response, loop=event_loop)
 
 
 @pytest.fixture()
-def mock_cluster_resp_slaves():
-    r = aredis.StrictRedis()
+def mock_cluster_resp_slaves(event_loop):
+    r = aredis.StrictRedis(loop=event_loop)
     response = (b"['1df047e5a594f945d82fc140be97a1452bcbf93e 172.17.0.7:7007 "
                 b"slave 19efe5a631f3296fdf21a5441680f893e8cc96ec 0 "
                 b"1447836789290 3 connected']")
-    return _gen_cluster_mock_resp(r, response)
+    return _gen_cluster_mock_resp(r, response, loop=event_loop)
