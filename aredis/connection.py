@@ -30,9 +30,9 @@ SYM_LF = b('\n')
 SYM_EMPTY = b('')
 
 
-async def exec_with_timeout(coroutine, timeout):
+async def exec_with_timeout(coroutine, timeout, *, loop=None):
     try:
-        return await asyncio.wait_for(coroutine, timeout)
+        return await asyncio.wait_for(coroutine, timeout, loop=loop)
     except asyncio.TimeoutError as exc:
         raise TimeoutError(exc)
 
@@ -346,7 +346,7 @@ class BaseConnection:
 
     def __init__(self, retry_on_timeout=False, stream_timeout=None,
                  parser_class=DefaultParser,
-                 reader_read_size=65535):
+                 reader_read_size=65535, *, loop=None):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
         self._reader = None
@@ -357,6 +357,7 @@ class BaseConnection:
         self.retry_on_timeout = retry_on_timeout
         self._description_args = dict()
         self._connect_callbacks = list()
+        self.loop = loop
 
     def __repr__(self):
         return self.description.format(**self._description_args)
@@ -411,7 +412,7 @@ class BaseConnection:
 
     async def read_response(self):
         try:
-            response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout)
+            response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout, loop=self.loop)
         except asyncio.futures.TimeoutError:
             self.disconnect()
             raise
@@ -532,9 +533,11 @@ class Connection(BaseConnection):
 
     def __init__(self, host='127.0.0.1', port=6379, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
-                 ssl_context=None, parser_class=DefaultParser, reader_read_size=65535):
+                 ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
+                 *, loop=None):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
-                                         parser_class, reader_read_size)
+                                         parser_class, reader_read_size,
+                                         loop=loop)
         self.host = host
         self.port = port
         self.password = password
@@ -551,8 +554,10 @@ class Connection(BaseConnection):
         reader, writer = await exec_with_timeout(
             asyncio.open_connection(host=self.host,
                                     port=self.port,
-                                    ssl=self.ssl_context),
-            self._connect_timeout
+                                    ssl=self.ssl_context,
+                                    loop=self.loop),
+            self._connect_timeout,
+            loop=self.loop
         )
         self._reader = reader
         self._writer = writer
@@ -567,9 +572,11 @@ class UnixDomainSocketConnection(BaseConnection):
 
     def __init__(self, path='', password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
-                 ssl_context=None, parser_class=DefaultParser, reader_read_size=65535):
+                 ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
+                 *, loop=None):
         super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
-                                                         parser_class, reader_read_size)
+                                                         parser_class, reader_read_size,
+                                                         loop=loop)
         self.path = path
         self.db = db
         self.password = password
@@ -583,8 +590,10 @@ class UnixDomainSocketConnection(BaseConnection):
     async def _connect(self):
         reader, writer = await exec_with_timeout(
             asyncio.open_unix_connection(path=self.path,
-                                         ssl=self.ssl_context),
-            self._connect_timeout
+                                         ssl=self.ssl_context,
+                                         loop=self.loop),
+            self._connect_timeout,
+            loop=self.loop
         )
         self._reader = reader
         self._writer = writer
