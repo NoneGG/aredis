@@ -73,12 +73,12 @@ class TestPubSubSubscribeUnsubscribe(object):
             i = len(keys) - 1 - i
             assert await wait_for_message(p) == make_message(unsub_type, key, i)
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_channel_subscribe_unsubscribe(self, r):
         kwargs = make_subscribe_test_data(r.pubsub(), 'channel')
         await self._test_subscribe_unsubscribe(**kwargs)
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pattern_subscribe_unsubscribe(self, r):
         kwargs = make_subscribe_test_data(r.pubsub(), 'pattern')
         await self._test_subscribe_unsubscribe(**kwargs)
@@ -116,12 +116,12 @@ class TestPubSubSubscribeUnsubscribe(object):
             assert channel in keys
         await unsub_func()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_resubscribe_to_channels_on_reconnection(self, r):
         kwargs = make_subscribe_test_data(r.pubsub(), 'channel')
         await self._test_resubscribe_on_reconnection(**kwargs)
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_resubscribe_to_patterns_on_reconnection(self, r):
         kwargs = make_subscribe_test_data(r.pubsub(), 'pattern')
         await self._test_resubscribe_on_reconnection(**kwargs)
@@ -173,17 +173,17 @@ class TestPubSubSubscribeUnsubscribe(object):
         assert p.subscribed is False
         await p.unsubscribe()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_subscribe_property_with_channels(self, r):
         kwargs = make_subscribe_test_data(r.pubsub(), 'channel')
         await self._test_subscribed_property(**kwargs)
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_subscribe_property_with_patterns(self, r):
         kwargs = make_subscribe_test_data(r.pubsub(), 'pattern')
         await self._test_subscribed_property(**kwargs)
 
-    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio(forbid_global_loop=True)
     # async def test_ignore_all_subscribe_messages(self, r):
     #     p = r.pubsub(ignore_subscribe_messages=True)
     #
@@ -202,7 +202,7 @@ class TestPubSubSubscribeUnsubscribe(object):
     #     assert p.subscribed is False
 
     # problem: pass in pycharm, but hang up in terminal
-    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio(forbid_global_loop=True)
     # async def test_ignore_individual_subscribe_messages(self, r):
     #     p = r.pubsub()
     #
@@ -229,7 +229,7 @@ class TestPubSubMessages(object):
     def message_handler(self, message):
         self.message = message
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_published_message_to_channel(self, r):
         p = r.pubsub(ignore_subscribe_messages=True)
         await p.subscribe('foo')
@@ -241,7 +241,7 @@ class TestPubSubMessages(object):
         assert message == make_message('message', 'foo', 'test message')
         await p.unsubscribe()
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_published_message_to_pattern(self, r):
         p = r.pubsub(ignore_subscribe_messages=True)
         await p.subscribe('foo')
@@ -264,7 +264,7 @@ class TestPubSubMessages(object):
         assert message1 != message2
         await p.unsubscribe('foo')
 
-    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio(forbid_global_loop=True)
     # async def test_channel_message_handler(self, r):
     #     p = r.pubsub(ignore_subscribe_messages=True)
     #     await p.subscribe(foo=self.message_handler)
@@ -273,7 +273,7 @@ class TestPubSubMessages(object):
     #     assert self.message == make_message('message', 'foo', 'test message')
     #     await p.unsubscribe('foo')
     #
-    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio(forbid_global_loop=True)
     # async def test_pattern_message_handler(self, r):
     #     p = r.pubsub(ignore_subscribe_messages=True)
     #     await p.psubscribe(**{'f*': self.message_handler})
@@ -283,7 +283,7 @@ class TestPubSubMessages(object):
     #                                         pattern='f*')
     #     await p.unsubscribe('foo')
 
-    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio(forbid_global_loop=True)
     # async def test_unicode_channel_message_handler(self, r):
     #     p = r.pubsub(ignore_subscribe_messages=True)
     #     channel = 'uni' + chr(56) + 'code'
@@ -293,7 +293,7 @@ class TestPubSubMessages(object):
     #     assert await wait_for_message(p) is None
     #     assert self.message == make_message('message', channel, 'test message')
 
-    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio(forbid_global_loop=True)
     # async def test_unicode_pattern_message_handler(self, r):
     #     p = r.pubsub(ignore_subscribe_messages=True)
     #     pattern = 'uni' + chr(56) + '*'
@@ -304,7 +304,7 @@ class TestPubSubMessages(object):
     #     assert self.message == make_message('pmessage', channel,
     #                                         'test message', pattern=pattern)
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_get_message_without_subscribe(self, r):
         p = r.pubsub()
         with pytest.raises(RuntimeError) as info:
@@ -416,7 +416,7 @@ class TestPubSubMessages(object):
 #
 class TestPubSubRedisDown(object):
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_channel_subscribe(self, r):
         r = aredis.StrictRedis(host='localhost', port=6390)
         p = r.pubsub()
@@ -427,7 +427,7 @@ class TestPubSubRedisDown(object):
 class TestPubSubPubSubSubcommands(object):
 
     @skip_if_server_version_lt('2.8.0')
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pubsub_channels(self, r):
         p = r.pubsub(ignore_subscribe_messages=True)
         await p.subscribe('foo', 'bar', 'baz', 'quux')
@@ -436,7 +436,7 @@ class TestPubSubPubSubSubcommands(object):
         await p.unsubscribe()
 
     @skip_if_server_version_lt('2.8.0')
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pubsub_numsub(self, r):
         p1 = r.pubsub(ignore_subscribe_messages=True)
         await p1.subscribe('foo', 'bar', 'baz')
@@ -452,7 +452,7 @@ class TestPubSubPubSubSubcommands(object):
         await p3.unsubscribe()
 
     @skip_if_server_version_lt('2.8.0')
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pubsub_numpat(self, r):
         pubsub_count = await r.pubsub_numpat()
         p = r.pubsub(ignore_subscribe_messages=True)
