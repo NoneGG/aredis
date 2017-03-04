@@ -78,6 +78,19 @@ to the official command syntax. There are a few exceptions:
   track of the cursor while iterating. (Use Python 3.6 and the scan_iter/sscan_iter/hscan_iter/zscan_iter
   methods for this behavior. **iter functions are not supported in Python 3.5**)
 
+Loop
+^^^^
+
+The event loop can be set with the loop keyworkd argugment. If no loop is given
+the default event loop will be used.
+
+.. code-block:: python
+
+    >>> import aredis
+    >>> import asyncio
+    >>> loop = asyncio.get_event_loop()
+    >>> r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
+
 Connections
 ^^^^^^^^^^^
 

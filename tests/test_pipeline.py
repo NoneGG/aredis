@@ -8,7 +8,7 @@ from aredis.exceptions import (WatchError,
 
 class TestPipeline(object):
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline(self, r):
         await r.flushdb()
         async with await r.pipeline() as pipe:
@@ -28,7 +28,7 @@ class TestPipeline(object):
                     [(b('z1'), 2.0), (b('z2'), 4)],
                 ]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_length(self, r):
         await r.flushdb()
         async with await r.pipeline() as pipe:
@@ -48,7 +48,7 @@ class TestPipeline(object):
             assert len(pipe) == 0
             assert not pipe
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction(self, r):
         await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
@@ -60,7 +60,7 @@ class TestPipeline(object):
             assert await r.get('b') == b('b1')
             assert await r.get('c') == b('c1')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction_watch(self, r):
         await r.flushdb()
         await r.set('a', 0)
@@ -73,7 +73,7 @@ class TestPipeline(object):
             await pipe.set('a', int(a) + 1)
             assert await pipe.execute() == [True]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction_watch_failure(self, r):
         await r.flushdb()
         await r.set('a', 0)
@@ -92,7 +92,7 @@ class TestPipeline(object):
 
             assert await r.get('a') == b('bad')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exec_error_in_response(self, r):
         """
         an invalid pipeline command at exec time adds the exception instance
@@ -127,7 +127,7 @@ class TestPipeline(object):
             assert await pipe.execute() == [True]
             assert await r.get('z') == b('zzz')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exec_error_raised(self, r):
         await r.flushdb()
         await r.set('c', 'a')
@@ -144,7 +144,7 @@ class TestPipeline(object):
             assert await pipe.execute() == [True]
             assert await r.get('z') == b('zzz')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_parse_error_raised(self, r):
         await r.flushdb()
         async with await r.pipeline() as pipe:
@@ -160,7 +160,7 @@ class TestPipeline(object):
             assert await pipe.execute() == [True]
             assert await r.get('z') == b('zzz')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_watch_succeed(self, r):
         await r.flushdb()
         await r.set('a', 1)
@@ -179,7 +179,7 @@ class TestPipeline(object):
             assert await pipe.execute() == [True]
             assert not pipe.watching
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_watch_failure(self, r):
         await r.flushdb()
         await r.set('a', 1)
@@ -195,7 +195,7 @@ class TestPipeline(object):
 
             assert not pipe.watching
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_unwatch(self, r):
         await r.flushdb()
         await r.set('a', 1)
@@ -209,7 +209,7 @@ class TestPipeline(object):
             await pipe.get('a')
             assert await pipe.execute() == [b('1')]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_transaction_callable(self, r):
         await r.flushdb()
         await r.set('a', 1)
@@ -235,7 +235,7 @@ class TestPipeline(object):
         assert result == [True]
         assert await r.get('c') == b('4')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exec_error_in_no_transaction_pipeline(self, r):
         await r.flushdb()
         await r.set('a', 1)
@@ -248,7 +248,7 @@ class TestPipeline(object):
 
         assert await r.get('a') == b('1')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exec_error_in_no_transaction_pipeline_unicode_command(self, r):
         key = chr(11) + 'abcd' + chr(23)
         await r.set(key, 1)

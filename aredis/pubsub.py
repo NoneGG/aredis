@@ -249,7 +249,7 @@ class PubSub(object):
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
                 raise PubSubError("Pattern: '%s' has no handler registered")
-        loop = asyncio.get_event_loop()
+        loop = self.connection.loop
         thread = PubSubWorkerThread(self, loop, daemon=daemon)
         thread.start()
         return thread

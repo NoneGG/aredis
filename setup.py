@@ -45,7 +45,7 @@ setup(
     license='MIT',
     packages=['aredis', 'aredis.commands'],
     tests_require=['pytest',
-                   'pytest_asyncio'],
+                   'pytest_asyncio>=0.5.0'],
     cmdclass={'test': PyTest},
     classifiers=[
         'Development Status :: 5 - Production/Stable',

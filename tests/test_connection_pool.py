@@ -337,15 +337,15 @@ class TestSSLConnectionURLParsing(object):
 
 class TestConnection(object):
 
-    @pytest.mark.asyncio
-    async def test_on_connect_error(self):
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_on_connect_error(self, event_loop):
         """
         An error in Connection.on_connect should disconnect from the server
         see for details: https://github.com/andymccurdy/redis-py/issues/368
         """
         # this assumes the Redis server being tested against doesn't have
         # 9999 databases ;)
-        bad_connection = aredis.StrictRedis(db=9999)
+        bad_connection = aredis.StrictRedis(db=9999, loop=event_loop)
         # an error should be raised on connect
         with pytest.raises(RedisError):
             await bad_connection.info()
@@ -355,13 +355,13 @@ class TestConnection(object):
         assert pool._available_connections[0]._reader
 
     @skip_if_server_version_lt('2.8.8')
-    @pytest.mark.asyncio
-    async def test_busy_loading_disconnects_socket(self):
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_busy_loading_disconnects_socket(self, event_loop):
         """
         If Redis raises a LOADING error, the connection should be
         disconnected and a BusyLoadingError raised
         """
-        client = aredis.StrictRedis()
+        client = aredis.StrictRedis(loop=event_loop)
         with pytest.raises(BusyLoadingError):
             await client.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
         pool = client.connection_pool
@@ -370,13 +370,13 @@ class TestConnection(object):
         assert pool._available_connections[0]._reader
 
     @skip_if_server_version_lt('2.8.8')
-    @pytest.mark.asyncio
-    async def test_busy_loading_from_pipeline_immediate_command(self):
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_busy_loading_from_pipeline_immediate_command(self, event_loop):
         """
         BusyLoadingErrors should raise from Pipelines that execute a
         command immediately, like WATCH does.
         """
-        client = aredis.StrictRedis()
+        client = aredis.StrictRedis(loop=event_loop)
         pipe = await client.pipeline()
         with pytest.raises(BusyLoadingError):
             await pipe.immediate_execute_command('DEBUG', 'ERROR', 'LOADING fake message')
@@ -387,13 +387,13 @@ class TestConnection(object):
         assert not pool._available_connections[0]._reader
 
     @skip_if_server_version_lt('2.8.8')
-    @pytest.mark.asyncio
-    async def test_busy_loading_from_pipeline(self):
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_busy_loading_from_pipeline(self, event_loop):
         """
         BusyLoadingErrors should be raised from a pipeline execution
         regardless of the raise_on_error flag.
         """
-        client = aredis.StrictRedis()
+        client = aredis.StrictRedis(loop=event_loop)
         pipe = await client.pipeline()
         await pipe.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
         with pytest.raises(RedisError):
@@ -405,10 +405,10 @@ class TestConnection(object):
         assert pool._available_connections[0]._reader
 
     @skip_if_server_version_lt('2.8.8')
-    @pytest.mark.asyncio
-    async def test_read_only_error(self):
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_read_only_error(self, event_loop):
         "READONLY errors get turned in ReadOnlyError exceptions"
-        client = aredis.StrictRedis()
+        client = aredis.StrictRedis(loop=event_loop)
         with pytest.raises(ReadOnlyError):
             await client.execute_command('DEBUG', 'ERROR', 'READONLY blah blah')
 
