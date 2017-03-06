@@ -99,7 +99,6 @@ class Lock(object):
         wait trying to acquire the lock.
         """
         sleep = self.sleep
-        pool = self.redis.connection_pool
         token = b(uuid.uuid1().hex)
         if blocking is None:
             blocking = self.blocking
@@ -116,7 +115,7 @@ class Lock(object):
                 return False
             if stop_trying_at is not None and mod_time.time() > stop_trying_at:
                 return False
-            await asyncio.sleep(sleep, loop=pool.get_connection().loop)
+            await asyncio.sleep(sleep)
 
     async def do_acquire(self, token):
         if await self.redis.setnx(self.name, token):
