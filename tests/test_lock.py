@@ -13,7 +13,7 @@ class TestLock(object):
         kwargs['lock_class'] = self.lock_class
         return redis.lock(*args, **kwargs)
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_lock(self, r):
         await r.flushdb()
         lock = self.get_lock(r, 'foo')
@@ -23,7 +23,7 @@ class TestLock(object):
         await lock.release()
         assert await r.get('foo') is None
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_competing_locks(self, r):
         lock1 = self.get_lock(r, 'foo')
         lock2 = self.get_lock(r, 'foo')
@@ -34,21 +34,21 @@ class TestLock(object):
         assert not await lock1.acquire(blocking=False)
         await lock2.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_timeout(self, r):
         lock = self.get_lock(r, 'foo', timeout=10)
         assert await lock.acquire(blocking=False)
         assert 8 < await r.ttl('foo') <= 10
         await lock.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_float_timeout(self, r):
         lock = self.get_lock(r, 'foo', timeout=9.5)
         assert await lock.acquire(blocking=False)
         assert 8 < await r.pttl('foo') <= 9500
         await lock.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_blocking_timeout(self, r):
         lock1 = self.get_lock(r, 'foo')
         assert await lock1.acquire(blocking=False)
@@ -58,7 +58,7 @@ class TestLock(object):
         assert (time.time() - start) > 0.2
         await lock1.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_context_manager(self, r):
         # blocking_timeout prevents a deadlock if the lock can't be acquired
         # for some reason
@@ -66,19 +66,19 @@ class TestLock(object):
             assert await r.get('foo') == lock.local.token
         assert await r.get('foo') is None
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_high_sleep_raises_error(self, r):
         "If sleep is higher than timeout, it should raise an error"
         with pytest.raises(LockError):
             self.get_lock(r, 'foo', timeout=1, sleep=2)
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_releasing_unlocked_lock_raises_error(self, r):
         lock = self.get_lock(r, 'foo')
         with pytest.raises(LockError):
             await lock.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_releasing_lock_no_longer_owned_raises_error(self, r):
         lock = self.get_lock(r, 'foo')
         await lock.acquire(blocking=False)
@@ -89,7 +89,7 @@ class TestLock(object):
         # even though we errored, the token is still cleared
         assert lock.local.token is None
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_extend_lock(self, r):
         await r.flushdb()
         lock = self.get_lock(r, 'foo', timeout=10)
@@ -99,7 +99,7 @@ class TestLock(object):
         assert 16000 < await r.pttl('foo') <= 20000
         await lock.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_extend_lock_float(self, r):
         await r.flushdb()
         lock = self.get_lock(r, 'foo', timeout=10.0)
@@ -109,13 +109,13 @@ class TestLock(object):
         assert 16000 < await r.pttl('foo') <= 20000
         await lock.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_extending_unlocked_lock_raises_error(self, r):
         lock = self.get_lock(r, 'foo', timeout=10)
         with pytest.raises(LockError):
             await lock.extend(10)
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_extending_lock_with_no_timeout_raises_error(self, r):
         lock = self.get_lock(r, 'foo')
         await r.flushdb()
@@ -124,7 +124,7 @@ class TestLock(object):
             await lock.extend(10)
         await lock.release()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_extending_lock_no_longer_owned_raises_error(self, r):
         lock = self.get_lock(r, 'foo')
         await r.flushdb()
@@ -140,14 +140,14 @@ class TestLuaLock(TestLock):
 
 class TestLockClassSelection(object):
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_lock_class_argument(self, r):
         lock = r.lock('foo', lock_class=Lock)
         assert type(lock) == Lock
         lock = r.lock('foo', lock_class=LuaLock)
         assert type(lock) == LuaLock
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_cached_lualock_flag(self, r):
         try:
             r._use_lua_lock = True
@@ -156,7 +156,7 @@ class TestLockClassSelection(object):
         finally:
             r._use_lua_lock = None
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_cached_lock_flag(self, r):
         try:
             r._use_lua_lock = False
@@ -165,7 +165,7 @@ class TestLockClassSelection(object):
         finally:
             r._use_lua_lock = None
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_lua_compatible_server(self, r, monkeypatch):
         @classmethod
         def mock_register(cls, redis):
@@ -178,7 +178,7 @@ class TestLockClassSelection(object):
         finally:
             r._use_lua_lock = None
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_lua_unavailable(self, r, monkeypatch):
         @classmethod
         def mock_register(cls, redis):

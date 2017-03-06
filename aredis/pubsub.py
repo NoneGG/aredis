@@ -245,11 +245,13 @@ class PubSub(object):
     def run_in_thread(self, daemon=False):
         for channel, handler in iteritems(self.channels):
             if handler is None:
-                raise PubSubError("Channel: '%s' has no handler registered")
+                raise PubSubError("Channel: '{}' has no handler registered"
+                                  .format(channel))
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
-                raise PubSubError("Pattern: '%s' has no handler registered")
-        loop = self.connection.loop
+                raise PubSubError("Pattern: '{}' has no handler registered"
+                                  .format(pattern))
+        loop = asyncio.get_event_loop()
         thread = PubSubWorkerThread(self, loop, daemon=daemon)
         thread.start()
         return thread
