@@ -35,9 +35,6 @@ def skip_python_vsersion_lt(min_version):
     return pytest.mark.skipif(check, reason="")
 
 
-
-
-
 @pytest.fixture()
 def r(event_loop):
     return aredis.StrictRedis(loop=event_loop)
