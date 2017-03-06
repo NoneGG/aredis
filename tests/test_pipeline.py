@@ -231,7 +231,8 @@ class TestPipeline(object):
             pipe.multi()
             await pipe.set('c', int(a_value) + int(b_value))
 
-        result = await r.transaction(my_transaction, 'a', 'b')
+        result = await r.transaction(my_transaction, 'a', 'b',
+                                     watch_delay=0.01)
         assert result == [True]
         assert await r.get('c') == b('4')
 
