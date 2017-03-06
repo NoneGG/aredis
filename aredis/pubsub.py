@@ -284,5 +284,5 @@ class PubSubWorkerThread(threading.Thread):
         if self.loop:
             unsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
             punsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
-            asyncio.wait(unsubscribed)
-            asyncio.wait(punsubscribed)
+            asyncio.wait(unsubscribed, self.loop)
+            asyncio.wait(punsubscribed, self.loop)
