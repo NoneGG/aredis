@@ -162,6 +162,7 @@ class ConnectionPool(object):
         self.connection_class = connection_class
         self.connection_kwargs = connection_kwargs
         self.max_connections = max_connections
+        self.loop = self.connection_kwargs.get('loop')
 
         self.reset()
 
