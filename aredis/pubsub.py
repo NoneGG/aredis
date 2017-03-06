@@ -249,7 +249,7 @@ class PubSub(object):
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
                 raise PubSubError("Pattern: '%s' has no handler registered")
-        loop = self.connection.loop
+        loop = self.connection_pool.loop
         thread = PubSubWorkerThread(self, loop, daemon=daemon)
         thread.start()
         return thread

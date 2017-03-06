@@ -47,7 +47,7 @@ class TransactionCommandMixin:
                     if watch_delay is not None and watch_delay > 0:
                         await asyncio.sleep(
                             watch_delay,
-                            loop=self.connection_pool.get_connection().loop
+                            loop=self.connection_pool.loop
                         )
                     continue
 
