@@ -261,6 +261,10 @@ class PubSubWorkerThread(threading.Thread):
         self.daemon = daemon
         self.pubsub = pubsub
         self._running = False
+        # Make sure we have the current thread loop before we
+        # fork into the new thread.
+        if loop is None:
+            loop = asyncio.get_event_loop()
         self.loop = loop
 
     async def _run(self):
