@@ -249,19 +249,21 @@ class PubSub(object):
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
                 raise PubSubError("Pattern: '%s' has no handler registered")
-        loop = self.connection_pool.loop
-        thread = PubSubWorkerThread(self, loop, daemon=daemon)
+        thread = PubSubWorkerThread(self, daemon=daemon)
         thread.start()
         return thread
 
 
 class PubSubWorkerThread(threading.Thread):
-    def __init__(self, pubsub, loop, daemon=False):
+    def __init__(self, pubsub, daemon=False):
         super(PubSubWorkerThread, self).__init__()
         self.daemon = daemon
         self.pubsub = pubsub
         self._running = False
-        self.loop = loop
+        # Make sure we have the current thread loop before we
+        # fork into the new thread. If not loop has been set on the connection
+        # pool use the current default event loop.
+        self.loop = pubsub.connection_pool.loop or asyncio.get_event_loop()
 
     async def _run(self):
         pubsub = self.pubsub
@@ -284,5 +286,8 @@ class PubSubWorkerThread(threading.Thread):
         if self.loop:
             unsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.unsubscribe(), self.loop)
             punsubscribed = asyncio.run_coroutine_threadsafe(self.pubsub.punsubscribe(), self.loop)
-            asyncio.wait(unsubscribed, self.loop)
-            asyncio.wait(punsubscribed, self.loop)
+            asyncio.wait(
+                [unsubscribed, punsubscribed],
+                loop=self.loop
+            )
+            print('here')
