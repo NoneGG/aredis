@@ -245,10 +245,12 @@ class PubSub(object):
     def run_in_thread(self, daemon=False):
         for channel, handler in iteritems(self.channels):
             if handler is None:
-                raise PubSubError("Channel: '%s' has no handler registered")
+                raise PubSubError("Channel: '{}' has no handler registered"
+                                  .format(channel))
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
-                raise PubSubError("Pattern: '%s' has no handler registered")
+                raise PubSubError("Pattern: '{}' has no handler registered"
+                                  .format(pattern))
         thread = PubSubWorkerThread(self, daemon=daemon)
         thread.start()
         return thread

@@ -21,3 +21,6 @@
 * new command hstrlen supported
 * new command unlink supported
 * new command touch supported
+
+### 1.0.7
+* introduce loop argument to aredis
