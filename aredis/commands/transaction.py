@@ -45,7 +45,10 @@ class TransactionCommandMixin:
                     return func_value if value_from_callable else exec_value
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
-                        await asyncio.sleep(watch_delay)
+                        await asyncio.sleep(
+                            watch_delay,
+                            loop=self.connection_pool.loop
+                        )
                     continue
 
     async def watch(self, *names):

@@ -82,7 +82,17 @@ Loop
 ^^^^
 
 The event loop can be set with the loop keyworkd argugment. If no loop is given
-the default event loop will be used.
+the default event loop will be
+
+**warning**
+
+**asyncio.AbstractEventLoop** is actually not thread safe and asyncio uses **BaseDefaultEventLoopPolicy** as default
+event policy(which create new event loop instead of sharing event loop between threads,
+being thread safe to some degree) So the StricRedis is still thread safe if your code works with default event loop.
+But if you customize event loop yourself, please make sure your event loop is thread safe(maybe you should customize
+on the base of **BaseDefaultEventLoopPolicy** instead of **AbstractEventLoop**)
+
+Detailed discussion about the problem is in `issue20 <https://github.com/NoneGG/aredis/pull/20#issuecomment-285088890>`_
 
 .. code-block:: python
 

@@ -115,7 +115,7 @@ class Lock(object):
                 return False
             if stop_trying_at is not None and mod_time.time() > stop_trying_at:
                 return False
-            await asyncio.sleep(sleep)
+            await asyncio.sleep(sleep, loop=self.redis.connection_pool.loop)
 
     async def do_acquire(self, token):
         if await self.redis.setnx(self.name, token):
