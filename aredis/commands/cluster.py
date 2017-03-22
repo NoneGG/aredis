@@ -31,6 +31,21 @@ def parse_cluster_nodes(response, **options):
     return dict([_parse_node_line(line) for line in raw_lines])
 
 
+def parse_cluster_slots(response):
+    res = dict()
+    for slot_info in response:
+        min_slot, max_slot = slot_info[:2]
+        nodes = slot_info[2:]
+        parse_node = lambda node: {
+            'host': node[0],
+            'port': node[1],
+            'node_id': node[2]
+        }
+        res[(min_slot, max_slot)] = [parse_node(node) for node in nodes]
+    return res
+
+
+
 class ClusterCommandMixin:
 
     RESPONSE_CALLBACKS = {
@@ -50,6 +65,7 @@ class ClusterCommandMixin:
         'CLUSTER SET-CONFIG-EPOCH': bool_ok,
         'CLUSTER SETSLOT': bool_ok,
         'CLUSTER SLAVES': parse_cluster_nodes,
+        'CLUSTER SLOTS': parse_cluster_slots
     }
 
     async def cluster(self, cluster_arg, *args):
