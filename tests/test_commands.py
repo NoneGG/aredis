@@ -1803,6 +1803,13 @@ class TestRedisCommands(object):
         assert isinstance(await mock_cluster_resp_slaves.cluster(
             'slaves', 'nodeid'), dict)
 
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_clsuter_slots(self, mock_cluster_resp_slots):
+        slots_info = await mock_cluster_resp_slots.cluster('slots')
+        assert sum(end-start+1 for start, end in slots_info.keys()) == 16384
+        # minimum cluster consists of 3 masters and 3 slaves
+        assert all(len(nodes) >= 2 for nodes in slots_info.values())
+
     # GEO COMMANDS
     @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)

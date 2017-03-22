@@ -121,3 +121,15 @@ def mock_cluster_resp_slaves(event_loop):
                 b"slave 19efe5a631f3296fdf21a5441680f893e8cc96ec 0 "
                 b"1447836789290 3 connected']")
     return _gen_cluster_mock_resp(r, response, loop=event_loop)
+
+
+@pytest.fixture()
+def mock_cluster_resp_slots(event_loop):
+    r = aredis.StrictRedis(loop=event_loop)
+    response = ([[0, 5460, [b'172.17.0.2', 7000, b'90406a8afa09afb6b4aa614edc32b5d1c0eb22aa'],
+                  [b'172.17.0.2', 7003, b'0c8f3cd0baf30357fc2f6e871f68f7d423aac931']],
+                 [10923, 16383, [b'172.17.0.2', 7002, b'cc8417fdb2fef950092d8e310f521d8296293e96'],
+                  [b'172.17.0.2', 7005, b'da700b467f4931b4241024a74bb858695304012b']],
+                 [5461, 10922, [b'172.17.0.2', 7001, b'cab54cba256f159c1400ee80e29c37f256f46580'],
+                  [b'172.17.0.2', 7004, b'f0674d2b02c7c0432c9f2bf0108255aaf20179be']]])
+    return _gen_cluster_mock_resp(r, response, loop=event_loop)
