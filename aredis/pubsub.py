@@ -216,11 +216,9 @@ class PubSub(object):
                 subscribed_dict = self.channels
             try:
                 key = message['channel']
-                print(key)
                 if isinstance(key, bytes):
                     key = key.decode()
                 del subscribed_dict[key]
-                print(subscribed_dict)
             except KeyError:
                 pass
 
