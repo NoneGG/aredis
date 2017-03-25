@@ -292,4 +292,3 @@ class PubSubWorkerThread(threading.Thread):
                 [unsubscribed, punsubscribed],
                 loop=self.loop
             )
-            print('here')
