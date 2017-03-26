@@ -51,7 +51,6 @@ class SocketBuffer(object):
         return self.bytes_written - self.bytes_read
 
     async def _read_from_socket(self, length=None):
-        socket_read_size = self.read_size
         buf = self._buffer
         buf.seek(self.bytes_written)
         marker = 0

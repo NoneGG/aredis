@@ -121,7 +121,7 @@ x_mode_m_crc16_lookup = [
 ]
 
 
-def _crc16_py3(data):
+def crc16(data):
     """
     """
     crc = 0
