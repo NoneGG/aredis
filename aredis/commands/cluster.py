@@ -39,9 +39,11 @@ def parse_cluster_slots(response):
         parse_node = lambda node: {
             'host': node[0],
             'port': node[1],
-            'node_id': node[2]
+            'node_id': node[2],
+            'server_type': 'slave'
         }
         res[(min_slot, max_slot)] = [parse_node(node) for node in nodes]
+        res[(min_slot, max_slot)][0]['server_type'] = 'master'
     return res
 
 
