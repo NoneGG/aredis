@@ -603,13 +603,13 @@ class UnixDomainSocketConnection(BaseConnection):
         await self.on_connect()
 
 
-class BaseClusterConnection(BaseConnection):
-    """Base class of cluster connection"""
-    description = "BaseClusterConnection"
+class ClusterConnection(Connection):
+    "Manages TCP communication to and from a Redis server"
+    description = "ClusterConnection<host={host},port={port}>"
 
     def __init__(self, *args, **kwargs):
         self.readonly = kwargs.pop('readonly', False)
-        super(BaseClusterConnection, self).__init__(*args, **kwargs)
+        super(ClusterConnection, self).__init__(*args, **kwargs)
 
     async def on_connect(self):
         """
@@ -619,19 +619,8 @@ class BaseClusterConnection(BaseConnection):
         if self.db:
             warnings.warn('SELECT DB is not allowed in cluster mode')
             self.db = ''
-        super(BaseClusterConnection, self).on_connect()
+        super(ClusterConnection, self).on_connect()
         if self.readonly:
             await self.send_command('READONLY')
             if await self.read_response() != b'OK':
                 raise ConnectionError('READONLY command failed')
-
-
-class ClusterConnection(Connection, BaseClusterConnection):
-    "Manages TCP communication to and from a Redis server"
-    description = "ClusterConnection<host={host},port={port}>"
-
-
-class UnixDomainClusterConnection(UnixDomainSocketConnection, BaseClusterConnection):
-
-    description = "ClusterUnixDomainSocketConnection<path={path}>"
-
