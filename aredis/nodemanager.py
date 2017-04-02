@@ -22,7 +22,7 @@ class NodeManager(object):
         :nodemanager_follow_cluster:
             The node manager will during initialization try the last set of nodes that
             it was operating on. This will allow the client to drift along side the cluster
-            if the cluster nodes move around alot.
+            if the cluster nodes move around a slot.
         """
         self.connection_kwargs = connection_kwargs
         self.nodes = {}
