@@ -1,5 +1,7 @@
 import warnings
-from aredis.utils import bool_ok
+from aredis.utils import (dict_merge,
+                          string_keys_to_dict,
+                          NodeFlag, bool_ok)
 
 
 SENTINEL_STATE_TYPES = {
@@ -125,3 +127,14 @@ class SentinelCommandMixin:
     async def sentinel_slaves(self, service_name):
         "Returns a list of slaves for ``service_name``"
         return await self.execute_command('SENTINEL SLAVES', service_name)
+
+
+class ClusterSentinelCommands(SentinelCommandMixin):
+
+    NODES_FLAGS = dict_merge(
+        string_keys_to_dict(
+            ["SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
+            'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
+            'SENTINEL SLAVES'], NodeFlag.BLOCKED
+        )
+    )

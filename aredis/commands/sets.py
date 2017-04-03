@@ -1,5 +1,6 @@
 from aredis.utils import (b, dict_merge,
                           list_or_args,
+                          first_key,
                           string_keys_to_dict)
 
 
@@ -121,3 +122,10 @@ class SetsCommandMixin:
         if count is not None:
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('SSCAN', *pieces)
+
+
+class ClusterSetsCommandMixin(SetsCommandMixin):
+
+    RESULT_CALLBACKS = {
+        'SSCAN': first_key
+    }

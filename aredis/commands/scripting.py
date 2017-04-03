@@ -1,4 +1,6 @@
-from aredis.utils import bool_ok
+from aredis.utils import (dict_merge,
+                          string_keys_to_dict,
+                          NodeFlag, bool_ok)
 
 
 class ScriptingCommandMixin:
@@ -62,3 +64,21 @@ class ScriptingCommandMixin:
         """
         from aredis.scripting import Script
         return Script(self, script)
+
+
+class ClusterScriptingCommandMixin(ScriptingCommandMixin):
+
+    NODES_FLAGS = dict_merge(
+        {
+        'SCRIPT KILL': NodeFlag.BLOCKED
+        },
+        string_keys_to_dict(
+            ["SCRIPT LOAD", "SCRIPT FLUSH", "SCRIPT EXISTS",], NodeFlag.ALL_MASTERS
+        )
+    )
+
+    RESULT_CALLBACKS = {
+        "SCRIPT LOAD": lambda command, res: list(res.values()).pop(),
+        "SCRIPT EXISTS": lambda command, res: [all(k) for k in zip(*res.values())],
+        "SCRIPT FLUSH": lambda command, res: all(res.values())
+    }

@@ -1,4 +1,5 @@
-from aredis.utils import bool_ok
+from aredis.utils import (NodeFlag,
+                          bool_ok)
 
 
 class ConnectionCommandMixin:
@@ -16,3 +17,16 @@ class ConnectionCommandMixin:
     async def ping(self):
         "Ping the Redis server"
         return await self.execute_command('PING')
+
+
+class ClusterConnectionCommandMixin(ConnectionCommandMixin):
+
+    NODE_FLAGS = {
+        'PING': NodeFlag.ALL_NODES,
+        'ECHO': NodeFlag.ALL_NODES
+    }
+
+    RESULT_CALLBACKS = {
+        'ECHO': None,
+        'PING': None
+    }

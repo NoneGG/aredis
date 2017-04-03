@@ -1,6 +1,6 @@
-
 from aredis.exceptions import RedisError
 from aredis.utils import (b, iteritems,
+                          first_key,
                           iterkeys,
                           itervalues,
                           dict_merge,
@@ -331,3 +331,10 @@ class SortedSetCommandMixin:
             pieces.extend([b('COUNT'), count])
         options = {'score_cast_func': score_cast_func}
         return await self.execute_command('ZSCAN', *pieces, **options)
+
+
+class ClusterSortedSetCommandMixin(SortedSetCommandMixin):
+
+    RESULT_CALLBACKS = {
+        'ZSCAN': first_key
+    }

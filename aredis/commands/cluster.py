@@ -1,4 +1,7 @@
-from aredis.utils import bool_ok
+from aredis.utils import (bool_ok,
+                          NodeFlag,
+                          string_keys_to_dict,
+                          dict_merge)
 from aredis.exceptions import (RedisError,
                                ClusterError)
 
@@ -93,6 +96,15 @@ def parse_cluster_slots(response):
 
 class ClusterCommandMixin:
 
+    NODES_FLAGS = dict_merge({
+        'CLUSTER INFO': NodeFlag.ALL_NODES,
+        'CLUSTER COUNTKEYSINSLOT': NodeFlag.SLOT_ID
+    },
+    string_keys_to_dict(
+        ['CLUSTER NODES', 'CLUSTER SLOTS'], NodeFlag.RANDOM
+    )
+    )
+
     RESPONSE_CALLBACKS = {
         'CLUSTER ADDSLOTS': bool_ok,
         'CLUSTER COUNT-FAILURE-REPORTS': lambda x: int(x),
@@ -115,6 +127,13 @@ class ClusterCommandMixin:
         'READONLY': bool_ok,
         'READWRITE': bool_ok,
     }
+
+    RESULT_CALLBACKS = dict_merge(
+        string_keys_to_dict(
+            ['CLUSTER INFO', 'CLUSTER ADDSLOTS', 'CLUSTER COUNT-FAILURE-REPORTS',
+            'CLUSTER DELSLOTS', 'CLUSTER FAILOVER', 'CLUSTER FORGET'], None
+        )
+    )
 
     def _nodes_slots_to_slots_nodes(self, mapping):
         """
@@ -147,7 +166,7 @@ class ClusterCommandMixin:
         """
         return await self.execute_command('CLUSTER COUNT-FAILURE-REPORTS', node_id=node_id)
 
-    async def cluster_countkeysinslot(self, slot_id):
+    async def cluster_countkeysinslot(self, *, slot_id):
         """
         Return the number of local keys in the specified hash slot
 

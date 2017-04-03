@@ -1,13 +1,14 @@
 import datetime
 from aredis.exceptions import RedisError
-from aredis.utils import (iteritems,
+from aredis.utils import (NodeFlag,
+                          iteritems,
                           list_or_args,
                           dict_merge,
                           bool_ok,
                           string_keys_to_dict)
 
 
-class BitField:
+class BitField(object):
     """
     The command treats a Redis string as a array of bits,
     and is capable of addressing specific integer fields
@@ -313,3 +314,10 @@ class StringsCommandMixin:
         are 0-based integers specifying the portion of the string to return.
         """
         return await self.execute_command('SUBSTR', name, start, end)
+
+
+class ClusterStringsCommandMixin(StringsCommandMixin):
+
+    NODES_FLAGS = {
+        'BITOP': NodeFlag.BLOCKED
+    }

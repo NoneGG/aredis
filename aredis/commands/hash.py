@@ -1,6 +1,7 @@
 from aredis.exceptions import DataError
 from aredis.utils import (b, dict_merge,
                           iteritems,
+                          first_key,
                           string_keys_to_dict,
                           list_or_args,
                           pairs_to_dict)
@@ -115,3 +116,10 @@ class HashCommandMixin:
         If the key or the field do not exist, 0 is returned.
         """
         return await self.execute_command('HSTRLEN', name, key)
+
+
+class ClusterHashCommandMixin(HashCommandMixin):
+
+    RESULT_CALLBACKS = {
+        'HSCAN': first_key
+    }

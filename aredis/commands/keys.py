@@ -2,7 +2,10 @@ import datetime
 import time as mod_time
 from aredis.exceptions import (RedisError,
                                DataError)
-from aredis.utils import (b, dict_merge,
+from aredis.utils import (merge_result,
+                          NodeFlag,
+                          first_key,
+                          b, dict_merge,
                           int_or_none,
                           bool_ok,
                           string_keys_to_dict)
@@ -257,3 +260,24 @@ class KeysCommandMixin:
         if count is not None:
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('SCAN', *pieces)
+
+
+class ClusterKeysCommandMixin(KeysCommandMixin):
+
+    NODES_FLAGS = dict_merge(
+        {
+        'MOVE': NodeFlag.BLOCKED,
+        'RANDOMKEY': NodeFlag.RANDOM,
+        'SCAN': NodeFlag.ALL_MASTERS,
+        },
+        string_keys_to_dict(
+            ['KEYS'],
+            NodeFlag.ALL_NODES
+        )
+    )
+
+    RESULT_CALLBACKS = {
+        'KEYS': merge_result,
+        'RANDOMKEY': first_key,
+        'SCAN': None
+    }
