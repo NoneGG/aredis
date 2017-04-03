@@ -1,4 +1,5 @@
-from aredis.pubsub import PubSub
+from aredis.pubsub import (PubSub,
+                           ClusterPubSub)
 from aredis.utils import (dict_merge,
                           merge_result,
                           string_keys_to_dict, 
@@ -120,3 +121,6 @@ class CLusterPubSubCommandMixin(PubSubCommandMixin):
             "PUBSUB NUMPAT",
         ], parse_cluster_pubsub_numpat),
     )
+
+    def pubsub(self, **kwargs):
+        return ClusterPubSub(self.connection_pool, **kwargs)
