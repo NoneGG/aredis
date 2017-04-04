@@ -437,7 +437,7 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
             number, cmd, exception.args[0])
         exception.args = (msg,) + exception.args[1:]
 
-    def execute(self, raise_on_error=True):
+    async def execute(self, raise_on_error=True):
         """
         """
         stack = self.command_stack
@@ -446,7 +446,7 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
             return []
 
         try:
-            return self.send_cluster_commands(stack, raise_on_error)
+            return await self.send_cluster_commands(stack, raise_on_error)
         finally:
             self.reset()
 
@@ -483,7 +483,7 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
         #     self.connection = None
 
     @clusterdown_wrapper
-    def send_cluster_commands(self, stack, raise_on_error=True, allow_redirections=True):
+    async def send_cluster_commands(self, stack, raise_on_error=True, allow_redirections=True):
         """
         Send a bunch of cluster commands to the redis cluster.
 
@@ -523,10 +523,10 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
         # we dont' multiplex on the sockets as they come available, but that shouldn't make too much difference.
         node_commands = nodes.values()
         for n in node_commands:
-            n.write()
+            await n.write()
 
         for n in node_commands:
-            n.read()
+            await n.read()
 
         # release all of the redis connections we allocated earlier back into the connection pool.
         # we used to do this step as part of a try/finally block, but it is really dangerous to
@@ -568,7 +568,7 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
             for c in attempt:
                 try:
                     # send each command individually like we do in the main client.
-                    c.result = super(StrictClusterPipeline, self).execute_command(*c.args, **c.options)
+                    c.result = await super(StrictClusterPipeline, self).execute_command(*c.args, **c.options)
                 except RedisError as e:
                     c.result = e
 
@@ -736,7 +736,7 @@ class NodeCommands(object):
         """
         self.commands.append(c)
 
-    def write(self):
+    async def write(self):
         """
         Code borrowed from StrictRedis so it can be fixed
         """
@@ -751,12 +751,12 @@ class NodeCommands(object):
         # build up all commands into a single request to increase network perf
         # send all the commands and catch connection and timeout errors.
         try:
-            connection.send_packed_command(connection.pack_commands([c.args for c in commands]))
+            await connection.send_packed_command(connection.pack_commands([c.args for c in commands]))
         except (ConnectionError, TimeoutError) as e:
             for c in commands:
                 c.result = e
 
-    def read(self):
+    async def read(self):
         """
         """
         connection = self.connection
@@ -774,7 +774,7 @@ class NodeCommands(object):
             # explicitly open the connection and all will be well.
             if c.result is None:
                 try:
-                    c.result = self.parse_response(connection, c.args[0], **c.options)
+                    c.result = await self.parse_response(connection, c.args[0], **c.options)
                 except (ConnectionError, TimeoutError) as e:
                     for c in self.commands:
                         c.result = e
