@@ -1,7 +1,9 @@
 import asyncio
 import warnings
-from aredis.pipeline import StrictPipeline
-from aredis.exceptions import WatchError
+from aredis.pipeline import (StrictClusterPipeline,
+                             StrictPipeline)
+from aredis.exceptions import (RedisClusterException,
+                               WatchError)
 from aredis.utils import (string_keys_to_dict,
                           bool_ok)
 
@@ -63,3 +65,32 @@ class TransactionCommandMixin:
         """
         warnings.warn(
             DeprecationWarning('Call UNWATCH from a Pipeline object'))
+
+
+class ClusterTransactionCommandMixin(TransactionCommandMixin):
+
+    def pipeline(self, transaction=None, shard_hint=None):
+        """
+        Cluster impl:
+            Pipelines do not work in cluster mode the same way they do in normal mode.
+            Create a clone of this object so that simulating pipelines will work correctly.
+            Each command will be called directly when used and when calling execute() will only return the result stack.
+        """
+        if shard_hint:
+            raise RedisClusterException("shard_hint is deprecated in cluster mode")
+
+        if transaction:
+            raise RedisClusterException("transaction is deprecated in cluster mode")
+
+        return StrictClusterPipeline(
+            connection_pool=self.connection_pool,
+            startup_nodes=self.connection_pool.nodes.startup_nodes,
+            result_callbacks=self.result_callbacks,
+            response_callbacks=self.response_callbacks,
+        )
+
+    def transaction(self, *args, **kwargs):
+        """
+        Transaction is not implemented in cluster mode yet.
+        """
+        raise RedisClusterException("method StrictRedisCluster.transaction() is not implemented")

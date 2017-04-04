@@ -129,3 +129,117 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
     RESULT_CALLBACKS = {
         'SSCAN': first_key
     }
+
+
+    ###
+    # Set commands
+
+    async def sdiff(self, keys, *args):
+        """
+        Return the difference of sets specified by ``keys``
+
+        Cluster impl:
+            Querry all keys and diff all sets and return result
+        """
+        k = list_or_args(keys, args)
+        res = await self.smembers(k[0])
+
+        for arg in k[1:]:
+            res -= await self.smembers(arg)
+
+        return res
+
+    async def sdiffstore(self, dest, keys, *args):
+        """
+        Store the difference of sets specified by ``keys`` into a new
+        set named ``dest``.  Returns the number of keys in the new set.
+        Overwrites dest key if it exists.
+
+        Cluster impl:
+            Use sdiff() --> Delete dest key --> store result in dest key
+        """
+        res = await self.sdiff(keys, *args)
+        await self.delete(dest)
+
+        if not res:
+            return 0
+        return await self.sadd(dest, *res)
+
+    async def sinter(self, keys, *args):
+        """
+        Return the intersection of sets specified by ``keys``
+
+        Cluster impl:
+            Querry all keys, intersection and return result
+        """
+        k = list_or_args(keys, args)
+        res = await self.smembers(k[0])
+
+        for arg in k[1:]:
+            res &= await self.smembers(arg)
+
+        return res
+
+    async def sinterstore(self, dest, keys, *args):
+        """
+        Store the intersection of sets specified by ``keys`` into a new
+        set named ``dest``.  Returns the number of keys in the new set.
+
+        Cluster impl:
+            Use sinter() --> Delete dest key --> store result in dest key
+        """
+        res = await self.sinter(keys, *args)
+        await self.delete(dest)
+
+        if res:
+            await self.sadd(dest, *res)
+            return len(res)
+        else:
+            return 0
+
+    async def smove(self, src, dst, value):
+        """
+        Move ``value`` from set ``src`` to set ``dst`` atomically
+
+        Cluster impl:
+            SMEMBERS --> SREM --> SADD. Function is no longer atomic.
+        """
+        res = await self.srem(src, value)
+
+        # Only add the element if existed in src set
+        if res == 1:
+            await self.sadd(dst, value)
+
+        return res
+
+    async def sunion(self, keys, *args):
+        """
+        Return the union of sets specified by ``keys``
+
+        Cluster impl:
+            Querry all keys, union and return result
+
+            Operation is no longer atomic.
+        """
+        k = list_or_args(keys, args)
+        res = await self.smembers(k[0])
+
+        for arg in k[1:]:
+            res |= await self.smembers(arg)
+
+        return res
+
+    async def sunionstore(self, dest, keys, *args):
+        """
+        Store the union of sets specified by ``keys`` into a new
+        set named ``dest``.  Returns the number of keys in the new set.
+
+        Cluster impl:
+            Use sunion() --> Dlete dest key --> store result in dest key
+
+            Operation is no longer atomic.
+        """
+        res = await self.sunion(keys, *args)
+        await self.delete(dest)
+
+        return await self.sadd(dest, *res)

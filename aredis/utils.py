@@ -1,5 +1,7 @@
 import sys
 from functools import wraps
+from aredis.exceptions import (RedisClusterException,
+                               ClusterDownError)
 
 
 def b(x):
@@ -42,7 +44,7 @@ class dummy(object):
     pass
 
 
-# ++++++++++ functions to parse response ++++++++++++++
+# ++++++++++ response callbacks ++++++++++++++
 def string_keys_to_dict(key_string, callback):
     return dict.fromkeys(key_string.split(), callback)
 
@@ -83,6 +85,75 @@ def pairs_to_dict(response):
     "Create a dict given a list of key/value pairs"
     it = iter(response)
     return dict(zip(it, it))
+
+
+# ++++++++++ result callbacks (cluster)++++++++++++++
+def merge_result(res):
+    """
+    Merge all items in `res` into a list.
+
+    This command is used when sending a command to multiple nodes
+    and they result from each node should be merged into a single list.
+    """
+    if not isinstance(res, dict):
+        raise ValueError('Value should be of dict type')
+
+    result = set([])
+
+    for _, v in res.items():
+        for value in v:
+            result.add(value)
+
+    return list(result)
+
+
+
+def first_key(res):
+    """
+    Returns the first result for the given command.
+
+    If more then 1 result is returned then a `RedisClusterException` is raised.
+    """
+    if not isinstance(res, dict):
+        raise ValueError('Value should be of dict type')
+
+    if len(res.keys()) != 1:
+        raise RedisClusterException("More then 1 result from command")
+
+    return list(res.values())[0]
+
+
+def blocked_command(self, command):
+    """
+    Raises a `RedisClusterException` mentioning the command is blocked.
+    """
+    raise RedisClusterException("Command: {0} is blocked in redis cluster mode".format(command))
+
+
+async def clusterdown_wrapper(func):
+    """
+    Wrapper for CLUSTERDOWN error handling.
+
+    If the cluster reports it is down it is assumed that:
+     - connection_pool was disconnected
+     - connection_pool was reseted
+     - refereh_table_asap set to True
+
+    It will try 3 times to rerun the command and raises ClusterDownException if it continues to fail.
+    """
+    @wraps(func)
+    async def inner(*args, **kwargs):
+        for _ in range(0, 3):
+            try:
+                return await func(*args, **kwargs)
+            except ClusterDownError:
+                # Try again with the new cluster setup. All other errors
+                # should be raised.
+                pass
+
+        # If it fails 3 times then raise exception back to caller
+        raise ClusterDownError("CLUSTERDOWN error. Unable to rebuild the cluster")
+    return inner
 
 
 x_mode_m_crc16_lookup = [
@@ -128,3 +199,12 @@ def crc16(data):
     for byte in data:
         crc = ((crc << 8) & 0xff00) ^ x_mode_m_crc16_lookup[((crc >> 8) & 0xff) ^ byte]
     return crc & 0xffff
+
+
+class NodeFlag(object):
+
+    BLOCKED = 'blocked'
+    ALL_NODES = 'all-nodes'
+    ALL_MASTERS = 'all-masters'
+    RANDOM = 'random'
+    SLOT_ID = 'slot-id'

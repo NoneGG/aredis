@@ -321,3 +321,60 @@ class ClusterStringsCommandMixin(StringsCommandMixin):
     NODES_FLAGS = {
         'BITOP': NodeFlag.BLOCKED
     }
+
+    async def mget(self, keys, *args):
+        """
+        Returns a list of values ordered identically to ``keys``
+
+        Cluster impl:
+            Itterate all keys and send GET for each key.
+            This will go alot slower than a normal mget call in StrictRedis.
+
+            Operation is no longer atomic.
+        """
+        res = list()
+        for arg in list_or_args(keys, args):
+            res.append(await self.get(arg))
+        return res
+
+    async def mset(self, *args, **kwargs):
+        """
+        Sets key/values based on a mapping. Mapping can be supplied as a single
+        dictionary argument or as kwargs.
+
+        Cluster impl:
+            Itterate over all items and do SET on each (k,v) pair
+
+            Operation is no longer atomic.
+        """
+        if args:
+            if len(args) != 1 or not isinstance(args[0], dict):
+                raise RedisError('MSET requires **kwargs or a single dict arg')
+            kwargs.update(args[0])
+
+        for pair in iteritems(kwargs):
+            await self.set(pair[0], pair[1])
+
+        return True
+
+    async def msetnx(self, *args, **kwargs):
+        """
+        Sets key/values based on a mapping if none of the keys are already set.
+        Mapping can be supplied as a single dictionary argument or as kwargs.
+        Returns a boolean indicating if the operation was successful.
+
+        Clutser impl:
+            Itterate over all items and do GET to determine if all keys do not exists.
+            If true then call mset() on all keys.
+        """
+        if args:
+            if len(args) != 1 or not isinstance(args[0], dict):
+                raise RedisError('MSETNX requires **kwargs or a single dict arg')
+            kwargs.update(args[0])
+
+        # Itterate over all items and fail fast if one value is True.
+        for k, _ in kwargs.items():
+            if await self.get(k):
+                return False
+
+        return await self.mset(**kwargs)
