@@ -253,10 +253,10 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                 data = await self.lrange(name, 0, -1)
             else:
                 raise RedisClusterException("Unable to sort data type : {0}".format(data_type))
-            # if by is not None:
-            #     # _sort_using_by_arg mutates data so we don't
-            #     # need need a return value.
-            #     self._sort_using_by_arg(data, by, alpha)
+            if by is not None:
+                # _sort_using_by_arg mutates data so we don't
+                # need need a return value.
+                await self._sort_using_by_arg(data, by, alpha)
             if not alpha:
                 data.sort(key=self._strtod_key_func)
             else:
@@ -334,26 +334,26 @@ class ClusterListsCommandMixin(ListsCommandMixin):
         """
         return float(arg)
 
-    # async def _sort_using_by_arg(self, data, by, alpha):
-    #     """
-    #     Used by sort()
-    #     """
-    #     if getattr(by, "decode", None):
-    #         by = by.decode("utf-8")
-    #
-    #     async def _by_key(arg):
-    #         if getattr(arg, "decode", None):
-    #             arg = arg.decode("utf-8")
-    #
-    #         key = by.replace('*', arg)
-    #         if '->' in by:
-    #             key, hash_key = key.split('->')
-    #             v = await self.hget(key, hash_key)
-    #             if alpha:
-    #                 return v
-    #             else:
-    #                 return float(v)
-    #         else:
-    #             return await self.get(key)
-    #
-    #     data.sort(key=_by_key)
+    async def _sort_using_by_arg(self, data, by, alpha):
+        """
+        Used by sort()
+        """
+        if getattr(by, "decode", None):
+            by = by.decode("utf-8")
+
+        async def _by_key(arg):
+            if getattr(arg, "decode", None):
+                arg = arg.decode("utf-8")
+
+            key = by.replace('*', arg)
+            if '->' in by:
+                key, hash_key = key.split('->')
+                v = await self.hget(key, hash_key)
+                if alpha:
+                    return v
+                else:
+                    return float(v)
+            else:
+                return await self.get(key)
+
+        data.sort(key=_by_key)

@@ -3,6 +3,7 @@ from aredis.exceptions import RedisError
 from aredis.utils import (b, bool_ok,
                           dict_merge,
                           string_keys_to_dict,
+                          list_keys_to_dict,
                           pairs_to_dict,
                           NodeFlag)
 
@@ -263,15 +264,15 @@ class ServerCommandMixin:
 class ClusterServerCommandMixin(ServerCommandMixin):
 
     NODES_FLAGS = dict_merge(
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['SHUTDOWN', 'SLAVEOF', 'CLIENT SETNAME'],
             NodeFlag.BLOCKED
         ),
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['FLUSHALL', 'FLUSHDB'],
             NodeFlag.ALL_MASTERS
         ),
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['SLOWLOG LEN', 'SLOWLOG RESET', 'SLOWLOG GET',
              'TIME', 'SAVE', 'LASTSAVE', 'DBSIZE',
              'CONFIG RESETSTAT', 'CONFIG REWRITE',
@@ -283,7 +284,7 @@ class ClusterServerCommandMixin(ServerCommandMixin):
     )
 
     RESULT_CALLBACKS = dict_merge(
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['CONFIG GET', 'CONFIG SET', 'SLOWLOG GET',
              'CLIENT KILL', 'INFO', 'BGREWRITEAOF',
              'BGSAVE', 'CLIENT LIST', 'CLIENT GETNAME',

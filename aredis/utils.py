@@ -49,6 +49,10 @@ def string_keys_to_dict(key_string, callback):
     return dict.fromkeys(key_string.split(), callback)
 
 
+def list_keys_to_dict(key_list, callback):
+    return dict.fromkeys(key_list, callback)
+
+
 def dict_merge(*dicts):
     merged = {}
     for d in dicts:

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import random
-from .utils import (b, crc16)
-from .exceptions import (ConnectionError,
+from aredis.utils import (b, crc16)
+from aredis.exceptions import (ConnectionError,
                          RedisClusterException)
-from .client import StrictRedis
+from aredis.connection import ClusterConnection
 
 
 class NodeManager(object):
@@ -93,7 +93,6 @@ class NodeManager(object):
             'password',
             'stream_timeout',
             'connect_timeout',
-            'unix_socket_path',
             'retry_on_timeout',
             'ssl_context',
             'parser_class',
@@ -101,7 +100,7 @@ class NodeManager(object):
             'loop'
         )
         connection_kwargs = {k: v for k, v in self.connection_kwargs.items() if k in allowed_keys}
-        return StrictRedis(host=host, port=port, **connection_kwargs)
+        return ClusterConnection(host=host, port=port, **connection_kwargs)
 
     async def initialize(self):
         """

@@ -9,7 +9,8 @@ from aredis.utils import (merge_result,
                           b, dict_merge,
                           int_or_none,
                           bool_ok,
-                          string_keys_to_dict)
+                          string_keys_to_dict,
+                          list_keys_to_dict)
 
 
 def sort_return_tuples(response, **options):
@@ -271,7 +272,7 @@ class ClusterKeysCommandMixin(KeysCommandMixin):
         'RANDOMKEY': NodeFlag.RANDOM,
         'SCAN': NodeFlag.ALL_MASTERS,
         },
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['KEYS'],
             NodeFlag.ALL_NODES
         )

@@ -1,6 +1,6 @@
 import warnings
 from aredis.utils import (dict_merge,
-                          string_keys_to_dict,
+                          list_keys_to_dict,
                           NodeFlag, bool_ok)
 
 
@@ -132,7 +132,7 @@ class SentinelCommandMixin:
 class ClusterSentinelCommands(SentinelCommandMixin):
 
     NODES_FLAGS = dict_merge(
-        string_keys_to_dict(
+        list_keys_to_dict(
             ["SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
             'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
             'SENTINEL SLAVES'], NodeFlag.BLOCKED

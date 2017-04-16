@@ -1,5 +1,5 @@
 from aredis.utils import (dict_merge,
-                          string_keys_to_dict,
+                          list_keys_to_dict,
                           NodeFlag, bool_ok)
 
 
@@ -72,7 +72,7 @@ class ClusterScriptingCommandMixin(ScriptingCommandMixin):
         {
         'SCRIPT KILL': NodeFlag.BLOCKED
         },
-        string_keys_to_dict(
+        list_keys_to_dict(
             ["SCRIPT LOAD", "SCRIPT FLUSH", "SCRIPT EXISTS",], NodeFlag.ALL_MASTERS
         )
     )

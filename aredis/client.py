@@ -65,7 +65,7 @@ class StrictRedis(*mixins):
     the commands are sent and received to the Redis server
     """
 
-    RESPONSE_CALLBACKS = dict_merge(mixin.RESPONSE_CALLBACKS for mixin in mixins)
+    RESPONSE_CALLBACKS = dict_merge(*[mixin.RESPONSE_CALLBACKS for mixin in mixins])
 
     @classmethod
     def from_url(cls, url, db=None, **kwargs):
@@ -180,8 +180,12 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
     the regular implementation of the method.
     """
     RedisClusterRequestTTL = 16
-    NODES_FLAGS = dict_merge(mixin.NODES_FLAGS for mixin in cluster_mixins)
-    RESULT_CALLBACKS = dict_merge(mixin.RESULT_CALLBACKS for mixin in cluster_mixins)
+    NODES_FLAGS = dict_merge(*[mixin.NODES_FLAGS
+                               for mixin in cluster_mixins
+                               if hasattr(mixin, 'NODES_FLAGS')])
+    RESULT_CALLBACKS = dict_merge(*[mixin.RESULT_CALLBACKS
+                                    for mixin in cluster_mixins
+                                    if hasattr(mixin, 'RESULT_CALLBACKS')])
 
     def __init__(self, host=None, port=None, startup_nodes=None, max_connections=32, max_connections_per_node=False, init_slot_cache=True,
                  readonly=False, reinitialize_steps=None, skip_full_coverage_check=False, nodemanager_follow_cluster=False, **kwargs):

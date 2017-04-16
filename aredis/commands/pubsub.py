@@ -2,7 +2,7 @@ from aredis.pubsub import (PubSub,
                            ClusterPubSub)
 from aredis.utils import (dict_merge,
                           merge_result,
-                          string_keys_to_dict, 
+                          list_keys_to_dict,
                           NodeFlag)
 
 
@@ -104,20 +104,20 @@ def parse_cluster_pubsub_numsub(res, **options):
 class CLusterPubSubCommandMixin(PubSubCommandMixin):
     
     NODES_FLAGS = dict_merge(
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['PUBSUB CHANNELS', 'PUBSUB NUMSUB', 'PUBSUB NUMPAT'],
             NodeFlag.ALL_NODES
         )
     )
 
     RESULT_CALLBACKS = dict_merge(
-        string_keys_to_dict([
+        list_keys_to_dict([
             "PUBSUB CHANNELS",
         ], parse_cluster_pubsub_channels),
-        string_keys_to_dict([
+        list_keys_to_dict([
             "PUBSUB NUMSUB",
         ], parse_cluster_pubsub_numsub),
-        string_keys_to_dict([
+        list_keys_to_dict([
             "PUBSUB NUMPAT",
         ], parse_cluster_pubsub_numpat),
     )

@@ -21,7 +21,7 @@ class ConnectionCommandMixin:
 
 class ClusterConnectionCommandMixin(ConnectionCommandMixin):
 
-    NODE_FLAGS = {
+    NODES_FLAGS = {
         'PING': NodeFlag.ALL_NODES,
         'ECHO': NodeFlag.ALL_NODES
     }

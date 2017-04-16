@@ -1,6 +1,6 @@
 from aredis.utils import (bool_ok,
                           NodeFlag,
-                          string_keys_to_dict,
+                          list_keys_to_dict,
                           dict_merge)
 from aredis.exceptions import (RedisError,
                                ClusterError)
@@ -100,7 +100,7 @@ class ClusterCommandMixin:
         'CLUSTER INFO': NodeFlag.ALL_NODES,
         'CLUSTER COUNTKEYSINSLOT': NodeFlag.SLOT_ID
     },
-    string_keys_to_dict(
+    list_keys_to_dict(
         ['CLUSTER NODES', 'CLUSTER SLOTS'], NodeFlag.RANDOM
     )
     )
@@ -129,7 +129,7 @@ class ClusterCommandMixin:
     }
 
     RESULT_CALLBACKS = dict_merge(
-        string_keys_to_dict(
+        list_keys_to_dict(
             ['CLUSTER INFO', 'CLUSTER ADDSLOTS', 'CLUSTER COUNT-FAILURE-REPORTS',
             'CLUSTER DELSLOTS', 'CLUSTER FAILOVER', 'CLUSTER FORGET'], None
         )
