@@ -404,13 +404,13 @@ class BaseConnection:
         # if a password is specified, authenticate
         if self.password:
             await self.send_command('AUTH', self.password)
-            if await self.read_response() != 'OK':
+            if await self.read_response() != b'OK':
                 raise ConnectionError('Invalid Password')
 
         # if a database is specified, switch to it
         if self.db:
             await self.send_command('SELECT', self.db)
-            if await self.read_response() != 'OK':
+            if await self.read_response() != b'OK':
                 raise ConnectionError('Invalid Database')
 
     async def read_response(self):
