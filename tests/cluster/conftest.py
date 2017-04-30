@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 # python std lib
+import asyncio
 import os
 import sys
 import json
 
 # rediscluster imports
-from rediscluster import StrictRedisCluster, RedisCluster
+from aredis import StrictRedisCluster, StrictRedis
 
 # 3rd party imports
 import pytest
-from redis import StrictRedis
 from distutils.version import StrictVersion
 
 # put our path in front so we can be sure we are testing locally not against the global package
@@ -21,12 +21,12 @@ _REDIS_VERSIONS = {}
 
 
 def get_versions(**kwargs):
-    """
-    """
     key = json.dumps(kwargs)
     if key not in _REDIS_VERSIONS:
         client = _get_client(**kwargs)
-        _REDIS_VERSIONS[key] = {key: value['redis_version'] for key, value in client.info().items()}
+        loop = asyncio.get_event_loop()
+        info = loop.run_until_complete(client.info())
+        _REDIS_VERSIONS[key] = {key: value['redis_version'] for key, value in info.items()}
     return _REDIS_VERSIONS[key]
 
 
@@ -34,14 +34,13 @@ def _get_client(cls=None, **kwargs):
     """
     """
     if not cls:
-        cls = RedisCluster
+        cls = StrictRedisCluster
 
     params = {
         'startup_nodes': [{
             'host': '127.0.0.1', 'port': 7000
         }],
-        'socket_timeout': 10,
-        'decode_responses': False,
+        'stream_timeout': 10,
     }
     params.update(kwargs)
     return cls(**params)
@@ -51,10 +50,11 @@ def _init_client(request, cls=None, **kwargs):
     """
     """
     client = _get_client(cls=cls, **kwargs)
-    client.flushdb()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(client.flushdb())
     if request:
         def teardown():
-            client.flushdb()
+            loop.run_until_complete(client.flushdb())
             client.connection_pool.disconnect()
         request.addfinalizer(teardown)
     return client
@@ -102,7 +102,7 @@ def o(request, *args, **kwargs):
     """
     Create a StrictRedisCluster instance with decode_responses set to True.
     """
-    return _init_client(request, cls=StrictRedisCluster, decode_responses=True, **kwargs)
+    return _init_client(request, cls=StrictRedisCluster, **kwargs)
 
 
 @pytest.fixture()

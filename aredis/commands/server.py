@@ -292,6 +292,6 @@ class ClusterServerCommandMixin(ServerCommandMixin):
              'LASTSAVE', 'SAVE', 'SLOWLOG LEN',
              'SLOWLOG RESET', 'TIME', 'FLUSHALL',
              'FLUSHDB'],
-            None
+            lambda res: res
         )
     )

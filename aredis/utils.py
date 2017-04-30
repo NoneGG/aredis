@@ -134,7 +134,7 @@ def blocked_command(self, command):
     raise RedisClusterException("Command: {0} is blocked in redis cluster mode".format(command))
 
 
-async def clusterdown_wrapper(func):
+def clusterdown_wrapper(func):
     """
     Wrapper for CLUSTERDOWN error handling.
 

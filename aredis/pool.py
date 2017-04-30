@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import os
 import warnings
 import random
@@ -234,7 +235,7 @@ class ClusterConnectionPool(ConnectionPool):
 
     def __init__(self, startup_nodes=None, init_slot_cache=True, connection_class=ClusterConnection,
                  max_connections=None, max_connections_per_node=False, reinitialize_steps=None,
-                 skip_full_coverage_check=False, nodemanager_follow_cluster=False, **connection_kwargs):
+                 skip_full_coverage_check=False, nodemanager_follow_cluster=False, *, loop=None, **connection_kwargs):
         """
         :skip_full_coverage_check:
             Skips the check of cluster-require-full-coverage config, useful for clusters
@@ -258,7 +259,7 @@ class ClusterConnectionPool(ConnectionPool):
 
         self.max_connections = max_connections or 2 ** 31
         self.max_connections_per_node = max_connections_per_node
-
+        self.loop = loop or asyncio.get_event_loop()
         self.nodes = NodeManager(
             startup_nodes,
             reinitialize_steps=reinitialize_steps,
@@ -269,7 +270,7 @@ class ClusterConnectionPool(ConnectionPool):
         )
 
         if init_slot_cache:
-            self.nodes.initialize()
+            self.loop.run_until_complete(self.nodes.initialize())
 
         self.connections = {}
         self.connection_kwargs = connection_kwargs

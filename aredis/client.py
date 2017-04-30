@@ -34,7 +34,7 @@ from aredis.commands.strings import StringsCommandMixin, ClusterStringsCommandMi
 from aredis.commands.transaction import TransactionCommandMixin, ClusterTransactionCommandMixin
 
 mixins = [
-    ConnectionCommandMixin, ExtraCommandMixin,
+    ClusterCommandMixin, ConnectionCommandMixin, ExtraCommandMixin,
     GeoCommandMixin, HashCommandMixin, HyperLogCommandMixin,
     KeysCommandMixin, ListsCommandMixin, PubSubCommandMixin,
     ScriptingCommandMixin, SentinelCommandMixin, ServerCommandMixin,
@@ -187,8 +187,10 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                                     for mixin in cluster_mixins
                                     if hasattr(mixin, 'RESULT_CALLBACKS')])
 
-    def __init__(self, host=None, port=None, startup_nodes=None, max_connections=32, max_connections_per_node=False, init_slot_cache=True,
-                 readonly=False, reinitialize_steps=None, skip_full_coverage_check=False, nodemanager_follow_cluster=False, **kwargs):
+    def __init__(self, host=None, port=None, startup_nodes=None, max_connections=32,
+                 max_connections_per_node=False, init_slot_cache=True,
+                 readonly=False, reinitialize_steps=None, skip_full_coverage_check=False,
+                 nodemanager_follow_cluster=False, *, loop=None, **kwargs):
         """
         :startup_nodes:
             List of nodes that initial bootstrapping can be done from
@@ -224,7 +226,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             # Support host/port as argument
             if host:
                 startup_nodes.append({"host": host, "port": port if port else 7000})
-
+            loop = loop or asyncio.get_event_loop()
             pool = ClusterConnectionPool(
                 startup_nodes=startup_nodes,
                 init_slot_cache=init_slot_cache,
@@ -234,6 +236,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 skip_full_coverage_check=skip_full_coverage_check,
                 nodemanager_follow_cluster=nodemanager_follow_cluster,
                 readonly=readonly,
+                loop=loop,
                 **kwargs
             )
 
@@ -243,7 +246,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         self.nodes_flags = self.__class__.NODES_FLAGS.copy()
         self.result_callbacks = self.__class__.RESULT_CALLBACKS.copy()
         self.response_callbacks = self.__class__.RESPONSE_CALLBACKS.copy()
-        self.response_callbacks = dict_merge(self.response_callbacks, self.CLUSTER_COMMANDS_RESPONSE_CALLBACKS)
 
     @classmethod
     def from_url(cls, url, db=None, skip_full_coverage_check=False, **kwargs):

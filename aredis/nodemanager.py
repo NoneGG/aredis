@@ -4,7 +4,6 @@ import random
 from aredis.utils import (b, crc16)
 from aredis.exceptions import (ConnectionError,
                          RedisClusterException)
-from aredis.connection import ClusterConnection
 
 
 class NodeManager(object):
@@ -51,13 +50,12 @@ class NodeManager(object):
 
     def keyslot(self, key):
         """Calculate keyslot for a given key."""
-        k = self.encode(key)
-        start = k.find(b"{")
+        start = key.find("{")
         if start > -1:
-            end = k.find(b"}", start + 1)
+            end = key.find("}", start + 1)
             if end > -1 and end != start + 1:
-                k = k[start + 1:end]
-        return crc16(k) % self.RedisClusterHashSlots
+                key = key[start + 1:end]
+        return crc16(b(key)) % self.RedisClusterHashSlots
 
     def node_from_slot(self, slot):
         for node in self.slots[slot]:
@@ -87,8 +85,7 @@ class NodeManager(object):
         return self.nodes[random.choice(self.nodes.keys())]
 
     def get_redis_link(self, host, port):
-        """
-        """
+        from aredis.client import StrictRedis
         allowed_keys = (
             'password',
             'stream_timeout',
@@ -100,7 +97,7 @@ class NodeManager(object):
             'loop'
         )
         connection_kwargs = {k: v for k, v in self.connection_kwargs.items() if k in allowed_keys}
-        return ClusterConnection(host=host, port=port, **connection_kwargs)
+        return StrictRedis(host=host, port=port, **connection_kwargs)
 
     async def initialize(self):
         """
@@ -126,7 +123,7 @@ class NodeManager(object):
         for node in nodes:
             try:
                 r = self.get_redis_link(host=node['host'], port=node['port'])
-                cluster_slots = await r.cluster('SLOTS')
+                cluster_slots = await r.cluster_slots()
                 startup_nodes_reachable = True
             except ConnectionError:
                 continue
@@ -219,7 +216,8 @@ class NodeManager(object):
 
         async def node_require_full_coverage(node):
             r_node = self.get_redis_link(host=node['host'], port=node['port'])
-            return 'yes' in await r_node.config_get('cluster-require-full-coverage').values()
+            node_config = await r_node.config_get('cluster-require-full-coverage')
+            return 'yes' in node_config.values()
 
         # at least one node should have cluster-require-full-coverage yes
         for node in nodes.values():
