@@ -2,22 +2,22 @@
 
 # python std lib
 from __future__ import with_statement
+import asyncio
 import re
 import time
 
 # rediscluster imports
-from rediscluster import StrictRedisCluster
-from rediscluster.connection import ClusterConnectionPool, ClusterReadOnlyConnectionPool
-from rediscluster.exceptions import (
+from aredis import StrictRedisCluster, StrictRedis
+from aredis.pool import ClusterConnectionPool
+from aredis.exceptions import (
     RedisClusterException, MovedError, AskError, ClusterDownError,
 )
-from rediscluster.nodemanager import NodeManager
-from tests.conftest import _get_client, skip_if_server_version_lt, skip_if_not_password_protected_nodes
+from aredis.utils import b
+from aredis.nodemanager import NodeManager
+from tests.cluster.conftest import _get_client, skip_if_server_version_lt, skip_if_not_password_protected_nodes
 
 # 3rd party imports
 from mock import patch, Mock, MagicMock
-from redis._compat import b, unicode
-from redis import StrictRedis
 import pytest
 
 pytestmark = skip_if_server_version_lt('2.9.0')
@@ -41,11 +41,11 @@ def test_blocked_strict_redis_args():
     """
     params = {'startup_nodes': [{'host': '127.0.0.1', 'port': 7000}]}
     c = StrictRedisCluster(**params)
-    assert c.connection_pool.connection_kwargs["socket_timeout"] == ClusterConnectionPool.RedisClusterDefaultTimeout
+    assert c.connection_pool.connection_kwargs["stream_timeout"] == ClusterConnectionPool.RedisClusterDefaultTimeout
 
     with pytest.raises(RedisClusterException) as ex:
         _get_client(db=1)
-    assert unicode(ex.value).startswith("Argument 'db' is not possible to use in cluster mode")
+    assert str(ex.value).startswith("Argument 'db' is not possible to use in cluster mode")
 
 
 @skip_if_not_password_protected_nodes()
@@ -57,12 +57,12 @@ def test_password_procted_nodes():
     password_protected_startup_nodes = [{"host": "127.0.0.1", "port": "7100"}]
     with pytest.raises(RedisClusterException) as ex:
         _get_client(startup_nodes=password_protected_startup_nodes)
-    assert unicode(ex.value).startswith("ERROR sending 'cluster slots' command to redis server:")
+    assert str(ex.value).startswith("ERROR sending 'cluster slots' command to redis server:")
     _get_client(startup_nodes=password_protected_startup_nodes, password='password_is_protected')
 
     with pytest.raises(RedisClusterException) as ex:
         _get_client(startup_nodes=startup_nodes, password='password_is_protected')
-    assert unicode(ex.value).startswith("ERROR sending 'cluster slots' command to redis server:")
+    assert str(ex.value).startswith("ERROR sending 'cluster slots' command to redis server:")
     _get_client(startup_nodes=startup_nodes)
 
 
@@ -72,7 +72,7 @@ def test_host_port_startup_node():
     """
     h = "192.168.0.1"
     p = 7000
-    c = StrictRedisCluster(host=h, port=p, init_slot_cache=False)
+    c = StrictRedisCluster(host=h, port=p)
     assert {"host": h, "port": p} in c.connection_pool.nodes.startup_nodes
 
 
@@ -83,14 +83,14 @@ def test_empty_startup_nodes():
     with pytest.raises(RedisClusterException) as ex:
         _get_client(init_slot_cache=False, startup_nodes=[])
 
-    assert unicode(ex.value).startswith("No startup nodes provided"), unicode(ex.value)
+    assert str(ex.value).startswith("No startup nodes provided"), str(ex.value)
 
 
 def test_readonly_instance(ro):
     """
     Test that readonly_mode=True instance has ClusterReadOnlyConnectionPool
     """
-    assert isinstance(ro.connection_pool, ClusterReadOnlyConnectionPool)
+    assert ro.connection_pool.readonly is True
 
 
 def test_custom_connectionpool():
@@ -100,54 +100,53 @@ def test_custom_connectionpool():
     h = "192.168.0.1"
     p = 7001
     pool = DummyConnectionPool(host=h, port=p, connection_class=DummyConnection,
-                               startup_nodes=[{'host': h, 'port': p}],
-                               init_slot_cache=False)
-    c = StrictRedisCluster(connection_pool=pool, init_slot_cache=False)
+                               startup_nodes=[{'host': h, 'port': p}])
+    c = StrictRedisCluster(connection_pool=pool)
     assert c.connection_pool is pool
     assert c.connection_pool.connection_class == DummyConnection
     assert {"host": h, "port": p} in c.connection_pool.nodes.startup_nodes
 
 
-@patch('rediscluster.nodemanager.StrictRedis', new=MagicMock())
+@patch('aredis.StrictRedis', new=MagicMock())
 def test_skip_full_coverage_check():
     """
     Test if the cluster_require_full_coverage NodeManager method was not called with the flag activated
     """
-    c = StrictRedisCluster("192.168.0.1", 7001, init_slot_cache=False, skip_full_coverage_check=True)
+    c = StrictRedisCluster("192.168.0.1", 7001, skip_full_coverage_check=True)
     c.connection_pool.nodes.cluster_require_full_coverage = MagicMock()
     c.connection_pool.nodes.initialize()
     assert not c.connection_pool.nodes.cluster_require_full_coverage.called
 
 
-def test_blocked_commands(r):
-    """
-    These commands should be blocked and raise RedisClusterException
-    """
-    blocked_commands = [
-        "CLIENT SETNAME", "SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
-        'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
-        'SENTINEL SLAVES', 'SHUTDOWN', 'SLAVEOF', 'SCRIPT KILL', 'MOVE', 'BITOP',
-    ]
-
-    for command in blocked_commands:
-        try:
-            r.execute_command(command)
-        except RedisClusterException:
-            pass
-        else:
-            raise AssertionError("'RedisClusterException' not raised for method : {0}".format(command))
-
-
-def test_blocked_transaction(r):
-    """
-    Method transaction is blocked/NYI and should raise exception on use
-    """
-    with pytest.raises(RedisClusterException) as ex:
-        r.transaction(None)
-    assert unicode(ex.value).startswith("method StrictRedisCluster.transaction() is not implemented"), unicode(ex.value)
+# def test_blocked_commands(r):
+#     """
+#     These commands should be blocked and raise RedisClusterException
+#     """
+#     blocked_commands = [
+#         "CLIENT SETNAME", "SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
+#         'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
+#         'SENTINEL SLAVES', 'SHUTDOWN', 'SLAVEOF', 'SCRIPT KILL', 'MOVE', 'BITOP',
+#     ]
+#
+#     for command in blocked_commands:
+#         try:
+#             r.execute_command(command)
+#         except RedisClusterException:
+#             pass
+#         else:
+#             raise AssertionError("'RedisClusterException' not raised for method : {0}".format(command))
 
 
-def test_cluster_of_one_instance():
+# def test_blocked_transaction(r):
+#     """
+#     Method transaction is blocked/NYI and should raise exception on use
+#     """
+#     with pytest.raises(RedisClusterException) as ex:
+#         r.transaction(None)
+#     assert str(ex.value).startswith("method StrictRedisCluster.transaction() is not implemented"), str(ex.value)
+#
+#
+async def test_cluster_of_one_instance(event_loop):
     """
     Test a cluster that starts with only one redis server and ends up with
     one server.
@@ -198,27 +197,26 @@ def test_cluster_of_one_instance():
             parse_response_mock.side_effect = side_effect
             init_mock.side_effect = side_effect_rebuild_slots_cache
 
-            rc = StrictRedisCluster(host='127.0.0.1', port=7006)
-            rc.set("foo", "bar")
+            rc = StrictRedisCluster(host='127.0.0.1', port=7006, loop=event_loop)
+            await rc.set('bar', 'foo')
 
 
-def test_execute_command_errors(r):
-    """
-    If no command is given to `_determine_nodes` then exception
-    should be raised.
+# def test_execute_command_errors(r):
+#     """
+#     If no command is given to `_determine_nodes` then exception
+#     should be raised.
+#
+#     Test that if no key is provided then exception should be raised.
+#     """
+#     with pytest.raises(RedisClusterException) as ex:
+#         r.execute_command()
+#     assert unicode(ex.value).startswith("Unable to determine command to use")
+#
+#     with pytest.raises(RedisClusterException) as ex:
+#         r.execute_command("GET")
+#     assert unicode(ex.value).startswith("No way to dispatch this command to Redis Cluster. Missing key.")
 
-    Test that if no key is provided then exception should be raised.
-    """
-    with pytest.raises(RedisClusterException) as ex:
-        r.execute_command()
-    assert unicode(ex.value).startswith("Unable to determine command to use")
-
-    with pytest.raises(RedisClusterException) as ex:
-        r.execute_command("GET")
-    assert unicode(ex.value).startswith("No way to dispatch this command to Redis Cluster. Missing key.")
-
-
-def test_refresh_table_asap():
+async def test_refresh_table_asap(event_loop):
     """
     If this variable is set externally, initialize() should be called.
     """
@@ -231,7 +229,7 @@ def test_refresh_table_asap():
                 return None
             mock_parse_response.side_effect = side_effect
 
-            r = StrictRedisCluster(host="127.0.0.1", port=7000)
+            r = StrictRedisCluster(host="127.0.0.1", port=7000, loop=event_loop)
             r.connection_pool.nodes.slots[12182] = [{
                 "host": "127.0.0.1",
                 "port": 7002,
@@ -241,7 +239,7 @@ def test_refresh_table_asap():
             r.refresh_table_asap = True
 
             i = len(mock_initialize.mock_calls)
-            r.execute_command("SET", "foo", "bar")
+            await r.set("foo", "bar")
             assert len(mock_initialize.mock_calls) - i == 1
             assert r.refresh_table_asap is False
 
@@ -252,7 +250,7 @@ def find_node_ip_based_on_port(cluster_client, port):
             return node_data['host']
 
 
-def test_ask_redirection():
+async def test_ask_redirection():
     """
     Test that the server handles ASK response.
 
@@ -284,10 +282,10 @@ def test_ask_redirection():
 
         parse_response.side_effect = ask_redirect_effect
 
-        assert r.execute_command("SET", "foo", "bar") == "MOCK_OK"
+        assert await r.set("foo", "bar") == "MOCK_OK"
 
 
-def test_pipeline_ask_redirection():
+async def test_pipeline_ask_redirection():
     """
     Test that the server handles ASK response when used in pipeline.
 
@@ -316,11 +314,11 @@ def test_pipeline_ask_redirection():
         parse_response.side_effect = response
 
         p = r.pipeline()
-        p.set("foo", "bar")
-        assert p.execute() == ["MOCK_OK"]
+        await p.set("foo", "bar")
+        assert await p.execute() == ["MOCK_OK"]
 
 
-def test_moved_redirection():
+async def test_moved_redirection():
     """
     Test that the client handles MOVED response.
 
@@ -344,10 +342,10 @@ def test_moved_redirection():
     m.side_effect = ask_redirect_effect
 
     r.parse_response = m
-    assert r.set("foo", "bar") == "MOCK_OK"
+    assert await r.set("foo", "bar") == "MOCK_OK"
 
 
-def test_moved_redirection_pipeline():
+async def test_moved_redirection_pipeline():
     """
     Test that the server handles MOVED response when used in pipeline.
 
@@ -370,11 +368,11 @@ def test_moved_redirection_pipeline():
 
         r = StrictRedisCluster(host="127.0.0.1", port=7000)
         p = r.pipeline()
-        p.set("foo", "bar")
-        assert p.execute() == ["MOCK_OK"]
+        await p.set("foo", "bar")
+        assert await p.execute() == ["MOCK_OK"]
 
 
-def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj):
+async def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj):
     """
     """
     # we assume this key is set on 127.0.0.1:7000(7003)
@@ -392,16 +390,16 @@ def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj):
         master_value = {'host': '127.0.0.1', 'name': '127.0.0.1:7000', 'port': 7000, 'server_type': 'master'}
         with patch.object(ClusterConnectionPool, 'get_master_node_by_slot') as return_master_mock:
             return_master_mock.return_value = master_value
-            assert cluster_obj.get('foo16706') == b('foo')
+            assert await cluster_obj.get('foo16706') == b('foo')
             assert return_master_mock.call_count == 1
 
 
-def test_moved_redirection_on_slave_with_default_client(sr):
+async def test_moved_redirection_on_slave_with_default_client(sr):
     """
     Test that the client is redirected normally with default
     (readonly_mode=False) client even when we connect always to slave.
     """
-    assert_moved_redirection_on_slave(
+    await assert_moved_redirection_on_slave(
         sr,
         ClusterConnectionPool,
         StrictRedisCluster(host="127.0.0.1", port=7000, reinitialize_steps=1)
@@ -414,23 +412,22 @@ def test_moved_redirection_on_slave_with_readonly_mode_client(sr):
     """
     assert_moved_redirection_on_slave(
         sr,
-        ClusterReadOnlyConnectionPool,
-        StrictRedisCluster(host="127.0.0.1", port=7000, readonly_mode=True, reinitialize_steps=1)
+        ClusterConnectionPool,
+        StrictRedisCluster(host="127.0.0.1", port=7000, readonly=True, reinitialize_steps=1)
     )
 
 
-def test_access_correct_slave_with_readonly_mode_client(sr):
+async def test_access_correct_slave_with_readonly_mode_client(sr):
     """
     Test that the client can get value normally with readonly mode
     when we connect to correct slave.
     """
 
     # we assume this key is set on 127.0.0.1:7000(7003)
-    sr.set('foo16706', 'foo')
-    import time
-    time.sleep(1)
+    await sr.set('foo16706', 'foo')
+    assert asyncio.sleep(1)
 
-    with patch.object(ClusterReadOnlyConnectionPool, 'get_node_by_slot') as return_slave_mock:
+    with patch.object(ClusterConnectionPool, 'get_node_by_slot') as return_slave_mock:
         return_slave_mock.return_value = {
             'name': '127.0.0.1:7003',
             'host': '127.0.0.1',

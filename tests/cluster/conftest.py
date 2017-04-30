@@ -118,7 +118,7 @@ def ro(request, *args, **kwargs):
     """
     Create a StrictRedisCluster instance with readonly mode
     """
-    params = {'readonly_mode': True}
+    params = {'readonly': True}
     params.update(kwargs)
     return _init_client(request, cls=StrictRedisCluster, **params)
 

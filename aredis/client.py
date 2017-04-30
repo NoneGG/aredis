@@ -188,8 +188,8 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                                     if hasattr(mixin, 'RESULT_CALLBACKS')])
 
     def __init__(self, host=None, port=None, startup_nodes=None, max_connections=32,
-                 max_connections_per_node=False, init_slot_cache=True,
-                 readonly=False, reinitialize_steps=None, skip_full_coverage_check=False,
+                 max_connections_per_node=False, readonly=False,
+                 reinitialize_steps=None, skip_full_coverage_check=False,
                  nodemanager_follow_cluster=False, *, loop=None, **kwargs):
         """
         :startup_nodes:
@@ -217,7 +217,8 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             - db (Redis do not support database SELECT in cluster mode)
         """
         # Tweaks to StrictRedis client arguments when running in cluster mode
-
+        if "db" in kwargs:
+            raise RedisClusterException("Argument 'db' is not possible to use in cluster mode")
         if "connection_pool" in kwargs:
             pool = kwargs.pop('connection_pool')
         else:
@@ -229,7 +230,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             loop = loop or asyncio.get_event_loop()
             pool = ClusterConnectionPool(
                 startup_nodes=startup_nodes,
-                init_slot_cache=init_slot_cache,
                 max_connections=max_connections,
                 reinitialize_steps=reinitialize_steps,
                 max_connections_per_node=max_connections_per_node,
@@ -344,6 +344,8 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         """
         Send a command to a node in the cluster
         """
+        if not self.connection_pool.initialized:
+            await self.connection_pool.initialize()
         if not args:
             raise RedisClusterException("Unable to determine command to use")
 

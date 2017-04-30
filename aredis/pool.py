@@ -233,7 +233,7 @@ class ClusterConnectionPool(ConnectionPool):
     """
     RedisClusterDefaultTimeout = None
 
-    def __init__(self, startup_nodes=None, init_slot_cache=True, connection_class=ClusterConnection,
+    def __init__(self, startup_nodes=None, connection_class=ClusterConnection,
                  max_connections=None, max_connections_per_node=False, reinitialize_steps=None,
                  skip_full_coverage_check=False, nodemanager_follow_cluster=False, readonly=False,
                  *, loop=None, **connection_kwargs):
@@ -269,9 +269,7 @@ class ClusterConnectionPool(ConnectionPool):
             nodemanager_follow_cluster=nodemanager_follow_cluster,
             **connection_kwargs
         )
-
-        if init_slot_cache:
-            self.loop.run_until_complete(self.nodes.initialize())
+        self.initialized = False
 
         self.connections = {}
         self.connection_kwargs = connection_kwargs
@@ -291,6 +289,10 @@ class ClusterConnectionPool(ConnectionPool):
             ", ".join([self.connection_class.description.format(**node)
                        for node in self.nodes.startup_nodes])
         )
+
+    async def initialize(self):
+        await self.nodes.initialize()
+        self.initialized = True
 
     def reset(self):
         """

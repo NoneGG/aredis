@@ -619,7 +619,7 @@ class ClusterConnection(Connection):
         if self.db:
             warnings.warn('SELECT DB is not allowed in cluster mode')
             self.db = ''
-        super(ClusterConnection, self).on_connect()
+        await super(ClusterConnection, self).on_connect()
         if self.readonly:
             await self.send_command('READONLY')
             if await self.read_response() != b'OK':
