@@ -10,7 +10,7 @@ from aredis.exceptions import (
 )
 from aredis.utils import (
     list_keys_to_dict,
-    dict_merge,
+    b, dict_merge,
     blocked_command,
     merge_result,
     first_key,
@@ -19,7 +19,6 @@ from aredis.utils import (
 
 # 3rd party imports
 import pytest
-from redis._compat import unicode, b
 
 
 def test_parse_cluster_slots():
@@ -123,7 +122,7 @@ def test_dict_merge_empty_list():
 def test_blocked_command():
     with pytest.raises(RedisClusterException) as ex:
         blocked_command(None, "SET")
-    assert unicode(ex.value) == "Command: SET is blocked in redis cluster mode"
+    assert str(ex.value) == "Command: SET is blocked in redis cluster mode"
 
 
 def test_merge_result():
@@ -141,7 +140,7 @@ def test_first_key():
 
     with pytest.raises(RedisClusterException) as ex:
         first_key({"foo": 1, "bar": 2})
-    assert unicode(ex.value).startswith("More then 1 result from command")
+    assert str(ex.value).startswith("More then 1 result from command")
 
 
 def test_first_key_value_error():
@@ -156,4 +155,4 @@ async def test_clusterdown_wrapper():
 
     with pytest.raises(ClusterDownError) as cex:
         await bad_func()
-    assert unicode(cex.value).startswith("CLUSTERDOWN error. Unable to rebuild the cluster")
+    assert str(cex.value).startswith("CLUSTERDOWN error. Unable to rebuild the cluster")
