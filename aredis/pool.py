@@ -304,6 +304,7 @@ class ClusterConnectionPool(ConnectionPool):
         self._available_connections = {}  # Dict(Node, List)
         self._in_use_connections = {}  # Dict(Node, Set)
         self._check_lock = threading.Lock()
+        self.initialized = False
 
     def _checkpid(self):
         """
