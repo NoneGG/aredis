@@ -45,17 +45,20 @@ class NodeManager(object):
         elif isinstance(value, float):
             value = b(repr(value))
         elif not isinstance(value, str):
-            value = str(value).encode()
+            value = str(value)
+        if isinstance(value, str):
+            value = value.encode()
         return value
 
     def keyslot(self, key):
         """Calculate keyslot for a given key."""
-        start = key.find("{")
+        key = self.encode(key)
+        start = key.find(b"{")
         if start > -1:
-            end = key.find("}", start + 1)
+            end = key.find(b"}", start + 1)
             if end > -1 and end != start + 1:
                 key = key[start + 1:end]
-        return crc16(b(key)) % self.RedisClusterHashSlots
+        return crc16(key) % self.RedisClusterHashSlots
 
     def node_from_slot(self, slot):
         for node in self.slots[slot]:
@@ -72,7 +75,7 @@ class NodeManager(object):
                 yield node
 
     def random_startup_node(self):
-        return random.choice(self.startup_nodes[0])
+        return random.choice(self.startup_nodes)
 
     def random_startup_node_iter(self):
         """

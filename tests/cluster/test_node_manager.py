@@ -4,17 +4,13 @@
 from __future__ import with_statement
 
 # rediscluster imports
-from tests.conftest import skip_if_server_version_lt
-from rediscluster import StrictRedisCluster
-from rediscluster.exceptions import RedisClusterException
-from rediscluster.nodemanager import NodeManager
+from tests.cluster.conftest import skip_if_server_version_lt
+from aredis import StrictRedis, StrictRedisCluster, RedisClusterException, ConnectionError
+from aredis.nodemanager import NodeManager
 
 # 3rd party imports
 import pytest
 from mock import patch, Mock
-from redis import StrictRedis
-from redis._compat import unicode
-from redis import ConnectionError
 
 pytestmark = skip_if_server_version_lt('2.9.0')
 
@@ -47,11 +43,11 @@ def test_keyslot():
     assert n.keyslot(1337.1234) == n.keyslot("1337.1234")
     assert n.keyslot(1337) == n.keyslot("1337")
     assert n.keyslot(b"abc") == n.keyslot("abc")
-    assert n.keyslot("abc") == n.keyslot(unicode("abc"))
-    assert n.keyslot(unicode("abc")) == n.keyslot(b"abc")
+    assert n.keyslot("abc") == n.keyslot(str("abc"))
+    assert n.keyslot(str("abc")) == n.keyslot(b"abc")
 
 
-def test_init_slots_cache_not_all_slots(s):
+async def test_init_slots_cache_not_all_slots(s):
     """
     Test that if not all slots are covered it should raise an exception
     """
@@ -80,12 +76,12 @@ def test_init_slots_cache_not_all_slots(s):
     s.connection_pool.nodes.get_redis_link = get_redis_link_wrapper
 
     with pytest.raises(RedisClusterException) as ex:
-        s.connection_pool.nodes.initialize()
+        await s.connection_pool.nodes.initialize()
 
-    assert unicode(ex.value).startswith("All slots are not covered after query all startup_nodes.")
+    assert str(ex.value).startswith("All slots are not covered after query all startup_nodes.")
 
 
-def test_init_slots_cache_not_all_slots_not_require_full_coverage(s):
+async def test_init_slots_cache_not_all_slots_not_require_full_coverage(s):
     """
     Test that if not all slots are covered it should raise an exception
     """
@@ -115,12 +111,12 @@ def test_init_slots_cache_not_all_slots_not_require_full_coverage(s):
 
     s.connection_pool.nodes.get_redis_link = get_redis_link_wrapper
 
-    s.connection_pool.nodes.initialize()
+    await s.connection_pool.nodes.initialize()
 
     assert 5460 not in s.connection_pool.nodes.slots
 
 
-def test_init_slots_cache(s):
+async def test_init_slots_cache(s):
     """
     Test that slots cache can in initialized and all slots are covered
     """
@@ -139,7 +135,7 @@ def test_init_slots_cache(s):
 
         execute_command_mock.side_effect = patch_execute_command
 
-        s.connection_pool.nodes.initialize()
+        await s.connection_pool.nodes.initialize()
         assert len(s.connection_pool.nodes.slots) == NodeManager.RedisClusterHashSlots
         for slot_info in good_slots_resp:
             all_hosts = [b'127.0.0.1', b'127.0.0.2']
@@ -171,11 +167,11 @@ def test_wrong_startup_nodes_type():
     """
     If something other then a list type itteratable is provided it should fail
     """
-    with pytest.raises(RedisClusterException):
+    with pytest.raises(TypeError):
         NodeManager({})
 
 
-def test_init_slots_cache_slots_collision():
+async def test_init_slots_cache_slots_collision():
     """
     Test that if 2 nodes do not agree on the same slots setup it should raise an error.
     In this test both nodes will say that the first slots block should be bound to different
@@ -218,16 +214,16 @@ def test_init_slots_cache_slots_collision():
 
     n.get_redis_link = monkey_link
     with pytest.raises(RedisClusterException) as ex:
-        n.initialize()
-    assert unicode(ex.value).startswith("startup_nodes could not agree on a valid slots cache."), unicode(ex.value)
+        await n.initialize()
+    assert str(ex.value).startswith("startup_nodes could not agree on a valid slots cache."), str(ex.value)
 
 
-def test_all_nodes():
+async def test_all_nodes():
     """
     Set a list of nodes and it should be possible to itterate over all
     """
     n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7000}])
-    n.initialize()
+    await n.initialize()
 
     nodes = [node for node in n.nodes.values()]
 
@@ -235,13 +231,13 @@ def test_all_nodes():
         assert node in nodes
 
 
-def test_all_nodes_masters():
+async def test_all_nodes_masters():
     """
     Set a list of nodes with random masters/slaves config and it shold be possible
     to itterate over all of them.
     """
     n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7000}, {"host": "127.0.0.1", "port": 7001}])
-    n.initialize()
+    await n.initialize()
 
     nodes = [node for node in n.nodes.values() if node['server_type'] == 'master']
 
@@ -253,7 +249,7 @@ def test_random_startup_node():
     """
     Hard to test reliable for a random
     """
-    s = [{"1": 1}, {"2": 2}, {"3": 3}],
+    s = [{"1": 1}, {"2": 2}, {"3": 3}]
     n = NodeManager(startup_nodes=s)
     random_node = n.random_startup_node()
 
@@ -261,20 +257,7 @@ def test_random_startup_node():
         assert random_node in s
 
 
-def test_random_startup_node_ittr():
-    """
-    Hard to test reliable for a random function
-    """
-    s = [{"1": 1}, {"2": 2}, {"3": 3}],
-    n = NodeManager(startup_nodes=s)
-
-    for i, node in enumerate(n.random_startup_node_ittr()):
-        if i == 5:
-            break
-        assert node in s
-
-
-def test_cluster_slots_error():
+async def test_cluster_slots_error():
     """
     Check that exception is raised if initialize can't execute
     'CLUSTER SLOTS' command.
@@ -285,7 +268,7 @@ def test_cluster_slots_error():
         n = NodeManager(startup_nodes=[{}])
 
         with pytest.raises(RedisClusterException):
-            n.initialize()
+            await n.initialize()
 
 
 def test_set_node():
@@ -313,10 +296,10 @@ def test_reset():
     n = NodeManager(startup_nodes=[{}])
     n.initialize = Mock()
     n.reset()
-    assert n.initialize.call_count == 1
+    assert n.initialize.call_count == 0
 
 
-def test_cluster_one_instance():
+async def test_cluster_one_instance():
     """
     If the cluster exists of only 1 node then there is some hacks that must
     be validated they work.
@@ -334,7 +317,7 @@ def test_cluster_one_instance():
         mock_execute_command.side_effect = patch_execute_command
 
         n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7006}])
-        n.initialize()
+        await n.initialize()
 
         assert n.nodes == {"127.0.0.1:7006": {
             'host': '127.0.0.1',
@@ -353,13 +336,13 @@ def test_cluster_one_instance():
             }]
 
 
-def test_initialize_follow_cluster():
+async def test_initialize_follow_cluster():
     n = NodeManager(nodemanager_follow_cluster=True, startup_nodes=[{'host': '127.0.0.1', 'port': 7000}])
     n.orig_startup_nodes = None
-    n.initialize()
+    await n.initialize()
 
 
-def test_init_with_down_node():
+async def test_init_with_down_node():
     """
     If I can't connect to one of the nodes, everything should still work.
     But if I can't connect to any of the nodes, exception should be thrown.
@@ -372,5 +355,5 @@ def test_init_with_down_node():
     with patch.object(NodeManager, 'get_redis_link', side_effect=get_redis_link):
         n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7000}])
         with pytest.raises(RedisClusterException) as e:
-            n.initialize()
-        assert 'Redis Cluster cannot be connected' in unicode(e.value)
+            await n.initialize()
+        assert 'Redis Cluster cannot be connected' in str(e.value)

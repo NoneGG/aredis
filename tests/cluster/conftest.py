@@ -128,7 +128,7 @@ def s(*args, **kwargs):
     """
     Create a StrictRedisCluster instance with 'init_slot_cache' set to false
     """
-    s = _get_client(init_slot_cache=False, **kwargs)
+    s = _get_client(**kwargs)
     assert s.connection_pool.nodes.slots == {}
     assert s.connection_pool.nodes.nodes == {}
     return s
