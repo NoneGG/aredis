@@ -235,7 +235,8 @@ class ClusterConnectionPool(ConnectionPool):
 
     def __init__(self, startup_nodes=None, init_slot_cache=True, connection_class=ClusterConnection,
                  max_connections=None, max_connections_per_node=False, reinitialize_steps=None,
-                 skip_full_coverage_check=False, nodemanager_follow_cluster=False, *, loop=None, **connection_kwargs):
+                 skip_full_coverage_check=False, nodemanager_follow_cluster=False, readonly=False,
+                 *, loop=None, **connection_kwargs):
         """
         :skip_full_coverage_check:
             Skips the check of cluster-require-full-coverage config, useful for clusters
@@ -274,10 +275,12 @@ class ClusterConnectionPool(ConnectionPool):
 
         self.connections = {}
         self.connection_kwargs = connection_kwargs
+        self.connection_kwargs['readonly'] = readonly
+        self.readonly = readonly
         self.reset()
 
-        if "socket_timeout" not in self.connection_kwargs:
-            self.connection_kwargs["socket_timeout"] = ClusterConnectionPool.RedisClusterDefaultTimeout
+        if "stream_timeout" not in self.connection_kwargs:
+            self.connection_kwargs["stream_timeout"] = ClusterConnectionPool.RedisClusterDefaultTimeout
 
     def __repr__(self):
         """
@@ -285,7 +288,7 @@ class ClusterConnectionPool(ConnectionPool):
         """
         return "{0}<{1}>".format(
             type(self).__name__,
-            ", ".join([self.connection_class.description.format(node)
+            ", ".join([self.connection_class.description.format(**node)
                        for node in self.nodes.startup_nodes])
         )
 
@@ -457,11 +460,9 @@ class ClusterConnectionPool(ConnectionPool):
         return connection
 
     def get_master_node_by_slot(self, slot):
-        """
-        """
         return self.nodes.slots[slot][0]
 
     def get_node_by_slot(self, slot):
-        """
-        """
+        if self.readonly:
+            return random.choice(self.nodes.slots[slot])
         return self.get_master_node_by_slot(slot)
