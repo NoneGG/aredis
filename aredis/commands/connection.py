@@ -27,6 +27,6 @@ class ClusterConnectionCommandMixin(ConnectionCommandMixin):
     }
 
     RESULT_CALLBACKS = {
-        'ECHO': None,
-        'PING': None
+        'ECHO': lambda res: res,
+        'PING': lambda res: res
     }

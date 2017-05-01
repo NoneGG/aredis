@@ -78,7 +78,7 @@ class ClusterScriptingCommandMixin(ScriptingCommandMixin):
     )
 
     RESULT_CALLBACKS = {
-        "SCRIPT LOAD": lambda command, res: list(res.values()).pop(),
-        "SCRIPT EXISTS": lambda command, res: [all(k) for k in zip(*res.values())],
-        "SCRIPT FLUSH": lambda command, res: all(res.values())
+        "SCRIPT LOAD": lambda res: list(res.values()).pop(),
+        "SCRIPT EXISTS": lambda res: [all(k) for k in zip(*res.values())],
+        "SCRIPT FLUSH": lambda res: all(res.values())
     }

@@ -281,7 +281,7 @@ class ClusterKeysCommandMixin(KeysCommandMixin):
     RESULT_CALLBACKS = {
         'KEYS': merge_result,
         'RANDOMKEY': first_key,
-        'SCAN': None
+        'SCAN': lambda res: res
     }
 
     async def rename(self, src, dst):
