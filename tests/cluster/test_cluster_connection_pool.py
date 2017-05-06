@@ -49,6 +49,7 @@ class TestConnectionPool(object):
         await pool.initialize()
         return pool
 
+    @pytest.mark.asyncio()
     async def test_in_use_not_exists(self):
         """
         Test that if for some reason, the node that it tries to get the connectino for
@@ -58,6 +59,7 @@ class TestConnectionPool(object):
         pool._in_use_connections = {}
         pool.get_connection("pubsub", channel="foobar")
 
+    @pytest.mark.asyncio()
     async def test_connection_creation(self):
         connection_kwargs = {'foo': 'bar', 'biz': 'baz'}
         pool = await self.get_pool(connection_kwargs=connection_kwargs)
@@ -66,12 +68,14 @@ class TestConnectionPool(object):
         for key in connection_kwargs:
             assert connection.kwargs[key] == connection_kwargs[key]
 
+    @pytest.mark.asyncio()
     async def test_multiple_connections(self):
         pool = await self.get_pool()
         c1 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         c2 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         assert c1 != c2
 
+    @pytest.mark.asyncio()
     async def test_max_connections(self):
         pool = await self.get_pool(max_connections=2)
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
@@ -79,6 +83,7 @@ class TestConnectionPool(object):
         with pytest.raises(RedisClusterException):
             pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
+    @pytest.mark.asyncio()
     async def test_max_connections_per_node(self):
         pool = await self.get_pool(max_connections=2, max_connections_per_node=True)
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
@@ -88,10 +93,12 @@ class TestConnectionPool(object):
         with pytest.raises(RedisClusterException):
             pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
+    @pytest.mark.asyncio()
     async def test_max_connections_default_setting(self):
         pool = await self.get_pool(max_connections=None)
         assert pool.max_connections == 2 ** 31
 
+    @pytest.mark.asyncio()
     async def test_reuse_previously_released_connection(self):
         pool = await self.get_pool()
         c1 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
@@ -99,6 +106,7 @@ class TestConnectionPool(object):
         c2 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         assert c1 == c2
 
+    @pytest.mark.asyncio()
     async def test_repr_contains_db_info_tcp(self):
         """
         Note: init_slot_cache muts be set to false otherwise it will try to
@@ -110,6 +118,7 @@ class TestConnectionPool(object):
         expected = 'ClusterConnectionPool<ClusterConnection<host=127.0.0.1,port=7000>>'
         assert repr(pool) == expected
 
+    @pytest.mark.asyncio()
     async def test_get_connection_by_key(self):
         """
         This test assumes that when hashing key 'foo' will be sent to server with port 7002
@@ -129,6 +138,7 @@ class TestConnectionPool(object):
             pool.get_connection_by_key(None)
         assert str(ex.value).startswith("No way to dispatch this command to Redis Cluster."), True
 
+    @pytest.mark.asyncio()
     async def test_get_connection_by_slot(self):
         """
         This test assumes that when doing keyslot operation on "foo" it will return 12182
@@ -151,6 +161,7 @@ class TestConnectionPool(object):
         pool.get_connection_by_slot(None)
         m.assert_called_once_with()
 
+    @pytest.mark.asyncio()
     async def test_get_connection_blocked(self):
         """
         Currently get_connection() should only be used by pubsub command.
@@ -162,6 +173,7 @@ class TestConnectionPool(object):
             pool.get_connection("GET")
         assert str(ex.value).startswith("Only 'pubsub' commands can be used by get_connection()")
 
+    @pytest.mark.asyncio()
     async def test_master_node_by_slot(self):
         pool = await self.get_pool(connection_kwargs={})
         node = pool.get_master_node_by_slot(0)
@@ -182,6 +194,7 @@ class TestReadOnlyConnectionPool(object):
         await pool.initialize()
         return pool
 
+    @pytest.mark.asyncio()
     async def test_repr_contains_db_info_readonly(self):
         """
         Note: init_slot_cache must be set to false otherwise it will try to
@@ -190,9 +203,10 @@ class TestReadOnlyConnectionPool(object):
         pool = await self.get_pool(
             startup_nodes=[{"host": "127.0.0.1", "port": 7000}, {"host": "127.0.0.2", "port": 7001}],
         )
-        expected = 'ClusterConnectionPool<ClusterConnection<host=127.0.0.1,port=7000>, ClusterConnection<host=127.0.0.2,port=7001>>'
-        assert repr(pool) == expected
+        assert 'ClusterConnection<host=127.0.0.2,port=7001>' in repr(pool)
+        assert 'ClusterConnection<host=127.0.0.1,port=7000>' in repr(pool)
 
+    @pytest.mark.asyncio()
     async def test_max_connections(self):
         pool = await self.get_pool(max_connections=2)
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
@@ -200,6 +214,7 @@ class TestReadOnlyConnectionPool(object):
         with pytest.raises(RedisClusterException):
             pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
+    @pytest.mark.asyncio()
     async def test_get_node_by_slot(self):
         """
         We can randomly get all nodes in readonly mode.
