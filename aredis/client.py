@@ -173,6 +173,20 @@ class StrictRedis(*mixins):
             return callback(response, **options)
         return response
 
+    async def pipeline(self, transaction=True, shard_hint=None):
+        """
+        Return a new pipeline object that can queue multiple commands for
+        later execution. ``transaction`` indicates whether all commands
+        should be executed atomically. Apart from making a group of operations
+        atomic, pipelines are useful for reducing the back-and-forth overhead
+        between the client and server.
+        """
+        from aredis.pipeline import StrictPipeline
+        pipeline = StrictPipeline(self.connection_pool, self.response_callbacks,
+                                  transaction, shard_hint)
+        await pipeline.reset()
+        return pipeline
+
 
 class StrictRedisCluster(StrictRedis, *cluster_mixins):
     """
@@ -190,7 +204,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
     def __init__(self, host=None, port=None, startup_nodes=None, max_connections=32,
                  max_connections_per_node=False, readonly=False,
                  reinitialize_steps=None, skip_full_coverage_check=False,
-                 nodemanager_follow_cluster=False, *, loop=None, **kwargs):
+                 nodemanager_follow_cluster=False, **kwargs):
         """
         :startup_nodes:
             List of nodes that initial bootstrapping can be done from
@@ -227,7 +241,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             # Support host/port as argument
             if host:
                 startup_nodes.append({"host": host, "port": port if port else 7000})
-            loop = loop or asyncio.get_event_loop()
             pool = ClusterConnectionPool(
                 startup_nodes=startup_nodes,
                 max_connections=max_connections,
@@ -236,7 +249,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 skip_full_coverage_check=skip_full_coverage_check,
                 nodemanager_follow_cluster=nodemanager_follow_cluster,
                 readonly=readonly,
-                loop=loop,
                 **kwargs
             )
 
@@ -411,7 +423,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 # is shared between multiple threads. To reduce the frequency you
                 # can set the variable 'reinitialize_steps' in the constructor.
                 self.refresh_table_asap = True
-                self.connection_pool.nodes.increment_reinitialize_counter()
+                await self.connection_pool.nodes.increment_reinitialize_counter()
 
                 node = self.connection_pool.nodes.set_node(e.host, e.port, server_type='master')
                 self.connection_pool.nodes.slots[e.slot_id][0] = node
@@ -450,3 +462,24 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 self.connection_pool.release(connection)
 
         return self._merge_result(command, res, **kwargs)
+
+    async def pipeline(self, transaction=None, shard_hint=None):
+        """
+        Cluster impl:
+            Pipelines do not work in cluster mode the same way they do in normal mode.
+            Create a clone of this object so that simulating pipelines will work correctly.
+            Each command will be called directly when used and when calling execute() will only return the result stack.
+        """
+        await self.connection_pool.initialize()
+        if shard_hint:
+            raise RedisClusterException("shard_hint is deprecated in cluster mode")
+
+        if transaction:
+            raise RedisClusterException("transaction is deprecated in cluster mode")
+        from aredis.pipeline import StrictClusterPipeline
+        return StrictClusterPipeline(
+            connection_pool=self.connection_pool,
+            startup_nodes=self.connection_pool.nodes.startup_nodes,
+            result_callbacks=self.result_callbacks,
+            response_callbacks=self.response_callbacks,
+        )

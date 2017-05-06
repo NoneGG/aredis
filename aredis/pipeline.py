@@ -1,6 +1,7 @@
 import sys
 import types
 from itertools import chain
+from aredis.client import (StrictRedisCluster, StrictRedis)
 from aredis.exceptions import (RedisError,
                                ConnectionError,
                                TimeoutError,
@@ -13,38 +14,6 @@ from aredis.exceptions import (RedisError,
                                RedisClusterException)
 from aredis.utils import (dict_merge,
                           clusterdown_wrapper)
-from aredis.commands.cluster import ClusterCommandMixin
-from aredis.commands.connection import ConnectionCommandMixin, ClusterConnectionCommandMixin
-from aredis.commands.extra import ExtraCommandMixin
-from aredis.commands.geo import GeoCommandMixin
-from aredis.commands.hash import HashCommandMixin, ClusterHashCommandMixin
-from aredis.commands.hyperlog import HyperLogCommandMixin
-from aredis.commands.keys import KeysCommandMixin, ClusterKeysCommandMixin
-from aredis.commands.lists import ListsCommandMixin
-from aredis.commands.pubsub import PubSubCommandMixin, CLusterPubSubCommandMixin
-from aredis.commands.scripting import ScriptingCommandMixin, ClusterScriptingCommandMixin
-from aredis.commands.sentinel import SentinelCommandMixin, ClusterSentinelCommands
-from aredis.commands.server import ServerCommandMixin, ClusterServerCommandMixin
-from aredis.commands.sets import SetsCommandMixin, ClusterSetsCommandMixin
-from aredis.commands.sorted_set import SortedSetCommandMixin, ClusterSortedSetCommandMixin
-from aredis.commands.strings import StringsCommandMixin, ClusterStringsCommandMixin
-
-pipeline_mixins = [
-    ConnectionCommandMixin, ExtraCommandMixin,
-    GeoCommandMixin, HashCommandMixin, HyperLogCommandMixin,
-    KeysCommandMixin, ListsCommandMixin, PubSubCommandMixin,
-    ScriptingCommandMixin, SentinelCommandMixin, ServerCommandMixin,
-    SetsCommandMixin, SortedSetCommandMixin, StringsCommandMixin
-]
-cluster_pipeline_mixins = [
-    ClusterStringsCommandMixin, ClusterSentinelCommands, ClusterSortedSetCommandMixin,
-    CLusterPubSubCommandMixin, ClusterConnectionCommandMixin, ClusterHashCommandMixin,
-    ClusterKeysCommandMixin, ClusterScriptingCommandMixin, ClusterServerCommandMixin,
-    ClusterSetsCommandMixin, ClusterCommandMixin
-]
-if sys.version_info[:2] >= (3, 6):
-    from aredis.commands.iter import IterCommandMixin
-    pipeline_mixins.append(IterCommandMixin)
 
 ERRORS_ALLOW_RETRY = (ConnectionError, TimeoutError, MovedError, AskError, TryAgainError)
 
@@ -359,17 +328,12 @@ class BasePipeline(object):
         self.scripts.add(script)
 
 
-class StrictPipeline(BasePipeline, *pipeline_mixins):
+class StrictPipeline(BasePipeline, StrictRedis):
     "Pipeline for the StrictRedis class"
-    RESPONSE_CALLBACKS = dict_merge(
-        *[mixin.RESPONSE_CALLBACKS for mixin in pipeline_mixins]
-    )
     pass
 
 
-class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
-    """
-    """
+class StrictClusterPipeline(StrictRedisCluster):
 
     def __init__(self, connection_pool, result_callbacks=None,
                  response_callbacks=None, startup_nodes=None):
@@ -381,8 +345,7 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
         self.result_callbacks = result_callbacks or self.__class__.RESULT_CALLBACKS.copy()
         self.startup_nodes = startup_nodes if startup_nodes else []
         self.nodes_flags = self.__class__.NODES_FLAGS.copy()
-        self.response_callbacks = dict_merge(response_callbacks or self.__class__.RESPONSE_CALLBACKS.copy(),
-                                             self.CLUSTER_COMMANDS_RESPONSE_CALLBACKS)
+        self.response_callbacks = dict_merge(response_callbacks or self.__class__.RESPONSE_CALLBACKS.copy())
 
     def __repr__(self):
         """
@@ -409,7 +372,27 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
         """
         return len(self.command_stack)
 
-    def execute_command(self, *args, **kwargs):
+    def _determine_slot(self, *args):
+        """
+        figure out what slot based on command and args
+        """
+        if len(args) <= 1:
+            raise RedisClusterException("No way to dispatch this command to Redis Cluster. Missing key.")
+        command = args[0]
+
+        if command in ['EVAL', 'EVALSHA']:
+            numkeys = args[2]
+            keys = args[3: 3 + numkeys]
+            slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
+            if len(slots) != 1:
+                raise RedisClusterException("{0} - all keys must map to the same key slot".format(command))
+            return slots.pop()
+
+        key = args[1]
+
+        return self.connection_pool.nodes.keyslot(key)
+
+    async def execute_command(self, *args, **kwargs):
         """
         """
         return self.pipeline_execute_command(*args, **kwargs)
@@ -564,7 +547,7 @@ class StrictClusterPipeline(StrictPipeline, *cluster_pipeline_mixins):
             # If a lot of commands have failed, we'll be setting the
             # flag to rebuild the slots table from scratch. So MOVED errors should
             # correct themselves fairly quickly.
-            self.connection_pool.nodes.increment_reinitialize_counter(len(attempt))
+            await self.connection_pool.nodes.increment_reinitialize_counter(len(attempt))
             for c in attempt:
                 try:
                     # send each command individually like we do in the main client.

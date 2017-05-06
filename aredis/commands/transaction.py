@@ -1,7 +1,5 @@
 import asyncio
 import warnings
-from aredis.pipeline import (StrictClusterPipeline,
-                             StrictPipeline)
 from aredis.exceptions import (RedisClusterException,
                                WatchError)
 from aredis.utils import (string_keys_to_dict,
@@ -14,19 +12,6 @@ class TransactionCommandMixin:
             'WATCH UNWATCH',
             bool_ok
         )
-
-    async def pipeline(self, transaction=True, shard_hint=None):
-        """
-        Return a new pipeline object that can queue multiple commands for
-        later execution. ``transaction`` indicates whether all commands
-        should be executed atomically. Apart from making a group of operations
-        atomic, pipelines are useful for reducing the back-and-forth overhead
-        between the client and server.
-        """
-        pipeline = StrictPipeline(self.connection_pool, self.response_callbacks,
-                                  transaction, shard_hint)
-        await pipeline.reset()
-        return pipeline
 
     async def transaction(self, func, *watches, **kwargs):
         """
@@ -69,27 +54,7 @@ class TransactionCommandMixin:
 
 class ClusterTransactionCommandMixin(TransactionCommandMixin):
 
-    def pipeline(self, transaction=None, shard_hint=None):
-        """
-        Cluster impl:
-            Pipelines do not work in cluster mode the same way they do in normal mode.
-            Create a clone of this object so that simulating pipelines will work correctly.
-            Each command will be called directly when used and when calling execute() will only return the result stack.
-        """
-        if shard_hint:
-            raise RedisClusterException("shard_hint is deprecated in cluster mode")
-
-        if transaction:
-            raise RedisClusterException("transaction is deprecated in cluster mode")
-
-        return StrictClusterPipeline(
-            connection_pool=self.connection_pool,
-            startup_nodes=self.connection_pool.nodes.startup_nodes,
-            result_callbacks=self.result_callbacks,
-            response_callbacks=self.response_callbacks,
-        )
-
-    def transaction(self, *args, **kwargs):
+    async def transaction(self, *args, **kwargs):
         """
         Transaction is not implemented in cluster mode yet.
         """

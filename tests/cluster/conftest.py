@@ -31,8 +31,6 @@ def get_versions(**kwargs):
 
 
 def _get_client(cls=None, **kwargs):
-    """
-    """
     if not cls:
         cls = StrictRedisCluster
 
@@ -44,20 +42,6 @@ def _get_client(cls=None, **kwargs):
     }
     params.update(kwargs)
     return cls(**params)
-
-
-def _init_client(request, cls=None, **kwargs):
-    """
-    """
-    client = _get_client(cls=cls, **kwargs)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(client.flushdb())
-    if request:
-        def teardown():
-            loop.run_until_complete(client.flushdb())
-            client.connection_pool.disconnect()
-        request.addfinalizer(teardown)
-    return client
 
 
 def _init_mgt_client(request, cls=None, **kwargs):
@@ -102,7 +86,7 @@ def o(request, *args, **kwargs):
     """
     Create a StrictRedisCluster instance with decode_responses set to True.
     """
-    return _init_client(request, cls=StrictRedisCluster, **kwargs)
+    return _get_client(cls=StrictRedisCluster, **kwargs)
 
 
 @pytest.fixture()
@@ -110,7 +94,7 @@ def r(request, *args, **kwargs):
     """
     Create a StrictRedisCluster instance with default settings.
     """
-    return _init_client(request, cls=StrictRedisCluster, **kwargs)
+    return _get_client(cls=StrictRedisCluster, **kwargs)
 
 
 @pytest.fixture()
@@ -120,7 +104,7 @@ def ro(request, *args, **kwargs):
     """
     params = {'readonly': True}
     params.update(kwargs)
-    return _init_client(request, cls=StrictRedisCluster, **params)
+    return _get_client(cls=StrictRedisCluster, **params)
 
 
 @pytest.fixture()
@@ -147,4 +131,4 @@ def sr(request, *args, **kwargs):
     """
     Returns a instance of StrictRedisCluster
     """
-    return _init_client(request, reinitialize_steps=1, cls=StrictRedisCluster, **kwargs)
+    return _get_client(reinitialize_steps=1, cls=StrictRedisCluster, **kwargs)

@@ -118,90 +118,94 @@ def test_skip_full_coverage_check():
     assert not c.connection_pool.nodes.cluster_require_full_coverage.called
 
 
-# def test_blocked_commands(r):
-#     """
-#     These commands should be blocked and raise RedisClusterException
-#     """
-#     blocked_commands = [
-#         "CLIENT SETNAME", "SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
-#         'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
-#         'SENTINEL SLAVES', 'SHUTDOWN', 'SLAVEOF', 'SCRIPT KILL', 'MOVE', 'BITOP',
-#     ]
-#
-#     for command in blocked_commands:
-#         try:
-#             r.execute_command(command)
-#         except RedisClusterException:
-#             pass
-#         else:
-#             raise AssertionError("'RedisClusterException' not raised for method : {0}".format(command))
-
-
-# def test_blocked_transaction(r):
-#     """
-#     Method transaction is blocked/NYI and should raise exception on use
-#     """
-#     with pytest.raises(RedisClusterException) as ex:
-#         r.transaction(None)
-#     assert str(ex.value).startswith("method StrictRedisCluster.transaction() is not implemented"), str(ex.value)
-#
-#
-async def test_cluster_of_one_instance(event_loop):
+@pytest.mark.asyncio()
+async def test_blocked_commands(r):
     """
-    Test a cluster that starts with only one redis server and ends up with
-    one server.
-
-    There is another redis server joining the cluster, hold slot 0, and
-    eventually quit the cluster. The StrictRedisCluster instance may get confused
-    when slots mapping and nodes change during the test.
+    These commands should be blocked and raise RedisClusterException
     """
-    with patch.object(StrictRedisCluster, 'parse_response') as parse_response_mock:
-        with patch.object(NodeManager, 'initialize', autospec=True) as init_mock:
-            def side_effect(self, *args, **kwargs):
-                def ok_call(self, *args, **kwargs):
-                    assert self.port == 7007
-                    return "OK"
-                parse_response_mock.side_effect = ok_call
+    blocked_commands = [
+        "CLIENT SETNAME", "SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
+        'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
+        'SENTINEL SLAVES', 'SHUTDOWN', 'SLAVEOF', 'SCRIPT KILL', 'MOVE', 'BITOP',
+    ]
 
-                raise ClusterDownError('CLUSTERDOWN The cluster is down. Use CLUSTER INFO for more information')
+    for command in blocked_commands:
+        try:
+            await r.execute_command(command)
+        except RedisClusterException:
+            pass
+        else:
+            raise AssertionError("'RedisClusterException' not raised for method : {0}".format(command))
 
-            def side_effect_rebuild_slots_cache(self):
-                # make new node cache that points to 7007 instead of 7006
-                self.nodes = [{'host': '127.0.0.1', 'server_type': 'master', 'port': 7006, 'name': '127.0.0.1:7006'}]
-                self.slots = {}
-
-                for i in range(0, 16383):
-                    self.slots[i] = [{
-                        'host': '127.0.0.1',
-                        'server_type': 'master',
-                        'port': 7006,
-                        'name': '127.0.0.1:7006',
-                    }]
-
-                # Second call should map all to 7007
-                def map_7007(self):
-                    self.nodes = [{'host': '127.0.0.1', 'server_type': 'master', 'port': 7007, 'name': '127.0.0.1:7007'}]
-                    self.slots = {}
-
-                    for i in range(0, 16383):
-                        self.slots[i] = [{
-                            'host': '127.0.0.1',
-                            'server_type': 'master',
-                            'port': 7007,
-                            'name': '127.0.0.1:7007',
-                        }]
-
-                # First call should map all to 7006
-                init_mock.side_effect = map_7007
-
-            parse_response_mock.side_effect = side_effect
-            init_mock.side_effect = side_effect_rebuild_slots_cache
-
-            rc = StrictRedisCluster(host='127.0.0.1', port=7006, loop=event_loop)
-            await rc.set('bar', 'foo')
+@pytest.mark.asyncio()
+async def test_blocked_transaction(r):
+    """
+    Method transaction is blocked/NYI and should raise exception on use
+    """
+    with pytest.raises(RedisClusterException) as ex:
+        await r.transaction(None)
+    assert str(ex.value).startswith("method StrictRedisCluster.transaction() is not implemented"), str(ex.value)
 
 
-# def test_execute_command_errors(r):
+# @pytest.mark.asyncio()
+# async def test_cluster_of_one_instance():
+#     """
+#     Test a cluster that starts with only one redis server and ends up with
+#     one server.
+#
+#     There is another redis server joining the cluster, hold slot 0, and
+#     eventually quit the cluster. The StrictRedisCluster instance may get confused
+#     when slots mapping and nodes change during the test.
+#     """
+#     with patch.object(StrictRedisCluster, 'parse_response') as parse_response_mock:
+#         with patch.object(NodeManager, 'initialize', autospec=True) as init_mock:
+#             async def side_effect(self, *args, **kwargs):
+#                 async def ok_call(self, *args, **kwargs):
+#                     assert self.port == 7007
+#                     return "OK"
+#                 parse_response_mock.side_effect = ok_call
+#
+#                 raise ClusterDownError('CLUSTERDOWN The cluster is down. Use CLUSTER INFO for more information')
+#
+#             async def side_effect_rebuild_slots_cache(self):
+#                 # make new node cache that points to 7007 instead of 7006
+#                 self.nodes = [{'host': '127.0.0.1', 'server_type': 'master', 'port': 7006, 'name': '127.0.0.1:7006'}]
+#                 self.slots = {}
+#
+#                 for i in range(0, 16383):
+#                     self.slots[i] = [{
+#                         'host': '127.0.0.1',
+#                         'server_type': 'master',
+#                         'port': 7006,
+#                         'name': '127.0.0.1:7006',
+#                     }]
+#
+#                 # Second call should map all to 7007
+#                 async def map_7007(self):
+#                     self.nodes = [{'host': '127.0.0.1', 'server_type': 'master', 'port': 7007, 'name': '127.0.0.1:7007'}]
+#                     self.slots = {}
+#
+#                     for i in range(0, 16383):
+#                         self.slots[i] = [{
+#                             'host': '127.0.0.1',
+#                             'server_type': 'master',
+#                             'port': 7007,
+#                             'name': '127.0.0.1:7007',
+#                         }]
+#
+#                 # First call should map all to 7006
+#                 init_mock.side_effect = map_7007
+#
+#             parse_response_mock.side_effect = side_effect
+#             init_mock.side_effect = side_effect_rebuild_slots_cache
+#
+#             rc = StrictRedisCluster(host='127.0.0.1', port=7006)
+#             await rc.set('bar', 'foo')
+#             await rc.flushdb()
+
+
+# @pytest.mark.asyncio()
+# async def test_execute_command_errors(r):
 #     """
 #     If no command is given to `_determine_nodes` then exception
 #     should be raised.
@@ -209,115 +213,111 @@ async def test_cluster_of_one_instance(event_loop):
 #     Test that if no key is provided then exception should be raised.
 #     """
 #     with pytest.raises(RedisClusterException) as ex:
-#         r.execute_command()
-#     assert unicode(ex.value).startswith("Unable to determine command to use")
+#         await r.execute_command()
+#     assert str(ex.value).startswith("Unable to determine command to use")
 #
 #     with pytest.raises(RedisClusterException) as ex:
 #         r.execute_command("GET")
-#     assert unicode(ex.value).startswith("No way to dispatch this command to Redis Cluster. Missing key.")
+#     assert str(ex.value).startswith("No way to dispatch this command to Redis Cluster. Missing key.")
 
-async def test_refresh_table_asap(event_loop):
+
+@pytest.mark.asyncio()
+async def test_refresh_table_asap(monkeypatch):
     """
     If this variable is set externally, initialize() should be called.
     """
-    with patch.object(NodeManager, 'initialize') as mock_initialize:
-        mock_initialize.return_value = None
-
-        # Patch parse_response to avoid issues when the cluster sometimes return MOVED
-        with patch.object(StrictRedisCluster, 'parse_response') as mock_parse_response:
-            def side_effect(self, *args, **kwargs):
-                return None
-            mock_parse_response.side_effect = side_effect
-
-            r = StrictRedisCluster(host="127.0.0.1", port=7000, loop=event_loop)
-            r.connection_pool.nodes.slots[12182] = [{
-                "host": "127.0.0.1",
-                "port": 7002,
-                "name": "127.0.0.1:7002",
-                "server_type": "master",
-            }]
-            r.refresh_table_asap = True
-
-            i = len(mock_initialize.mock_calls)
-            await r.set("foo", "bar")
-            assert len(mock_initialize.mock_calls) - i == 1
-            assert r.refresh_table_asap is False
-
-
-def find_node_ip_based_on_port(cluster_client, port):
-    for node_name, node_data in cluster_client.connection_pool.nodes.nodes.items():
-        if node_name.endswith(port):
-            return node_data['host']
-
-
-async def test_ask_redirection():
-    """
-    Test that the server handles ASK response.
-
-    At first call it should return a ASK ResponseError that will point
-    the client to the next server it should talk to.
-
-    Important thing to verify is that it tries to talk to the second node.
-    """
+    async def return_none(*args, **kwargs):
+        return None
+    monkeypatch.setattr(ClusterConnectionPool, 'initialize', return_none)
+    monkeypatch.setattr(StrictRedisCluster, 'parse_response', return_none)
     r = StrictRedisCluster(host="127.0.0.1", port=7000)
-    r.connection_pool.nodes.nodes['127.0.0.1:7001'] = {
-        'host': u'127.0.0.1',
-        'server_type': 'master',
-        'port': 7001,
-        'name': '127.0.0.1:7001'
-    }
-    with patch.object(StrictRedisCluster,
-                      'parse_response') as parse_response:
+    r.connection_pool.nodes.slots[12182] = [{
+        "host": "127.0.0.1",
+        "port": 7002,
+        "name": "127.0.0.1:7002",
+        "server_type": "master",
+    }]
+    r.refresh_table_asap = True
 
-        host_ip = find_node_ip_based_on_port(r, '7001')
-
-        def ask_redirect_effect(connection, *args, **options):
-            def ok_response(connection, *args, **options):
-                assert connection.host == host_ip
-                assert connection.port == 7001
-
-                return "MOCK_OK"
-            parse_response.side_effect = ok_response
-            raise AskError("1337 {0}:7001".format(host_ip))
-
-        parse_response.side_effect = ask_redirect_effect
-
-        assert await r.set("foo", "bar") == "MOCK_OK"
+    await r.set("foo", "bar")
+    assert r.refresh_table_asap is False
+    await r.flushdb()
 
 
-async def test_pipeline_ask_redirection():
-    """
-    Test that the server handles ASK response when used in pipeline.
+# def find_node_ip_based_on_port(cluster_client, port):
+#     for node_name, node_data in cluster_client.connection_pool.nodes.nodes.items():
+#         if node_name.endswith(port):
+#             return node_data['host']
+#
+# @pytest.mark.asyncio()
+# async def test_ask_redirection():
+#     """
+#     Test that the server handles ASK response.
+#
+#     At first call it should return a ASK ResponseError that will point
+#     the client to the next server it should talk to.
+#
+#     Important thing to verify is that it tries to talk to the second node.
+#     """
+#     r = StrictRedisCluster(host="127.0.0.1", port=7000)
+#     r.connection_pool.nodes.nodes['127.0.0.1:7001'] = {
+#         'host': u'127.0.0.1',
+#         'server_type': 'master',
+#         'port': 7001,
+#         'name': '127.0.0.1:7001'
+#     }
+#     with patch.object(StrictRedisCluster,
+#                       'parse_response') as parse_response:
+#
+#         host_ip = find_node_ip_based_on_port(r, '7001')
+#
+#         def ask_redirect_effect(connection, *args, **options):
+#             def ok_response(connection, *args, **options):
+#                 assert connection.host == host_ip
+#                 assert connection.port == 7001
+#
+#                 return "MOCK_OK"
+#             parse_response.side_effect = ok_response
+#             raise AskError("1337 {0}:7001".format(host_ip))
+#
+#         parse_response.side_effect = ask_redirect_effect
+#
+#         assert await r.set("foo", "bar") == "MOCK_OK"
+#
+# @pytest.mark.asyncio()
+# async def test_pipeline_ask_redirection():
+#     """
+#     Test that the server handles ASK response when used in pipeline.
+#
+#     At first call it should return a ASK ResponseError that will point
+#     the client to the next server it should talk to.
+#
+#     Important thing to verify is that it tries to talk to the second node.
+#     """
+#     r = StrictRedisCluster(host="127.0.0.1", port=7000)
+#     with patch.object(StrictRedisCluster,
+#                       'parse_response') as parse_response:
+#
+#         def response(connection, *args, **options):
+#             def response(connection, *args, **options):
+#                 def response(connection, *args, **options):
+#                     assert connection.host == "127.0.0.1"
+#                     assert connection.port == 7001
+#                     return "MOCK_OK"
+#
+#                 parse_response.side_effect = response
+#                 raise AskError("12182 127.0.0.1:7001")
+#
+#             parse_response.side_effect = response
+#             raise AskError("12182 127.0.0.1:7001")
+#
+#         parse_response.side_effect = response
+#
+#         p = await r.pipeline()
+#         await p.set("foo", "bar")
+#         assert await p.execute() == ["MOCK_OK"]
 
-    At first call it should return a ASK ResponseError that will point
-    the client to the next server it should talk to.
-
-    Important thing to verify is that it tries to talk to the second node.
-    """
-    r = StrictRedisCluster(host="127.0.0.1", port=7000)
-    with patch.object(StrictRedisCluster,
-                      'parse_response') as parse_response:
-
-        def response(connection, *args, **options):
-            def response(connection, *args, **options):
-                def response(connection, *args, **options):
-                    assert connection.host == "127.0.0.1"
-                    assert connection.port == 7001
-                    return "MOCK_OK"
-
-                parse_response.side_effect = response
-                raise AskError("12182 127.0.0.1:7001")
-
-            parse_response.side_effect = response
-            raise AskError("12182 127.0.0.1:7001")
-
-        parse_response.side_effect = response
-
-        p = r.pipeline()
-        await p.set("foo", "bar")
-        assert await p.execute() == ["MOCK_OK"]
-
-
+@pytest.mark.asyncio()
 async def test_moved_redirection():
     """
     Test that the client handles MOVED response.
@@ -327,25 +327,15 @@ async def test_moved_redirection():
 
     Important thing to verify is that it tries to talk to the second node.
     """
-    r = StrictRedisCluster(host="127.0.0.1", port=7000)
-    m = Mock(autospec=True)
+    r0 = StrictRedisCluster(host="127.0.0.1", port=7000)
+    r2 = StrictRedisCluster(host='127.0.0.1', port=7002)
+    await r0.flushdb()
+    await r2.flushdb()
+    assert await r0.set("foo", "bar")
+    assert await r2.get('foo') == b'bar'
 
-    def ask_redirect_effect(connection, *args, **options):
-        def ok_response(connection, *args, **options):
-            assert connection.host == "127.0.0.1"
-            assert connection.port == 7002
-
-            return "MOCK_OK"
-        m.side_effect = ok_response
-        raise MovedError("12182 127.0.0.1:7002")
-
-    m.side_effect = ask_redirect_effect
-
-    r.parse_response = m
-    assert await r.set("foo", "bar") == "MOCK_OK"
-
-
-async def test_moved_redirection_pipeline():
+@pytest.mark.asyncio()
+async def test_moved_redirection_pipeline(monkeypatch):
     """
     Test that the server handles MOVED response when used in pipeline.
 
@@ -354,30 +344,22 @@ async def test_moved_redirection_pipeline():
 
     Important thing to verify is that it tries to talk to the second node.
     """
-    with patch.object(StrictRedisCluster, 'parse_response') as parse_response:
-        def moved_redirect_effect(connection, *args, **options):
-            def ok_response(connection, *args, **options):
-                assert connection.host == "127.0.0.1"
-                assert connection.port == 7002
-
-                return "MOCK_OK"
-            parse_response.side_effect = ok_response
-            raise MovedError("12182 127.0.0.1:7002")
-
-        parse_response.side_effect = moved_redirect_effect
-
-        r = StrictRedisCluster(host="127.0.0.1", port=7000)
-        p = r.pipeline()
-        await p.set("foo", "bar")
-        assert await p.execute() == ["MOCK_OK"]
+    r0 = StrictRedisCluster(host="127.0.0.1", port=7000)
+    r2 = StrictRedisCluster(host='127.0.0.1', port=7002)
+    await r0.flushdb()
+    await r2.flushdb()
+    p = await r0.pipeline()
+    await p.set("foo", "bar")
+    assert await p.execute() == [True]
+    assert await r2.get('foo') == b'bar'
 
 
 async def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj):
     """
     """
     # we assume this key is set on 127.0.0.1:7000(7003)
-    sr.set('foo16706', 'foo')
-    time.sleep(1)
+    await sr.set('foo16706', 'foo')
+    asyncio.sleep(1)
 
     with patch.object(connection_pool_cls, 'get_node_by_slot') as return_slave_mock:
         return_slave_mock.return_value = {
@@ -394,6 +376,7 @@ async def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj
             assert return_master_mock.call_count == 1
 
 
+@pytest.mark.asyncio()
 async def test_moved_redirection_on_slave_with_default_client(sr):
     """
     Test that the client is redirected normally with default
@@ -406,17 +389,19 @@ async def test_moved_redirection_on_slave_with_default_client(sr):
     )
 
 
-def test_moved_redirection_on_slave_with_readonly_mode_client(sr):
+@pytest.mark.asyncio()
+async def test_moved_redirection_on_slave_with_readonly_mode_client(sr):
     """
     Ditto with READONLY mode.
     """
-    assert_moved_redirection_on_slave(
+    await assert_moved_redirection_on_slave(
         sr,
         ClusterConnectionPool,
         StrictRedisCluster(host="127.0.0.1", port=7000, readonly=True, reinitialize_steps=1)
     )
 
 
+@pytest.mark.asyncio()
 async def test_access_correct_slave_with_readonly_mode_client(sr):
     """
     Test that the client can get value normally with readonly mode
@@ -440,6 +425,6 @@ async def test_access_correct_slave_with_readonly_mode_client(sr):
                 ClusterConnectionPool,
                 'get_master_node_by_slot',
                 return_value=master_value) as return_master_mock:
-            readonly_client = StrictRedisCluster(host="127.0.0.1", port=7000, readonly_mode=True)
-            assert b('foo') == readonly_client.get('foo16706')
+            readonly_client = StrictRedisCluster(host="127.0.0.1", port=7000, readonly=True)
+            assert b('foo') == await readonly_client.get('foo16706')
             assert return_master_mock.call_count == 0
