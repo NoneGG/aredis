@@ -337,7 +337,7 @@ class ClusterKeysCommandMixin(KeysCommandMixin):
 
             Operation is no longer atomic.
         """
-        if not self.exists(dst):
+        if not await self.exists(dst):
             return await self.rename(src, dst)
 
         return False

@@ -30,16 +30,17 @@ return "hello " .. name
 
 
 class TestScripting(object):
-    @pytest.fixture(autouse=True)
-    def reset_scripts(self, r):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(r.script_flush())
 
+    async def reset_scripts(self, r):
+        await r.script_flush()
+
+    @pytest.mark.asyncio()
     async def test_eval(self, r):
         await r.set('a', 2)
         # 2 * 3 == 6
         assert await r.eval(multiply_script, 1, 'a', 3) == 6
 
+    @pytest.mark.asyncio()
     async def test_eval_same_slot(self, r):
         await r.set('A{foo}', 2)
         await r.set('B{foo}', 4)
@@ -53,6 +54,7 @@ class TestScripting(object):
         result = await r.eval(script, 2, 'A{foo}', 'B{foo}')
         assert result == 8
 
+    @pytest.mark.asyncio()
     async def test_eval_crossslot(self, r):
         """
         This test assumes that {foo} and {bar} will not go to the same
@@ -70,12 +72,14 @@ class TestScripting(object):
         with pytest.raises(RedisClusterException):
             await r.eval(script, 2, 'A{foo}', 'B{bar}')
 
+    @pytest.mark.asyncio()
     async def test_evalsha(self, r):
         await r.set('a', 2)
         sha = await r.script_load(multiply_script)
         # 2 * 3 == 6
         assert await r.evalsha(sha, 1, 'a', 3) == 6
 
+    @pytest.mark.asyncio()
     async def test_evalsha_script_not_loaded(self, r):
         await r.set('a', 2)
         sha = await r.script_load(multiply_script)
@@ -84,6 +88,7 @@ class TestScripting(object):
         with pytest.raises(NoScriptError):
             await r.evalsha(sha, 1, 'a', 3)
 
+    @pytest.mark.asyncio()
     async def test_script_loading(self, r):
         # get the sha, then clear the cache
         sha = await r.script_load(multiply_script)
@@ -92,16 +97,17 @@ class TestScripting(object):
         await r.script_load(multiply_script)
         assert await r.script_exists(sha) == [True]
 
+    @pytest.mark.asyncio()
     async def test_script_object(self, r):
         await r.set('a', 2)
-        multiply = await r.register_script(multiply_script)
+        multiply = r.register_script(multiply_script)
         assert not multiply.sha
         # test evalsha fail -> script load + retry
-        assert multiply(keys=['a'], args=[3]) == 6
+        assert await multiply.execute(keys=['a'], args=[3]) == 6
         assert multiply.sha
         assert await r.script_exists(multiply.sha) == [True]
         # test first evalsha
-        assert multiply(keys=['a'], args=[3]) == 6
+        assert await multiply.execute(keys=['a'], args=[3]) == 6
 
     @pytest.mark.xfail(reason="Not Yet Implemented")
     async def test_script_object_in_pipeline(self, r):

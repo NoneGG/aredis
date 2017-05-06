@@ -74,8 +74,8 @@ def skip_if_server_version_lt(min_version):
 def skip_if_redis_py_version_lt(min_version):
     """
     """
-    import redis
-    version = redis.__version__
+    import aredis
+    version = aredis.__version__
     if StrictVersion(version) < StrictVersion(min_version):
         return pytest.mark.skipif(True, reason="")
     return pytest.mark.skipif(False, reason="")

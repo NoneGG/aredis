@@ -85,7 +85,7 @@ class NodeManager(object):
             yield random.choice(self.startup_nodes)
 
     def random_node(self):
-        return self.nodes[random.choice(self.nodes.keys())]
+        return self.nodes[random.choice(list(self.nodes.keys()))]
 
     def get_redis_link(self, host, port):
         from aredis.client import StrictRedis
@@ -142,7 +142,8 @@ class NodeManager(object):
                 single_node_slots = cluster_slots.pop((0, self.RedisClusterHashSlots-1))[0]
                 if single_node_slots and len(single_node_slots['host']) == 0:
                     single_node_slots['host'] = self.startup_nodes[0]['host']
-                    cluster_slots = [{(0, self.RedisClusterHashSlots-1): [single_node_slots]}]
+                    single_node_slots['server_type'] = 'master'
+                    cluster_slots = {(0, self.RedisClusterHashSlots-1): [single_node_slots]}
 
             # No need to decode response because StrictRedis should handle that for us...
             for min_slot, max_slot in cluster_slots:
@@ -156,7 +157,7 @@ class NodeManager(object):
 
                 for i in range(min_slot, max_slot + 1):
                     if i not in tmp_slots:
-                        tmp_slots[i] = [node]
+                        tmp_slots[i] = [master_node]
 
                         for slave_node in slave_nodes:
                             self.set_node_name(slave_node)

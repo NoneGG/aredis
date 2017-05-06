@@ -13,8 +13,6 @@ from aredis.utils import b
 # 3rd party imports
 import pytest
 
-from .conftest import skip_if_server_version_lt, skip_if_redis_py_version_lt
-
 async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False):
     now = time.time()
     timeout = now + timeout

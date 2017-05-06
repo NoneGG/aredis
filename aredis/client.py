@@ -369,7 +369,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
         # If set externally we must update it before calling any commands
         if self.refresh_table_asap:
-            self.connection_pool.nodes.initialize()
+            await self.connection_pool.nodes.initialize()
             self.refresh_table_asap = False
 
         redirect_addr = None
@@ -399,7 +399,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             try:
                 if asking:
                     await r.send_command('ASKING')
-                    self.parse_response(r, "ASKING", **kwargs)
+                    await self.parse_response(r, "ASKING", **kwargs)
                     asking = False
 
                 await r.send_command(*args)

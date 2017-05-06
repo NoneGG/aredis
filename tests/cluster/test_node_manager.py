@@ -53,12 +53,12 @@ async def test_init_slots_cache_not_all_slots(s):
     """
     # Create wrapper function so we can inject custom 'CLUSTER SLOTS' command result
     def get_redis_link_wrapper(*args, **kwargs):
-        link = StrictRedis(host="127.0.0.1", port=7000, decode_responses=True)
+        link = StrictRedis(host="127.0.0.1", port=7000)
 
         orig_exec_method = link.execute_command
 
-        def patch_execute_command(*args, **kwargs):
-            if args == ('cluster', 'slots'):
+        async def patch_execute_command(*args, **kwargs):
+            if args == ('CLUSTER SLOTS',):
                 # Missing slot 5460
                 return [
                     [0, 5459, [b'127.0.0.1', 7000], [b'127.0.0.1', 7003]],
@@ -66,7 +66,7 @@ async def test_init_slots_cache_not_all_slots(s):
                     [10923, 16383, [b'127.0.0.1', 7002], [b'127.0.0.1', 7005]],
                 ]
 
-            return orig_exec_method(*args, **kwargs)
+            return await orig_exec_method(*args, **kwargs)
 
         # Missing slot 5460
         link.execute_command = patch_execute_command
@@ -76,7 +76,7 @@ async def test_init_slots_cache_not_all_slots(s):
     s.connection_pool.nodes.get_redis_link = get_redis_link_wrapper
 
     with pytest.raises(RedisClusterException) as ex:
-        await s.connection_pool.nodes.initialize()
+        await s.connection_pool.initialize()
 
     assert str(ex.value).startswith("All slots are not covered after query all startup_nodes.")
 
