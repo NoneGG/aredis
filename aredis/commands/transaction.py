@@ -1,7 +1,7 @@
 import asyncio
 import warnings
-from aredis.pipeline import StrictPipeline
-from aredis.exceptions import WatchError
+from aredis.exceptions import (RedisClusterException,
+                               WatchError)
 from aredis.utils import (string_keys_to_dict,
                           bool_ok)
 
@@ -12,19 +12,6 @@ class TransactionCommandMixin:
             'WATCH UNWATCH',
             bool_ok
         )
-
-    async def pipeline(self, transaction=True, shard_hint=None):
-        """
-        Return a new pipeline object that can queue multiple commands for
-        later execution. ``transaction`` indicates whether all commands
-        should be executed atomically. Apart from making a group of operations
-        atomic, pipelines are useful for reducing the back-and-forth overhead
-        between the client and server.
-        """
-        pipeline = StrictPipeline(self.connection_pool, self.response_callbacks,
-                                  transaction, shard_hint)
-        await pipeline.reset()
-        return pipeline
 
     async def transaction(self, func, *watches, **kwargs):
         """
@@ -63,3 +50,12 @@ class TransactionCommandMixin:
         """
         warnings.warn(
             DeprecationWarning('Call UNWATCH from a Pipeline object'))
+
+
+class ClusterTransactionCommandMixin(TransactionCommandMixin):
+
+    async def transaction(self, *args, **kwargs):
+        """
+        Transaction is not implemented in cluster mode yet.
+        """
+        raise RedisClusterException("method StrictRedisCluster.transaction() is not implemented")

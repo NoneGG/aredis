@@ -2,7 +2,7 @@ import os
 import random
 import weakref
 
-from aredis.client import StrictRedis
+from aredis import StrictRedis
 from aredis.connection import Connection
 from aredis.pool import ConnectionPool
 from aredis.exceptions import (ConnectionError, ResponseError, ReadOnlyError,

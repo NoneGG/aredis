@@ -1,6 +1,9 @@
-from aredis.utils import (dict_merge,
+from aredis.utils import (b, dict_merge,
                           bool_ok,
                           string_keys_to_dict)
+from aredis.exceptions import (DataError,
+                               RedisClusterException,
+                               RedisError)
 
 
 class ListsCommandMixin:
@@ -161,3 +164,198 @@ class ListsCommandMixin:
     async def rpushx(self, name, value):
         "Push ``value`` onto the tail of the list ``name`` if ``name`` exists"
         return await self.execute_command('RPUSHX', name, value)
+
+
+class ClusterListsCommandMixin(ListsCommandMixin):
+
+    async def brpoplpush(self, src, dst, timeout=0):
+        """
+        Pop a value off the tail of ``src``, push it on the head of ``dst``
+        and then return it.
+
+        This command blocks until a value is in ``src`` or until ``timeout``
+        seconds elapse, whichever is first. A ``timeout`` value of 0 blocks
+        forever.
+
+        Cluster impl:
+            Call brpop() then send the result into lpush()
+
+            Operation is no longer atomic.
+        """
+        try:
+            value = await self.brpop(src, timeout=timeout)
+            if value is None:
+                return None
+        except TimeoutError:
+            # Timeout was reached
+            return None
+
+        await self.lpush(dst, value[1])
+        return value[1]
+
+    async def rpoplpush(self, src, dst):
+        """
+        RPOP a value off of the ``src`` list and atomically LPUSH it
+        on to the ``dst`` list.  Returns the value.
+
+        Cluster impl:
+            Call rpop() then send the result into lpush()
+
+            Operation is no longer atomic.
+        """
+        value = await self.rpop(src)
+
+        if value:
+            await self.lpush(dst, value)
+            return value
+
+        return None
+
+    async def sort(self, name, start=None, num=None, by=None, get=None, desc=False, alpha=False, store=None, groups=None):
+        """Sort and return the list, set or sorted set at ``name``.
+
+        :start: and :num:
+            allow for paging through the sorted data
+
+        :by:
+            allows using an external key to weight and sort the items.
+            Use an "*" to indicate where in the key the item value is located
+
+        :get:
+            allows for returning items from external keys rather than the
+            sorted data itself.  Use an "*" to indicate where int he key
+            the item value is located
+
+        :desc:
+            allows for reversing the sort
+
+        :alpha:
+            allows for sorting lexicographically rather than numerically
+
+        :store:
+            allows for storing the result of the sort into the key `store`
+
+        ClusterImpl:
+            A full implementation of the server side sort mechanics because many of the
+            options work on multiple keys that can exist on multiple servers.
+        """
+        if (start is None and num is not None) or \
+                (start is not None and num is None):
+            raise RedisError("RedisError: ``start`` and ``num`` must both be specified")
+        try:
+            data_type = b(await self.type(name))
+
+            if data_type == b("none"):
+                return []
+            elif data_type == b("set"):
+                data = list(await self.smembers(name))[:]
+            elif data_type == b("list"):
+                data = await self.lrange(name, 0, -1)
+            else:
+                raise RedisClusterException("Unable to sort data type : {0}".format(data_type))
+            if by is not None:
+                # _sort_using_by_arg mutates data so we don't
+                # need need a return value.
+                data = await self._sort_using_by_arg(data, by, alpha)
+            elif not alpha:
+                data.sort(key=self._strtod_key_func)
+            else:
+                data.sort()
+            if desc:
+                data = data[::-1]
+            if not (start is None and num is None):
+                data = data[start:start + num]
+
+            if get:
+                data = await self._retrive_data_from_sort(data, get)
+
+            if store is not None:
+                if data_type == b("set"):
+                    await self.delete(store)
+                    await self.rpush(store, *data)
+                elif data_type == b("list"):
+                    await self.delete(store)
+                    await self.rpush(store, *data)
+                else:
+                    raise RedisClusterException("Unable to store sorted data for data type : {0}".format(data_type))
+
+                return len(data)
+
+            if groups:
+                if not get or isinstance(get, str) or len(get) < 2:
+                    raise DataError('when using "groups" the "get" argument '
+                                    'must be specified and contain at least '
+                                    'two keys')
+                n = len(get)
+                return list(zip(*[data[i::n] for i in range(n)]))
+            else:
+                return data
+        except KeyError:
+            return []
+
+    async def _retrive_data_from_sort(self, data, get):
+        """
+        Used by sort()
+        """
+        if get is not None:
+            if isinstance(get, str):
+                get = [get]
+            new_data = []
+            for k in data:
+                for g in get:
+                    single_item = await self._get_single_item(k, g)
+                    new_data.append(single_item)
+            data = new_data
+        return data
+
+    async def _get_single_item(self, k, g):
+        """
+        Used by sort()
+        """
+        if getattr(k, "decode", None):
+            k = k.decode("utf-8")
+
+        if '*' in g:
+            g = g.replace('*', k)
+            if '->' in g:
+                key, hash_key = g.split('->')
+                single_item = await self.get(key, {}).get(hash_key)
+            else:
+                single_item = await self.get(g)
+        elif '#' in g:
+            single_item = k
+        else:
+            single_item = None
+        return b(single_item)
+
+    def _strtod_key_func(self, arg):
+        """
+        Used by sort()
+        """
+        return float(arg)
+
+    async def _sort_using_by_arg(self, data, by, alpha):
+        """
+        Used by sort()
+        """
+        if getattr(by, "decode", None):
+            by = by.decode("utf-8")
+
+        async def _by_key(arg):
+            if getattr(arg, "decode", None):
+                arg = arg.decode("utf-8")
+
+            key = by.replace('*', arg)
+            if '->' in by:
+                key, hash_key = key.split('->')
+                v = await self.hget(key, hash_key)
+                if alpha:
+                    return v
+                else:
+                    return float(v)
+            else:
+                return await self.get(key)
+        sorted_data = []
+        for d in data:
+            sorted_data.append((d, await _by_key(d)))
+        return [x[0] for x in sorted(sorted_data, key=lambda x: x[1])]

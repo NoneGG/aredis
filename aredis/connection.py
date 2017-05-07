@@ -4,17 +4,16 @@ import sys
 import ssl
 import socket
 import types
+import warnings
 from io import BytesIO
 from aredis.utils import b
-from aredis.exceptions import (ConnectionError,
-                               TimeoutError,
-                               RedisError,
-                               ExecAbortError,
-                               BusyLoadingError,
-                               NoScriptError,
-                               ReadOnlyError,
-                               ResponseError,
-                               InvalidResponse)
+from aredis.exceptions import (ConnectionError, TimeoutError,
+                               RedisError, ExecAbortError,
+                               BusyLoadingError, NoScriptError,
+                               ReadOnlyError, ResponseError,
+                               InvalidResponse, AskError,
+                               MovedError, TryAgainError,
+                               ClusterDownError, ClusterCrossSlotError)
 
 try:
     import hiredis
@@ -52,7 +51,6 @@ class SocketBuffer(object):
         return self.bytes_written - self.bytes_read
 
     async def _read_from_socket(self, length=None):
-        socket_read_size = self.read_size
         buf = self._buffer
         buf.seek(self.bytes_written)
         marker = 0
@@ -144,6 +142,11 @@ class BaseParser(object):
         'LOADING': BusyLoadingError,
         'NOSCRIPT': NoScriptError,
         'READONLY': ReadOnlyError,
+        'ASK': AskError,
+        'TRYAGAIN': TryAgainError,
+        'MOVED': MovedError,
+        'CLUSTERDOWN': ClusterDownError,
+        'CROSSSLOT': ClusterCrossSlotError,
     }
 
     def parse_error(self, response):
@@ -598,3 +601,26 @@ class UnixDomainSocketConnection(BaseConnection):
         self._reader = reader
         self._writer = writer
         await self.on_connect()
+
+
+class ClusterConnection(Connection):
+    "Manages TCP communication to and from a Redis server"
+    description = "ClusterConnection<host={host},port={port}>"
+
+    def __init__(self, *args, **kwargs):
+        self.readonly = kwargs.pop('readonly', False)
+        super(ClusterConnection, self).__init__(*args, **kwargs)
+
+    async def on_connect(self):
+        """
+        Initialize the connection, authenticate and select a database and send READONLY if it is
+        set during object initialization.
+        """
+        if self.db:
+            warnings.warn('SELECT DB is not allowed in cluster mode')
+            self.db = ''
+        await super(ClusterConnection, self).on_connect()
+        if self.readonly:
+            await self.send_command('READONLY')
+            if await self.read_response() != b'OK':
+                raise ConnectionError('READONLY command failed')

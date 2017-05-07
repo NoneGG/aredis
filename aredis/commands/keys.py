@@ -1,11 +1,16 @@
 import datetime
 import time as mod_time
-from aredis.exceptions import (RedisError,
+from aredis.exceptions import (ResponseError,
+                               RedisError,
                                DataError)
-from aredis.utils import (b, dict_merge,
+from aredis.utils import (merge_result,
+                          NodeFlag,
+                          first_key,
+                          b, dict_merge,
                           int_or_none,
                           bool_ok,
-                          string_keys_to_dict)
+                          string_keys_to_dict,
+                          list_keys_to_dict)
 
 
 def sort_return_tuples(response, **options):
@@ -257,3 +262,82 @@ class KeysCommandMixin:
         if count is not None:
             pieces.extend([b('COUNT'), count])
         return await self.execute_command('SCAN', *pieces)
+
+
+class ClusterKeysCommandMixin(KeysCommandMixin):
+
+    NODES_FLAGS = dict_merge(
+        {
+        'MOVE': NodeFlag.BLOCKED,
+        'RANDOMKEY': NodeFlag.RANDOM,
+        'SCAN': NodeFlag.ALL_MASTERS,
+        },
+        list_keys_to_dict(
+            ['KEYS'],
+            NodeFlag.ALL_NODES
+        )
+    )
+
+    RESULT_CALLBACKS = {
+        'KEYS': merge_result,
+        'RANDOMKEY': first_key,
+        'SCAN': lambda res: res
+    }
+
+    async def rename(self, src, dst):
+        """
+        Rename key ``src`` to ``dst``
+
+        Cluster impl:
+            This operation is no longer atomic because each key must be querried
+            then set in separate calls because they maybe will change cluster node
+        """
+        if src == dst:
+            raise ResponseError("source and destination objects are the same")
+
+        data = await self.dump(src)
+
+        if data is None:
+            raise ResponseError("no such key")
+
+        ttl = await self.pttl(src)
+
+        if ttl is None or ttl < 1:
+            ttl = 0
+
+        await self.delete(dst)
+        await self.restore(dst, ttl, data)
+        await self.delete(src)
+
+        return True
+
+    async def delete(self, *names):
+        """
+        "Delete one or more keys specified by ``names``"
+
+        Cluster impl:
+            Iterate all keys and send DELETE for each key.
+            This will go a lot slower than a normal delete call in StrictRedis.
+
+            Operation is no longer atomic.
+        """
+        count = 0
+
+        for arg in names:
+            count += await self.execute_command('DEL', arg)
+
+        return count
+
+    async def renamenx(self, src, dst):
+        """
+        Rename key ``src`` to ``dst`` if ``dst`` doesn't already exist
+
+        Cluster impl:
+            Check if dst key do not exists, then calls rename().
+
+            Operation is no longer atomic.
+        """
+        if not await self.exists(dst):
+            return await self.rename(src, dst)
+
+        return False
