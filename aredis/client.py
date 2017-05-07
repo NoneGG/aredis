@@ -21,9 +21,9 @@ from aredis.commands.connection import ConnectionCommandMixin, ClusterConnection
 from aredis.commands.extra import ExtraCommandMixin
 from aredis.commands.geo import GeoCommandMixin
 from aredis.commands.hash import HashCommandMixin, ClusterHashCommandMixin
-from aredis.commands.hyperlog import HyperLogCommandMixin
+from aredis.commands.hyperlog import HyperLogCommandMixin, ClusterHyperLogCommandMixin
 from aredis.commands.keys import KeysCommandMixin, ClusterKeysCommandMixin
-from aredis.commands.lists import ListsCommandMixin
+from aredis.commands.lists import ListsCommandMixin, ClusterListsCommandMixin
 from aredis.commands.pubsub import PubSubCommandMixin, CLusterPubSubCommandMixin
 from aredis.commands.scripting import ScriptingCommandMixin, ClusterScriptingCommandMixin
 from aredis.commands.sentinel import SentinelCommandMixin, ClusterSentinelCommands
@@ -46,12 +46,14 @@ cluster_mixins = [
     ClusterCommandMixin, ClusterStringsCommandMixin, ClusterServerCommandMixin,
     ClusterConnectionCommandMixin, CLusterPubSubCommandMixin, ClusterSentinelCommands,
     ClusterKeysCommandMixin, ClusterScriptingCommandMixin, ClusterHashCommandMixin,
-    ClusterSetsCommandMixin, ClusterSortedSetCommandMixin, ClusterTransactionCommandMixin
+    ClusterSetsCommandMixin, ClusterSortedSetCommandMixin, ClusterTransactionCommandMixin,
+    ClusterListsCommandMixin, ClusterHyperLogCommandMixin
 ]
 
 if sys.version_info[:2] >= (3, 6):
     from aredis.commands.iter import IterCommandMixin
     mixins.append(IterCommandMixin)
+    cluster_mixins.append(IterCommandMixin)
 
 
 class StrictRedis(*mixins):

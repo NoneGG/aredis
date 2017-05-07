@@ -256,8 +256,8 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             if by is not None:
                 # _sort_using_by_arg mutates data so we don't
                 # need need a return value.
-                await self._sort_using_by_arg(data, by, alpha)
-            if not alpha:
+                data = await self._sort_using_by_arg(data, by, alpha)
+            elif not alpha:
                 data.sort(key=self._strtod_key_func)
             else:
                 data.sort()
@@ -267,7 +267,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                 data = data[start:start + num]
 
             if get:
-                data = self._retrive_data_from_sort(data, get)
+                data = await self._retrive_data_from_sort(data, get)
 
             if store is not None:
                 if data_type == b("set"):
@@ -355,5 +355,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                     return float(v)
             else:
                 return await self.get(key)
-
-        data.sort(key=_by_key)
+        sorted_data = []
+        for d in data:
+            sorted_data.append((d, await _by_key(d)))
+        return [x[0] for x in sorted(sorted_data, key=lambda x: x[1])]
