@@ -11,6 +11,7 @@ before_install:
   - pip install --upgrade pytest
 install:
   - pip install -e .
+  - pip install -r dev_requirements.txt
   - "if [[ $TEST_HIREDIS == '1' ]]; then pip install hiredis; fi"
 script: "pytest tests/client/"
 matrix:
