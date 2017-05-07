@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from aredis import StrictRedis
+from aredis import StrictRedis, StrictRedisCluster
 
 
-async def example(client):
+async def example_client():
+    client = StrictRedis(host='127.0.0.1', port=6379, db=0)
     # clear the db
     await client.flushdb()
     await client.set('foo', 1)
@@ -20,8 +21,19 @@ async def example(client):
     assert not await client.exists('foo')
 
 
+async def example_cluster():
+    client = StrictRedisCluster(host='127.0.0.1', port=7001)
+    await client.flushdb()
+    await client.set('foo', 1)
+    await client.lpush('a', 1)
+    print(await client.cluster_slots())
+    # 'a' and 'b' are in different slots
+    await client.rpoplpush('a', 'b')
+    assert await client.rpop('b') == b'1'
+
+
 if __name__ == '__main__':
     # initial redis client synchronously, which enable client to be intitialized out of function
-    client = StrictRedis(host='127.0.0.1', port=6379, db=0)
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(example(client))
+    loop.run_until_complete(example_client())
+    loop.run_until_complete(example_cluster())

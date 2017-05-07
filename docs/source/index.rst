@@ -1,13 +1,21 @@
-aredis
-======
+.. aredis documentation master file, created by
+   sphinx-quickstart on Sun May  7 21:23:14 2017.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to aredis's documentation!
+==================================
+
 |pypi-ver| |travis-status| |python-ver|
 
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
-(which is a Python interface to the Redis key-value)
+(which is a Python interface to the Redis key-value). And the cluster part is ported from `redis-py-cluster <https://github.com/Grokzen/redis-py-cluster>`_
+aredis is the async version of these to redis clients, with effort to enable you using redis with asyncio more easily.
 
-`full document`_
+The source code is `available on github`_.
 
-.. _full document: http://aredis.readthedocs.io/en/latest/
+.. _available on github: https://github.com/NoneGG/aredis
+
 
 Installation
 ------------
@@ -18,19 +26,19 @@ To install aredis, simply:
 
 .. code-block:: bash
 
-    $ sudo pip3 install aredis
+    $ pip3 install aredis
 
 or alternatively (you really should be using pip though):
 
 .. code-block:: bash
 
-    $ sudo easy_install aredis
+    $ easy_install aredis
 
 or from source:
 
 .. code-block:: bash
 
-    $ sudo python setup.py install
+    $ python setup.py install
 
 
 Getting started
@@ -92,8 +100,62 @@ cluster client
    (0, 5460): [{'host': b'172.17.0.2', 'node_id': b'0932215036dc0d908cf662fdfca4d3614f221b01', 'server_type': 'master', 'port': 7000},
    {'host': b'172.17.0.2', 'node_id': b'f6603ab4cb77e672de23a6361ec165f3a1a2bb42', 'server_type': 'slave', 'port': 7003}]}
 
-See `Guidelines for Redis clients with support for Redis Sentinel
-<http://redis.io/topics/sentinel-clients>`_ to learn more about Redis Sentinel.
+
+Dependencies & supported python versions
+----------------------------------------
+
+hiredis and uvloop can make aredis faster, but it is up to you whether to install them or not.
+
+- Optional Python: hiredis >= `0.2.0`. Older versions might work but is not tested.
+- Optional event loop policy: uvloop >= `0.8.0`. Older versions might work but is not tested.
+- A working Redis cluster based on version >= `3.0.0` is required. Only `3.0.x` releases is supported.
+
+
+
+Supported python versions
+-------------------------
+
+- 3.5
+- 3.6
+
+Experimental:
+
+- 3.7-dev
+
+
+.. note:: Python < 3.5
+
+    I tried to change my code to make aredis compatible for Python under 3.5, but it failed because of some api of asyncio.
+    Since asyncio is stabilize from Python 3.5, i think it may be better to use the new release of asyncio.
+
+
+The Usage Guide
+---------------
+
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    notice
+    benchmark
+    pubsub
+    sentinel
+    scripting
+    pipelines
+    extra
+
+
+The Community Guide
+-------------------
+
+.. toctree::
+    :maxdepth: 2
+    :glob:
+
+    testing
+    release-notes
+    authors
+    license
 
 .. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
     :alt: Travis build status
