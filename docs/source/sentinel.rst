@@ -40,3 +40,6 @@ When trying to connect to a slave client, the Sentinel connection pool will
 iterate over the list of slaves until it finds one that can be connected to.
 If no slaves can be connected to, a connection will be established with the
 master.
+
+See `Guidelines for Redis clients with support for Redis Sentinel
+<http://redis.io/topics/sentinel-clients>`_ to learn more about Redis Sentinel.
