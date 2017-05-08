@@ -82,7 +82,7 @@ cluster client
    >>> from aredis import StrictRedisCluster
    >>>
    >>> async def example():
-   >>>      client = StrictRedisCluster(host='127.0.0.1', port=7001)
+   >>>      client = StrictRedisCluster(host='172.17.0.2', port=7001)
    >>>      await client.flushdb()
    >>>      await client.set('foo', 1)
    >>>      await client.lpush('a', 1)
@@ -153,14 +153,13 @@ The Community Guide
     :glob:
 
     testing
-    release-notes
+    release_notes
     authors
     license
     todo
 
 .. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
     :alt: Travis build status
-    :scale: 100%
     :target: https://travis-ci.org/NoneGG/aredis
 
 .. |pypi-ver| image::  https://img.shields.io/pypi/v/aredis.svg

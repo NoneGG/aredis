@@ -74,7 +74,7 @@ cluster client
    >>> from aredis import StrictRedisCluster
    >>>
    >>> async def example():
-   >>>      client = StrictRedisCluster(host='127.0.0.1', port=7001)
+   >>>      client = StrictRedisCluster(host='172.17.0.2', port=7001)
    >>>      await client.flushdb()
    >>>      await client.set('foo', 1)
    >>>      await client.lpush('a', 1)

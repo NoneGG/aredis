@@ -1,5 +1,5 @@
-         Pipelines
-^^^^^^^^^
+Pipelines
+=========
 
 Pipelines are a subclass of the base Redis class that provide support for
 buffering multiple commands to the server in a single request. They can be used
