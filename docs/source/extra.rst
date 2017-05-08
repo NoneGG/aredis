@@ -1,8 +1,21 @@
 Extra
 =====
 
+Lock
+----
+
+`For now Lock only support for single redis node, please don't use it in cluster env.`
+
+A shared, distributed Lock. Using Redis for locking allows the Lock
+to be shared across processes and/or machines.
+
+It's left to the user to resolve deadlock issues and make sure
+multiple clients play nicely together.
+
 Cache
 -----
+
+Cache has support for both single redis node and redis cluster.
 
 There are two kinds of cache class(Cache & HerdCache) provided.
 Cache classes consists of IdentityGenerator(used to generate unique identity in redis),

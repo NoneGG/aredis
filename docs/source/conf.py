@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # aredis documentation build configuration file, created by
-# sphinx-quickstart on Sun May  7 22:27:15 2017.
+# sphinx-quickstart on Mon May  8 17:29:14 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -31,7 +31,10 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
+extensions = ['sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -155,3 +158,6 @@ texinfo_documents = [
 
 
 
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {'https://docs.python.org/': None}

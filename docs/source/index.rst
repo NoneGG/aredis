@@ -156,6 +156,7 @@ The Community Guide
     release-notes
     authors
     license
+    todo
 
 .. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
     :alt: Travis build status
