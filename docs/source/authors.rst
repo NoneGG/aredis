@@ -16,3 +16,4 @@ Added in the order they contributed. Thank you for your help to make aredis bett
 Authors who contributed code or testing:
 
  - inytar - https://github.com/inytar
+ - hqy - https://github.com/hqy
