@@ -143,7 +143,7 @@ The Usage Guide
     scripting
     pipelines
     extra
-    modules
+    api_reference
 
 
 The Community Guide
