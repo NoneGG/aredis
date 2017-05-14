@@ -22,7 +22,8 @@ class IterCommandMixin:
         while cursor != 0:
             cursor, data = await self.scan(cursor=cursor, match=match, count=count)
             for item in data:
-                yield item
+                # yield item
+                pass
 
 
     async def sscan_iter(self, name, match=None, count=None):
@@ -39,7 +40,8 @@ class IterCommandMixin:
             cursor, data = await self.sscan(name, cursor=cursor,
                                             match=match, count=count)
             for item in data:
-                yield item
+                # yield item
+                pass
 
 
     async def hscan_iter(self, name, match=None, count=None):
@@ -56,7 +58,8 @@ class IterCommandMixin:
             cursor, data = await self.hscan(name, cursor=cursor,
                                             match=match, count=count)
             for item in data.items():
-                yield item
+                # yield item
+                pass
 
 
     async def zscan_iter(self, name, match=None, count=None,
@@ -77,4 +80,5 @@ class IterCommandMixin:
                                             count=count,
                                             score_cast_func=score_cast_func)
             for item in data:
-                yield item
+                # yield item
+                pass

@@ -1,5 +1,5 @@
 Benchmark
----------
+=========
 benchmark/comparation.py run on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser
 
 local redis server
@@ -34,10 +34,10 @@ the point is that it won't block the other code to run.
 |100000           |   58.4715    |      60.9220   |        189.06       | 58.979 |
 +-----------------+--------------+----------------+---------------------+--------+
 
-**test result may change according to your computer performance and network (you may run the sheet yourself to determine which one is the most suitable for you**
+**test result may change according to your computer performance and network (you may run the sheet yourself to determine which one is the most suitable for you)**
 
 Advantage
----------
+^^^^^^^^^
 
 1. aredis can be used howerver you install hiredis or not.
 2. aredis' API are mostly ported from redis-py, which is easy to use indeed and make it easy to port your code with asyncio

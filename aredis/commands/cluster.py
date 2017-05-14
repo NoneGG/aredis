@@ -166,7 +166,7 @@ class ClusterCommandMixin:
         """
         return await self.execute_command('CLUSTER COUNT-FAILURE-REPORTS', node_id=node_id)
 
-    async def cluster_countkeysinslot(self, *, slot_id):
+    async def cluster_countkeysinslot(self, slot_id):
         """
         Return the number of local keys in the specified hash slot
 
