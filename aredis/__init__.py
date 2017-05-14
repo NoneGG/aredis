@@ -22,7 +22,7 @@ VERSION = tuple(map(int, __version__.split('.')))
 __all__ = [
     'StrictRedis', 'StrictRedisCluster',
     'Connection', 'UnixDomainSocketConnection', 'ClusterConnection',
-    'ConnectionPool', 'ClusterConnectionPool'
+    'ConnectionPool', 'ClusterConnectionPool',
     'AuthenticationError', 'BusyLoadingError', 'ConnectionError', 'DataError',
     'InvalidResponse', 'PubSubError', 'ReadOnlyError', 'RedisError',
     'ResponseError', 'TimeoutError', 'WatchError',

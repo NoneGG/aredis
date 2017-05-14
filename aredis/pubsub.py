@@ -320,4 +320,3 @@ class ClusterPubSub(PubSub):
             self.connection.register_connect_callback(self.on_connect)
         connection = self.connection
         await self._execute(connection, connection.send_command, *args)
-

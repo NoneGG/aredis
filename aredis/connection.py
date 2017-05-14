@@ -17,10 +17,10 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
 
 try:
     import hiredis
+
     HIREDIS_AVAILABLE = True
 except ImportError:
     HIREDIS_AVAILABLE = False
-
 
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
@@ -162,7 +162,6 @@ class BaseParser(object):
 
 
 class PythonParser(BaseParser):
-
     def __init__(self, read_size):
         self._stream = None
         self._buffer = None
@@ -240,6 +239,7 @@ class PythonParser(BaseParser):
 
 class HiredisParser(BaseParser):
     "Parser class for connections using Hiredis"
+
     def __init__(self, read_size):
         if not HIREDIS_AVAILABLE:
             raise RedisError("Hiredis is not installed")
@@ -311,7 +311,6 @@ else:
 
 
 class RedisSSLContext:
-
     def __init__(self, keyfile=None, certfile=None,
                  cert_reqs=None, ca_certs=None):
         self.keyfile = keyfile

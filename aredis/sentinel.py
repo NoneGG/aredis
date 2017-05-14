@@ -6,7 +6,7 @@ from aredis import StrictRedis
 from aredis.connection import Connection
 from aredis.pool import ConnectionPool
 from aredis.exceptions import (ConnectionError, ResponseError, ReadOnlyError,
-                              TimeoutError)
+                               TimeoutError)
 from aredis.utils import iteritems
 
 
@@ -118,7 +118,7 @@ class SentinelConnectionPool(ConnectionPool):
                 self.slave_rr_counter = random.randint(0, len(slaves) - 1)
             for _ in range(len(slaves)):
                 self.slave_rr_counter = (
-                    self.slave_rr_counter + 1) % len(slaves)
+                                            self.slave_rr_counter + 1) % len(slaves)
                 slave_address.append(slaves[self.slave_rr_counter])
             return slave_address
         # Fallback to the master connection

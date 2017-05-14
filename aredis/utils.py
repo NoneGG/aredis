@@ -33,7 +33,9 @@ def ban_python_version_lt(min_version):
                 )
             else:
                 return func(*args, **kwargs)
+
         return _inner
+
     return decorator
 
 
@@ -111,7 +113,6 @@ def merge_result(res):
     return list(result)
 
 
-
 def first_key(res):
     """
     Returns the first result for the given command.
@@ -145,6 +146,7 @@ def clusterdown_wrapper(func):
 
     It will try 3 times to rerun the command and raises ClusterDownException if it continues to fail.
     """
+
     @wraps(func)
     async def inner(*args, **kwargs):
         for _ in range(0, 3):
@@ -157,6 +159,7 @@ def clusterdown_wrapper(func):
 
         # If it fails 3 times then raise exception back to caller
         raise ClusterDownError("CLUSTERDOWN error. Unable to rebuild the cluster")
+
     return inner
 
 
@@ -206,7 +209,6 @@ def crc16(data):
 
 
 class NodeFlag(object):
-
     BLOCKED = 'blocked'
     ALL_NODES = 'all-nodes'
     ALL_MASTERS = 'all-masters'

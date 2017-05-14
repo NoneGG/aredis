@@ -145,7 +145,7 @@ class BasePipeline(object):
         return self
 
     async def _execute_transaction(self, connection, commands, raise_on_error):
-        cmds = chain([(('MULTI', ), {})], commands, [(('EXEC', ), {})])
+        cmds = chain([(('MULTI',), {})], commands, [(('EXEC',), {})])
         all_cmds = connection.pack_commands([args for args, _ in cmds])
         await connection.send_packed_command(all_cmds)
         errors = []
@@ -334,7 +334,6 @@ class StrictPipeline(BasePipeline, StrictRedis):
 
 
 class StrictClusterPipeline(StrictRedisCluster):
-
     def __init__(self, connection_pool, result_callbacks=None,
                  response_callbacks=None, startup_nodes=None):
         """
@@ -619,8 +618,11 @@ def block_pipeline_command(func):
     """
     Prints error because some pipelined commands should be blocked when running in cluster-mode
     """
+
     def inner(*args, **kwargs):
-        raise RedisClusterException("ERROR: Calling pipelined function {0} is blocked when running redis in cluster mode...".format(func.__name__))
+        raise RedisClusterException(
+            "ERROR: Calling pipelined function {0} is blocked when running redis in cluster mode...".format(
+                func.__name__))
 
     return inner
 
@@ -666,7 +668,8 @@ StrictClusterPipeline.script_kill = block_pipeline_command(StrictClusterPipeline
 StrictClusterPipeline.script_load = block_pipeline_command(StrictClusterPipeline.script_load)
 StrictClusterPipeline.sdiff = block_pipeline_command(StrictClusterPipeline.sdiff)
 StrictClusterPipeline.sdiffstore = block_pipeline_command(StrictClusterPipeline.sdiffstore)
-StrictClusterPipeline.sentinel_get_master_addr_by_name = block_pipeline_command(StrictClusterPipeline.sentinel_get_master_addr_by_name)
+StrictClusterPipeline.sentinel_get_master_addr_by_name = block_pipeline_command(
+    StrictClusterPipeline.sentinel_get_master_addr_by_name)
 StrictClusterPipeline.sentinel_master = block_pipeline_command(StrictClusterPipeline.sentinel_master)
 StrictClusterPipeline.sentinel_masters = block_pipeline_command(StrictClusterPipeline.sentinel_masters)
 StrictClusterPipeline.sentinel_monitor = block_pipeline_command(StrictClusterPipeline.sentinel_monitor)

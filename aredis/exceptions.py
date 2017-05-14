@@ -1,4 +1,3 @@
-
 class RedisError(Exception):
     pass
 
@@ -104,8 +103,9 @@ class ClusterCrossSlotError(ResponseError):
 class ClusterDownError(ClusterError, ResponseError):
     """
     """
+
     def __init__(self, resp):
-        self.args = (resp, )
+        self.args = (resp,)
         self.message = resp
 
 
@@ -121,7 +121,7 @@ class AskError(ResponseError):
 
     def __init__(self, resp):
         """should only redirect to master node"""
-        self.args = (resp, )
+        self.args = (resp,)
         self.message = resp
         slot_id, new_node = resp.split(' ')
         host, port = new_node.rsplit(':', 1)
@@ -132,6 +132,7 @@ class AskError(ResponseError):
 class TryAgainError(ResponseError):
     """
     """
+
     def __init__(self, *args, **kwargs):
         pass
 

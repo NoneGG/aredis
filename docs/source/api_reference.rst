@@ -1,5 +1,5 @@
-aredis package
-==============
+API reference
+=============
 
 Subpackages
 -----------

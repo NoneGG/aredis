@@ -18,7 +18,6 @@ from aredis.nodemanager import NodeManager
 from aredis.exceptions import (ConnectionError,
                                RedisClusterException)
 
-
 FALSE_STRINGS = ('0', 'F', 'FALSE', 'N', 'NO')
 
 
@@ -39,6 +38,7 @@ URL_QUERY_ARGUMENT_PARSERS = {
 
 class ConnectionPool(object):
     "Generic connection pool"
+
     @classmethod
     def from_url(cls, url, db=None, decode_components=False, **kwargs):
         """
@@ -46,26 +46,26 @@ class ConnectionPool(object):
 
         For example::
 
-            redis://[:password]@localhost:6379/0
-            rediss://[:password]@localhost:6379/0
-            unix://[:password]@/path/to/socket.sock?db=0
+        redis://[:password]@localhost:6379/0
+        rediss://[:password]@localhost:6379/0
+        unix://[:password]@/path/to/socket.sock?db=0
 
         Three URL schemes are supported:
 
         - ```redis://``
-          <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ creates a
-          normal TCP socket connection
+        <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ creates a
+        normal TCP socket connection
         - ```rediss://``
-          <http://www.iana.org/assignments/uri-schemes/prov/rediss>`_ creates a
-          SSL wrapped TCP socket connection
+        <http://www.iana.org/assignments/uri-schemes/prov/rediss>`_ creates a
+        SSL wrapped TCP socket connection
         - ``unix://`` creates a Unix Domain Socket connection
 
         There are several ways to specify a database number. The parse function
         will return the first specified option:
-            1. A ``db`` querystring option, e.g. redis://localhost?db=0
-            2. If using the redis:// scheme, the path argument of the url, e.g.
-               redis://localhost/0
-            3. The ``db`` argument to this function.
+        1. A ``db`` querystring option, e.g. redis://localhost?db=0
+        2. If using the redis:// scheme, the path argument of the url, e.g.
+        redis://localhost/0
+        3. The ``db`` argument to this function.
 
         If none of these options are specified, db=0 is used.
 

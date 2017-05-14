@@ -52,6 +52,7 @@ cluster_mixins = [
 
 if sys.version_info[:2] >= (3, 6):
     from aredis.commands.iter import IterCommandMixin
+
     mixins.append(IterCommandMixin)
     cluster_mixins.append(IterCommandMixin)
 
@@ -77,17 +78,17 @@ class StrictRedis(*mixins):
         <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ for RESP
         connections or the ``unix://`` scheme for Unix domain sockets.
 
-        For example::
+        For example:
 
-            redis://[:password]@localhost:6379/0
-            unix://[:password]@/path/to/socket.sock?db=0
+        redis://[:password]@localhost:6379/0
+        unix://[:password]@/path/to/socket.sock?db=0
 
         There are several ways to specify a database number. The parse function
         will return the first specified option:
-            1. A ``db`` querystring option, e.g. redis://localhost?db=0
-            2. If using the redis:// scheme, the path argument of the url, e.g.
-               redis://localhost/0
-            3. The ``db`` argument to this function.
+        1. A ``db`` querystring option, e.g. redis://localhost?db=0
+        2. If using the redis:// scheme, the path argument of the url, e.g.
+        redis://localhost/0
+        3. The ``db`` argument to this function.
 
         If none of these options are specified, db=0 is used.
 
@@ -209,28 +210,28 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                  nodemanager_follow_cluster=False, **kwargs):
         """
         :startup_nodes:
-            List of nodes that initial bootstrapping can be done from
+        List of nodes that initial bootstrapping can be done from
         :host:
-            Can be used to point to a startup node
+        Can be used to point to a startup node
         :port:
-            Can be used to point to a startup node
+        Can be used to point to a startup node
         :max_connections:
-            Maximum number of connections that should be kept open at one time
+        Maximum number of connections that should be kept open at one time
         :readonly:
-            enable READONLY mode. You can read possibly stale data from slave.
+        enable READONLY mode. You can read possibly stale data from slave.
         :skip_full_coverage_check:
-            Skips the check of cluster-require-full-coverage config, useful for clusters
-            without the CONFIG command (like aws)
+        Skips the check of cluster-require-full-coverage config, useful for clusters
+        without the CONFIG command (like aws)
         :nodemanager_follow_cluster:
-            The node manager will during initialization try the last set of nodes that
-            it was operating on. This will allow the client to drift along side the cluster
-            if the cluster nodes move around alot.
+        The node manager will during initialization try the last set of nodes that
+        it was operating on. This will allow the client to drift along side the cluster
+        if the cluster nodes move around alot.
         :**kwargs:
-            Extra arguments that will be sent into StrictRedis instance when created
-            (See Official redis-py doc for supported kwargs
-            [https://github.com/andymccurdy/redis-py/blob/master/redis/client.py])
-            Some kwargs is not supported and will raise RedisClusterException
-            - db (Redis do not support database SELECT in cluster mode)
+        Extra arguments that will be sent into StrictRedis instance when created
+        (See Official redis-py doc for supported kwargs
+        [https://github.com/andymccurdy/redis-py/blob/master/redis/client.py])
+        Some kwargs is not supported and will raise RedisClusterException
+        - db (Redis do not support database SELECT in cluster mode)
         """
         # Tweaks to StrictRedis client arguments when running in cluster mode
         if "db" in kwargs:
@@ -269,14 +270,14 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ for RESP
         connections or the ``unix://`` scheme for Unix domain sockets.
         For example::
-            redis://[:password]@localhost:6379/0
-            unix://[:password]@/path/to/socket.sock?db=0
+        redis://[:password]@localhost:6379/0
+        unix://[:password]@/path/to/socket.sock?db=0
         There are several ways to specify a database number. The parse function
         will return the first specified option:
-            1. A ``db`` querystring option, e.g. redis://localhost?db=0
-            2. If using the redis:// scheme, the path argument of the url, e.g.
-               redis://localhost/0
-            3. The ``db`` argument to this function.
+        1. A ``db`` querystring option, e.g. redis://localhost?db=0
+        2. If using the redis:// scheme, the path argument of the url, e.g.
+        redis://localhost/0
+        3. The ``db`` argument to this function.
         If none of these options are specified, db=0 is used.
         Any additional querystring arguments and keyword arguments will be
         passed along to the ConnectionPool class's initializer. In the case
