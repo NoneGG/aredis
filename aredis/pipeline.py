@@ -392,19 +392,13 @@ class StrictClusterPipeline(StrictRedisCluster):
         return self.connection_pool.nodes.keyslot(key)
 
     async def execute_command(self, *args, **kwargs):
-        """
-        """
         return self.pipeline_execute_command(*args, **kwargs)
 
     def pipeline_execute_command(self, *args, **options):
-        """
-        """
         self.command_stack.append(PipelineCommand(args, options, len(self.command_stack)))
         return self
 
     def raise_first_error(self, stack):
-        """
-        """
         for c in stack:
             r = c.result
             if isinstance(r, Exception):
@@ -412,16 +406,13 @@ class StrictClusterPipeline(StrictRedisCluster):
                 raise r
 
     def annotate_exception(self, exception, number, command):
-        """
-        """
         cmd = ' '.join(command)
         msg = 'Command # {0} ({1}) of pipeline caused error: {2}'.format(
             number, cmd, exception.args[0])
         exception.args = (msg,) + exception.args[1:]
 
     async def execute(self, raise_on_error=True):
-        """
-        """
+        await self.connection_pool.initialize()
         stack = self.command_stack
 
         if not stack:
