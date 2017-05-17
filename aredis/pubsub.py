@@ -71,7 +71,6 @@ class PubSub(object):
         # NOTE: don't parse the response in this function -- it could pull a
         # legitimate message off the stack if the connection is already
         # subscribed to one or more channels
-        await self.connection_pool.initialize()
 
         if self.connection is None:
             self.connection = self.connection_pool.get_connection()
