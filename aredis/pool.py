@@ -290,8 +290,9 @@ class ClusterConnectionPool(ConnectionPool):
         )
 
     async def initialize(self):
-        await self.nodes.initialize()
-        self.initialized = True
+        if not self.initialized:
+            await self.nodes.initialize()
+            self.initialized = True
 
     def reset(self):
         """
