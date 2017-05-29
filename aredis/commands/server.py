@@ -10,11 +10,11 @@ from aredis.utils import (b, bool_ok,
 
 def parse_slowlog_get(response, **options):
     return [{
-        'id': item[0],
-        'start_time': int(item[1]),
-        'duration': int(item[2]),
-        'command': b(' ').join(item[3])
-    } for item in response]
+                'id': item[0],
+                'start_time': int(item[1]),
+                'duration': int(item[2]),
+                'command': b(' ').join(item[3])
+            } for item in response]
 
 
 def parse_client_list(response, **options):
@@ -91,8 +91,50 @@ def parse_info(response):
     return info
 
 
-class ServerCommandMixin:
+def parse_role(response):
+    print(response)
+    role = response[0].decode()
 
+    def _parse_master(response):
+        offset, slaves = response[1:]
+        res = {
+            'role': role,
+            'offset': offset,
+            'slaves': []
+        }
+        for slave in slaves:
+            host, port, offset = slave
+            res['slaves'].append({
+                'host': host,
+                'port': int(port),
+                'offset': int(offset)
+            })
+        return res
+
+    def _parse_slave(response):
+        host, port, status, offset = response[1:]
+        return {
+            'role': role,
+            'host': host,
+            'port': port,
+            'status': status,
+            'offset': offset
+        }
+
+    def _parse_sentinel(response):
+        return {
+            'role': role,
+            'masters': response[1:]
+        }
+    parser = {
+        'master': _parse_master,
+        'slave': _parse_slave,
+        'sentinel': _parse_sentinel
+    }[role]
+    return parser(response)
+
+
+class ServerCommandMixin:
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict('BGREWRITEAOF BGSAVE', lambda r: True),
         string_keys_to_dict(
@@ -100,6 +142,7 @@ class ServerCommandMixin:
             'SHUTDOWN SLAVEOF', bool_ok
         ),
         {
+            'ROLE': parse_role,
             'SLOWLOG GET': parse_slowlog_get,
             'SLOWLOG LEN': int,
             'SLOWLOG RESET': bool_ok,
@@ -256,13 +299,19 @@ class ServerCommandMixin:
         """
         return await self.execute_command('TIME')
 
-    # todo
     async def role(self):
-        pass
+        """
+        Provide information on the role of a Redis instance in the context of replication,
+        by returning if the instance is currently a master, slave, or sentinel.
+        The command also returns additional information about the state of the replication
+        (if the role is master or slave)
+        or the list of monitored master names (if the role is sentinel).
+        :return:
+        """
+        return await self.execute_command('ROLE')
 
 
 class ClusterServerCommandMixin(ServerCommandMixin):
-
     NODES_FLAGS = dict_merge(
         list_keys_to_dict(
             ['SHUTDOWN', 'SLAVEOF', 'CLIENT SETNAME'],
