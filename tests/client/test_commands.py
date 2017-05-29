@@ -74,6 +74,14 @@ class TestRedisCommands(object):
         res = await another_client.get(key)
         assert not res
 
+    @skip_if_server_version_lt('2.8.12')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_role_master(self, event_loop, mock_resp_role):
+        role = await mock_resp_role.role()
+        assert role['role'] == 'master'
+        slave_offset = role['slaves'][0]['offset']
+        assert slave_offset == role['offset']
+
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_config_get(self, r):
         data = await r.config_get()
