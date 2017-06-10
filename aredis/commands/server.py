@@ -151,7 +151,6 @@ class ServerCommandMixin:
             'CLIENT LIST': parse_client_list,
             'CLIENT SETNAME': bool_ok,
             'CLIENT PAUSE': bool_ok,
-            # 'CLIENT REPLY': lambda r: r == b'OK' if r else None,
             'CONFIG GET': parse_config_get,
             'CONFIG RESETSTAT': bool_ok,
             'CONFIG SET': bool_ok,

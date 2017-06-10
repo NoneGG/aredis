@@ -5,3 +5,4 @@ Todo list
 2. more detailed doc for cluster
 3. more tests on cluster part
 4. more commands supported
+5. make response str instead of return bytes directly
