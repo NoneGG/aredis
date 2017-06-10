@@ -36,3 +36,8 @@ Release Notes
     * introduce loop argument to aredis
     * add support for command `cluster slots`
     * add support for redis cluster
+
+1.0.8
+-----
+    * fix initialization bug of redis cluster client
+    * add example to explain how to use `client reply on | off | skip`
