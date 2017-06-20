@@ -415,7 +415,7 @@ class BaseConnection:
     async def read_response(self):
         try:
             response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout, loop=self.loop)
-        except asyncio.futures.TimeoutError:
+        except TimeoutError:
             self.disconnect()
             raise
         if isinstance(response, RedisError):
