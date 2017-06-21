@@ -55,6 +55,16 @@ Detailed discussion about the problem is in `issue20 <https://github.com/NoneGG/
     >>> loop = asyncio.get_event_loop()
     >>> r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
 
+Decoding
+^^^^^^^^
+
+Param **encoding** and **decode_responses** are now used to support response encoding.
+
+**encoding** is used for specifying with which encoding you want responses to be decoded.
+**decode_responses** is used for tell the client whether responses should be decoded.
+
+If decode_responses is set to True and no encoding is specified, client will use 'utf-8' by default.
+
 Connections
 ^^^^^^^^^^^
 

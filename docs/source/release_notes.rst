@@ -41,3 +41,4 @@ Release Notes
 -----
     * fix initialization bug of redis cluster client
     * add example to explain how to use `client reply on | off | skip`
+    * add `encoding` & `decode_responses` param to clients —— add support for response decoding
