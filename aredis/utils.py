@@ -7,6 +7,8 @@ from aredis.exceptions import (RedisClusterException,
 def b(x):
     return x.encode('latin-1') if not isinstance(x, bytes) else x
 
+def nativestr(x):
+    return x if isinstance(x, str) else x.decode('utf-8', 'replace')
 
 def iteritems(x):
     return iter(x.items())
@@ -63,7 +65,7 @@ def dict_merge(*dicts):
 
 
 def bool_ok(response):
-    return response == b'OK'
+    return nativestr(response) == 'OK'
 
 
 def list_or_args(keys, args):

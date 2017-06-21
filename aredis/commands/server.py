@@ -1,7 +1,7 @@
 import datetime
 from aredis.exceptions import RedisError
 from aredis.utils import (b, bool_ok,
-                          dict_merge,
+                          nativestr, dict_merge,
                           string_keys_to_dict,
                           list_keys_to_dict,
                           pairs_to_dict,
@@ -19,13 +19,13 @@ def parse_slowlog_get(response, **options):
 
 def parse_client_list(response, **options):
     clients = []
-    for c in response.decode().splitlines():
+    for c in nativestr(response).splitlines():
         clients.append(dict([pair.split('=') for pair in c.split(' ')]))
     return clients
 
 
 def parse_config_get(response, **options):
-    response = [i.decode() if i is not None else None for i in response]
+    response = [nativestr(i) if i is not None else None for i in response]
     return response and pairs_to_dict(response) or {}
 
 
@@ -44,7 +44,7 @@ def parse_debug_object(response):
     "Parse the results of Redis's DEBUG OBJECT command into a Python dict"
     # The 'type' of the object is the first item in the response, but isn't
     # prefixed with a name
-    response = response.decode()
+    response = nativestr(response)
     response = 'type:' + response
     response = dict([kv.split(':') for kv in response.split()])
 
@@ -61,7 +61,7 @@ def parse_debug_object(response):
 def parse_info(response):
     "Parse the result of Redis's INFO command into a Python dict"
     info = {}
-    response = response.decode()
+    response = nativestr(response)
 
     def get_value(value):
         if ',' not in value or '=' not in value:
@@ -92,8 +92,7 @@ def parse_info(response):
 
 
 def parse_role(response):
-    print(response)
-    role = response[0].decode()
+    role = nativestr(response[0])
 
     def _parse_master(response):
         offset, slaves = response[1:]
@@ -146,7 +145,7 @@ class ServerCommandMixin:
             'SLOWLOG GET': parse_slowlog_get,
             'SLOWLOG LEN': int,
             'SLOWLOG RESET': bool_ok,
-            'CLIENT GETNAME': lambda r: r and r.decode(),
+            'CLIENT GETNAME': lambda r: r and nativestr(r),
             'CLIENT KILL': bool_ok,
             'CLIENT LIST': parse_client_list,
             'CLIENT SETNAME': bool_ok,

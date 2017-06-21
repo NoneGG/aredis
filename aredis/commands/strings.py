@@ -1,6 +1,6 @@
 import datetime
 from aredis.exceptions import RedisError
-from aredis.utils import (NodeFlag,
+from aredis.utils import (NodeFlag, nativestr,
                           iteritems,
                           list_or_args,
                           dict_merge,
@@ -77,7 +77,7 @@ class StringsCommandMixin:
         {
             'INCRBYFLOAT': float,
             'MSET': bool_ok,
-            'SET': lambda r: r and r == b'OK',
+            'SET': lambda r: r and nativestr(r) == 'OK',
         }
     )
 

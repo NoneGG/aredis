@@ -1,4 +1,5 @@
 from aredis.utils import (bool_ok,
+                          nativestr,
                           NodeFlag,
                           list_keys_to_dict,
                           dict_merge)
@@ -7,7 +8,7 @@ from aredis.exceptions import (RedisError,
 
 
 def parse_cluster_info(response, **options):
-    response = response.decode()
+    response = nativestr(response)
     return dict([line.split(':') for line in response.splitlines() if line])
 
 
@@ -16,7 +17,7 @@ def parse_cluster_nodes(resp, **options):
     @see: http://redis.io/commands/cluster-nodes  # string
     @see: http://redis.io/commands/cluster-slaves # list of string
     """
-    resp = resp.decode()
+    resp = nativestr(resp)
     current_host = options.get('current_host', '')
 
     def parse_slots(s):

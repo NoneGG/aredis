@@ -10,6 +10,7 @@ async def example_client():
     # clear the db
     await client.flushdb()
     await client.set('foo', 1)
+    print(await client.get('foo'))
     assert await client.exists('foo') is True
     await client.incr('foo', 100)
     # will return b'101' (byte type)
@@ -36,4 +37,4 @@ if __name__ == '__main__':
     # initial redis client synchronously, which enable client to be intitialized out of function
     loop = asyncio.get_event_loop()
     loop.run_until_complete(example_client())
-    loop.run_until_complete(example_cluster())
+    # loop.run_until_complete(example_cluster())

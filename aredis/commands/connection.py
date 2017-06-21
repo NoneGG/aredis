@@ -1,12 +1,13 @@
 from aredis.utils import (NodeFlag,
-                          bool_ok)
+                          bool_ok,
+                          nativestr)
 
 
 class ConnectionCommandMixin:
 
     RESPONSE_CALLBACKS = {
         'AUTH': bool,
-        'PING': lambda r: r == b'PONG',
+        'PING': lambda r: nativestr(r) == 'PONG',
         'SELECT': bool_ok,
     }
 

@@ -1,5 +1,5 @@
 from aredis.exceptions import RedisError
-from aredis.utils import b
+from aredis.utils import b, nativestr
 
 
 def parse_georadius_generic(response, **options):
@@ -16,7 +16,7 @@ def parse_georadius_generic(response, **options):
     if not options['withdist'] and not options['withcoord']\
             and not options['withhash']:
         # just a bunch of places
-        return [r.decode() for r in response_list]
+        return [nativestr(r) for r in response_list]
 
     cast = {
         'withdist': float,
@@ -26,7 +26,7 @@ def parse_georadius_generic(response, **options):
 
     # zip all output results with each casting functino to get
     # the properly native Python value.
-    f = [lambda x: x.decode()]
+    f = [nativestr]
     f += [cast[o] for o in ['withdist', 'withhash', 'withcoord'] if options[o]]
     return [
         list(map(lambda fv: fv[0](fv[1]), zip(f, r))) for r in response_list
