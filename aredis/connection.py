@@ -6,7 +6,7 @@ import socket
 import types
 import warnings
 from io import BytesIO
-from aredis.utils import b
+from aredis.utils import b, nativestr
 from aredis.exceptions import (ConnectionError, TimeoutError,
                                RedisError, ExecAbortError,
                                BusyLoadingError, NoScriptError,
@@ -166,6 +166,7 @@ class PythonParser(BaseParser):
         self._stream = None
         self._buffer = None
         self._read_size = read_size
+        self.encoding = None
 
     def __del__(self):
         try:
@@ -173,10 +174,12 @@ class PythonParser(BaseParser):
         except Exception:
             pass
 
-    def on_connect(self, stream_reader):
+    def on_connect(self, connection):
         "Called when the stream connects"
-        self._stream = stream_reader
+        self._stream = connection._reader
         self._buffer = SocketBuffer(self._stream, self._read_size)
+        if connection.decode_responses:
+            self.encoding = connection.encoding
 
     def on_disconnect(self):
         "Called when the stream disconnects"
@@ -186,6 +189,7 @@ class PythonParser(BaseParser):
         if self._buffer is not None:
             self._buffer.close()
             self._buffer = None
+        self.encoding = None
 
     def can_read(self):
         return self._buffer and bool(self._buffer.length)
@@ -234,6 +238,8 @@ class PythonParser(BaseParser):
             response = []
             for i in range(length):
                 response.append(await self.read_response())
+        if isinstance(response, bytes) and self.encoding:
+            response = response.decode(self.encoding)
         return response
 
 
@@ -261,12 +267,14 @@ class HiredisParser(BaseParser):
             self._next_response = self._reader.gets()
         return self._next_response is not False
 
-    def on_connect(self, stream_reader):
-        self._stream = stream_reader
+    def on_connect(self, connection):
+        self._stream = connection._reader
         kwargs = {
             'protocolError': InvalidResponse,
             'replyError': ResponseError,
         }
+        if connection.decode_responses:
+            kwargs['encoding'] = connection.encoding
         self._reader = hiredis.Reader(**kwargs)
         self._next_response = False
 
@@ -347,8 +355,9 @@ class BaseConnection:
     description = 'BaseConnection'
 
     def __init__(self, retry_on_timeout=False, stream_timeout=None,
-                 parser_class=DefaultParser,
-                 reader_read_size=65535, *, loop=None):
+                 parser_class=DefaultParser, reader_read_size=65535,
+                 encoding='utf-8', decode_responses=False,
+                 *, loop=None):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
         self._reader = None
@@ -359,6 +368,8 @@ class BaseConnection:
         self.retry_on_timeout = retry_on_timeout
         self._description_args = dict()
         self._connect_callbacks = list()
+        self.encoding = encoding
+        self.decode_responses = decode_responses
         self.loop = loop
 
     def __repr__(self):
@@ -398,24 +409,24 @@ class BaseConnection:
         raise NotImplementedError
 
     async def on_connect(self):
-        self._parser.on_connect(self._reader)
+        self._parser.on_connect(self)
 
         # if a password is specified, authenticate
         if self.password:
             await self.send_command('AUTH', self.password)
-            if await self.read_response() != b'OK':
+            if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Password')
 
         # if a database is specified, switch to it
         if self.db:
             await self.send_command('SELECT', self.db)
-            if await self.read_response() != b'OK':
+            if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Database')
 
     async def read_response(self):
         try:
             response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout, loop=self.loop)
-        except asyncio.futures.TimeoutError:
+        except TimeoutError:
             self.disconnect()
             raise
         if isinstance(response, RedisError):
@@ -536,9 +547,11 @@ class Connection(BaseConnection):
     def __init__(self, host='127.0.0.1', port=6379, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
+                 encoding='utf-8', decode_responses=False,
                  *, loop=None):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
                                          parser_class, reader_read_size,
+                                         encoding, decode_responses,
                                          loop=loop)
         self.host = host
         self.port = port
@@ -575,9 +588,10 @@ class UnixDomainSocketConnection(BaseConnection):
     def __init__(self, path='', password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 *, loop=None):
+                 encoding='utf-8', decode_responses=False, *, loop=None):
         super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
                                                          parser_class, reader_read_size,
+                                                         encoding, decode_responses,
                                                          loop=loop)
         self.path = path
         self.db = db
@@ -621,5 +635,5 @@ class ClusterConnection(Connection):
         await super(ClusterConnection, self).on_connect()
         if self.readonly:
             await self.send_command('READONLY')
-            if await self.read_response() != b'OK':
+            if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('READONLY command failed')

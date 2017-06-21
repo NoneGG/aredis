@@ -1,5 +1,5 @@
 from aredis.utils import (b, dict_merge,
-                          bool_ok,
+                          bool_ok, nativestr,
                           string_keys_to_dict)
 from aredis.exceptions import (DataError,
                                RedisClusterException,
@@ -16,7 +16,7 @@ class ListsCommandMixin:
         string_keys_to_dict(
             # these return OK, or int if redis-server is >=1.3.4
             'LPUSH RPUSH',
-            lambda r: isinstance(r, int) and r or r == b'OK'
+            lambda r: isinstance(r, int) and r or nativestr(r) == 'OK'
         ),
         string_keys_to_dict('LSET LTRIM', bool_ok),
         string_keys_to_dict('LINSERT LLEN LPUSHX RPUSHX', int),

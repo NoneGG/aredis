@@ -102,8 +102,9 @@ class StrictRedis(*mixins):
     def __init__(self, host='localhost', port=6379,
                  db=0, password=None, stream_timeout=None,
                  connect_timeout=None, connection_pool=None,
-                 unix_socket_path=None,
-                 ssl=False, ssl_keyfile=None, ssl_certfile=None,
+                 unix_socket_path=None, encoding='utf-8',
+                 decode_responses=False, ssl=False,
+                 ssl_keyfile=None, ssl_certfile=None,
                  ssl_cert_reqs=None, ssl_ca_certs=None,
                  max_connections=None, retry_on_timeout=False,
                  *, loop=None):
@@ -111,10 +112,12 @@ class StrictRedis(*mixins):
             kwargs = {
                 'db': db,
                 'password': password,
+                'encoding': encoding,
                 'stream_timeout': stream_timeout,
                 'connect_timeout': connect_timeout,
                 'max_connections': max_connections,
                 'retry_on_timeout': retry_on_timeout,
+                'decode_responses': decode_responses,
                 'loop': loop
             }
             # based on input, setup appropriate connection args

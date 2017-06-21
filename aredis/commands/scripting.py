@@ -1,4 +1,4 @@
-from aredis.utils import (dict_merge,
+from aredis.utils import (dict_merge, nativestr,
                           list_keys_to_dict,
                           NodeFlag, bool_ok)
 
@@ -9,7 +9,7 @@ class ScriptingCommandMixin:
         'SCRIPT EXISTS': lambda r: list(map(bool, r)),
         'SCRIPT FLUSH': bool_ok,
         'SCRIPT KILL': bool_ok,
-        'SCRIPT LOAD': lambda r: r.decode(),
+        'SCRIPT LOAD': nativestr,
     }
 
     async def eval(self, script, numkeys, *keys_and_args):
