@@ -184,7 +184,6 @@ class PythonParser(BaseParser):
     def on_disconnect(self):
         "Called when the stream disconnects"
         if self._stream is not None:
-            self._stream.feed_eof()
             self._stream = None
         if self._buffer is not None:
             self._buffer.close()
@@ -280,7 +279,6 @@ class HiredisParser(BaseParser):
 
     def on_disconnect(self):
         if self._stream is not None:
-            self._stream.feed_eof()
             self._stream = None
         self._reader = None
         self._next_response = False
@@ -391,7 +389,7 @@ class BaseConnection:
         "See if there's data that can be read."
         if not (self._reader and self._writer):
             await self.connect()
-        return self._parser.can_read() or (not self._reader.at_eof())
+        return self._parser.can_read()
 
     async def connect(self):
         try:
@@ -479,11 +477,7 @@ class BaseConnection:
         "Disconnects from the Redis server"
         self._parser.on_disconnect()
         try:
-            if self._reader:
-                self._reader.close()
-            if self._writer:
-                self._writer.transport.close()
-                self._writer.close()
+            self._writer.close()
         except Exception:
             pass
         self._reader = None

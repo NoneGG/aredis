@@ -95,16 +95,20 @@ class PubSub(object):
             # previously listening to
             return await command(*args)
 
-    async def parse_response(self, block=True):
+    async def parse_response(self, block=True, timeout=0):
         "Parse the response from a publish/subscribe command"
         connection = self.connection
         if connection is None:
             raise RuntimeError(
                 'pubsub connection not set: '
                 'did you forget to call subscribe() or psubscribe()?')
-        if not block and not await connection.can_read():
-            return None
-        return await self._execute(connection, connection.read_response)
+        coro = self._execute(connection, connection.read_response)
+        if not block and await connection.can_read() and timeout > 0:
+            try:
+                return await asyncio.wait_for(coro, timeout=timeout)
+            except asyncio.TimeoutError:
+                return None
+        return await coro
 
     async def psubscribe(self, *args, **kwargs):
         """
@@ -171,7 +175,7 @@ class PubSub(object):
         if self.subscribed:
             return self.handle_message(await self.parse_response(block=True))
 
-    async def get_message(self, ignore_subscribe_messages=False):
+    async def get_message(self, ignore_subscribe_messages=False, timeout=0):
         """
         Get the next message if one is available, otherwise None.
 
@@ -179,7 +183,7 @@ class PubSub(object):
         before returning. Timeout should be specified as a floating point
         number.
         """
-        response = await self.parse_response(block=False)
+        response = await self.parse_response(block=False, timeout=timeout)
         if response:
             return self.handle_message(response, ignore_subscribe_messages)
         return None
