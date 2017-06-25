@@ -132,7 +132,7 @@ class ClusterCommandMixin:
     RESULT_CALLBACKS = dict_merge(
         list_keys_to_dict(
             ['CLUSTER INFO', 'CLUSTER ADDSLOTS', 'CLUSTER COUNT-FAILURE-REPORTS',
-            'CLUSTER DELSLOTS', 'CLUSTER FAILOVER', 'CLUSTER FORGET'], None
+            'CLUSTER DELSLOTS', 'CLUSTER FAILOVER', 'CLUSTER FORGET'], lambda res: res
         )
     )
 

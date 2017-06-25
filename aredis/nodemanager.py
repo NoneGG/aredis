@@ -85,7 +85,7 @@ class NodeManager(object):
             yield random.choice(self.startup_nodes)
 
     def random_node(self):
-        return self.nodes[random.choice(list(self.nodes.keys()))]
+        return random.choice(list(self.nodes.values()))
 
     def get_redis_link(self, host, port):
         from aredis.client import StrictRedis

@@ -41,3 +41,7 @@ Release Notes
 -----
     * fix initialization bug of redis cluster client
     * add example to explain how to use `client reply on | off | skip`
+
+1.0.9
+-----
+    * fix bug of pubsub, in some env AssertionError is raised because connection is used again after reader stream being fed eof
