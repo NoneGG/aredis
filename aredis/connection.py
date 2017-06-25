@@ -354,7 +354,7 @@ class BaseConnection:
 
     def __init__(self, retry_on_timeout=False, stream_timeout=None,
                  parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False,
+                 encoding='utf-8', decode_responses=True,
                  *, loop=None):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
@@ -541,7 +541,7 @@ class Connection(BaseConnection):
     def __init__(self, host='127.0.0.1', port=6379, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False,
+                 encoding='utf-8', decode_responses=True,
                  *, loop=None):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
                                          parser_class, reader_read_size,
@@ -582,7 +582,7 @@ class UnixDomainSocketConnection(BaseConnection):
     def __init__(self, path='', password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False, *, loop=None):
+                 encoding='utf-8', decode_responses=True, *, loop=None):
         super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
                                                          parser_class, reader_read_size,
                                                          encoding, decode_responses,
