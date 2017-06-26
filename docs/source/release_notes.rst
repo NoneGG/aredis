@@ -45,3 +45,4 @@ Release Notes
 1.0.9
 -----
     * fix bug of pubsub, in some env AssertionError is raised because connection is used again after reader stream being fed eof
+    * add support for command `cluster forget`

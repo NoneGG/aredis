@@ -198,7 +198,6 @@ class ClusterCommandMixin:
             raise ClusterError('Wrong option provided')
         return await self.execute_command('CLUSTER FAILOVER', option, node_id=node_id)
 
-    # todo
     async def cluster_forget(self, node_id):
         """
         remove a node via its node ID from the set of known nodes
@@ -206,7 +205,7 @@ class ClusterCommandMixin:
 
         Sends to all nodes in the cluster
         """
-        pass
+        return await self.execute_command('CLUSTER FORGET', node_id)
 
     async def cluster_info(self):
         """
