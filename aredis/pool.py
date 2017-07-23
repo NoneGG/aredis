@@ -319,13 +319,9 @@ class ClusterConnectionPool(ConnectionPool):
                 self.reset()
 
     def get_connection(self, command_name, *keys, **options):
-        """
-        # TODO: Default method entrypoint.
-        Keys, options is not in use by any of the standard code.
-        """
         # Only pubsub command/connection should be allowed here
         if command_name != "pubsub":
-            raise RedisClusterException("Only 'pubsub' commands can be used by get_connection()")
+            raise RedisClusterException("Only 'pubsub' commands can use get_connection()")
 
         channel = options.pop('channel', None)
 
