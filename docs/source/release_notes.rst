@@ -45,6 +45,7 @@ Release Notes
 1.0.9
 -----
     * fix bug of pubsub, in some env AssertionError is raised because connection is used again after reader stream being fed eof
-    * add reponse decoding related options, make client easier to use
+    * add reponse decoding related options(`encoding` & `decode_responses`), make client easier to use
     * add support for command `cluster forget`
     * add support for command option `spop count`
+
