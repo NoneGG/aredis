@@ -75,14 +75,17 @@ class SetsCommandMixin:
         "Move ``value`` from set ``src`` to set ``dst`` atomically"
         return await self.execute_command('SMOVE', src, dst, value)
 
-    async def spop(self, name, count=1):
+    async def spop(self, name, count=None):
         """
         Remove and return a random member of set ``name``
         ``count`` should be type of int and default set to 1.
         If ``count`` is supplied, pops a list of ``count`` random
 +        members of set ``name``
         """
-        return await self.execute_command('SPOP', name, count)
+        if count and isinstance(count, int):
+            return await self.execute_command('SPOP', name, count)
+        else:
+            return await self.execute_command('SPOP', name)
 
     async def srandmember(self, name, number=None):
         """
