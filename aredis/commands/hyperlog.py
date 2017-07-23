@@ -90,7 +90,6 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
         """
         Generate a good random key with a low probability of collision between any other key.
         """
-        # TODO: Check if the key exists or not. continue to randomize until a empty key is found
         random_id = "{{0}}{1}".format(hashslot, self._random_id())
         return random_id
 
