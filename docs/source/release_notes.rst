@@ -48,4 +48,3 @@ Release Notes
     * add reponse decoding related options(`encoding` & `decode_responses`), make client easier to use
     * add support for command `cluster forget`
     * add support for command option `spop count`
-
