@@ -171,7 +171,7 @@ class TestConnectionPool(object):
 
         with pytest.raises(RedisClusterException) as ex:
             pool.get_connection("GET")
-        assert str(ex.value).startswith("Only 'pubsub' commands can be used by get_connection()")
+        assert str(ex.value).startswith("Only 'pubsub' commands can use get_connection()")
 
     @pytest.mark.asyncio()
     async def test_master_node_by_slot(self):

@@ -356,7 +356,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         else:
             return None
 
-    # todo: add node_id option
     @clusterdown_wrapper
     async def execute_command(self, *args, **kwargs):
         """
@@ -444,8 +443,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         raise ClusterError('TTL exhausted.')
 
     async def _execute_command_on_nodes(self, nodes, *args, **kwargs):
-        """
-        """
         command = args[0]
         res = {}
 
@@ -466,7 +463,6 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 res[node["name"]] = await self.parse_response(connection, command, **kwargs)
             finally:
                 self.connection_pool.release(connection)
-
         return self._merge_result(command, res, **kwargs)
 
     async def pipeline(self, transaction=None, shard_hint=None):

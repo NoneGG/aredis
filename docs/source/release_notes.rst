@@ -41,4 +41,11 @@ Release Notes
 -----
     * fix initialization bug of redis cluster client
     * add example to explain how to use `client reply on | off | skip`
-    * add `encoding` & `decode_responses` param to clients —— add support for response decoding
+
+1.0.9
+-----
+    * fix bug of pubsub, in some env AssertionError is raised because connection is used again after reader stream being fed eof
+    * add reponse decoding related options(`encoding` & `decode_responses`), make client easier to use
+    * add support for command `cluster forget`
+    * add support for command option `spop count`
+
