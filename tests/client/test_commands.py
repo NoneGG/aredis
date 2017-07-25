@@ -1130,14 +1130,6 @@ class TestRedisCommands(object):
         assert await r.smembers('a') == set(s) - set(values)
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_spop_multi_value(self, r):
-        await r.flushdb()
-        s = [b('1'), b('2'), b('3')]
-        await r.sadd('a', *s)
-        values = await r.spop('a', 2)
-        assert await r.smembers('a') == set(s) - set(values)
-
-    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_srandmember(self, r):
         await r.flushdb()
         s = [b('1'), b('2'), b('3')]
