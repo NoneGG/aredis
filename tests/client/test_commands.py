@@ -1119,7 +1119,8 @@ class TestRedisCommands(object):
         await r.sadd('a', *s)
         value = await r.spop('a')
         assert set(await r.smembers('a')) == set(s) - set([value])
-    
+
+    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_spop_multi_value(self, r):
         await r.flushdb()
