@@ -3,7 +3,8 @@ import threading
 from aredis.exceptions import PubSubError
 from aredis.utils import (list_or_args,
                           iteritems,
-                          iterkeys)
+                          iterkeys,
+                          nativestr)
 
 
 class PubSub(object):
@@ -21,6 +22,14 @@ class PubSub(object):
         self.connection_pool = connection_pool
         self.ignore_subscribe_messages = ignore_subscribe_messages
         self.connection = None
+        # we need to know the encoding options for this connection in order
+        # to lookup channel and pattern names for callback handlers.
+        conn = connection_pool.get_connection('pubsub')
+        try:
+            self.encoding = conn.encoding
+            self.decode_responses = conn.decode_responses
+        finally:
+            connection_pool.release(conn)
         self.reset()
 
     def __del__(self):
@@ -52,13 +61,28 @@ class PubSub(object):
         if self.channels:
             channels = {}
             for k, v in iteritems(self.channels):
+                if not self.decode_responses:
+                    k = k.decode(self.encoding)
                 channels[k] = v
             await self.subscribe(**channels)
         if self.patterns:
             patterns = {}
             for k, v in iteritems(self.patterns):
+                if not self.decode_responses:
+                    k = k.decode(self.encoding)
                 patterns[k] = v
             await self.psubscribe(**patterns)
+
+    def encode(self, value):
+        """
+        Encode the value so that it's identical to what we'll
+        read off the connection
+        """
+        if self.decode_responses and isinstance(value, bytes):
+            value = value.decode(self.encoding)
+        elif not self.decode_responses and isinstance(value, str):
+            value = value.encode(self.encoding)
+        return value
 
     @property
     def subscribed(self):
@@ -121,9 +145,9 @@ class PubSub(object):
         if args:
             args = list_or_args(args[0], args[1:])
         new_patterns = {}
-        new_patterns.update(dict.fromkeys(args))
+        new_patterns.update(dict.fromkeys(map(self.encode, args)))
         for pattern, handler in iteritems(kwargs):
-            new_patterns[pattern] = handler
+            new_patterns[self.encode(pattern)] = handler
         ret_val = await self.execute_command('PSUBSCRIBE', *iterkeys(new_patterns))
         # update the patterns dict AFTER we send the command. we don't want to
         # subscribe twice to these patterns, once for the command and again
@@ -151,9 +175,9 @@ class PubSub(object):
         if args:
             args = list_or_args(args[0], args[1:])
         new_channels = {}
-        new_channels.update(dict.fromkeys(args))
+        new_channels.update(dict.fromkeys(map(self.encode, args)))
         for channel, handler in iteritems(kwargs):
-            new_channels[channel] = handler
+            new_channels[self.encode(channel)] = handler
         ret_val = await self.execute_command('SUBSCRIBE', *iterkeys(new_channels))
         # update the channels dict AFTER we send the command. we don't want to
         # subscribe twice to these channels, once for the command and again
@@ -194,8 +218,7 @@ class PubSub(object):
         with a message handler, the handler is invoked instead of a parsed
         message being returned.
         """
-        response = [x.decode() if isinstance(x, bytes) else x for x in response]
-        message_type = response[0]
+        message_type = nativestr(response[0])
         if message_type == 'pmessage':
             message = {
                 'type': message_type,
@@ -219,10 +242,7 @@ class PubSub(object):
             else:
                 subscribed_dict = self.channels
             try:
-                key = message['channel']
-                if isinstance(key, bytes):
-                    key = key.decode()
-                del subscribed_dict[key]
+                del subscribed_dict[message['channel']]
             except KeyError:
                 pass
 
