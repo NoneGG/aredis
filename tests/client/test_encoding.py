@@ -1,5 +1,6 @@
 from __future__ import with_statement
 import pytest
+import pickle
 import aredis
 
 
@@ -31,3 +32,13 @@ class TestEncoding(object):
         cached_val = await r.get('unicode-string')
         assert isinstance(cached_val, str)
         assert unicode_string == cached_val
+
+    @pytest.mark.asyncio()
+    async def test_pickled_object(self):
+        r = aredis.StrictRedis()
+        obj = Exception('args')
+        pickled_obj = pickle.dumps(obj)
+        await r.set('pickled-obj', pickled_obj)
+        cached_obj = await r.get('pickled-obj')
+        assert isinstance(cached_obj, bytes)
+        assert obj.args == pickle.loads(cached_obj).args
