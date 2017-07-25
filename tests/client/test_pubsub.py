@@ -1,6 +1,6 @@
 from __future__ import with_statement
 import pytest
-import asyncio
+import pickle
 import time
 
 import aredis
@@ -25,9 +25,9 @@ async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False)
 def make_message(type, channel, data, pattern=None):
     return {
         'type': type,
-        'pattern': pattern or None,
-        'channel': channel,
-        'data': data
+        'pattern': pattern and pattern.encode('utf-8') or None,
+        'channel': channel.encode('utf-8'),
+        'data': data.encode('utf-8') if isinstance(data, str) else data
     }
 
 
@@ -39,7 +39,7 @@ def make_subscribe_test_data(pubsub, type):
             'unsub_type': 'unsubscribe',
             'sub_func': pubsub.subscribe,
             'unsub_func': pubsub.unsubscribe,
-            'keys': ['foo', 'bar', 'uni' + chr(56) + 'code']
+            'keys': ['foo', 'bar', 'uni' + chr(56) + 'code', ]
         }
     elif type == 'pattern':
         return {
@@ -108,7 +108,7 @@ class TestPubSubSubscribeUnsubscribe(object):
         for i, message in enumerate(messages):
             assert message['type'] == sub_type
             assert message['data'] == i + 1
-            channel = message['channel']
+            channel = message['channel'].decode('utf-8')
             unique_channels.add(channel)
 
         assert len(unique_channels) == len(keys)
@@ -257,6 +257,43 @@ class TestPubSubMessages(object):
         expected = [
             make_message('message', 'foo', 'test message'),
             make_message('pmessage', 'foo', 'test message', pattern='f*')
+        ]
+
+        assert message1 in expected
+        assert message2 in expected
+        assert message1 != message2
+        await p.unsubscribe('foo')
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_published_pickled_obj_to_channel(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        await p.subscribe('foo')
+        msg = pickle.dumps(Exception())
+        # if other tests failed, subscriber may not be cleared
+        assert await r.publish('foo', msg) >= 1
+
+        message = await wait_for_message(p)
+        assert isinstance(message, dict)
+        assert message == make_message('message', 'foo', msg)
+        await p.unsubscribe()
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_published_pickled_obj_to_pattern(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        await p.subscribe('foo')
+        await p.psubscribe('f*')
+        # 1 to pattern, 1 to channel
+        msg = pickle.dumps(Exception())
+        assert await r.publish('foo', msg) >= 2
+
+        message1 = await wait_for_message(p)
+        message2 = await wait_for_message(p)
+        assert isinstance(message1, dict)
+        assert isinstance(message2, dict)
+
+        expected = [
+            make_message('message', 'foo', msg),
+            make_message('pmessage', 'foo', msg, pattern='f*')
         ]
 
         assert message1 in expected
