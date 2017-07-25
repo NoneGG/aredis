@@ -25,9 +25,9 @@ async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False)
 def make_message(type, channel, data, pattern=None):
     return {
         'type': type,
-        'pattern': pattern or None,
-        'channel': channel,
-        'data': data
+        'pattern': pattern and pattern.encode('utf-8') or None,
+        'channel': channel.encode('utf-8'),
+        'data': data.encode('utf-8') if isinstance(data, str) else data
     }
 
 
@@ -108,7 +108,7 @@ class TestPubSubSubscribeUnsubscribe(object):
         for i, message in enumerate(messages):
             assert message['type'] == sub_type
             assert message['data'] == i + 1
-            channel = message['channel']
+            channel = message['channel'].decode('utf-8')
             unique_channels.add(channel)
 
         assert len(unique_channels) == len(keys)
