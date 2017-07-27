@@ -15,12 +15,14 @@ async def notification(request):
         redis = aredis.StrictRedis()
         pub = redis.pubsub()
         await pub.subscribe('test')
-        while True:
+        end_time = app.loop.time() + 30
+        while app.loop.time() < end_time:
             await redis.publish('test', 111)
-            message = await pub.get_message()
-            if message:
-                res.write(message)
-            asyncio.sleep(5)
+            message = None
+            while not message:
+                message = await pub.get_message()
+            res.write(message)
+            await asyncio.sleep(0.1)
     return stream(_stream)
 
 if __name__ == "__main__":
