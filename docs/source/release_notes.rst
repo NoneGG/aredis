@@ -48,3 +48,7 @@ Release Notes
     * add reponse decoding related options(`encoding` & `decode_responses`), make client easier to use
     * add support for command `cluster forget`
     * add support for command option `spop count`
+
+1.1.0
+-----
+    * sync optimization of scripting from redis-py made by `bgreenberg <https://github.com/bgreenberg-eb>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/867>`_
