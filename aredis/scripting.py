@@ -1,5 +1,7 @@
+import hashlib
 from aredis.pipeline import BasePipeline
 from aredis.exceptions import NoScriptError
+from aredis.utils import b
 
 
 class Script(object):
@@ -8,7 +10,7 @@ class Script(object):
     def __init__(self, registered_client, script):
         self.registered_client = registered_client
         self.script = script
-        self.sha = ''
+        self.sha = hashlib.sha1(b(script)).hexdigest()
 
     async def execute(self, keys=[], args=[], client=None):
         "Execute the script, passing any required ``args``"
@@ -18,11 +20,12 @@ class Script(object):
         # make sure the Redis server knows about the script
         if isinstance(client, BasePipeline):
             # make sure this script is good to go on pipeline
-            await client.script_load_for_pipeline(self)
+            client.scripts.add(self)
         try:
             return await client.evalsha(self.sha, len(keys), *args)
         except NoScriptError:
             # Maybe the client is pointed to a differnet server than the client
             # that created this instance?
+            # Overwrite the sha just in case there was a discrepancy.
             self.sha = await client.script_load(self.script)
             return await client.evalsha(self.sha, len(keys), *args)
