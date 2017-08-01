@@ -54,7 +54,7 @@ class GeoCommandMixin:
         the triad latitude, longitude and name.
         """
         if len(values) % 3 != 0:
-            raise RedisError("GEOADD requires places with lat, lon and name"
+            raise RedisError("GEOADD requires places with lon, lat and name"
                              " values")
         return await self.execute_command('GEOADD', name, *values)
 
@@ -83,7 +83,7 @@ class GeoCommandMixin:
         """
         Return the positions of each item of ``values`` as members of
         the specified key identified by the ``name``argument. Each position
-        is represented by the pairs lat and lon.
+        is represented by the pairs lon and lat.
         """
         return await self.execute_command('GEOPOS', name, *values)
 
