@@ -1,12 +1,11 @@
 import asyncio
 import os
-import sys
-import ssl
 import socket
-import types
+import ssl
+import sys
 import warnings
 from io import BytesIO
-from aredis.utils import b, nativestr
+
 from aredis.exceptions import (ConnectionError, TimeoutError,
                                RedisError, ExecAbortError,
                                BusyLoadingError, NoScriptError,
@@ -14,6 +13,7 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
                                InvalidResponse, AskError,
                                MovedError, TryAgainError,
                                ClusterDownError, ClusterCrossSlotError)
+from aredis.utils import b, nativestr
 
 try:
     import hiredis
@@ -400,7 +400,7 @@ class BaseConnection:
         # is for pubsub channel/pattern resubscription
         for callback in self._connect_callbacks:
             task = callback(self)
-            if isinstance(task, types.CoroutineType):
+            if isinstance(task, asyncio.coroutines.CoroWrapper):
                 await task
 
     async def _connect(self):
