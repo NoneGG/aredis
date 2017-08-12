@@ -3,6 +3,7 @@ import os
 import socket
 import ssl
 import sys
+import typing
 import warnings
 from io import BytesIO
 
@@ -400,7 +401,7 @@ class BaseConnection:
         # is for pubsub channel/pattern resubscription
         for callback in self._connect_callbacks:
             task = callback(self)
-            if isinstance(task, asyncio.coroutines.CoroWrapper):
+            if isinstance(task, typing.Awaitable):
                 await task
 
     async def _connect(self):
