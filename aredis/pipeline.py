@@ -1,6 +1,8 @@
+import asyncio
 import sys
-import types
+import typing
 from itertools import chain
+
 from aredis.client import (StrictRedisCluster, StrictRedis)
 from aredis.exceptions import (RedisError,
                                ConnectionError,
@@ -202,10 +204,9 @@ class BasePipeline(object):
                 command_name = args[0]
                 if command_name in self.response_callbacks:
                     callback = self.response_callbacks[command_name]
-                    if isinstance(callback, types.CoroutineType):
-                        r = await callback(r, **options)
-                    else:
-                        r = callback(r, **options)
+                    r = callback(r, **options)
+                    if isinstance(response, typing.Awaitable):
+                        r = await r
             data.append(r)
         return data
 
