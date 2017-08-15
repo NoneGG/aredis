@@ -37,7 +37,8 @@ class GeoCommandMixin:
 
     RESPONSE_CALLBACKS = {
         'GEOPOS': lambda r: list(map(lambda ll: (float(ll[0]),
-                                                 float(ll[1])), r)),
+                                                 float(ll[1]))
+                                                 if ll is not None else None, r)),
         'GEOHASH': lambda r: list(r),
         'GEORADIUS': parse_georadius_generic,
         'GEORADIUSBYMEMBER': parse_georadius_generic,

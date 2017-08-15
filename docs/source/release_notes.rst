@@ -52,3 +52,4 @@ Release Notes
 1.1.0
 -----
     * sync optimization of scripting from redis-py made by `bgreenberg <https://github.com/bgreenberg-eb>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/867>`_
+    * sync bug fixed of `geopos` from redis-py made by `categulario <https://github.com/categulario>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/888>`_
