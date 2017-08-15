@@ -37,7 +37,8 @@ class GeoCommandMixin:
 
     RESPONSE_CALLBACKS = {
         'GEOPOS': lambda r: list(map(lambda ll: (float(ll[0]),
-                                                 float(ll[1])), r)),
+                                                 float(ll[1]))
+                                                 if ll is not None else None, r)),
         'GEOHASH': lambda r: list(r),
         'GEORADIUS': parse_georadius_generic,
         'GEORADIUSBYMEMBER': parse_georadius_generic,
@@ -54,7 +55,7 @@ class GeoCommandMixin:
         the triad latitude, longitude and name.
         """
         if len(values) % 3 != 0:
-            raise RedisError("GEOADD requires places with lat, lon and name"
+            raise RedisError("GEOADD requires places with lon, lat and name"
                              " values")
         return await self.execute_command('GEOADD', name, *values)
 
@@ -83,7 +84,7 @@ class GeoCommandMixin:
         """
         Return the positions of each item of ``values`` as members of
         the specified key identified by the ``name``argument. Each position
-        is represented by the pairs lat and lon.
+        is represented by the pairs lon and lat.
         """
         return await self.execute_command('GEOPOS', name, *values)
 
