@@ -1,8 +1,8 @@
 import warnings
-from aredis.utils import (dict_merge,
+
+from aredis.utils import (dict_merge, nativestr,
                           list_keys_to_dict,
                           NodeFlag, bool_ok)
-
 
 SENTINEL_STATE_TYPES = {
     'can-failover-its-master': int,
@@ -59,19 +59,19 @@ def parse_sentinel_state(item):
 
 
 def parse_sentinel_master(response):
-    return parse_sentinel_state(map(str, response))
+    return parse_sentinel_state(map(nativestr, response))
 
 
 def parse_sentinel_masters(response):
     result = {}
     for item in response:
-        state = parse_sentinel_state(map(str, item))
+        state = parse_sentinel_state(map(nativestr, item))
         result[state['name']] = state
     return result
 
 
 def parse_sentinel_slaves_and_sentinels(response):
-    return [parse_sentinel_state(map(str, item)) for item in response]
+    return [parse_sentinel_state(map(nativestr, item)) for item in response]
 
 
 def parse_sentinel_get_master(response):
@@ -79,7 +79,6 @@ def parse_sentinel_get_master(response):
 
 
 class SentinelCommandMixin:
-
     RESPONSE_CALLBACKS = {
         'SENTINEL GET-MASTER-ADDR-BY-NAME': parse_sentinel_get_master,
         'SENTINEL MASTER': parse_sentinel_master,
@@ -130,11 +129,10 @@ class SentinelCommandMixin:
 
 
 class ClusterSentinelCommands(SentinelCommandMixin):
-
     NODES_FLAGS = dict_merge(
         list_keys_to_dict(
-            ["SENTINEL GET-MASTER-ADDR-BY-NAME", 'SENTINEL MASTER', 'SENTINEL MASTERS',
-            'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
-            'SENTINEL SLAVES'], NodeFlag.BLOCKED
+            ['SENTINEL GET-MASTER-ADDR-BY-NAME', 'SENTINEL MASTER', 'SENTINEL MASTERS',
+             'SENTINEL MONITOR', 'SENTINEL REMOVE', 'SENTINEL SENTINELS', 'SENTINEL SET',
+             'SENTINEL SLAVES'], NodeFlag.BLOCKED
         )
     )
