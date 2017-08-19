@@ -145,11 +145,11 @@ class Sentinel(object):
     Redis Sentinel cluster client
 
     >>> from aredis.sentinel import Sentinel
-    >>> sentinel = Sentinel([('localhost', 26379)], socket_timeout=0.1)
+    >>> sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
     >>> async def test():
-    >>>     master = await sentinel.master_for('mymaster', socket_timeout=0.1)
+    >>>     master = await sentinel.master_for('mymaster', stream_timeout=0.1)
     >>>     await master.set('foo', 'bar')
-    >>>     slave = await sentinel.slave_for('mymaster', socket_timeout=0.1)
+    >>>     slave = await sentinel.slave_for('mymaster', stream_timeout=0.1)
     >>>     await slave.get('foo')
 
     ``sentinels`` is a list of sentinel nodes. Each node is represented by
@@ -162,7 +162,7 @@ class Sentinel(object):
     ``sentinel_kwargs`` is a dictionary of connection arguments used when
     connecting to sentinel instances. Any argument that can be passed to
     a normal Redis connection can be specified here. If ``sentinel_kwargs`` is
-    not specified, any socket_timeout and socket_keepalive options specified
+    not specified, any stream_timeout and socket_keepalive options specified
     in ``connection_kwargs`` will be used.
 
     ``connection_kwargs`` are keyword arguments that will be used when

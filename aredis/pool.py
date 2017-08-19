@@ -77,12 +77,11 @@ class ConnectionPool(object):
 
         Any additional querystring arguments and keyword arguments will be
         passed along to the ConnectionPool class's initializer. The querystring
-        arguments ``socket_connect_timeout`` and ``socket_timeout`` if supplied
-        are parsed as float values. The arguments ``socket_keepalive`` and
-        ``retry_on_timeout`` are parsed to boolean values that accept
-        True/False, Yes/No values to indicate state. Invalid types cause a
-        ``UserWarning`` to be raised. In the case of conflicting arguments,
-        querystring arguments always win.
+        arguments ``connect_timeout`` and ``stream_timeout`` if supplied
+        are parsed as float values. The arguments ``retry_on_timeout`` are
+        parsed to boolean values that accept True/False, Yes/No values to indicate state.
+        Invalid types cause a ``UserWarning`` to be raised.
+        In the case of conflicting arguments, querystring arguments always win.
         """
         url = urlparse(url)
         qs = url.query
