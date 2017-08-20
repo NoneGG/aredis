@@ -109,6 +109,12 @@ class ClusterDownError(ClusterError, ResponseError):
         self.message = resp
 
 
+class ClusterTransactionError(ClusterError):
+
+    def __init__(self, msg):
+        self.msg = msg
+
+
 class AskError(ResponseError):
     """
     src node: MIGRATING to dst node
