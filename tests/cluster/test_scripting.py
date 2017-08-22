@@ -101,7 +101,7 @@ class TestScripting(object):
     async def test_script_object(self, r):
         await r.set('a', 2)
         multiply = r.register_script(multiply_script)
-        assert not multiply.sha
+        assert multiply.sha == '29cdf3e36c89fa05d7e6d6b9734b342ab15c9ea7'
         # test evalsha fail -> script load + retry
         assert await multiply.execute(keys=['a'], args=[3]) == 6
         assert multiply.sha
