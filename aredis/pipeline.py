@@ -298,7 +298,7 @@ class BasePipeline(object):
                                  "one or more keys")
             # otherwise, it's safe to retry since the transaction isn't
             # predicated on any state
-            return await execute(conn, stack, raise_on_error)
+            return await exec(conn, stack, raise_on_error)
         finally:
             await self.reset()
 
@@ -422,17 +422,6 @@ class StrictClusterPipeline(StrictRedisCluster):
         self.watching = False
         self.explicit_transaction = False
 
-    async def parse_response(self, connection, command_name, **options):
-        "Parses a response from the Redis server"
-        response = await connection.read_response()
-        # todo: dirty realization now, should be optimized
-        if response == 'QUEUED' or response == 'OK':
-            return True
-        if command_name in self.response_callbacks:
-            callback = self.response_callbacks[command_name]
-            return callback(response, **options)
-        return response
-
     @clusterdown_wrapper
     async def send_cluster_transaction(self, stack, raise_on_error=True):
         # the first time sending the commands we send all of the commands that were queued up.
@@ -458,7 +447,7 @@ class StrictClusterPipeline(StrictRedisCluster):
         conn = self.connection_pool.get_connection_by_node(node)
         if self.watches:
             await self._watch(node, conn, self.watches)
-        node_commands = NodeCommands(self.parse_response, conn)
+        node_commands = NodeCommands(self.parse_response, conn, in_transaction=True)
         node_commands.append(PipelineCommand(('MULTI',)))
         node_commands.extend(attempt)
         node_commands.append(PipelineCommand(('EXEC',)))
@@ -733,12 +722,13 @@ class NodeCommands(object):
     """
     """
 
-    def __init__(self, parse_response, connection):
+    def __init__(self, parse_response, connection, in_transaction=False):
         """
         """
         self.parse_response = parse_response
         self.connection = connection
         self.commands = []
+        self.in_transaction = in_transaction
 
     def extend(self, c):
         self.commands.extend(c)
@@ -784,7 +774,11 @@ class NodeCommands(object):
             # explicitly open the connection and all will be well.
             if c.result is None:
                 try:
-                    c.result = await self.parse_response(connection, c.args[0], **c.options)
+                    if self.in_transaction:
+                        cmd = '_'
+                    else:
+                        cmd = c.args[0]
+                    c.result = await self.parse_response(connection, cmd, **c.options)
                 except ExecAbortError:
                     raise
                 except (ConnectionError, TimeoutError) as e:
