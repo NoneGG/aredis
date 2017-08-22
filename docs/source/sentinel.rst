@@ -11,7 +11,7 @@ Sentinel connection to discover the master and slaves network addresses:
 .. code-block:: python
 
     >>> from redis.sentinel import Sentinel
-    >>> sentinel = Sentinel([('localhost', 26379)], socket_timeout=0.1)
+    >>> sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
     >>> await sentinel.discover_master('mymaster')
     ('127.0.0.1', 6379)
     >>> await sentinel.discover_slaves('mymaster')
@@ -23,8 +23,8 @@ operations).
 
 .. code-block:: pycon
 
-    >>> master = sentinel.master_for('mymaster', socket_timeout=0.1)
-    >>> slave = sentinel.slave_for('mymaster', socket_timeout=0.1)
+    >>> master = sentinel.master_for('mymaster', stream_timeout=0.1)
+    >>> slave = sentinel.slave_for('mymaster', stream_timeout=0.1)
     >>> master.set('foo', 'bar')
     >>> slave.get('foo')
     'bar'

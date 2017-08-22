@@ -411,13 +411,16 @@ class ClusterConnectionPool(ConnectionPool):
         Open new connection to random redis server.
         """
         if self._available_connections:
-            return random.choice(self._available_connections)
-        else:
-            for node in self.nodes.random_startup_node_iter():
-                connection = self.get_connection_by_node(node)
+            node_name = random.choice(self._available_connections)
+            conn_list = self._available_connections[node_name]
+            # check it in case of empty connection list
+            if conn_list:
+                return conn_list.pop()
+        for node in self.nodes.random_startup_node_iter():
+            connection = self.get_connection_by_node(node)
 
-                if connection:
-                    return connection
+            if connection:
+                return connection
 
         raise Exception("Cant reach a single startup node.")
 

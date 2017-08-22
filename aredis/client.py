@@ -465,23 +465,24 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 self.connection_pool.release(connection)
         return self._merge_result(command, res, **kwargs)
 
-    async def pipeline(self, transaction=None, shard_hint=None):
+    async def pipeline(self, transaction=None, shard_hint=None, watches=None):
         """
         Cluster impl:
             Pipelines do not work in cluster mode the same way they do in normal mode.
             Create a clone of this object so that simulating pipelines will work correctly.
             Each command will be called directly when used and when calling execute() will only return the result stack.
+        cluster transaction can only be run with commands in the same node, otherwise error will be raised.
         """
         await self.connection_pool.initialize()
         if shard_hint:
             raise RedisClusterException("shard_hint is deprecated in cluster mode")
 
-        if transaction:
-            raise RedisClusterException("transaction is deprecated in cluster mode")
         from aredis.pipeline import StrictClusterPipeline
         return StrictClusterPipeline(
             connection_pool=self.connection_pool,
             startup_nodes=self.connection_pool.nodes.startup_nodes,
             result_callbacks=self.result_callbacks,
             response_callbacks=self.response_callbacks,
+            transaction=transaction,
+            watches=watches
         )
