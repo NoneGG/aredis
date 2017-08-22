@@ -411,7 +411,7 @@ class ClusterConnectionPool(ConnectionPool):
         Open new connection to random redis server.
         """
         if self._available_connections:
-            node_name = random.choice(self._available_connections)
+            node_name = random.choice(list(self._available_connections.keys()))
             conn_list = self._available_connections[node_name]
             # check it in case of empty connection list
             if conn_list:
