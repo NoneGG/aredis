@@ -53,3 +53,7 @@ Release Notes
 -----
     * sync optimization of scripting from redis-py made by `bgreenberg <https://github.com/bgreenberg-eb>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/867>`_
     * sync bug fixed of `geopos` from redis-py made by `categulario <https://github.com/categulario>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/888>`_
+    * fix bug which makes pipeline callback function not executed
+    * fix error caused by byte decode issues in sentinel
+    * add basic transaction support for single node in cluster
+    * fix bug of get_random_connection reported by myrfy001
