@@ -216,7 +216,11 @@ class ConnectionPool(object):
         if connection.pid != self.pid:
             return
         self._in_use_connections.remove(connection)
-        self._available_connections.append(connection)
+        # discard connection with unread response
+        if connection.awaiting_response:
+            connection.disconnect()
+        else:
+            self._available_connections.append(connection)
 
     def disconnect(self):
         "Disconnects all connections in the pool"
@@ -383,7 +387,11 @@ class ClusterConnectionPool(ConnectionPool):
             i_c.remove(connection)
         else:
             pass
-        self._available_connections.setdefault(connection.node["name"], []).append(connection)
+        # discard connection with unread response
+        if connection.awaiting_response:
+            connection.disconnect()
+        else:
+            self._available_connections.setdefault(connection.node["name"], []).append(connection)
 
     def disconnect(self):
         """
