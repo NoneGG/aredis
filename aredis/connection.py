@@ -370,6 +370,8 @@ class BaseConnection:
         self.encoding = encoding
         self.decode_responses = decode_responses
         self.loop = loop
+        # flag to show if a connection is waiting for response
+        self.awaiting_response = False
 
     def __repr__(self):
         return self.description.format(**self._description_args)
@@ -428,6 +430,7 @@ class BaseConnection:
         except TimeoutError:
             self.disconnect()
             raise
+        self.awaiting_response = False
         if isinstance(response, RedisError):
             raise response
         return response
@@ -461,6 +464,7 @@ class BaseConnection:
         if not (self._reader and self._writer):
             await self.connect()
         await self.send_packed_command(self.pack_command(*args))
+        self.awaiting_response = True
 
     def encode(self, value):
         "Return a bytestring representation of the value"
