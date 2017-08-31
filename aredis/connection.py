@@ -430,8 +430,7 @@ class BaseConnection:
         except TimeoutError:
             self.disconnect()
             raise
-        finally:
-            self.awaiting_response = False
+        self.awaiting_response = False
         if isinstance(response, RedisError):
             raise response
         return response
