@@ -34,6 +34,7 @@ class DummyConnection(object):
         self.host = host
         self.port = port
         self.socket_timeout = socket_timeout
+        self.awaiting_response = False
 
 
 class TestConnectionPool(object):

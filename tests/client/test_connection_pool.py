@@ -16,6 +16,7 @@ class DummyConnection(object):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.pid = os.getpid()
+        self.awaiting_response = False
 
 
 class TestConnectionPool(object):
