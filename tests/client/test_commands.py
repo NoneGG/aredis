@@ -775,7 +775,7 @@ class TestRedisCommands(object):
             await r.set(key, index)
         await r.unlink(keys)
         for key in keys:
-            assert r.get(key) is None
+            assert await r.get(key) is None
 
     # LIST COMMANDS
     @pytest.mark.asyncio(forbid_global_loop=True)
@@ -1811,8 +1811,9 @@ class TestRedisCommands(object):
             [b'sp3e9yg3kd0', b'sp3e9cbc3t0']
 
     @skip_if_server_version_lt('4.0.0')
-    def test_geopos_no_value(self, r):
-        assert r.geopos('barcelona', 'place1', 'place2') == [None, None]
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_geopos_no_value(self, r):
+        assert await r.geopos('barcelona', 'place1', 'place2') == [None, None]
 
     @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
