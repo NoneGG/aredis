@@ -5,7 +5,6 @@ import ssl
 import sys
 import typing
 import warnings
-from select import select
 from io import BytesIO
 
 from aredis.exceptions import (ConnectionError, TimeoutError,
@@ -196,6 +195,8 @@ class PythonParser(BaseParser):
         return self._buffer and bool(self._buffer.length)
 
     async def read_response(self):
+        if not  self._buffer:
+            raise ConnectionError('Socket closed on remote end')
         response = await self._buffer.readline()
         if not response:
             raise ConnectionError('Socket closed on remote end')
@@ -389,13 +390,11 @@ class BaseConnection:
     def clear_connect_callbacks(self):
         self._connect_callbacks = list()
 
-    async def can_read(self, timeout=0):
+    async def can_read(self):
         "See if there's data that can be read."
         if not (self._reader and self._writer):
             await self.connect()
-        sock = self._writer.get_extra_info('socket')
-        res = self._parser.can_read() or bool(select([sock], [], [], timeout)[0])
-        return res
+        return self._parser.can_read()
 
     async def connect(self):
         try:

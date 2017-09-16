@@ -1,6 +1,7 @@
 import asyncio
 import threading
-from aredis.exceptions import PubSubError
+
+from aredis.exceptions import PubSubError, ConnectionError, TimeoutError
 from aredis.utils import (list_or_args,
                           iteritems,
                           iterkeys,
@@ -126,9 +127,13 @@ class PubSub(object):
             raise RuntimeError(
                 'pubsub connection not set: '
                 'did you forget to call subscribe() or psubscribe()?')
-        if not block and not await connection.can_read(timeout=timeout) and timeout > 0:
-            return None
-        return await self._execute(connection, connection.read_response)
+        coro = self._execute(connection, connection.read_response)
+        if not block and timeout > 0:
+            try:
+                return await asyncio.wait_for(coro, timeout)
+            except Exception:
+                return None
+        return await coro
 
     async def psubscribe(self, *args, **kwargs):
         """

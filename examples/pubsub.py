@@ -5,19 +5,19 @@ import aredis
 import asyncio
 import concurrent.futures
 import time
+import logging
 
 
-async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False):
+async def wait_for_message(pubsub, timeout=2, ignore_subscribe_messages=False):
     now = time.time()
     timeout = now + timeout
     while now < timeout:
         message = await pubsub.get_message(
-            ignore_subscribe_messages=ignore_subscribe_messages
+            ignore_subscribe_messages=ignore_subscribe_messages,
+            timeout=1
         )
         if message is not None:
             print(message)
-            if message == 'quit':
-                break
         await asyncio.sleep(0.01)
         now = time.time()
     return None
@@ -29,8 +29,7 @@ async def subscribe(client):
     assert pubsub.subscribed is False
     await pubsub.subscribe('foo')
     # assert await pubsub.subscribe() is True
-    message = await wait_for_message(pubsub)
-    print(message)
+    await wait_for_message(pubsub)
 
 
 async def publish(client):
@@ -41,8 +40,10 @@ async def publish(client):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     client = aredis.StrictRedis()
     loop = asyncio.get_event_loop()
+    loop.set_debug(enabled=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         executor.submit(asyncio.run_coroutine_threadsafe, publish(client), loop)
     loop.run_until_complete(subscribe(client))
