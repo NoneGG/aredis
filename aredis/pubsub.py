@@ -126,13 +126,9 @@ class PubSub(object):
             raise RuntimeError(
                 'pubsub connection not set: '
                 'did you forget to call subscribe() or psubscribe()?')
-        coro = self._execute(connection, connection.read_response)
-        if not block and await connection.can_read() and timeout > 0:
-            try:
-                return await asyncio.wait_for(coro, timeout=timeout)
-            except asyncio.TimeoutError:
-                return None
-        return await coro
+        if not block and not await connection.can_read(timeout=timeout) and timeout > 0:
+            return None
+        return await self._execute(connection, connection.read_response)
 
     async def psubscribe(self, *args, **kwargs):
         """

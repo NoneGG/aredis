@@ -5,6 +5,7 @@ import ssl
 import sys
 import typing
 import warnings
+from select import select
 from io import BytesIO
 
 from aredis.exceptions import (ConnectionError, TimeoutError,
@@ -388,11 +389,13 @@ class BaseConnection:
     def clear_connect_callbacks(self):
         self._connect_callbacks = list()
 
-    async def can_read(self):
+    async def can_read(self, timeout=0):
         "See if there's data that can be read."
         if not (self._reader and self._writer):
             await self.connect()
-        return self._parser.can_read()
+        sock = self._writer.get_extra_info('socket')
+        res = self._parser.can_read() or bool(select([sock], [], [], timeout)[0])
+        return res
 
     async def connect(self):
         try:
