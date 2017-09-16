@@ -433,9 +433,9 @@ class BaseConnection:
         except TimeoutError:
             self.disconnect()
             raise
-        self.awaiting_response = False
         if isinstance(response, RedisError):
             raise response
+        self.awaiting_response = False
         return response
 
     async def send_packed_command(self, command):
