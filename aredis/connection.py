@@ -302,8 +302,7 @@ class HiredisParser(BaseParser):
                 buffer = await self._stream.read(self._read_size)
             except Exception:
                 e = sys.exc_info()[1]
-                raise ConnectionError("Error while reading from stream: %s" %
-                                      (e.args,))
+                raise ConnectionError("Error {} while reading from stream: {}".format(type(e), e.args))
             if not buffer:
                 raise ConnectionError("Socket closed on remote end")
             self._reader.feed(buffer)
