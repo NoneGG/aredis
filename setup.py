@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 import os
 import sys
-from aredis import __version__
 
+from aredis import __version__
 
 try:
     from setuptools import setup
     from setuptools.command.test import test as TestCommand
+    from setuptools.extension import Extension
+
 
     class PyTest(TestCommand):
         def finalize_options(self):
@@ -22,7 +24,8 @@ try:
 
 except ImportError:
 
-    from distutils.core import setup
+    from distutils.core import setup, Extension
+
 
     def PyTest(x):
         x
@@ -56,5 +59,9 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6'
+    ],
+    ext_modules=[
+        Extension(name='aredis.speedups',
+                  sources=['aredis/speedups.c']),
     ]
 )
