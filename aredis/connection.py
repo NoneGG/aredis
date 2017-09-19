@@ -6,6 +6,7 @@ import sys
 import typing
 import warnings
 from io import BytesIO
+from concurrent.futures import CancelledError
 
 from aredis.exceptions import (ConnectionError, TimeoutError,
                                RedisError, ExecAbortError,
@@ -300,6 +301,8 @@ class HiredisParser(BaseParser):
         while response is False:
             try:
                 buffer = await self._stream.read(self._read_size)
+            except CancelledError:
+                raise
             except Exception:
                 e = sys.exc_info()[1]
                 raise ConnectionError("Error {} while reading from stream: {}".format(type(e), e.args))
