@@ -2,6 +2,12 @@ import sys
 from functools import wraps
 from aredis.exceptions import (RedisClusterException,
                                ClusterDownError)
+_CRC16_SPEEDUP = False
+try:
+    from aredis.speedups import crc16
+    _CRC16_SPEEDUP = True
+except Exception:
+    pass
 
 
 def b(x):
@@ -201,13 +207,16 @@ x_mode_m_crc16_lookup = [
 ]
 
 
-def crc16(data):
+def _crc16(data):
     """
     """
     crc = 0
     for byte in data:
         crc = ((crc << 8) & 0xff00) ^ x_mode_m_crc16_lookup[((crc >> 8) & 0xff) ^ byte]
     return crc & 0xffff
+
+if not _CRC16_SPEEDUP:
+    crc16 = _crc16
 
 
 class NodeFlag(object):
