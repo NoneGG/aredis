@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
-from aredis.utils import (b, crc16)
+from aredis.utils import (b, hash_slot)
 from aredis.exceptions import (ConnectionError,
                                RedisClusterException)
 
@@ -53,12 +53,7 @@ class NodeManager(object):
     def keyslot(self, key):
         """Calculate keyslot for a given key."""
         key = self.encode(key)
-        start = key.find(b"{")
-        if start > -1:
-            end = key.find(b"}", start + 1)
-            if end > -1 and end != start + 1:
-                key = key[start + 1:end]
-        return crc16(key) % self.RedisClusterHashSlots
+        return hash_slot(key)
 
     def node_from_slot(self, slot):
         for node in self.slots[slot]:
