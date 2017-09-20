@@ -39,7 +39,7 @@ static const uint16_t crc16tab[256]= {
 
 
 /* CRC16 implementation according to CCITT standards.
- * most come from https://redis.io/topics/cluster-spec
+ * come from https://redis.io/topics/cluster-spec
  *
  * Note by @antirez: this is actually the XMODEM CRC 16 algorithm, using the
  * following parameters:

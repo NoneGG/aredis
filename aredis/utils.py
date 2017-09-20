@@ -222,6 +222,9 @@ if not _C_EXTENSION_SPEEDUP:
         return crc & 0xffff
 
 
+    crc16 = _crc16
+
+
     def _hash_slot(key):
         start = key.find(b"{")
         if start > -1:
@@ -231,7 +234,6 @@ if not _C_EXTENSION_SPEEDUP:
         return crc16(key) % 16384
 
 
-    crc16 = _crc16
     hash_slot = _hash_slot
 
 
