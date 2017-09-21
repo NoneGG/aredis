@@ -1,5 +1,6 @@
 import asyncio
 import threading
+from asyncio.futures import CancelledError
 
 from aredis.exceptions import PubSubError, ConnectionError, TimeoutError
 from aredis.utils import (list_or_args,
@@ -108,6 +109,10 @@ class PubSub(object):
     async def _execute(self, connection, command, *args):
         try:
             return await command(*args)
+        except CancelledError:
+            # do not retry if coroutine is cancelled
+            connection.disconnect()
+            return None
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):

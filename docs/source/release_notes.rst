@@ -57,3 +57,10 @@ Release Notes
     * fix error caused by byte decode issues in sentinel
     * add basic transaction support for single node in cluster
     * fix bug of get_random_connection reported by myrfy001
+
+1.1.1
+-----
+    * fix bug: connection with unread response being released to connection pool will lead to parse error, now this kind of connection will be destructed directly. `related issue <https://github.com/NoneGG/aredis/issues/52>`_
+    * fix bug: remove Connection.can_read check which may lead to block in awaiting pubsub message. Connection.can_read api will be deprecated in next release. `related issue <https://github.com/NoneGG/aredis/issues/56>`_
+    * add c extension to speedup crc16, which will speedup cluster slot hashing
+    * add error handling for asyncio.futures.Cancelled error, which may cause error in response parsing.

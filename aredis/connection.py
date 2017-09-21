@@ -5,6 +5,7 @@ import ssl
 import sys
 import typing
 import warnings
+from concurrent.futures import CancelledError
 from io import BytesIO
 
 from aredis.exceptions import (ConnectionError, TimeoutError,
@@ -195,7 +196,7 @@ class PythonParser(BaseParser):
         return self._buffer and bool(self._buffer.length)
 
     async def read_response(self):
-        if not  self._buffer:
+        if not self._buffer:
             raise ConnectionError('Socket closed on remote end')
         response = await self._buffer.readline()
         if not response:
@@ -300,6 +301,10 @@ class HiredisParser(BaseParser):
         while response is False:
             try:
                 buffer = await self._stream.read(self._read_size)
+            # CancelledError will be caught by client so that command won't be retried again
+            # For more detailed discussion please see https://github.com/NoneGG/aredis/issues/56
+            except CancelledError:
+                raise
             except Exception:
                 e = sys.exc_info()[1]
                 raise ConnectionError("Error {} while reading from stream: {}".format(type(e), e.args))

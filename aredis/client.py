@@ -1,21 +1,7 @@
-import sys
 import asyncio
+import sys
+from asyncio.futures import CancelledError
 
-from aredis.connection import UnixDomainSocketConnection
-from aredis.pool import (ConnectionPool,
-                         ClusterConnectionPool)
-from aredis.utils import (blocked_command,
-                          dict_merge,
-                          NodeFlag,
-                          first_key,
-                          clusterdown_wrapper)
-from aredis.exceptions import (
-    ConnectionError, TimeoutError,
-    RedisClusterException, MovedError,
-    AskError, BusyLoadingError,
-    TryAgainError, ClusterDownError,
-    ClusterError
-)
 from aredis.commands.cluster import ClusterCommandMixin
 from aredis.commands.connection import ConnectionCommandMixin, ClusterConnectionCommandMixin
 from aredis.commands.extra import ExtraCommandMixin
@@ -32,6 +18,21 @@ from aredis.commands.sets import SetsCommandMixin, ClusterSetsCommandMixin
 from aredis.commands.sorted_set import SortedSetCommandMixin, ClusterSortedSetCommandMixin
 from aredis.commands.strings import StringsCommandMixin, ClusterStringsCommandMixin
 from aredis.commands.transaction import TransactionCommandMixin, ClusterTransactionCommandMixin
+from aredis.connection import UnixDomainSocketConnection
+from aredis.exceptions import (
+    ConnectionError, TimeoutError,
+    RedisClusterException, MovedError,
+    AskError, BusyLoadingError,
+    TryAgainError, ClusterDownError,
+    ClusterError
+)
+from aredis.pool import (ConnectionPool,
+                         ClusterConnectionPool)
+from aredis.utils import (blocked_command,
+                          dict_merge,
+                          NodeFlag,
+                          first_key,
+                          clusterdown_wrapper)
 
 mixins = [
     ClusterCommandMixin, ConnectionCommandMixin, ExtraCommandMixin,
@@ -162,6 +163,9 @@ class StrictRedis(*mixins):
         try:
             await connection.send_command(*args)
             return await self.parse_response(connection, command_name, **options)
+        except CancelledError:
+            # do not retry when coroutine is cancelled
+            connection.disconnect()
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
@@ -411,7 +415,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 return await self.parse_response(r, command, **kwargs)
             except (RedisClusterException, BusyLoadingError):
                 raise
-            except (ConnectionError, TimeoutError):
+            except (CancelledError, ConnectionError, TimeoutError):
                 try_random_node = True
 
                 if ttl < self.RedisClusterRequestTTL / 2:
@@ -453,6 +457,9 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             try:
                 await connection.send_command(*args)
                 res[node["name"]] = await self.parse_response(connection, command, **kwargs)
+            except CancelledError:
+                # do not retry when coroutine is cancelled
+                connection.disconnect()
             except (ConnectionError, TimeoutError) as e:
                 connection.disconnect()
 
