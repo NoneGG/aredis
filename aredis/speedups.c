@@ -39,7 +39,7 @@ static const uint16_t crc16tab[256]= {
 
 
 /* CRC16 implementation according to CCITT standards.
- * most come from https://redis.io/topics/cluster-spec
+ * come from https://redis.io/topics/cluster-spec
  *
  * Note by @antirez: this is actually the XMODEM CRC 16 algorithm, using the
  * following parameters:
@@ -53,10 +53,41 @@ static const uint16_t crc16tab[256]= {
  * Xor constant to output CRC : 0000
  * Output for "123456789"     : 31C3
  */
+uint16_t _crc16(const char *buf, int len) {
+    int counter;
+    uint16_t crc = 0;
+    for (counter = 0; counter < len; counter++)
+            crc = (crc<<8) ^ crc16tab[((crc>>8) ^ *buf++)&0x00FF];
+    return crc;
+}
+
+
+unsigned int _hash_slot(char *key, int keylen) {
+    int s, e; /* start-end indexes of { and } */
+
+    /* Search the first occurrence of '{'. */
+    for (s = 0; s < keylen; s++)
+        if (key[s] == '{') break;
+
+    /* No '{' ? Hash the whole key. This is the base case. */
+    if (s == keylen) return _crc16(key,keylen) & 16383;
+
+    /* '{' found? Check if we have the corresponding '}'. */
+    for (e = s+1; e < keylen; e++)
+        if (key[e] == '}') break;
+
+    /* No '}' or nothing between {} ? Hash the whole key. */
+    if (e == keylen || e == s+1) return _crc16(key,keylen) & 16383;
+
+    /* If we are here there is both a { and a } on its right. Hash
+     * what is in the middle between { and }. */
+    return _crc16(key+s+1,e-s-1) & 16383;
+}
+
+
 static PyObject* crc16(PyObject* self, PyObject* args) {
     const char *buf;
     Py_ssize_t len;
-    Py_ssize_t counter;
     uint16_t crc = 0;
     PyObject* result;
 
@@ -64,9 +95,7 @@ static PyObject* crc16(PyObject* self, PyObject* args) {
         return NULL;
     }
 
-    for (counter = 0; counter < len; counter++)
-        crc = (crc<<8) ^ crc16tab[((crc>>8) ^ *buf++)&0x00FF];
-
+    crc = _crc16(buf, (int)len);
     result = PyLong_FromLong(crc);
     if (!result) {
         return NULL;
@@ -75,8 +104,29 @@ static PyObject* crc16(PyObject* self, PyObject* args) {
 }
 
 
+static PyObject* hash_slot(PyObject* self, PyObject* args) {
+    const char *key;
+    int slot;
+    Py_ssize_t keylen;
+    PyObject* result;
+
+    if (!PyArg_ParseTuple(args, "s#", &key, &keylen)) {
+        return NULL;
+    }
+
+    slot = _hash_slot(key, (int)keylen);
+    result = PyLong_FromLong(slot);
+    if (!result) {
+        return NULL;
+    }
+    return result;
+}
+
+
+
 static PyMethodDef methods[] = {
     {"crc16", crc16, METH_VARARGS, "crc16 used to hash key to slot"},
+    {"hash_slot", hash_slot, METH_VARARGS, "hash key to a redis cluster slot"},
     {NULL, NULL, 0, NULL}
 };
 
