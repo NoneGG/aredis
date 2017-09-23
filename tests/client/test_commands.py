@@ -54,6 +54,15 @@ class TestRedisCommands(object):
 
     @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_client_list_after_client_setname(self, r):
+        await r.client_setname('cl=i=ent')
+        clients = await r.client_list()
+        assert isinstance(clients[0], dict)
+        assert 'name' in clients[0]
+        assert clients[-1]['name'] == 'cl=i=ent'
+
+    @skip_if_server_version_lt('2.6.9')
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_getname(self, r):
         assert await r.client_getname() is None
 
