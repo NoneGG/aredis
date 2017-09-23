@@ -64,3 +64,5 @@ Release Notes
     * fix bug: remove Connection.can_read check which may lead to block in awaiting pubsub message. Connection.can_read api will be deprecated in next release. `related issue <https://github.com/NoneGG/aredis/issues/56>`_
     * add c extension to speedup crc16, which will speedup cluster slot hashing
     * add error handling for asyncio.futures.Cancelled error, which may cause error in response parsing.
+    * sync optimization of client list made by swilly22 from redis-py
+
