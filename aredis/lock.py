@@ -300,6 +300,8 @@ class ClusterLock(LuaLock):
     """
     def __init__(self, *args, **kwargs):
         super(ClusterLock, self).__init__(*args, **kwargs)
+        if not self.timeout:
+            raise LockError('timeout must be provided for cluster lock')
 
     async def check_lock_in_slaves(self, token):
         node_manager = self.redis.connection_pool.nodes
