@@ -2,8 +2,9 @@ import asyncio
 import threading
 import time as mod_time
 import uuid
+from aredis.connection import ClusterConnection
 from aredis.exceptions import LockError, WatchError
-from aredis.utils import b, dummy
+from aredis.utils import b, dummy, nativestr
 
 
 class Lock(object):
@@ -270,3 +271,65 @@ class LuaLock(Lock):
                                                   client=self.redis)):
             raise LockError("Cannot extend a lock that's no longer owned")
         return True
+
+
+class ClusterLock(LuaLock):
+    """
+    Cluster lock is supposed to solve lock problem in redis cluster.
+    Since high availability is provided by redis cluster using master-slave model,
+    the kind of lock aims to solve the fail-over problem referred in distributed lock
+    post given by redis official.
+
+    Why not use Redlock algorithm provided by official directly?
+    It is impossible to make a key hashed to different nodes
+    in a redis cluster and hard to generate keys
+    in a specific rule and make sure they do not migrated in cluster.
+    In the worst situation, all key slots may exists in one node.
+    Then the availability will be the same as one key in one node.
+    For more discussion please see:
+    https://github.com/NoneGG/aredis/issues/55
+
+    My solution is to take advantage of `READONLY` mode of slaves to ensure
+    the lock key is synced from master to N/2 + 1 of its slaves to avoid the fail-over problem.
+    Since it is a single-key solution, the migration problem also do no matter.
+
+    Please read these article below before using this cluster lock in your app.
+    https://redis.io/topics/distlock
+    http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html
+    http://antirez.com/news/101
+    """
+    def __init__(self, *args, **kwargs):
+        super(ClusterLock, self).__init__(*args, **kwargs)
+
+    async def check_lock_in_slaves(self, token):
+        node_manager = self.redis.connection_pool.nodes
+        slot = node_manager.keyslot(self.name)
+        master_node_id = node_manager.node_from_slot(slot)['node_id']
+        slave_nodes = await self.redis.cluster_slaves(master_node_id)
+        count, quorum = 0, (len(slave_nodes) // 2) + 1
+        conn_kwargs = self.redis.connection_pool.connection_kwargs
+        for node in slave_nodes:
+            try:
+                # todo: a little bit dirty here, try to reuse StrictRedis later
+                # todo: it may be optimized by using a new connection pool
+                conn = ClusterConnection(host=node['host'], port=node['port'], **conn_kwargs)
+                await conn.send_command('get', self.name)
+                res = await conn.read_response()
+                if res:
+                    res = nativestr(res)
+                if res == token:
+                    count += 1
+                if count >= quorum:
+                    return True
+            except Exception:
+                pass
+        return False
+
+    async def do_acquire(self, token):
+        acquired = super(ClusterLock, self).do_acquire(token)
+        return acquired and await self.check_lock_in_slaves(token)
+
+    async def do_release(self, expected_token):
+        super(ClusterLock, self).do_release(expected_token)
+        if await self.check_lock_in_slaves(expected_token):
+            raise LockError('Lock is released in master but not in slave yet')
