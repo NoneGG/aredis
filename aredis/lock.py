@@ -2,10 +2,11 @@ import asyncio
 import threading
 import time as mod_time
 import uuid
+import warnings
 
 from aredis.connection import ClusterConnection
 from aredis.exceptions import LockError, WatchError
-from aredis.utils import b, dummy, nativestr
+from aredis.utils import b, dummy
 
 
 class Lock(object):
@@ -325,8 +326,8 @@ class ClusterLock(LuaLock):
                     count += 1
                 if count >= quorum:
                     return True
-            except Exception:
-                raise
+            except Exception as exc:
+                warnings.warn('error {} during check lock {} status in slave nodes'.format(exc, self.name))
         return False
 
     async def acquire(self, blocking=None, blocking_timeout=None):
