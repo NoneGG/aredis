@@ -2,6 +2,7 @@ import asyncio
 import threading
 import time as mod_time
 import uuid
+
 from aredis.connection import ClusterConnection
 from aredis.exceptions import LockError, WatchError
 from aredis.utils import b, dummy, nativestr
@@ -15,6 +16,7 @@ class Lock(object):
     It's left to the user to resolve deadlock issues and make sure
     multiple clients play nicely together.
     """
+
     def __init__(self, redis, name, timeout=None, sleep=0.1,
                  blocking=True, blocking_timeout=None, thread_local=True):
         """
@@ -298,6 +300,7 @@ class ClusterLock(LuaLock):
     http://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html
     http://antirez.com/news/101
     """
+
     def __init__(self, *args, **kwargs):
         super(ClusterLock, self).__init__(*args, **kwargs)
         if not self.timeout:
@@ -310,6 +313,7 @@ class ClusterLock(LuaLock):
         slave_nodes = await self.redis.cluster_slaves(master_node_id)
         count, quorum = 0, (len(slave_nodes) // 2) + 1
         conn_kwargs = self.redis.connection_pool.connection_kwargs
+        conn_kwargs['readonly'] = True
         for node in slave_nodes:
             try:
                 # todo: a little bit dirty here, try to reuse StrictRedis later
@@ -317,21 +321,58 @@ class ClusterLock(LuaLock):
                 conn = ClusterConnection(host=node['host'], port=node['port'], **conn_kwargs)
                 await conn.send_command('get', self.name)
                 res = await conn.read_response()
-                if res:
-                    res = nativestr(res)
                 if res == token:
                     count += 1
                 if count >= quorum:
                     return True
             except Exception:
-                pass
+                raise
         return False
 
-    async def do_acquire(self, token):
-        acquired = super(ClusterLock, self).do_acquire(token)
-        return acquired and await self.check_lock_in_slaves(token)
+    async def acquire(self, blocking=None, blocking_timeout=None):
+        """
+        Use Redis to hold a shared, distributed lock named ``name``.
+        Returns True once the lock is acquired.
+
+        If ``blocking`` is False, always return immediately. If the lock
+        was acquired, return True, otherwise return False.
+
+        ``blocking_timeout`` specifies the maximum number of seconds to
+        wait trying to acquire the lock. It should not be greater than
+        expire time of the lock
+        """
+        sleep = self.sleep
+        token = b(uuid.uuid1().hex)
+        if blocking is None:
+            blocking = self.blocking
+        if blocking_timeout is None:
+            blocking_timeout = self.blocking_timeout
+        blocking_timeout = blocking_timeout or self.timeout
+        stop_trying_at = mod_time.time() + min(blocking_timeout, self.timeout)
+
+        while True:
+            if await self.do_acquire(token):
+                lock_acquired_at = mod_time.time()
+                if await self.check_lock_in_slaves(token):
+                    check_finished_at = mod_time.time()
+                    # if time expends on acquiring lock is greater than given time
+                    # the lock should be released manually
+                    if check_finished_at > stop_trying_at:
+                        await self.do_release(token)
+                        return False
+                    self.local.token = token
+                    # validity time is considered to be the
+                    # initial validity time minus the time elapsed during check
+                    await self.do_extend(lock_acquired_at - check_finished_at)
+                    return True
+                else:
+                    await self.do_release(token)
+                    return False
+            if not blocking or mod_time.time() > stop_trying_at:
+                return False
+            await asyncio.sleep(sleep, loop=self.redis.connection_pool.loop)
 
     async def do_release(self, expected_token):
-        super(ClusterLock, self).do_release(expected_token)
+        await super(ClusterLock, self).do_release(expected_token)
         if await self.check_lock_in_slaves(expected_token):
             raise LockError('Lock is released in master but not in slave yet')
