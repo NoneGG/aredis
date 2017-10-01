@@ -65,4 +65,5 @@ Release Notes
     * add c extension to speedup crc16, which will speedup cluster slot hashing
     * add error handling for asyncio.futures.Cancelled error, which may cause error in response parsing.
     * sync optimization of client list made by swilly22 from redis-py
+    * add support for distributed lock using redis cluster
 
