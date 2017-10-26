@@ -7,7 +7,7 @@ from aredis.connection import Connection
 from aredis.pool import ConnectionPool
 from aredis.exceptions import (ConnectionError, ResponseError, ReadOnlyError,
                                TimeoutError)
-from aredis.utils import iteritems
+from aredis.utils import iteritems, nativestr
 
 
 class MasterNotFoundError(ConnectionError):
@@ -37,7 +37,7 @@ class SentinelManagedConnection(Connection):
         await super(SentinelManagedConnection, self).connect()
         if self.connection_pool.check_connection:
             await self.send_command('PING')
-            if await self.read_response() != b'PONG':
+            if nativestr(await self.read_response()) != 'PONG':
                 raise ConnectionError('PING failed')
 
     async def connect(self):
@@ -117,8 +117,7 @@ class SentinelConnectionPool(ConnectionPool):
             if self.slave_rr_counter is None:
                 self.slave_rr_counter = random.randint(0, len(slaves) - 1)
             for _ in range(len(slaves)):
-                self.slave_rr_counter = (
-                                            self.slave_rr_counter + 1) % len(slaves)
+                self.slave_rr_counter = (self.slave_rr_counter + 1) % len(slaves)
                 slave_address.append(slaves[self.slave_rr_counter])
             return slave_address
         # Fallback to the master connection

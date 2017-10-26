@@ -3,7 +3,7 @@
 
 import aredis
 import asyncio
-import time
+import logging
 
 
 def my_handler(x):
@@ -21,6 +21,7 @@ async def use_pubsub_in_thread():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     loop = asyncio.get_event_loop()
+    loop.set_debug(enabled=True)
     loop.run_until_complete(use_pubsub_in_thread())
-    asyncio.sleep(5)

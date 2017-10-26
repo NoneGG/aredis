@@ -351,9 +351,7 @@ class TestConnection(object):
         with pytest.raises(RedisError):
             await bad_connection.info()
         pool = bad_connection.connection_pool
-        assert len(pool._available_connections) == 1
-        assert pool._available_connections[0]._writer
-        assert pool._available_connections[0]._reader
+        assert len(pool._available_connections) == 0
 
     @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)
@@ -366,9 +364,7 @@ class TestConnection(object):
         with pytest.raises(BusyLoadingError):
             await client.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
         pool = client.connection_pool
-        assert len(pool._available_connections) == 1
-        assert pool._available_connections[0]._writer
-        assert pool._available_connections[0]._reader
+        assert len(pool._available_connections) == 0
 
     @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)
@@ -383,9 +379,7 @@ class TestConnection(object):
             await pipe.immediate_execute_command('DEBUG', 'ERROR', 'LOADING fake message')
         pool = client.connection_pool
         assert not pipe.connection
-        assert len(pool._available_connections) == 1
-        assert not pool._available_connections[0]._writer
-        assert not pool._available_connections[0]._reader
+        assert len(pool._available_connections) == 0
 
     @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)

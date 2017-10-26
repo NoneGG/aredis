@@ -218,7 +218,6 @@ class ConnectionPool(object):
         self._in_use_connections.remove(connection)
         # discard connection with unread response
         if connection.awaiting_response:
-            print('disconnect connection')
             connection.disconnect()
         else:
             self._available_connections.append(connection)

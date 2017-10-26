@@ -54,6 +54,15 @@ class TestRedisCommands(object):
 
     @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_client_list_after_client_setname(self, r):
+        await r.client_setname('cl=i=ent')
+        clients = await r.client_list()
+        assert isinstance(clients[0], dict)
+        assert 'name' in clients[0]
+        assert clients[-1]['name'] == 'cl=i=ent'
+
+    @skip_if_server_version_lt('2.6.9')
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_getname(self, r):
         assert await r.client_getname() is None
 
@@ -773,9 +782,9 @@ class TestRedisCommands(object):
         keys = ['a', 'b', 'c', 'd']
         for index, key in enumerate(keys):
             await r.set(key, index)
-        await r.unlink(keys)
+        await r.unlink(*keys)
         for key in keys:
-            assert r.get(key) is None
+            assert await r.get(key) is None
 
     # LIST COMMANDS
     @pytest.mark.asyncio(forbid_global_loop=True)
@@ -1811,8 +1820,10 @@ class TestRedisCommands(object):
             [b'sp3e9yg3kd0', b'sp3e9cbc3t0']
 
     @skip_if_server_version_lt('4.0.0')
-    def test_geopos_no_value(self, r):
-        assert r.geopos('barcelona', 'place1', 'place2') == [None, None]
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_geopos_no_value(self, r):
+        await r.flushdb()
+        assert await r.geopos('barcelona', 'place1', 'place2') == [None, None]
 
     @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)

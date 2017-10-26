@@ -10,8 +10,9 @@ async def example(conn):
     # you may not need to use that directly
     # directly use it if you want to reconnect a connection instance
     await conn.connect()
-    assert await conn.can_read()
+    assert not await conn.can_read()
     await conn.send_command('keys', '*')
+    assert await conn.can_read()
     print(await conn.read_response())
     conn.disconnect()
     await conn.send_command('set', 'foo', 1)

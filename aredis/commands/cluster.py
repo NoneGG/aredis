@@ -17,7 +17,10 @@ def parse_cluster_nodes(resp, **options):
     @see: http://redis.io/commands/cluster-nodes  # string
     @see: http://redis.io/commands/cluster-slaves # list of string
     """
-    resp = nativestr(resp)
+    if isinstance(resp, list):
+        resp = [nativestr(row) for row in resp]
+    else:
+        resp = nativestr(resp)
     current_host = options.get('current_host', '')
 
     def parse_slots(s):

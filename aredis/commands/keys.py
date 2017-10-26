@@ -26,7 +26,7 @@ def sort_return_tuples(response, **options):
 
 def parse_object(response, infotype):
     "Parse the results of an OBJECT command"
-    if infotype in (b'idletime', b'refcount'):
+    if infotype in ('idletime', 'refcount'):
         return int_or_none(response)
     return response
 
