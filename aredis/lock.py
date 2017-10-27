@@ -2,6 +2,7 @@ import asyncio
 import threading
 import time as mod_time
 import uuid
+
 from aredis.exceptions import LockError, WatchError
 from aredis.utils import b, dummy
 
@@ -14,6 +15,7 @@ class Lock(object):
     It's left to the user to resolve deadlock issues and make sure
     multiple clients play nicely together.
     """
+
     def __init__(self, redis, name, timeout=None, sleep=0.1,
                  blocking=True, blocking_timeout=None, thread_local=True):
         """
@@ -118,11 +120,12 @@ class Lock(object):
             await asyncio.sleep(sleep, loop=self.redis.connection_pool.loop)
 
     async def do_acquire(self, token):
-        if await self.redis.setnx(self.name, token):
-            if self.timeout:
-                # convert to milliseconds
-                timeout = int(self.timeout * 1000)
-                await self.redis.pexpire(self.name, timeout)
+        if self.timeout:
+            # convert to milliseconds
+            timeout = int(self.timeout * 1000)
+        else:
+            timeout = None
+        if await self.redis.set(self.name, token, nx=True, px=timeout):
             return True
         return False
 
@@ -188,23 +191,8 @@ class LuaLock(Lock):
     A lock implementation that uses Lua scripts rather than pipelines
     and watches.
     """
-    lua_acquire = None
     lua_release = None
     lua_extend = None
-
-    # KEYS[1] - lock name
-    # ARGV[1] - token
-    # ARGV[2] - timeout in milliseconds
-    # return 1 if lock was acquired, otherwise 0
-    LUA_ACQUIRE_SCRIPT = """
-        if redis.call('setnx', KEYS[1], ARGV[1]) == 1 then
-            if ARGV[2] ~= '' then
-                redis.call('pexpire', KEYS[1], ARGV[2])
-            end
-            return 1
-        end
-        return 0
-    """
 
     # KEYS[1] - lock name
     # ARGS[1] - token
@@ -244,18 +232,10 @@ class LuaLock(Lock):
 
     @classmethod
     def register_scripts(cls, redis):
-        if cls.lua_acquire is None:
-            cls.lua_acquire = redis.register_script(cls.LUA_ACQUIRE_SCRIPT)
         if cls.lua_release is None:
             cls.lua_release = redis.register_script(cls.LUA_RELEASE_SCRIPT)
         if cls.lua_extend is None:
             cls.lua_extend = redis.register_script(cls.LUA_EXTEND_SCRIPT)
-
-    async def do_acquire(self, token):
-        timeout = self.timeout and int(self.timeout * 1000) or ''
-        return bool(await self.lua_acquire.execute(keys=[self.name],
-                                                   args=[token, timeout],
-                                                   client=self.redis))
 
     async def do_release(self, expected_token):
         if not bool(await self.lua_release.execute(keys=[self.name],
