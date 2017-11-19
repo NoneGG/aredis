@@ -113,3 +113,9 @@ For benchmark in my environment please see: `benchmark`_
 .. |python-ver| image:: https://img.shields.io/pypi/pyversions/aredis.svg
     :target: https://pypi.python.org/pypi/aredis/
     :alt: Supported Python versions
+
+Contributing
+------------
+
+Enhancement, bug reports and Pull requests are welcomed, please make an issue to let me know.
+Fork me please~
