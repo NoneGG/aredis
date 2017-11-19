@@ -1,0 +1,13 @@
+## Checklist
+
+- Python version
+- Using hiredis or just Python parser
+- Using uvloop or just asyncio event loop
+- Does issue exists against the `master` branch of aredis?
+
+## Steps to reproduce
+
+## Expected behavior
+
+## Actual behavior
+- It is appreciated if error log can be provided
