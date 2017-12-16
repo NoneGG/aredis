@@ -129,6 +129,12 @@ Experimental:
     Since asyncio is stabilize from Python 3.5, i think it may be better to use the new release of asyncio.
 
 
+.. note:: pypy
+
+    For now, uvloop is not supported by pypy, and you can only use it with cpython & hiredis to accelerate your code.
+    pypy 3.5-v5.8.0 is tesed and with it code can run twice faster than before.
+
+
 The Usage Guide
 ---------------
 
