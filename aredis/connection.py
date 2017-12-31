@@ -15,7 +15,8 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
                                InvalidResponse, AskError,
                                MovedError, TryAgainError,
                                ClusterDownError, ClusterCrossSlotError)
-from aredis.utils import b, nativestr
+from aredis.utils import (b, nativestr, encode,
+                          pack_command, pack_commands)
 
 try:
     import hiredis
@@ -473,18 +474,7 @@ class BaseConnection:
         self.awaiting_response = True
 
     def encode(self, value):
-        "Return a bytestring representation of the value"
-        if isinstance(value, bytes):
-            return value
-        elif isinstance(value, int):
-            value = b(str(value))
-        elif isinstance(value, float):
-            value = b(repr(value))
-        elif not isinstance(value, str):
-            value = str(value)
-        if isinstance(value, str):
-            value = value.encode(self.encoding)
-        return value
+        return encode(self.encoding, value)
 
     def disconnect(self):
         "Disconnects from the Redis server"
@@ -497,55 +487,10 @@ class BaseConnection:
         self._writer = None
 
     def pack_command(self, *args):
-        "Pack a series of arguments into the Redis protocol"
-        output = []
-        # the client might have included 1 or more literal arguments in
-        # the command name, e.g., 'CONFIG GET'. The Redis server expects these
-        # arguments to be sent separately, so split the first argument
-        # manually. All of these arguements get wrapped in the Token class
-        # to prevent them from being encoded.
-        command = args[0]
-        if ' ' in command:
-            args = tuple([b(s) for s in command.split()]) + args[1:]
-        else:
-            args = (b(command),) + args[1:]
-
-        buff = SYM_EMPTY.join(
-            (SYM_STAR, b(str(len(args))), SYM_CRLF))
-        for arg in map(self.encode, args):
-            # to avoid large string mallocs, chunk the command into the
-            # output list if we're sending large values
-            if len(buff) > 6000 or len(arg) > 6000:
-                buff = SYM_EMPTY.join(
-                    (buff, SYM_DOLLAR, b(str(len(arg))), SYM_CRLF))
-                output.append(buff)
-                output.append(b(arg))
-                buff = SYM_CRLF
-            else:
-                buff = SYM_EMPTY.join((buff, SYM_DOLLAR, b(str(len(arg))),
-                                       SYM_CRLF, b(arg), SYM_CRLF))
-        output.append(buff)
-        return output
+        return pack_command(self.encoding, args)
 
     def pack_commands(self, commands):
-        "Pack multiple commands into the Redis protocol"
-        output = []
-        pieces = []
-        buffer_length = 0
-
-        for cmd in commands:
-            for chunk in self.pack_command(*cmd):
-                pieces.append(chunk)
-                buffer_length += len(chunk)
-
-            if buffer_length > 6000:
-                output.append(SYM_EMPTY.join(pieces))
-                buffer_length = 0
-                pieces = []
-
-        if pieces:
-            output.append(SYM_EMPTY.join(pieces))
-        return output
+        return pack_commands(self.encoding, commands)
 
 
 class Connection(BaseConnection):
