@@ -219,6 +219,7 @@ class ConnectionPool(object):
         # discard connection with unread response
         if connection.awaiting_response:
             connection.disconnect()
+            self._created_connections -= 1
         else:
             self._available_connections.append(connection)
 
@@ -228,6 +229,7 @@ class ConnectionPool(object):
                           self._in_use_connections)
         for connection in all_conns:
             connection.disconnect()
+            self._created_connections -= 1
 
 
 class ClusterConnectionPool(ConnectionPool):
