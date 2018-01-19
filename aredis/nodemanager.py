@@ -134,11 +134,10 @@ class NodeManager(object):
             # Fix it to the host in startup_nodes
             if (len(cluster_slots) == 1
                 and len(self.startup_nodes) == 1):
-                single_node_slots = cluster_slots.pop((0, self.RedisClusterHashSlots - 1))[0]
-                if single_node_slots and len(single_node_slots['host']) == 0:
+                single_node_slots = cluster_slots.get((0, self.RedisClusterHashSlots - 1))[0]
+                if len(single_node_slots['host']) == 0:
                     single_node_slots['host'] = self.startup_nodes[0]['host']
                     single_node_slots['server_type'] = 'master'
-                    cluster_slots = {(0, self.RedisClusterHashSlots - 1): [single_node_slots]}
 
             # No need to decode response because StrictRedis should handle that for us...
             for min_slot, max_slot in cluster_slots:
