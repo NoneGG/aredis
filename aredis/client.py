@@ -18,7 +18,7 @@ from aredis.commands.sets import SetsCommandMixin, ClusterSetsCommandMixin
 from aredis.commands.sorted_set import SortedSetCommandMixin, ClusterSortedSetCommandMixin
 from aredis.commands.strings import StringsCommandMixin, ClusterStringsCommandMixin
 from aredis.commands.transaction import TransactionCommandMixin, ClusterTransactionCommandMixin
-from aredis.connection import UnixDomainSocketConnection
+from aredis.connection import UnixDomainSocketConnection, RedisSSLContext
 from aredis.exceptions import (
     ConnectionError, TimeoutError,
     RedisClusterException, MovedError,
@@ -135,12 +135,8 @@ class StrictRedis(*mixins):
                 })
 
                 if ssl:
-                    kwargs.update({
-                        'ssl_keyfile': ssl_keyfile,
-                        'ssl_certfile': ssl_certfile,
-                        'ssl_cert_reqs': ssl_cert_reqs,
-                        'ssl_ca_certs': ssl_ca_certs,
-                    })
+                    ssl_context = RedisSSLContext(ssl_keyfile, ssl_certfile, ssl_cert_reqs, ssl_ca_certs).get()
+                    kwargs['ssl_context'] = ssl_context
             connection_pool = ConnectionPool(**kwargs)
         self.connection_pool = connection_pool
         self._use_lua_lock = None
