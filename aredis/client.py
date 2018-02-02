@@ -108,7 +108,7 @@ class StrictRedis(*mixins):
                  ssl_keyfile=None, ssl_certfile=None,
                  ssl_cert_reqs=None, ssl_ca_certs=None,
                  max_connections=None, retry_on_timeout=False,
-                 *, loop=None):
+                 loop=None, **kwargs):
         if not connection_pool:
             kwargs = {
                 'db': db,
