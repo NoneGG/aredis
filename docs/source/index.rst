@@ -135,6 +135,13 @@ Experimental:
     pypy 3.5-v5.8.0 is tesed and with it code can run twice faster than before.
 
 
+API reference
+-------------
+Most API are described in `redis command reference<https://redis.io/commands>`_ what makes difference and those should be noticed are referred in doc specially.
+You can post a new issue / read redis command reference / read annotation of API (mainly about how to use them) if you have any problem about the API.
+Related issue are welcome.
+
+
 The Usage Guide
 ---------------
 
@@ -149,8 +156,6 @@ The Usage Guide
     scripting
     pipelines
     extra
-    api_reference
-
 
 The Community Guide
 -------------------
