@@ -1196,7 +1196,7 @@ class TestRedisCommands(object):
     async def test_zunionstore_fail_crossslot(self, r):
         await r.flushdb()
         await r.zadd('a', a1=1, a2=1, a3=1)
-        r.zadd('b', a1=2, a2=2, a3=2)
+        await r.zadd('b', a1=2, a2=2, a3=2)
         await r.zadd('c', a1=6, a3=5, a4=4)
         with pytest.raises(ResponseError) as excinfo:
             await r.zunionstore('d', ['a', 'b', 'c'])

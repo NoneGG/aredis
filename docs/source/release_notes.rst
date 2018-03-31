@@ -67,3 +67,11 @@ Release Notes
     * sync optimization of client list made by swilly22 from redis-py
     * add support for distributed lock using redis cluster
 
+1.1.2
+-----
+    * fix bug: redis command encoding bug
+    * optimization: sync change on acquring lock from redis-py
+    * fix bug: decrement connection count on connection disconnected
+    * fix bug: optimize code proceed single node slots
+    * fix bug: initiation error of aws cluster client caused by not appropiate function list used
+    * fix bug: use `ssl_context` instead of ssl_keyfile,ssl_certfile,ssl_cert_reqs,ssl_ca_certs in intialization of connection_pool
