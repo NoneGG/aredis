@@ -962,6 +962,21 @@ class TestRedisCommands(object):
         assert await r.zrange('a', 0, -1) == [b('a1'), b('a2'), b('a3')]
 
     @pytest.mark.asyncio
+    async def test_zaddoption(self, r):
+        await r.flushdb()
+        await r.zadd('a', a1=1)
+        assert int(await r.zscore('a', 'a1')) == 1
+        await r.zaddoption('a', 'NX', a1=2)
+        assert int(await r.zscore('a', 'a1')) == 1
+        assert await r.zcard('a') == 1
+        await r.zaddoption('a', 'XX', a2=1)
+        assert await r.zcard('a') == 1
+        await r.zaddoption('a', 'XX', a1=2)
+        assert int(await r.zscore('a', 'a1')) == 2
+        await r.zaddoption('a', 'NX', a2=1)
+        assert await r.zcard('a') == 2
+
+    @pytest.mark.asyncio
     async def test_zcard(self, r):
         await r.flushdb()
         await r.zadd('a', a1=1, a2=2, a3=3)

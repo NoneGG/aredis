@@ -7,6 +7,8 @@ from aredis.utils import (b, iteritems,
                           string_keys_to_dict,
                           int_or_none)
 
+VALID_ZADD_OPTIONS = {'XX', 'NX'}
+
 
 def float_or_none(response):
     if response is None:
@@ -65,6 +67,31 @@ class SortedSetCommandMixin:
         redis.zadd('my-key', 1.1, 'name1', 2.2, 'name2', name3=3.3, name4=4.4)
         """
         pieces = []
+        if args:
+            if len(args) % 2 != 0:
+                raise RedisError("ZADD requires an equal number of "
+                                 "values and scores")
+            pieces.extend(args)
+        for pair in iteritems(kwargs):
+            pieces.append(pair[1])
+            pieces.append(pair[0])
+        return await self.execute_command('ZADD', name, *pieces)
+
+    async def zaddoption(self, name, option=None, *args, **kwargs):
+        """
+        Differs from zadd in that you can set either 'XX' or 'NX' option as
+        described here: https://redis.io/commands/zadd. Only for Redis 3.0.2 or
+        later.
+
+        The following example would add four values to the 'my-key' key:
+        redis.zadd('my-key', 'XX', 1.1, 'name1', 2.2, 'name2', name3=3.3, name4=4.4)
+
+        """
+        if not option:
+            raise RedisError("ZADDOPTION must take an option")
+        if option not in VALID_ZADD_OPTIONS:
+            raise RedisError("ZADD only takes XX or NX option currently")
+        pieces = [option]
         if args:
             if len(args) % 2 != 0:
                 raise RedisError("ZADD requires an equal number of "
