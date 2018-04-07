@@ -85,16 +85,14 @@ class SortedSetCommandMixin:
         later.
 
         The following example would add four values to the 'my-key' key:
-        redis.zadd('my-key', 'XX', 1.1, 'name1', 2.2, 'name2', name3=3.3, name4=4.4)
-
+        redis.zaddoption('my-key', 'XX', 1.1, 'name1', 2.2, 'name2', name3=3.3, name4=4.4)
+        redis.zaddoption('my-key', 'NX CH', name1=2.2)
         """
-        option.strip()
         if not option:
             raise RedisError("ZADDOPTION must take options")
-        options = set(option.split(' '))
-        for option in options:
-            if option not in VALID_ZADD_OPTIONS:
-                raise RedisError("ZADD only takes XX, NX, CH, or INCR")
+        options = set(opt.upper() for opt in option.split())
+        if options - VALID_ZADD_OPTIONS:
+            raise RedisError("ZADD only takes XX, NX, CH, or INCR")
         if 'NX' in options and 'XX' in options:
             raise RedisError("ZADD only takes one of XX or NX")
         pieces = list(options)
@@ -109,8 +107,7 @@ class SortedSetCommandMixin:
             members.append(pair[0])
         if 'INCR' in options and len(members) != 2:
             raise RedisError("ZADD with INCR only takes one score-name pair")
-        pieces.extend(members)
-        return await self.execute_command('ZADD', name, *pieces)
+        return await self.execute_command('ZADD', name, *pieces, *members)
 
     async def zcard(self, name):
         "Return the number of elements in the sorted set ``name``"
