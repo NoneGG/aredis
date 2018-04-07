@@ -1,3 +1,4 @@
+import re
 from aredis.exceptions import RedisError
 from aredis.utils import (b, iteritems,
                           first_key,
@@ -6,6 +7,8 @@ from aredis.utils import (b, iteritems,
                           dict_merge,
                           string_keys_to_dict,
                           int_or_none)
+
+VALID_ZADD_OPTIONS = {'NX', 'XX', 'CH', 'INCR'}
 
 
 def float_or_none(response):
@@ -73,6 +76,40 @@ class SortedSetCommandMixin:
         for pair in iteritems(kwargs):
             pieces.append(pair[1])
             pieces.append(pair[0])
+        return await self.execute_command('ZADD', name, *pieces)
+
+    async def zaddoption(self, name, option=None, *args, **kwargs):
+        """
+        Differs from zadd in that you can set either 'XX' or 'NX' option as
+        described here: https://redis.io/commands/zadd. Only for Redis 3.0.2 or
+        later.
+
+        The following example would add four values to the 'my-key' key:
+        redis.zadd('my-key', 'XX', 1.1, 'name1', 2.2, 'name2', name3=3.3, name4=4.4)
+
+        """
+        option.strip()
+        if not option:
+            raise RedisError("ZADDOPTION must take options")
+        options = set(option.split(' '))
+        for option in options:
+            if option not in VALID_ZADD_OPTIONS:
+                raise RedisError("ZADD only takes XX, NX, CH, or INCR")
+        if 'NX' in options and 'XX' in options:
+            raise RedisError("ZADD only takes one of XX or NX")
+        pieces = list(options)
+        members = []
+        if args:
+            if len(args) % 2 != 0:
+                raise RedisError("ZADD requires an equal number of "
+                                 "values and scores")
+            members.extend(args)
+        for pair in iteritems(kwargs):
+            members.append(pair[1])
+            members.append(pair[0])
+        if 'INCR' in options and len(members) != 2:
+            raise RedisError("ZADD with INCR only takes one score-name pair")
+        pieces.extend(members)
         return await self.execute_command('ZADD', name, *pieces)
 
     async def zcard(self, name):

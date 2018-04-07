@@ -12,3 +12,5 @@ vagrant/.vagrant
 .python-version
 .cache/
 .vscode/
+*.iml
+.pytest_cache/
