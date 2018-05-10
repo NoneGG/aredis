@@ -5,6 +5,7 @@ import ssl
 import sys
 import typing
 import warnings
+import inspect
 from concurrent.futures import CancelledError
 from io import BytesIO
 
@@ -409,7 +410,10 @@ class BaseConnection:
         # is for pubsub channel/pattern resubscription
         for callback in self._connect_callbacks:
             task = callback(self)
-            if isinstance(task, typing.Awaitable):
+            # typing.Awaitable is not available in Python3.5
+            # so use inspect.isawaitable instead
+            # according to issue https://github.com/NoneGG/aredis/issues/77
+            if inspect.isawaitable(task):
                 await task
 
     async def _connect(self):

@@ -1,5 +1,6 @@
 import sys
 import typing
+import inspect
 from itertools import chain
 
 from aredis.client import (StrictRedisCluster, StrictRedis)
@@ -200,7 +201,10 @@ class BasePipeline(object):
                 if command_name in self.response_callbacks:
                     callback = self.response_callbacks[command_name]
                     r = callback(r, **options)
-                    if isinstance(response, typing.Awaitable):
+                    # typing.Awaitable is not available in Python3.5
+                    # so use inspect.isawaitable instead
+                    # according to issue https://github.com/NoneGG/aredis/issues/77
+                    if inspect.isawaitable(response):
                         r = await r
             data.append(r)
         return data
