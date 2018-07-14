@@ -111,7 +111,10 @@ class PubSub(object):
             return await command(*args)
         except CancelledError:
             # do not retry if coroutine is cancelled
-            connection.disconnect()
+            if await connection.can_read():
+                # disconnect if buffer is not empty in case of error
+                # when connection is reused
+                connection.disconnect()
             return None
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
