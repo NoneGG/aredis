@@ -122,13 +122,12 @@ application.
 
 There are three different strategies for reading messages.
 
-The examples above have been using `pubsub.get_message()`. Behind the scenes,
-`get_message()` uses the system's 'select' module to quickly poll the
-connection's socket. If there's data available to be read, `get_message()` will
+The examples above have been using `pubsub.get_message()`.
+If there's data available to be read, `get_message()` will
 read it, format the message and return it or pass it to a message handler. If
-there's no data to be read, `get_message()` will immediately return None. This
-makes it trivial to integrate into an existing event loop inside your
-application.
+there's no data to be read, `get_message()` will return None after the configured `timeout`
+(`timeout` should set to value larger than 0 or it will be ignore).
+This makes it trivial to integrate into an existing event loop inside your application.
 
 .. code-block:: python
 
