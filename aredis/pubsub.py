@@ -111,8 +111,7 @@ class PubSub(object):
             return await command(*args)
         except CancelledError:
             # do not retry if coroutine is cancelled
-            connection.disconnect()
-            return None
+            raise
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
