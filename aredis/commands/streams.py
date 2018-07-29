@@ -5,19 +5,21 @@ from aredis.utils import (dict_merge, pairs_to_dict,
 
 def stream_list(response):
     result = []
-    for r in response:
-        kv_pairs = r[1]
-        kv_dict = dict()
-        while len(kv_pairs) > 1:
-            kv_dict[kv_pairs.pop()] = kv_pairs.pop()
-        result.append((r[0], kv_dict))
+    if response:
+        for r in response:
+            kv_pairs = r[1]
+            kv_dict = dict()
+            while len(kv_pairs) > 1:
+                kv_dict[kv_pairs.pop()] = kv_pairs.pop()
+            result.append((r[0], kv_dict))
     return result
 
 
 def multi_stream_list(response):
     result = dict()
-    for r in response:
-        result[r[0]] = stream_list(r[1])
+    if response:
+        for r in response:
+            result[r[0]] = stream_list(r[1])
     return result
 
 
@@ -45,7 +47,7 @@ class StreamsCommandMixin:
         }
     )
 
-    async def xadd(self, name: str, options: dict,
+    async def xadd(self, name: str, entry: dict,
                    max_len=None, stream_id='*',
                    approximate=True) -> str:
         """
@@ -56,7 +58,7 @@ class StreamsCommandMixin:
         Time complexity: O(log(N)) with N being the number of items already into the stream.
 
         :param name: name of the stream
-        :param options: key-values to be appended to the stream
+        :param entry: key-values to be appended to the stream
         :param max_len: max length of the stream
         length will not be limited max_len is set to None
         notice: max_len should be int greater than 0,
@@ -84,7 +86,7 @@ class StreamsCommandMixin:
                 pieces.append('~')
             pieces.append(str(max_len))
         pieces.append(stream_id)
-        for kv in options.items():
+        for kv in entry.items():
             pieces.extend(list(kv))
         return await self.execute_command('XADD', name, *pieces)
 
@@ -94,7 +96,7 @@ class StreamsCommandMixin:
         """
         return await self.execute_command('XLEN', name)
 
-    async def xrange(self, name: str, start='-', finish='+', count=None) -> list:
+    async def xrange(self, name: str, start='-', end='+', count=None) -> list:
         """
         Read stream values within an interval.
 
@@ -106,14 +108,14 @@ class StreamsCommandMixin:
         :param name: name of the stream.
         :param start: first stream ID. defaults to '-',
                meaning the earliest available.
-        :param finish: last stream ID. defaults to '+',
+        :param end: last stream ID. defaults to '+',
                 meaning the latest available.
         :param count: if set, only return this many items, beginning with the
                earliest available.
         :return list of (stream_id, entry(k-v pair))
         """
 
-        pieces = [start, finish]
+        pieces = [start, end]
         if count is not None:
             if not isinstance(count, int) or count < 1:
                 raise RedisError("XRANGE count must be a positive integer")
@@ -121,7 +123,7 @@ class StreamsCommandMixin:
             pieces.append(str(count))
         return await self.execute_command('XRANGE', name, *pieces)
 
-    async def xrevrange(self, name: str, start='+', finish='-', count=None) -> list:
+    async def xrevrange(self, name: str, start='+', end='-', count=None) -> list:
         """
         Read stream values within an interval, in reverse order.
 
@@ -133,13 +135,13 @@ class StreamsCommandMixin:
         :param name: name of the stream
         :param start: first stream ID. defaults to '+',
                meaning the latest available.
-        :param finish: last stream ID. defaults to '-',
+        :param end: last stream ID. defaults to '-',
                 meaning the earliest available.
         :param count: if set, only return this many items, beginning with the
                latest available.
 
         """
-        pieces = [start, finish]
+        pieces = [start, end]
         if count is not None:
             if not isinstance(count, int) or count < 1:
                 raise RedisError("XREVRANGE count must be a positive integer")
@@ -234,7 +236,7 @@ class StreamsCommandMixin:
         return await self.execute_command('XREADGROUP', *pieces)
 
     async def xpending(self, name: str, group: str,
-                       start='-', finish='+', count=None, consumer=None) -> list:
+                       start='-', end='+', count=None, consumer=None) -> list:
         """
         Available since 5.0.0.
 
@@ -254,20 +256,20 @@ class StreamsCommandMixin:
         :param group: name of the consumer group
         :param start: first stream ID. defaults to '-',
                meaning the earliest available.
-        :param finish: last stream ID. defaults to '+',
+        :param end: last stream ID. defaults to '+',
                 meaning the latest available.
         :param count: int, number of entries
                 [NOTICE] only when count is set to int,
-                start & finish options will have effect
+                start & end options will have effect
                 and detail of pending entries will be returned
-        :consumer: str, consumer of the stream in the group
+        :param consumer: str, consumer of the stream in the group
                 [NOTICE] only when count is set to int,
                 this option can be appended to
                 query pending entries of given consumer
         """
         pieces = [name, group]
         if count is not None:
-            pieces.extend([start, finish, count])
+            pieces.extend([start, end, count])
             if consumer is not None:
                 pieces.append(str(consumer))
         # todo: may there be a parse function
@@ -424,17 +426,3 @@ class StreamsCommandMixin:
         :param consumer: name of the consumer
         """
         return await self.execute_command('XGROUP DELCONSUMER', name, group, consumer)
-
-
-if __name__ == '__main__':
-    import asyncio
-    from aredis import StrictRedis
-
-
-    class TestClient(StreamsCommandMixin, StrictRedis):
-        pass
-
-
-    loop = asyncio.get_event_loop()
-    r = TestClient(encoding='utf-8', decode_responses=True)
-    print(loop.run_until_complete(r.xgroup_set_id('mystream', 'mygroup', '0')))
