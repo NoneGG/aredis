@@ -3,7 +3,7 @@
 
 import pytest
 import aredis
-from aredis.exceptions import RedisError
+from aredis.exceptions import RedisError, ResponseError
 
 from tests.client.conftest import skip_if_server_version_lt
 
@@ -92,3 +92,98 @@ class TestStreams(object):
         entries = await r.xread(count=10, block=10, test_stream='2')
         assert entries and len(entries[b'test_stream']) == 7
         assert entries[b'test_stream'][0] == (b'3-0', {b'k1': b'v1', b'k2': b'1'})
+
+    @skip_if_server_version_lt('4.9.103')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_xreadgroup(self, r):
+        await r.flushdb()
+        for idx in range(1, 10):
+            await r.xadd('test_stream', {'k1': 'v1', 'k2': 1}, stream_id=idx)
+        # read from group does not exist
+        with pytest.raises(ResponseError) as exc:
+            await r.xreadgroup('wrong_group', 'lalala', count=10, block=10, test_stream='1')
+        assert await r.xgroup_create('test_stream', 'test_group', '0') is True
+        entries = await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        assert len(entries[b'test_stream']) == 5
+
+    @skip_if_server_version_lt('4.9.103')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_xgroup_create(self, r):
+        await r.flushdb()
+        for idx in range(1, 10):
+            await r.xadd('test_stream', {'k1': 'v1', 'k2': 1}, stream_id=idx)
+        with pytest.raises(ResponseError):
+            await r.xgroup_create('wrong_group', 'test_group')
+        res = await r.xgroup_create('test_stream', 'test_group')
+        assert res is True
+        group_info = await r.xinfo_groups('test_stream')
+        assert len(group_info) == 1
+        assert group_info[0][b'name'] == b'test_group'
+
+    @skip_if_server_version_lt('4.9.103')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_xgroup_set_id(self, r):
+        await r.flushdb()
+        for idx in range(1, 10):
+            await r.xadd('test_stream', {'k1': 'v1', 'k2': 1}, stream_id=idx)
+        assert await r.xgroup_create('test_stream', 'test_group', '$') is True
+        entries = await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        assert len(entries[b'test_stream']) == 0
+        group_info = await r.xinfo_groups('test_stream')
+        assert group_info[0][b'pending'] == 0
+        assert await r.xgroup_set_id('test_stream', 'test_group', '0') is True
+        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        group_info = await r.xinfo_groups('test_stream')
+        assert group_info[0][b'pending'] == 5
+
+    @skip_if_server_version_lt('4.9.103')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_xgroup_destroy(self, r):
+        await r.flushdb()
+        await r.xadd('test_stream', {'k1': 'v1', 'k2': 1})
+        assert await r.xgroup_create('test_stream', 'test_group') is True
+        group_info = await r.xinfo_groups('test_stream')
+        assert len(group_info) == 1
+        assert group_info[0][b'name'] == b'test_group'
+        assert await r.xgroup_destroy('test_stream', 'test_group') == 1
+        group_info = await r.xinfo_groups('test_stream')
+        assert len(group_info) == 0
+
+    @skip_if_server_version_lt('4.9.103')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_xgroup_del_consumer(self, r):
+        await r.flushdb()
+        await r.xadd('test_stream', {'k1': 'v1', 'k2': 1})
+        assert await r.xgroup_create('test_stream', 'test_group') is True
+        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        group_info = await r.xinfo_groups('test_stream')
+        assert len(group_info) == 1
+        assert group_info[0][b'consumers'] == 1
+        consumer_info = await r.xinfo_consumers('test_stream', 'test_group')
+        assert len(consumer_info) == 1
+        assert consumer_info[0][b'name'] == b'consumer1'
+        await r.xgroup_del_consumer('test_stream', 'test_group', 'consumer1')
+        consumer_info = await r.xinfo_consumers('test_stream', 'test_group')
+        assert len(consumer_info) == 0
+
+    @skip_if_server_version_lt('4.9.103')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_xpending(self, r):
+        await r.flushdb()
+        for idx in range(1, 10):
+            await r.xadd('test_stream', {'k1': 'v1', 'k2': 1}, stream_id=idx)
+        assert await r.xgroup_create('test_stream', 'test_group', '$') is True
+        entries = await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        assert len(entries[b'test_stream']) == 0
+        group_info = await r.xinfo_groups('test_stream')
+        assert group_info[0][b'pending'] == 0
+        assert len(await r.xpending('test_stream', 'test_group', count=10, consumer='consumer1')) == 0
+        assert await r.xgroup_set_id('test_stream', 'test_group', '0') is True
+        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        group_info = await r.xinfo_groups('test_stream')
+        assert group_info[0][b'pending'] == 5
+        assert len(await r.xpending('test_stream', 'test_group', count=10, consumer='consumer1')) == 5
+        xpending_entries_in_range = await r.xpending('test_stream', 'test_group', start='1', end='2', count=10,
+                                                     consumer='consumer1')
+        assert len(xpending_entries_in_range) == 1
+        assert xpending_entries_in_range[0] == [b'2-0', b'consumer1', 0, 1]
