@@ -4,12 +4,15 @@ Streams
 Stream is a new feature provided by redis.
 
 Since not all commands related are released officially(some commands are only referred in
-`stream introduction<https://redis.io/topics/streams-intro>`_), **you should make sure you know about
+`stream introduction <https://redis.io/topics/streams-intro>`_
+), **you should make sure you know about
 it before using the api, and the API may be changed in the future.**
 
-For now, according to `command manual<https://redis.io/commands#stream>`_, only `XADD`, `XRANGE`, `XREVRANGE`, `XLEN`,
+For now, according to `command manual <https://redis.io/commands#stream>`_
+, only `XADD`, `XRANGE`, `XREVRANGE`, `XLEN`,
 `XREAD`, `XREADGROUP`, `XPENDING` commands are released. But commands you can find in
-`stream introduction<https://redis.io/topics/streams-intro>`_ are all supported in aredis,
+`stream introduction <https://redis.io/topics/streams-intro>`_
+are all supported in aredis,
 you can try the new feature with it.
 
 
