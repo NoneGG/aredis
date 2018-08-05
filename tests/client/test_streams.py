@@ -186,4 +186,4 @@ class TestStreams(object):
         xpending_entries_in_range = await r.xpending('test_stream', 'test_group', start='1', end='2', count=10,
                                                      consumer='consumer1')
         assert len(xpending_entries_in_range) == 1
-        assert xpending_entries_in_range[0] == [b'2-0', b'consumer1', 0, 1]
+        assert xpending_entries_in_range[0][0] == b'2-0'

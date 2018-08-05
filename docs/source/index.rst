@@ -155,6 +155,7 @@ The Usage Guide
     sentinel
     scripting
     pipelines
+    streams
     extra
 
 The Community Guide
