@@ -75,3 +75,10 @@ Release Notes
     * fix bug: optimize code proceed single node slots
     * fix bug: initiation error of aws cluster client caused by not appropiate function list used
     * fix bug: use `ssl_context` instead of ssl_keyfile,ssl_certfile,ssl_cert_reqs,ssl_ca_certs in intialization of connection_pool
+
+1.1.3
+-----
+    * allow use of zadd options for zadd in sorted sets
+    * fix bug: use inspect.isawaitable instead of typing.Awaitable to judge if an object is awaitable
+    * fix bug: implicitly disconnection on cancelled error (#84)
+    * new: add support for `streams`(including commands not officially released, see `streams <http://aredis.readthedocs.io/en/latest/streams.html>`_ )
