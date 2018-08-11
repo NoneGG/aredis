@@ -42,7 +42,7 @@ You can use use read entries from a stream using `XRANGE` & `XREVRANGE`
     >>>         entries = await client.xrange(stream, start='1-0', end='10-0', count=count)
     >>>     return entries
 
-Actually, stream feature is inspired by `kafka<http://kafka.apache.org/>`_, a stream can be consumed by `consumer`
+Actually, stream feature is inspired by `kafka <http://kafka.apache.org/>`_, a stream can be consumed by `consumer`
 from a `group`, like code below:
 
 .. code-block:: python
