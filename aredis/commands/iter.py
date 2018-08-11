@@ -8,7 +8,7 @@ class IterCommandMixin:
     because yield can not be used in async function in Python3.6
     """
     RESPONSE_CALLBACKS = {}
-    
+
     async def scan_iter(self, match=None, count=None):
         """
         Make an iterator using the SCAN command so that the client doesn't
@@ -23,7 +23,6 @@ class IterCommandMixin:
             cursor, data = await self.scan(cursor=cursor, match=match, count=count)
             for item in data:
                 yield item
-
 
     async def sscan_iter(self, name, match=None, count=None):
         """
@@ -41,7 +40,6 @@ class IterCommandMixin:
             for item in data:
                 yield item
 
-
     async def hscan_iter(self, name, match=None, count=None):
         """
         Make an iterator using the HSCAN command so that the client doesn't
@@ -57,7 +55,6 @@ class IterCommandMixin:
                                             match=match, count=count)
             for item in data.items():
                 yield item
-
 
     async def zscan_iter(self, name, match=None, count=None,
                          score_cast_func=float):

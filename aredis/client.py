@@ -3,36 +3,27 @@ import sys
 from asyncio.futures import CancelledError
 
 from aredis.commands.cluster import ClusterCommandMixin
-from aredis.commands.connection import ConnectionCommandMixin, ClusterConnectionCommandMixin
+from aredis.commands.connection import ClusterConnectionCommandMixin, ConnectionCommandMixin
 from aredis.commands.extra import ExtraCommandMixin
 from aredis.commands.geo import GeoCommandMixin
-from aredis.commands.hash import HashCommandMixin, ClusterHashCommandMixin
-from aredis.commands.hyperlog import HyperLogCommandMixin, ClusterHyperLogCommandMixin
-from aredis.commands.keys import KeysCommandMixin, ClusterKeysCommandMixin
-from aredis.commands.lists import ListsCommandMixin, ClusterListsCommandMixin
-from aredis.commands.pubsub import PubSubCommandMixin, CLusterPubSubCommandMixin
-from aredis.commands.scripting import ScriptingCommandMixin, ClusterScriptingCommandMixin
-from aredis.commands.sentinel import SentinelCommandMixin, ClusterSentinelCommands
-from aredis.commands.server import ServerCommandMixin, ClusterServerCommandMixin
-from aredis.commands.sets import SetsCommandMixin, ClusterSetsCommandMixin
-from aredis.commands.sorted_set import SortedSetCommandMixin, ClusterSortedSetCommandMixin
-from aredis.commands.strings import StringsCommandMixin, ClusterStringsCommandMixin
-from aredis.commands.transaction import TransactionCommandMixin, ClusterTransactionCommandMixin
-from aredis.connection import UnixDomainSocketConnection, RedisSSLContext
-from aredis.exceptions import (
-    ConnectionError, TimeoutError,
-    RedisClusterException, MovedError,
-    AskError, BusyLoadingError,
-    TryAgainError, ClusterDownError,
-    ClusterError
-)
-from aredis.pool import (ConnectionPool,
-                         ClusterConnectionPool)
-from aredis.utils import (blocked_command,
-                          dict_merge,
-                          NodeFlag,
-                          first_key,
-                          clusterdown_wrapper)
+from aredis.commands.hash import ClusterHashCommandMixin, HashCommandMixin
+from aredis.commands.hyperlog import ClusterHyperLogCommandMixin, HyperLogCommandMixin
+from aredis.commands.keys import ClusterKeysCommandMixin, KeysCommandMixin
+from aredis.commands.lists import ClusterListsCommandMixin, ListsCommandMixin
+from aredis.commands.pubsub import CLusterPubSubCommandMixin, PubSubCommandMixin
+from aredis.commands.scripting import ClusterScriptingCommandMixin, ScriptingCommandMixin
+from aredis.commands.sentinel import ClusterSentinelCommands, SentinelCommandMixin
+from aredis.commands.server import ClusterServerCommandMixin, ServerCommandMixin
+from aredis.commands.sets import ClusterSetsCommandMixin, SetsCommandMixin
+from aredis.commands.sorted_set import ClusterSortedSetCommandMixin, SortedSetCommandMixin
+from aredis.commands.streams import StreamsCommandMixin
+from aredis.commands.strings import ClusterStringsCommandMixin, StringsCommandMixin
+from aredis.commands.transaction import ClusterTransactionCommandMixin, TransactionCommandMixin
+from aredis.connection import RedisSSLContext, UnixDomainSocketConnection
+from aredis.exceptions import (AskError, BusyLoadingError, ClusterDownError, ClusterError, ConnectionError, MovedError,
+                               RedisClusterException, TimeoutError, TryAgainError)
+from aredis.pool import (ClusterConnectionPool, ConnectionPool)
+from aredis.utils import (NodeFlag, blocked_command, clusterdown_wrapper, dict_merge, first_key)
 
 mixins = [
     ClusterCommandMixin, ConnectionCommandMixin, ExtraCommandMixin,
@@ -40,7 +31,7 @@ mixins = [
     KeysCommandMixin, ListsCommandMixin, PubSubCommandMixin,
     ScriptingCommandMixin, SentinelCommandMixin, ServerCommandMixin,
     SetsCommandMixin, SortedSetCommandMixin, StringsCommandMixin,
-    TransactionCommandMixin
+    TransactionCommandMixin, StreamsCommandMixin
 ]
 
 cluster_mixins = [
