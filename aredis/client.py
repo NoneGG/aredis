@@ -155,7 +155,7 @@ class StrictRedis(*mixins):
             connection.disconnect()
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
-            if not connection.retry_on_timeout and isinstance(e, TimeoutError):
+            if not (connection.retry_on_timeout and isinstance(e, TimeoutError)):
                 raise
             await connection.send_command(*args)
             return await self.parse_response(connection, command_name, **options)
@@ -450,7 +450,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             except (ConnectionError, TimeoutError) as e:
                 connection.disconnect()
 
-                if not connection.retry_on_timeout and isinstance(e, TimeoutError):
+                if not (connection.retry_on_timeout and isinstance(e, TimeoutError)):
                     raise
 
                 await connection.send_command(*args)
