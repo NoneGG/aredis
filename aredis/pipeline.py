@@ -114,7 +114,7 @@ class BasePipeline(object):
             return await self.parse_response(conn, command_name, **options)
         except (ConnectionError, TimeoutError) as e:
             conn.disconnect()
-            if not conn.retry_on_timeout and isinstance(e, TimeoutError):
+            if not (conn.retry_on_timeout and isinstance(e, TimeoutError)):
                 raise
             # if we're not already watching, we can safely retry the command
             try:
@@ -290,7 +290,7 @@ class BasePipeline(object):
             return await exec(conn, stack, raise_on_error)
         except (ConnectionError, TimeoutError) as e:
             conn.disconnect()
-            if not conn.retry_on_timeout and isinstance(e, TimeoutError):
+            if not (conn.retry_on_timeout and isinstance(e, TimeoutError)):
                 raise
             # if we were watching a variable, the watch is no longer valid
             # since this connection has died. raise a WatchError, which
