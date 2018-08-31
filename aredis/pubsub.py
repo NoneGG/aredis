@@ -24,14 +24,23 @@ class PubSub(object):
         self.connection_pool = connection_pool
         self.ignore_subscribe_messages = ignore_subscribe_messages
         self.connection = None
+
         # we need to know the encoding options for this connection in order
         # to lookup channel and pattern names for callback handlers.
-        conn = connection_pool.get_connection('pubsub')
+        # These attributes can only be instantiated once the event loop has
+        # been started, in order to ensure we are compatibly with any workflow:
+        # see self.init().
+        self.decode_responses = None
+        self.encoding = None
+        self.reset()
+
+    async def init(self):
+        conn = await self.connection_pool.get_connection('pubsub')
         try:
             self.encoding = conn.encoding
             self.decode_responses = conn.decode_responses
         finally:
-            connection_pool.release(conn)
+            self.connection_pool.release(conn)
         self.reset()
 
     def __del__(self):
@@ -60,6 +69,9 @@ class PubSub(object):
         # NOTE: for python3, we can't pass bytestrings as keyword arguments
         # so we need to decode channel/pattern names back to str strings
         # before passing them to [p]subscribe.
+        if self.decode_responses is None or self.encoding is None:
+            await self.init()
+
         if self.channels:
             channels = {}
             for k, v in iteritems(self.channels):
@@ -75,11 +87,14 @@ class PubSub(object):
                 patterns[k] = v
             await self.psubscribe(**patterns)
 
-    def encode(self, value):
+    async def encode(self, value):
         """
         Encode the value so that it's identical to what we'll
         read off the connection
         """
+        if self.decode_responses is None or self.encoding is None:
+            await self.init()
+
         if self.decode_responses and isinstance(value, bytes):
             value = value.decode(self.encoding)
         elif not self.decode_responses and isinstance(value, str):
@@ -99,7 +114,7 @@ class PubSub(object):
         # subscribed to one or more channels
 
         if self.connection is None:
-            self.connection = self.connection_pool.get_connection()
+            self.connection = await self.connection_pool.get_connection()
             # register a callback that re-subscribes to any channels we
             # were listening to when we were disconnected
             self.connection.register_connect_callback(self.on_connect)
@@ -153,10 +168,15 @@ class PubSub(object):
         """
         if args:
             args = list_or_args(args[0], args[1:])
+
+        # PEP-530
+        # new_patterns = {await self.encode(k): None for k in args}
         new_patterns = {}
-        new_patterns.update(dict.fromkeys(map(self.encode, args)))
+        for arg in args:
+            new_patterns[await self.encode(arg)] = None
+
         for pattern, handler in iteritems(kwargs):
-            new_patterns[self.encode(pattern)] = handler
+            new_patterns[await self.encode(pattern)] = handler
         ret_val = await self.execute_command('PSUBSCRIBE', *iterkeys(new_patterns))
         # update the patterns dict AFTER we send the command. we don't want to
         # subscribe twice to these patterns, once for the command and again
@@ -183,10 +203,15 @@ class PubSub(object):
         """
         if args:
             args = list_or_args(args[0], args[1:])
+
+        # PEP-530
+        # new_channels = {await self.encode(k): None for k in args}
         new_channels = {}
-        new_channels.update(dict.fromkeys(map(self.encode, args)))
+        for arg in args:
+            new_channels[await self.encode(arg)] = None
+
         for channel, handler in iteritems(kwargs):
-            new_channels[self.encode(channel)] = handler
+            new_channels[await self.encode(channel)] = handler
         ret_val = await self.execute_command('SUBSCRIBE', *iterkeys(new_channels))
         # update the channels dict AFTER we send the command. we don't want to
         # subscribe twice to these channels, once for the command and again
@@ -345,7 +370,7 @@ class ClusterPubSub(PubSub):
         await self.connection_pool.initialize()
 
         if self.connection is None:
-            self.connection = self.connection_pool.get_connection(
+            self.connection = await self.connection_pool.get_connection(
                 'pubsub',
                 channel=args[1],
             )

@@ -107,7 +107,7 @@ class BasePipeline(object):
         conn = self.connection
         # if this is the first call, we need a connection
         if not conn:
-            conn = self.connection_pool.get_connection()
+            conn = await self.connection_pool.get_connection()
             self.connection = conn
         try:
             await conn.send_command(*args)
@@ -281,7 +281,7 @@ class BasePipeline(object):
 
         conn = self.connection
         if not conn:
-            conn = self.connection_pool.get_connection()
+            conn = await self.connection_pool.get_connection()
             # assign to self.connection so reset() releases the connection
             # back to the pool after we're done
             self.connection = conn
@@ -448,7 +448,7 @@ class StrictClusterPipeline(StrictRedisCluster):
                 if len(node) > 0:
                     raise ClusterTransactionError("Keys in request don't hash to the same node")
             node = hashed_node
-        conn = self.connection_pool.get_connection_by_node(node)
+        conn = await self.connection_pool.get_connection_by_node(node)
         if self.watches:
             await self._watch(node, conn, self.watches)
         node_commands = NodeCommands(self.parse_response, conn, in_transaction=True)
@@ -507,7 +507,8 @@ class StrictClusterPipeline(StrictRedisCluster):
             # we can build a list of commands for each node.
             node_name = node['name']
             if node_name not in nodes:
-                nodes[node_name] = NodeCommands(self.parse_response, self.connection_pool.get_connection_by_node(node))
+                connection = await self.connection_pool.get_connection_by_node(node)
+                nodes[node_name] = NodeCommands(self.parse_response, connection)
 
             nodes[node_name].append(c)
 

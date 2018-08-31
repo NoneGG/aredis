@@ -148,7 +148,7 @@ class ConnectionPool(object):
         return cls(**kwargs)
 
     def __init__(self, connection_class=Connection, max_connections=None,
-                 **connection_kwargs):
+                 wait_for_connection=0, **connection_kwargs):
         """
         Create a connection pool. If max_connections is set, then this
         object raises redis.ConnectionError when the pool's limit is reached.
@@ -166,6 +166,7 @@ class ConnectionPool(object):
         self.connection_class = connection_class
         self.connection_kwargs = connection_kwargs
         self.max_connections = max_connections
+        self.wait_for_connection = wait_for_connection
         self.loop = self.connection_kwargs.get('loop')
 
         self.reset()
@@ -193,20 +194,27 @@ class ConnectionPool(object):
                 self.disconnect()
                 self.reset()
 
-    def get_connection(self, *args, **kwargs):
+    async def get_connection(self, *args, **kwargs):
         "Get a connection from the pool"
         self._checkpid()
         try:
             connection = self._available_connections.pop()
         except IndexError:
-            connection = self.make_connection()
+            connection = await self.make_connection()
         self._in_use_connections.add(connection)
         return connection
 
-    def make_connection(self):
+    async def make_connection(self):
         "Create a new connection"
-        if self._created_connections >= self.max_connections:
+        wait_for_connection = self.wait_for_connection
+        while self._created_connections >= self.max_connections:
+            if wait_for_connection > 0:
+                wait_for_connection -= 1
+                await asyncio.sleep(1)
+                continue
+
             raise ConnectionError("Too many connections")
+
         self._created_connections += 1
         return self.connection_class(**self.connection_kwargs)
 
@@ -323,7 +331,7 @@ class ClusterConnectionPool(ConnectionPool):
                 self.disconnect()
                 self.reset()
 
-    def get_connection(self, command_name, *keys, **options):
+    async def get_connection(self, command_name, *keys, **options):
         # Only pubsub command/connection should be allowed here
         if command_name != "pubsub":
             raise RedisClusterException("Only 'pubsub' commands can use get_connection()")
@@ -331,7 +339,7 @@ class ClusterConnectionPool(ConnectionPool):
         channel = options.pop('channel', None)
 
         if not channel:
-            return self.get_random_connection()
+            return await self.get_random_connection()
 
         slot = self.nodes.keyslot(channel)
         node = self.get_master_node_by_slot(slot)
@@ -341,7 +349,7 @@ class ClusterConnectionPool(ConnectionPool):
         try:
             connection = self._available_connections.get(node["name"], []).pop()
         except IndexError:
-            connection = self.make_connection(node)
+            connection = await self.make_connection(node)
 
         if node['name'] not in self._in_use_connections:
             self._in_use_connections[node['name']] = set()
@@ -350,11 +358,17 @@ class ClusterConnectionPool(ConnectionPool):
 
         return connection
 
-    def make_connection(self, node):
+    async def make_connection(self, node):
         """
         Create a new connection
         """
-        if self.count_all_num_connections(node) >= self.max_connections:
+        wait_for_connection = self.wait_for_connection
+        while self.count_all_num_connections(node) >= self.max_connections:
+            if wait_for_connection > 0:
+                wait_for_connection -= 1
+                await asyncio.sleep(1)
+                continue
+
             if self.max_connections_per_node:
                 raise RedisClusterException("Too many connection ({0}) for node: {1}"
                                             .format(self.count_all_num_connections(node),
@@ -417,9 +431,9 @@ class ClusterConnectionPool(ConnectionPool):
         if self.max_connections_per_node:
             return self._created_connections_per_node.get(node['name'], 0)
 
-        return sum([i for i in self._created_connections_per_node.values()])
+        return sum(self._created_connections_per_node.values())
 
-    def get_random_connection(self):
+    async def get_random_connection(self):
         """
         Open new connection to random redis server.
         """
@@ -430,33 +444,33 @@ class ClusterConnectionPool(ConnectionPool):
             if conn_list:
                 return conn_list.pop()
         for node in self.nodes.random_startup_node_iter():
-            connection = self.get_connection_by_node(node)
+            connection = await self.get_connection_by_node(node)
 
             if connection:
                 return connection
 
         raise Exception("Cant reach a single startup node.")
 
-    def get_connection_by_key(self, key):
+    async def get_connection_by_key(self, key):
         """
         """
         if not key:
             raise RedisClusterException("No way to dispatch this command to Redis Cluster.")
 
-        return self.get_connection_by_slot(self.nodes.keyslot(key))
+        return await self.get_connection_by_slot(self.nodes.keyslot(key))
 
-    def get_connection_by_slot(self, slot):
+    async def get_connection_by_slot(self, slot):
         """
         Determine what server a specific slot belongs to and return a redis object that is connected
         """
         self._checkpid()
 
         try:
-            return self.get_connection_by_node(self.get_node_by_slot(slot))
+            return await self.get_connection_by_node(self.get_node_by_slot(slot))
         except KeyError:
-            return self.get_random_connection()
+            return await self.get_random_connection()
 
-    def get_connection_by_node(self, node):
+    async def get_connection_by_node(self, node):
         """
         get a connection by node
         """
@@ -467,7 +481,7 @@ class ClusterConnectionPool(ConnectionPool):
             # Try to get connection from existing pool
             connection = self._available_connections.get(node["name"], []).pop()
         except IndexError:
-            connection = self.make_connection(node)
+            connection = await self.make_connection(node)
 
         self._in_use_connections.setdefault(node["name"], set()).add(connection)
 

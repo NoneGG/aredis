@@ -3,6 +3,7 @@
 
 # python std lib
 from __future__ import with_statement
+import asyncio
 import os
 import re
 import time
@@ -58,13 +59,13 @@ class TestConnectionPool(object):
         """
         pool = await self.get_pool()
         pool._in_use_connections = {}
-        pool.get_connection("pubsub", channel="foobar")
+        await pool.get_connection("pubsub", channel="foobar")
 
     @pytest.mark.asyncio()
     async def test_connection_creation(self):
         connection_kwargs = {'foo': 'bar', 'biz': 'baz'}
         pool = await self.get_pool(connection_kwargs=connection_kwargs)
-        connection = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        connection = await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         assert isinstance(connection, DummyConnection)
         for key in connection_kwargs:
             assert connection.kwargs[key] == connection_kwargs[key]
@@ -72,27 +73,27 @@ class TestConnectionPool(object):
     @pytest.mark.asyncio()
     async def test_multiple_connections(self):
         pool = await self.get_pool()
-        c1 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
-        c2 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
+        c1 = await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        c2 = await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         assert c1 != c2
 
     @pytest.mark.asyncio()
     async def test_max_connections(self):
         pool = await self.get_pool(max_connections=2)
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         with pytest.raises(RedisClusterException):
-            pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+            await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
     @pytest.mark.asyncio()
     async def test_max_connections_per_node(self):
         pool = await self.get_pool(max_connections=2, max_connections_per_node=True)
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         with pytest.raises(RedisClusterException):
-            pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+            await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
     @pytest.mark.asyncio()
     async def test_max_connections_default_setting(self):
@@ -102,9 +103,9 @@ class TestConnectionPool(object):
     @pytest.mark.asyncio()
     async def test_reuse_previously_released_connection(self):
         pool = await self.get_pool()
-        c1 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        c1 = await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         pool.release(c1)
-        c2 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        c2 = await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         assert c1 == c2
 
     @pytest.mark.asyncio()
@@ -128,15 +129,15 @@ class TestConnectionPool(object):
 
         # Patch the call that is made inside the method to allow control of the returned connection object
         with patch.object(ClusterConnectionPool, 'get_connection_by_slot', autospec=True) as pool_mock:
-            def side_effect(self, *args, **kwargs):
+            async def side_effect(self, *args, **kwargs):
                 return DummyConnection(port=1337)
             pool_mock.side_effect = side_effect
 
-            connection = pool.get_connection_by_key("foo")
+            connection = await pool.get_connection_by_key("foo")
             assert connection.port == 1337
 
         with pytest.raises(RedisClusterException) as ex:
-            pool.get_connection_by_key(None)
+            await pool.get_connection_by_key(None)
         assert str(ex.value).startswith("No way to dispatch this command to Redis Cluster."), True
 
     @pytest.mark.asyncio()
@@ -148,18 +149,25 @@ class TestConnectionPool(object):
 
         # Patch the call that is made inside the method to allow control of the returned connection object
         with patch.object(ClusterConnectionPool, 'get_connection_by_node', autospec=True) as pool_mock:
-            def side_effect(self, *args, **kwargs):
+            async def side_effect(self, *args, **kwargs):
                 return DummyConnection(port=1337)
             pool_mock.side_effect = side_effect
 
-            connection = pool.get_connection_by_slot(12182)
+            connection = await pool.get_connection_by_slot(12182)
             assert connection.port == 1337
 
-        m = Mock()
+        class AsyncMock(Mock):
+            def __await__(self):
+                future = asyncio.Future(loop=asyncio.get_event_loop())
+                future.set_result(self)
+                result = yield from future
+                return result
+
+        m = AsyncMock()
         pool.get_random_connection = m
 
         # If None value is provided then a random node should be tried/returned
-        pool.get_connection_by_slot(None)
+        await pool.get_connection_by_slot(None)
         m.assert_called_once_with()
 
     @pytest.mark.asyncio()
@@ -171,7 +179,7 @@ class TestConnectionPool(object):
         pool = await self.get_pool()
 
         with pytest.raises(RedisClusterException) as ex:
-            pool.get_connection("GET")
+            await pool.get_connection("GET")
         assert str(ex.value).startswith("Only 'pubsub' commands can use get_connection()")
 
     @pytest.mark.asyncio()
@@ -210,10 +218,10 @@ class TestReadOnlyConnectionPool(object):
     @pytest.mark.asyncio()
     async def test_max_connections(self):
         pool = await self.get_pool(max_connections=2)
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
-        pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+        await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         with pytest.raises(RedisClusterException):
-            pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
+            await pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
     @pytest.mark.asyncio()
     async def test_get_node_by_slot(self):
