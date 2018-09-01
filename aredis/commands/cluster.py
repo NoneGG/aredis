@@ -62,7 +62,7 @@ def parse_cluster_nodes(resp, **options):
         node = {
             'id': self_id,
             'host': host or current_host,
-            'port': int(port),
+            'port': int(port.split('@')[0]),
             'flags': tuple(flags.split(',')),
             'master': master_id if master_id != '-' else None,
             'ping-sent': int(ping_sent),
