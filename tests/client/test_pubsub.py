@@ -1,21 +1,30 @@
 from __future__ import with_statement
-import pytest
+
+import asyncio
 import pickle
 import time
 
+import pytest
+
 import aredis
-from aredis.utils import b
 from aredis.exceptions import ConnectionError
+from aredis.utils import b
 from .conftest import skip_if_server_version_lt
 
 
-async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False):
-    try:
-        return await pubsub.get_message(
+async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False):
+    now = time.time()
+    timeout = now + timeout
+    while now < timeout:
+        message = await pubsub.get_message(
             ignore_subscribe_messages=ignore_subscribe_messages,
-            timeout=timeout)
-    except TimeoutError as e:
-        return None
+            timeout=0.01
+        )
+        if message is not None:
+            return message
+        await asyncio.sleep(0.01)
+        now = time.time()
+    return None
 
 
 def make_message(type, channel, data, pattern=None):
@@ -179,43 +188,42 @@ class TestPubSubSubscribeUnsubscribe(object):
         kwargs = make_subscribe_test_data(r.pubsub(), 'pattern')
         await self._test_subscribed_property(**kwargs)
 
-    # @pytest.mark.asyncio(forbid_global_loop=True)
-    # async def test_ignore_all_subscribe_messages(self, r):
-    #     p = r.pubsub(ignore_subscribe_messages=True)
-    #
-    #     checks = (
-    #         (p.subscribe, 'foo'),
-    #         (p.unsubscribe, 'foo'),
-    #         (p.psubscribe, 'f*'),
-    #         (p.punsubscribe, 'f*'),
-    #     )
-    #
-    #     assert p.subscribed is False
-    #     for func, channel in checks:
-    #         assert await func(channel) is None
-    #         assert p.subscribed is True
-    #         assert await wait_for_message(p) is None
-    #     assert p.subscribed is False
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_ignore_all_subscribe_messages(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
 
-    # problem: pass in pycharm, but hang up in terminal
-    # @pytest.mark.asyncio(forbid_global_loop=True)
-    # async def test_ignore_individual_subscribe_messages(self, r):
-    #     p = r.pubsub()
-    #
-    #     checks = (
-    #         (p.subscribe, 'foo'),
-    #         (p.unsubscribe, 'foo'),
-    #         (p.psubscribe, 'f*'),
-    #         (p.punsubscribe, 'f*'),
-    #     )
-    #
-    #     assert p.subscribed is False
-    #     for func, channel in checks:
-    #         assert await func(channel) is None
-    #         assert p.subscribed is True
-    #         message = await wait_for_message(p, ignore_subscribe_messages=True)
-    #         assert message is None
-    #     assert p.subscribed is False
+        checks = (
+            (p.subscribe, 'foo'),
+            (p.unsubscribe, 'foo'),
+            (p.psubscribe, 'f*'),
+            (p.punsubscribe, 'f*'),
+        )
+
+        assert p.subscribed is False
+        for func, channel in checks:
+            assert await func(channel) is None
+            assert p.subscribed is True
+            assert await wait_for_message(p) is None
+        assert p.subscribed is False
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_ignore_individual_subscribe_messages(self, r):
+        p = r.pubsub()
+
+        checks = (
+            (p.subscribe, 'foo'),
+            (p.unsubscribe, 'foo'),
+            (p.psubscribe, 'f*'),
+            (p.punsubscribe, 'f*'),
+        )
+
+        assert p.subscribed is False
+        for func, channel in checks:
+            assert await func(channel) is None
+            assert p.subscribed is True
+            message = await wait_for_message(p, ignore_subscribe_messages=True)
+            assert message is None
+        assert p.subscribed is False
 
 
 class TestPubSubMessages(object):
@@ -297,45 +305,48 @@ class TestPubSubMessages(object):
         assert message1 != message2
         await p.unsubscribe('foo')
 
-    # @pytest.mark.asyncio(forbid_global_loop=True)
-    # async def test_channel_message_handler(self, r):
-    #     p = r.pubsub(ignore_subscribe_messages=True)
-    #     await p.subscribe(foo=self.message_handler)
-    #     assert await r.publish('foo', 'test message')
-    #     assert await wait_for_message(p) is None
-    #     assert self.message == make_message('message', 'foo', 'test message')
-    #     await p.unsubscribe('foo')
-    #
-    # @pytest.mark.asyncio(forbid_global_loop=True)
-    # async def test_pattern_message_handler(self, r):
-    #     p = r.pubsub(ignore_subscribe_messages=True)
-    #     await p.psubscribe(**{'f*': self.message_handler})
-    #     assert await r.publish('foo', 'test message')
-    #     assert await wait_for_message(p) is None
-    #     assert self.message == make_message('pmessage', 'foo', 'test message',
-    #                                         pattern='f*')
-    #     await p.unsubscribe('foo')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_channel_message_handler(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        await p.subscribe(foo=self.message_handler)
+        assert await r.publish('foo', 'test message')
+        assert await wait_for_message(p) is None
+        assert self.message == make_message('message', 'foo', 'test message')
+        await p.unsubscribe('foo')
 
-    # @pytest.mark.asyncio(forbid_global_loop=True)
-    # async def test_unicode_channel_message_handler(self, r):
-    #     p = r.pubsub(ignore_subscribe_messages=True)
-    #     channel = 'uni' + chr(56) + 'code'
-    #     channels = {channel: self.message_handler}
-    #     await p.subscribe(**channels)
-    #     assert await r.publish(channel, 'test message') == 1
-    #     assert await wait_for_message(p) is None
-    #     assert self.message == make_message('message', channel, 'test message')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_pattern_message_handler(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        await p.psubscribe(**{'f*': self.message_handler})
+        assert await r.publish('foo', 'test message')
+        assert await wait_for_message(p) is None
+        assert self.message == make_message('pmessage', 'foo', 'test message',
+                                            pattern='f*')
+        await p.unsubscribe('foo')
 
-    # @pytest.mark.asyncio(forbid_global_loop=True)
-    # async def test_unicode_pattern_message_handler(self, r):
-    #     p = r.pubsub(ignore_subscribe_messages=True)
-    #     pattern = 'uni' + chr(56) + '*'
-    #     channel = 'uni' + chr(56) + 'code'
-    #     await p.psubscribe(**{pattern: self.message_handler})
-    #     assert await r.publish(channel, 'test message') == 1
-    #     assert await wait_for_message(p) is None
-    #     assert self.message == make_message('pmessage', channel,
-    #                                         'test message', pattern=pattern)
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_unicode_channel_message_handler(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        channel = 'uni' + chr(56) + 'code'
+        channels = {channel: self.message_handler}
+        await p.subscribe(**channels)
+        assert await r.publish(channel, 'test message') == 1
+        assert await wait_for_message(p) is None
+        assert self.message == make_message('message', channel, 'test message')
+        await p.unsubscribe(channel)
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_unicode_pattern_message_handler(self, r):
+        p = r.pubsub(ignore_subscribe_messages=True)
+        pattern = 'uni' + chr(56) + '*'
+        channel = 'uni' + chr(56) + 'code'
+        await p.psubscribe(**{pattern: self.message_handler})
+        assert await r.publish(channel, 'test message') == 1
+        assert await wait_for_message(p) is None
+        assert self.message == make_message('pmessage', channel,
+                                            'test message', pattern=pattern)
+        await p.unsubscribe(channel)
+        await p.punsubscribe(pattern)
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_get_message_without_subscribe(self, r):
