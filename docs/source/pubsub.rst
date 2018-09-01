@@ -135,7 +135,7 @@ This makes it trivial to integrate into an existing event loop inside your appli
     >>>     message = await p.get_message()
     >>>     if message:
     >>>         # do something with the message
-    >>>     asyncio.sleep(0.001)  # be nice to the system :)
+    >>>     await asyncio.sleep(0.001)  # be nice to the system :)
 
 Older versions of aredis only read messages with `pubsub.listen()`. listen()
 is a generator that blocks until a message is available. If your application

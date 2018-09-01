@@ -132,8 +132,7 @@ class NodeManager(object):
 
             # If there's only one server in the cluster, its ``host`` is ''
             # Fix it to the host in startup_nodes
-            if (len(cluster_slots) == 1
-                and len(self.startup_nodes) == 1):
+            if len(cluster_slots) == 1 and len(self.startup_nodes) == 1:
                 single_node_slots = cluster_slots.get((0, self.RedisClusterHashSlots - 1))[0]
                 if len(single_node_slots['host']) == 0:
                     single_node_slots['host'] = self.startup_nodes[0]['host']

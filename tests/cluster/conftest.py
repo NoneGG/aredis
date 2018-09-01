@@ -86,7 +86,9 @@ def o(request, *args, **kwargs):
     """
     Create a StrictRedisCluster instance with decode_responses set to True.
     """
-    return _get_client(cls=StrictRedisCluster, **kwargs)
+    params = {'decode_responses': True}
+    params.update(kwargs)
+    return _get_client(cls=StrictRedisCluster, **params)
 
 
 @pytest.fixture()
