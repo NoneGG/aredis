@@ -1,5 +1,4 @@
-uvloop
-hiredis
+mock
 pytest
 pytest-asyncio
-mock
+uvloop
