@@ -118,7 +118,7 @@ class DummyConnection(object):
 #     assert not c.connection_pool.nodes.cluster_require_full_coverage.called
 #
 #
-# @pytest.mark.asyncio()
+# @pytest.mark.asyncio
 # async def test_blocked_commands(r):
 #     """
 #     These commands should be blocked and raise RedisClusterException
@@ -137,7 +137,7 @@ class DummyConnection(object):
 #         else:
 #             raise AssertionError("'RedisClusterException' not raised for method : {0}".format(command))
 #
-# @pytest.mark.asyncio()
+# @pytest.mark.asyncio
 # async def test_blocked_transaction(r):
 #     """
 #     Method transaction is blocked/NYI and should raise exception on use
@@ -147,7 +147,7 @@ class DummyConnection(object):
 #     assert str(ex.value).startswith("method StrictRedisCluster.transaction() is not implemented"), str(ex.value)
 #
 #
-# @pytest.mark.asyncio()
+# @pytest.mark.asyncio
 # async def test_cluster_of_one_instance():
 #     """
 #     Test a cluster that starts with only one redis server and ends up with
@@ -203,7 +203,7 @@ class DummyConnection(object):
 #             await rc.set('bar', 'foo')
 #
 #
-# @pytest.mark.asyncio()
+# @pytest.mark.asyncio
 # async def test_execute_command_errors(r):
 #     """
 #     If no command is given to `_determine_nodes` then exception
@@ -220,7 +220,7 @@ class DummyConnection(object):
 #     assert str(ex.value).startswith("No way to dispatch this command to Redis Cluster. Missing key.")
 #
 #
-# @pytest.mark.asyncio()
+# @pytest.mark.asyncio
 # async def test_refresh_table_asap(monkeypatch):
 #     """
 #     If this variable is set externally, initialize() should be called.
@@ -248,7 +248,7 @@ class DummyConnection(object):
 #         if node_name.endswith(port):
 #             return node_data['host']
 #
-# @pytest.mark.asyncio()
+# @pytest.mark.asyncio
 # async def test_ask_redirection():
 #     """
 #     Test that the server handles ASK response.
@@ -283,7 +283,7 @@ class DummyConnection(object):
 #         parse_response.side_effect = ask_redirect_effect
 #         assert await r.set("foo", "bar") == "MOCK_OK"
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_pipeline_ask_redirection():
     """
     Test that the server handles ASK response when used in pipeline.
@@ -323,7 +323,7 @@ async def test_pipeline_ask_redirection():
         await p.set("foo", "bar")
         assert await p.execute() == ["MOCK_OK"]
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_moved_redirection():
     """
     Test that the client handles MOVED response.
@@ -340,7 +340,7 @@ async def test_moved_redirection():
     assert await r0.set("foo", "bar")
     assert await r2.get('foo') == b'bar'
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_moved_redirection_pipeline(monkeypatch):
     """
     Test that the server handles MOVED response when used in pipeline.
@@ -365,7 +365,7 @@ async def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj
     """
     # we assume this key is set on 127.0.0.1:7000(7003)
     await sr.set('foo16706', 'foo')
-    asyncio.sleep(1)
+    await asyncio.sleep(1)
 
     with patch.object(connection_pool_cls, 'get_node_by_slot') as return_slave_mock:
         return_slave_mock.return_value = {
@@ -382,7 +382,7 @@ async def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj
             assert return_master_mock.call_count == 1
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_moved_redirection_on_slave_with_default_client(sr):
     """
     Test that the client is redirected normally with default
@@ -395,7 +395,7 @@ async def test_moved_redirection_on_slave_with_default_client(sr):
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_moved_redirection_on_slave_with_readonly_mode_client(sr):
     """
     Ditto with READONLY mode.
@@ -407,7 +407,7 @@ async def test_moved_redirection_on_slave_with_readonly_mode_client(sr):
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_access_correct_slave_with_readonly_mode_client(sr):
     """
     Test that the client can get value normally with readonly mode
@@ -416,7 +416,7 @@ async def test_access_correct_slave_with_readonly_mode_client(sr):
 
     # we assume this key is set on 127.0.0.1:7000(7003)
     await sr.set('foo16706', 'foo')
-    assert asyncio.sleep(1)
+    await asyncio.sleep(1)
 
     with patch.object(ClusterConnectionPool, 'get_node_by_slot') as return_slave_mock:
         return_slave_mock.return_value = {
@@ -433,4 +433,5 @@ async def test_access_correct_slave_with_readonly_mode_client(sr):
                 return_value=master_value) as return_master_mock:
             readonly_client = StrictRedisCluster(host="127.0.0.1", port=7000, readonly=True)
             assert b('foo') == await readonly_client.get('foo16706')
+            assert return_slave_mock.call_count == 1
             assert return_master_mock.call_count == 0

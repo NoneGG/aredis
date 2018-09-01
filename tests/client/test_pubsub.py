@@ -10,16 +10,12 @@ from .conftest import skip_if_server_version_lt
 
 
 async def wait_for_message(pubsub, timeout=0.1, ignore_subscribe_messages=False):
-    now = time.time()
-    timeout = now + timeout
-    while now < timeout:
-        message = await pubsub.get_message(
-            ignore_subscribe_messages=ignore_subscribe_messages)
-        if message is not None:
-            return message
-        time.sleep(0.01)
-        now = time.time()
-    return None
+    try:
+        return await pubsub.get_message(
+            ignore_subscribe_messages=ignore_subscribe_messages,
+            timeout=timeout)
+    except TimeoutError as e:
+        return None
 
 
 def make_message(type, channel, data, pattern=None):

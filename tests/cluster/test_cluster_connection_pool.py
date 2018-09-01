@@ -222,10 +222,10 @@ class TestReadOnlyConnectionPool(object):
         """
         pool = await self.get_pool(connection_kwargs={})
 
-        expected_ports = {7000, 7003}
+        expected_ports = set(range(7000, 7006))
         actual_ports = set()
-        for _ in range(0, 100):
-            node = pool.get_node_by_slot(0)
+        for i in range(0, 16383):
+            node = pool.get_node_by_slot(i)
             actual_ports.add(node['port'])
         assert actual_ports == expected_ports
 
