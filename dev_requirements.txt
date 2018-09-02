@@ -1,4 +1,3 @@
-mock
-pytest
-pytest-asyncio
+-r test_requirements.txt
+hiredis
 uvloop
