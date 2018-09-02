@@ -43,10 +43,10 @@ cluster_mixins = [
 ]
 
 if sys.version_info[:2] >= (3, 6):
-    from aredis.commands.iter import IterCommandMixin
+    from aredis.commands.iter import IterCommandMixin, ClusterIterCommandMixin
 
     mixins.append(IterCommandMixin)
-    cluster_mixins.append(IterCommandMixin)
+    cluster_mixins.append(ClusterIterCommandMixin)
 
 
 class StrictRedis(*mixins):
@@ -361,7 +361,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
         node = self.determine_node(*args, **kwargs)
         if node:
-            return await self._execute_command_on_nodes(node, *args, **kwargs)
+            return await self.execute_command_on_nodes(node, *args, **kwargs)
 
         # If set externally we must update it before calling any commands
         if self.refresh_table_asap:
@@ -433,7 +433,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
         raise ClusterError('TTL exhausted.')
 
-    async def _execute_command_on_nodes(self, nodes, *args, **kwargs):
+    async def execute_command_on_nodes(self, nodes, *args, **kwargs):
         command = args[0]
         res = {}
 

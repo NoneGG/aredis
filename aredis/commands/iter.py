@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 
 
 class IterCommandMixin:
@@ -75,3 +76,23 @@ class IterCommandMixin:
                                             score_cast_func=score_cast_func)
             for item in data:
                 yield item
+
+
+class ClusterIterCommandMixin(IterCommandMixin):
+
+    async def scan_iter(self, match=None, count=None):
+        nodes = await self.cluster_nodes()
+        cursors = dict()
+        for node in nodes:
+            if 'master' in node['flags']:
+                node_name = '{}:{}'.format(node['host'], node['port'])
+                cursor = cursors.get(node_name, '0')
+                pieces = [cursor]
+                if match is not None:
+                    pieces.extend(['MATCH', match])
+                if count is not None:
+                    pieces.extend(['COUNT', count])
+                response = await self.execute_command_on_nodes([node], 'SCAN', *pieces)
+                cursors[node_name], data = list(response.values())[0]
+                for item in data:
+                    yield item
