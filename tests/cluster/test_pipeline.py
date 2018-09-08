@@ -19,8 +19,9 @@ class TestPipeline(object):
     """
     """
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_pipeline(self, r):
+        await r.flushdb()
         async with await r.pipeline() as pipe:
             await (await (await (await pipe.set('a', 'a1')).get('a')).zadd('z', z1=1)).zadd('z', z2=4)
             await (await pipe.zincrby('z', 'z1')).zrange('z', 0, 5, withscores=True)
@@ -33,8 +34,9 @@ class TestPipeline(object):
                 [(b('z1'), 2.0), (b('z2'), 4)],
             ]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_pipeline_length(self, r):
+        await r.flushdb()
         async with await r.pipeline() as pipe:
             # Initially empty.
             assert len(pipe) == 0
@@ -50,17 +52,19 @@ class TestPipeline(object):
             assert len(pipe) == 0
             assert not pipe
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_pipeline_no_transaction(self, r):
+        await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
             await (await (await pipe.set('a', 'a1')).set('b', 'b1')).set('c', 'c1')
             assert await pipe.execute() == [True, True, True]
-            assert r['a'] == b('a1')
-            assert r['b'] == b('b1')
-            assert r['c'] == b('c1')
+            assert await r.get('a') == b('a1')
+            assert await r.get('b') == b('b1')
+            assert await r.get('c') == b('c1')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_pipeline_eval(self, r):
+        await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.eval("return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}", 2, "A{foo}", "B{foo}", "first", "second")
             res = (await pipe.execute())[0]
@@ -69,10 +73,11 @@ class TestPipeline(object):
             assert res[2] == b('first')
             assert res[3] == b('second')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_pipeline_no_transaction_watch(self, r):
-        r['a'] = 0
+        await r.flushdb()
+        await r.set('a', 0)
 
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.watch('a')
@@ -82,16 +87,17 @@ class TestPipeline(object):
             await pipe.set('a', int(a) + 1)
             assert await pipe.execute() == [True]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_pipeline_no_transaction_watch_failure(self, r):
-        r['a'] = 0
+        await r.flushdb()
+        await r.set('a', 0)
 
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.watch('a')
             a = await pipe.get('a')
 
-            r['a'] = 'bad'
+            await r.set('a', 'bad')
 
             await pipe.multi()
             await pipe.set('a', int(a) + 1)
@@ -99,53 +105,60 @@ class TestPipeline(object):
             with pytest.raises(WatchError):
                 await pipe.execute()
 
-            assert r['a'] == b('bad')
+            assert await r.get('a') == b('bad')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_exec_error_in_response(self, r):
         """
         an invalid pipeline command at exec time adds the exception instance
         to the list of returned values
         """
-        r['c'] = 'a'
-        with r.pipeline() as pipe:
+        await r.flushdb()
+        await r.set('c', 'a')
+        async with await r.pipeline() as pipe:
             await (await (await (await pipe.set('a', 1)).set('b', 2)).lpush('c', 3)).set('d', 4)
             result = await pipe.execute(raise_on_error=False)
 
             assert result[0]
-            assert r['a'] == b('1')
+            assert await r.get('a') == b('1')
             assert result[1]
-            assert r['b'] == b('2')
+            assert await r.get('b') == b('2')
 
             # we can't lpush to a key that's a string value, so this should
             # be a ResponseError exception
             assert isinstance(result[2], ResponseError)
-            assert r['c'] == b('a')
+            assert await r.get('c') == b('a')
 
             # since this isn't a transaction, the other commands after the
             # error are still executed
             assert result[3]
-            assert r['d'] == b('4')
+            assert await r.get('d') == b('4')
 
             # make sure the pipe was restored to a working state
-            assert await pipe.set('z', 'zzz').execute() == [True]
-            assert r['z'] == b('zzz')
+            await pipe.set('z', 'zzz')
+            assert await pipe.execute() == [True]
+            assert await r.get('z') == b('zzz')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_exec_error_raised(self, r):
-        r['c'] = 'a'
-        with r.pipeline() as pipe:
-            await pipe.set('a', 1).set('b', 2).lpush('c', 3).set('d', 4)
+        await r.flushdb()
+        await r.set('c', 'a')
+        async with await r.pipeline() as pipe:
+            await pipe.set('a', 1)
+            await pipe.set('b', 2)
+            await pipe.lpush('c', 3)
+            await pipe.set('d', 4)
             with pytest.raises(ResponseError) as ex:
                 await pipe.execute()
-            assert ex.value.startswith('Command # 3 (LPUSH c 3) of '
+            assert str(ex.value).startswith('Command # 3 (LPUSH c 3) of '
                                                 'pipeline caused error: ')
 
             # make sure the pipe was restored to a working state
-            assert await pipe.set('z', 'zzz').execute() == [True]
-            assert r['z'] == b('zzz')
+            await pipe.set('z', 'zzz')
+            assert await pipe.execute() == [True]
+            assert await r.get('z') == b('zzz')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     async def test_parse_error_raised(self, r):
         async with await r.pipeline() as pipe:
             # the zrem is invalid because we don't pass any keys to it
@@ -158,13 +171,14 @@ class TestPipeline(object):
 
             # make sure the pipe was restored to a working state
             assert await (await pipe.set('z', 'zzz')).execute() == [True]
-            assert r['z'] == b('zzz')
+            assert await r.get('z') == b('zzz')
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_watch_succeed(self, r):
-        r['a'] = 1
-        r['b'] = 2
+        await r.flushdb()
+        await r.set('a', 1)
+        await r.set('b', 2)
 
         async with await r.pipeline() as pipe:
             await pipe.watch('a', 'b')
@@ -179,11 +193,12 @@ class TestPipeline(object):
             assert await pipe.execute() == [True]
             assert not pipe.watching
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_watch_failure(self, r):
-        r['a'] = 1
-        r['b'] = 2
+        await r.flushdb()
+        await r.set('a', 1)
+        await r.set('b', 2)
 
         async with await r.pipeline() as pipe:
             await pipe.watch('a', 'b')
@@ -195,11 +210,12 @@ class TestPipeline(object):
 
             assert not pipe.watching
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_unwatch(self, r):
-        r['a'] = 1
-        r['b'] = 2
+        await r.flushdb()
+        await r.set('a', 1)
+        await r.set('b', 2)
 
         async with await r.pipeline() as pipe:
             await pipe.watch('a', 'b')
@@ -209,11 +225,12 @@ class TestPipeline(object):
             await pipe.get('a')
             assert await pipe.execute() == [b('1')]
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_transaction_callable(self, r):
-        r['a'] = 1
-        r['b'] = 2
+        await r.flushdb()
+        await r.set('a', 1)
+        await r.set('b', 2)
         has_run = []
 
         async def my_transaction(pipe):
