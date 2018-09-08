@@ -16,12 +16,18 @@ import pytest
 
 
 async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False):
-    try:
-        return await pubsub.get_message(
+    now = time.time()
+    timeout = now + timeout
+    while now < timeout:
+        message = await pubsub.get_message(
             ignore_subscribe_messages=ignore_subscribe_messages,
-            timeout=timeout)
-    except TimeoutError as e:
-        return None
+            timeout=0.01
+        )
+        if message is not None:
+            return message
+        await asyncio.sleep(0.01)
+        now = time.time()
+    return None
 
 
 def make_message(type, channel, data, pattern=None):
