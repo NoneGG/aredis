@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import socket
 
 import pytest
 from aredis import (Connection,
@@ -18,6 +19,45 @@ async def test_connect_tcp(event_loop):
     assert (conn._reader is not None) and (conn._writer is not None)
     conn.disconnect()
     assert (conn._reader is None) and (conn._writer is None)
+
+
+@pytest.mark.asyncio(forbid_global_loop=True)
+async def test_connect_tcp_keepalive_options(event_loop):
+    conn = Connection(
+        loop=event_loop,
+        socket_keepalive=True,
+        socket_keepalive_options={
+            socket.TCP_KEEPIDLE: 1,
+            socket.TCP_KEEPINTVL: 1,
+            socket.TCP_KEEPCNT: 3,
+        },
+    )
+    await conn._connect()
+    sock = conn._writer.transport.get_extra_info('socket')
+    assert sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE) == 1
+    for k, v in (
+        (socket.TCP_KEEPIDLE, 1),
+        (socket.TCP_KEEPINTVL, 1),
+        (socket.TCP_KEEPCNT, 3),
+    ):
+        assert sock.getsockopt(socket.SOL_TCP, k) == v
+    conn.disconnect()
+
+
+@pytest.mark.parametrize('option', ['UNKNOWN', 999])
+@pytest.mark.asyncio(forbid_global_loop=True)
+async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option):
+    conn = Connection(
+        loop=event_loop,
+        socket_keepalive=True,
+        socket_keepalive_options={
+            option: 1,
+        },
+    )
+    with pytest.raises((socket.error, TypeError)):
+        await conn._connect()
+    # verify that the connection isn't left open
+    assert conn._writer.transport.is_closing()
 
 
 # only test during dev

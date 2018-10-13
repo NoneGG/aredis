@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+master
+------
+
+    * add TCP Keep-alive support by passing use the `socket_keepalive=True`
+      option. Finer grain control can be achieved using the
+      `socket_keepalive_options` option which expects a dictionary with any of
+      the keys (`socket.TCP_KEEPIDLE`, `socket.TCP_KEEPCNT`, `socket.TCP_KEEPINTVL`)
+      and integers for values. Thanks Stefan Tjarks.
+
 1.0.1
 -----
 

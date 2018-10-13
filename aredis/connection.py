@@ -558,8 +558,8 @@ class Connection(BaseConnection):
     def __init__(self, host='127.0.0.1', port=6379, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False,
-                 *, loop=None):
+                 encoding='utf-8', decode_responses=False, socket_keepalive=None,
+                 socket_keepalive_options=None, *, loop=None):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
                                          parser_class, reader_read_size,
                                          encoding, decode_responses,
@@ -575,6 +575,8 @@ class Connection(BaseConnection):
             'port': self.port,
             'db': self.db
         }
+        self.socket_keepalive = socket_keepalive
+        self.socket_keepalive_options = socket_keepalive_options or {}
 
     async def _connect(self):
         reader, writer = await exec_with_timeout(
@@ -590,6 +592,17 @@ class Connection(BaseConnection):
         sock = writer.transport.get_extra_info('socket')
         if sock is not None:
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            try:
+                # TCP_KEEPALIVE
+                if self.socket_keepalive:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+                    for k, v in self.socket_keepalive_options.items():
+                        sock.setsockopt(socket.SOL_TCP, k, v)
+            except (socket.error, TypeError):
+                # `socket_keepalive_options` might contain invalid options
+                # causing an error. Do not leave the connection open.
+                writer.close()
+                raise
         await self.on_connect()
 
 
