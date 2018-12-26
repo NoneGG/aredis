@@ -92,8 +92,7 @@ class NodeManager(object):
             'ssl_context',
             'parser_class',
             'reader_read_size',
-            'loop',
-            'ssl'
+            'loop'
         )
         connection_kwargs = {k: v for k, v in self.connection_kwargs.items() if k in allowed_keys}
         return StrictRedis(host=host, port=port, decode_responses=True, **connection_kwargs)
