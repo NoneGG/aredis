@@ -95,7 +95,7 @@ class StrictRedis(*mixins):
                  db=0, password=None, stream_timeout=None,
                  connect_timeout=None, connection_pool=None,
                  unix_socket_path=None, encoding='utf-8',
-                 decode_responses=False, ssl=False,
+                 decode_responses=False, ssl=False, ssl_context=None,
                  ssl_keyfile=None, ssl_certfile=None,
                  ssl_cert_reqs=None, ssl_ca_certs=None,
                  max_connections=None, retry_on_timeout=False,
@@ -124,8 +124,9 @@ class StrictRedis(*mixins):
                     'host': host,
                     'port': port
                 })
-
-                if ssl:
+                if ssl_context is not None:
+                    kwargs['ssl_context'] = ssl_context
+                elif ssl:
                     ssl_context = RedisSSLContext(ssl_keyfile, ssl_certfile, ssl_cert_reqs, ssl_ca_certs).get()
                     kwargs['ssl_context'] = ssl_context
             connection_pool = ConnectionPool(**kwargs)
