@@ -155,8 +155,8 @@ class SortedSetCommandMixin:
         ``score_cast_func`` a callable used to cast the score return value
         """
         if desc:
-            return self.zrevrange(name, start, end, withscores,
-                                  score_cast_func)
+            return await self.zrevrange(name, start, end, withscores,
+                                        score_cast_func)
         pieces = ['ZRANGE', name, start, end]
         if withscores:
             pieces.append(b('WITHSCORES'))
