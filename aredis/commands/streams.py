@@ -29,8 +29,10 @@ def list_of_pairs_to_dict(response):
 
 def parse_xinfo_stream(response):
     res = pairs_to_dict(response)
-    res['first-entry'][1] = pairs_to_dict(res['first-entry'][1])
-    res['last-entry'][1] = pairs_to_dict(res['last-entry'][1])
+    if res['first-entry'] and len(res['first-entry']) > 0:
+        res['first-entry'][1] = pairs_to_dict(res['first-entry'][1])
+    if res['last-entry'] and len(res['last-entry']) > 0:
+        res['last-entry'][1] = pairs_to_dict(res['last-entry'][1])
     return res
 
 
