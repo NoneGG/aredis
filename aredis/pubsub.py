@@ -273,7 +273,7 @@ class PubSub(object):
 
         return message
 
-    def run_in_thread(self, daemon=False):
+    def run_in_thread(self, daemon=False, poll_timeout=1.0):
         for channel, handler in iteritems(self.channels):
             if handler is None:
                 raise PubSubError("Channel: '{}' has no handler registered"
@@ -282,16 +282,18 @@ class PubSub(object):
             if handler is None:
                 raise PubSubError("Pattern: '{}' has no handler registered"
                                   .format(pattern))
-        thread = PubSubWorkerThread(self, daemon=daemon)
+        thread = PubSubWorkerThread(self, daemon=daemon,
+                                    poll_timeout=poll_timeout)
         thread.start()
         return thread
 
 
 class PubSubWorkerThread(threading.Thread):
-    def __init__(self, pubsub, daemon=False):
+    def __init__(self, pubsub, daemon=False, poll_timeout=1.0):
         super(PubSubWorkerThread, self).__init__()
         self.daemon = daemon
         self.pubsub = pubsub
+        self.poll_timeout = poll_timeout
         self._running = False
         # Make sure we have the current thread loop before we
         # fork into the new thread. If not loop has been set on the connection
@@ -301,7 +303,8 @@ class PubSubWorkerThread(threading.Thread):
     async def _run(self):
         pubsub = self.pubsub
         while pubsub.subscribed:
-            await pubsub.get_message(ignore_subscribe_messages=True)
+            await pubsub.get_message(ignore_subscribe_messages=True,
+                                     timeout=self.poll_timeout)
         pubsub.close()
         self._running = False
 
