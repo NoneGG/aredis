@@ -91,3 +91,13 @@ master
     * fix bug: use inspect.isawaitable instead of typing.Awaitable to judge if an object is awaitable
     * fix bug: implicitly disconnection on cancelled error (#84)
     * new: add support for `streams`(including commands not officially released, see `streams <http://aredis.readthedocs.io/en/latest/streams.html>`_ )
+
+1.1.4
+-----
+    * fix bug: fix cluster port parsing for redis 4+(node info)
+    * fix bug: wrong parse method of scan_iter in cluster mode
+    * fix bug: When using "zrange" with "desc=True" parameter, it returns a coroutine without "await"
+    * fix bug: do not use stream_timeout in the PubSubWorkerThread
+    * opt: add socket_keepalive options
+    * new: add ssl param in get_redis_link to support ssl mode
+    * new: add ssl_context to StrictRedis constructor and make it higher priority than ssl parameter
