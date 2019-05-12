@@ -99,6 +99,7 @@ class StrictRedis(*mixins):
                  ssl_keyfile=None, ssl_certfile=None,
                  ssl_cert_reqs=None, ssl_ca_certs=None,
                  max_connections=None, retry_on_timeout=False,
+                 max_idle_time=0, idle_check_interval=1,
                  loop=None, **kwargs):
         if not connection_pool:
             kwargs = {
@@ -110,6 +111,8 @@ class StrictRedis(*mixins):
                 'max_connections': max_connections,
                 'retry_on_timeout': retry_on_timeout,
                 'decode_responses': decode_responses,
+                'max_idle_time': max_idle_time,
+                'idle_check_interval': idle_check_interval,
                 'loop': loop
             }
             # based on input, setup appropriate connection args
