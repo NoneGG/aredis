@@ -4,6 +4,7 @@
 import asyncio
 import os
 import warnings
+import time
 import random
 import threading
 from itertools import chain
@@ -148,6 +149,7 @@ class ConnectionPool(object):
         return cls(**kwargs)
 
     def __init__(self, connection_class=Connection, max_connections=None,
+                 max_idle_time=0, idle_check_interval=1,
                  **connection_kwargs):
         """
         Create a connection pool. If max_connections is set, then this
@@ -166,6 +168,8 @@ class ConnectionPool(object):
         self.connection_class = connection_class
         self.connection_kwargs = connection_kwargs
         self.max_connections = max_connections
+        self.max_idle_time = max_idle_time
+        self.idle_check_interval = idle_check_interval
         self.loop = self.connection_kwargs.get('loop')
 
         self.reset()
@@ -175,6 +179,16 @@ class ConnectionPool(object):
             type(self).__name__,
             self.connection_class.description.format(**self.connection_kwargs),
         )
+
+    async def disconnect_on_idle_time_exceeded(self, connection):
+        while True:
+            if (time.time() - connection.last_active_at > self.max_idle_time
+                    and not connection.awaiting_response):
+                connection.disconnect()
+                self._available_connections.remove(connection)
+                self._created_connections -= 1
+                break
+            await asyncio.sleep(self.idle_check_interval)
 
     def reset(self):
         self.pid = os.getpid()
@@ -208,7 +222,11 @@ class ConnectionPool(object):
         if self._created_connections >= self.max_connections:
             raise ConnectionError("Too many connections")
         self._created_connections += 1
-        return self.connection_class(**self.connection_kwargs)
+        connection = self.connection_class(**self.connection_kwargs)
+        if self.max_idle_time > self.idle_check_interval > 0:
+            # do not await the future
+            asyncio.ensure_future(self.disconnect_on_idle_time_exceeded(connection))
+        return connection
 
     def release(self, connection):
         "Releases the connection back to the pool"
@@ -241,6 +259,7 @@ class ClusterConnectionPool(ConnectionPool):
     def __init__(self, startup_nodes=None, connection_class=ClusterConnection,
                  max_connections=None, max_connections_per_node=False, reinitialize_steps=None,
                  skip_full_coverage_check=False, nodemanager_follow_cluster=False, readonly=False,
+                 max_idle_time=0, idle_check_interval=1,
                  **connection_kwargs):
         """
         :skip_full_coverage_check:
@@ -279,6 +298,8 @@ class ClusterConnectionPool(ConnectionPool):
         self.connection_kwargs = connection_kwargs
         self.connection_kwargs['readonly'] = readonly
         self.readonly = readonly
+        self.max_idle_time = max_idle_time
+        self.idle_check_interval = idle_check_interval
         self.reset()
 
         if "stream_timeout" not in self.connection_kwargs:
@@ -299,12 +320,22 @@ class ClusterConnectionPool(ConnectionPool):
             await self.nodes.initialize()
             self.initialized = True
 
+    async def disconnect_on_idle_time_exceeded(self, connection):
+        while True:
+            if (time.time() - connection.last_active_at > self.max_idle_time
+                    and not connection.awaiting_response):
+                connection.disconnect()
+                node = connection.node
+                self._available_connections[node['name']].remove(connection)
+                self._created_connections_per_node[node['name']] -= 1
+                break
+            await asyncio.sleep(self.idle_check_interval)
+
     def reset(self):
         """
         Resets the connection pool back to a clean state.
         """
         self.pid = os.getpid()
-        self._created_connections = 0
         self._created_connections_per_node = {}  # Dict(Node, Int)
         self._available_connections = {}  # Dict(Node, List)
         self._in_use_connections = {}  # Dict(Node, Set)
@@ -370,7 +401,9 @@ class ClusterConnectionPool(ConnectionPool):
 
         # Must store node in the connection to make it eaiser to track
         connection.node = node
-
+        if self.max_idle_time > self.idle_check_interval > 0:
+            # do not await the future
+            asyncio.ensure_future(self.disconnect_on_idle_time_exceeded(connection))
         return connection
 
     def release(self, connection):

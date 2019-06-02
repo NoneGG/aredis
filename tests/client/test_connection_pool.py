@@ -3,6 +3,7 @@ import os
 import pytest
 import aredis
 import re
+import asyncio
 
 from aredis.pool import to_bool
 from aredis.exceptions import (ConnectionError, RedisError,
@@ -69,6 +70,21 @@ class TestConnectionPool(object):
                              connection_class=aredis.UnixDomainSocketConnection)
         expected = 'ConnectionPool<UnixDomainSocketConnection<path=/abc,db=1>>'
         assert repr(pool) == expected
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_connection_idle_check(self, event_loop):
+        rs = aredis.StrictRedis(host='127.0.0.1', port=6379, db=0,
+                                max_idle_time=0.2, idle_check_interval=0.1)
+        await rs.info()
+        assert len(rs.connection_pool._available_connections) == 1
+        assert len(rs.connection_pool._in_use_connections) == 0
+        conn = rs.connection_pool._available_connections[0]
+        last_active_at = conn.last_active_at
+        await asyncio.sleep(0.3)
+        assert len(rs.connection_pool._available_connections) == 0
+        assert len(rs.connection_pool._in_use_connections) == 0
+        assert last_active_at == conn.last_active_at
+        assert conn._writer is None and conn._reader is None
 
 
 class TestConnectionPoolURLParsing(object):

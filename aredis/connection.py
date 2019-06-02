@@ -3,7 +3,7 @@ import os
 import socket
 import ssl
 import sys
-import typing
+import time
 import warnings
 import inspect
 from concurrent.futures import CancelledError
@@ -379,6 +379,7 @@ class BaseConnection:
         self.loop = loop
         # flag to show if a connection is waiting for response
         self.awaiting_response = False
+        self.last_active_at = time.time()
 
     def __repr__(self):
         return self.description.format(**self._description_args)
@@ -433,10 +434,12 @@ class BaseConnection:
             await self.send_command('SELECT', self.db)
             if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Database')
+        self.last_active_at = time.time()
 
     async def read_response(self):
         try:
             response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout, loop=self.loop)
+            self.last_active_at = time.time()
         except TimeoutError:
             self.disconnect()
             raise
@@ -475,6 +478,7 @@ class BaseConnection:
             await self.connect()
         await self.send_packed_command(self.pack_command(*args))
         self.awaiting_response = True
+        self.last_active_at = time.time()
 
     def encode(self, value):
         "Return a bytestring representation of the value"

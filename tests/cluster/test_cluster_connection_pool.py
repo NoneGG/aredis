@@ -3,22 +3,22 @@
 
 # python std lib
 from __future__ import with_statement
+
+import asyncio
 import os
-import re
-import time
-from threading import Thread
+
 try:
     import ssl
+
     ssl_available = True
 except ImportError:
     ssl_available = False
 
 # rediscluster imports
-from aredis import StrictRedis
+from aredis import StrictRedis, StrictRedisCluster
 from aredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
 from aredis.pool import ClusterConnectionPool, ConnectionPool
-from aredis.exceptions import RedisClusterException, RedisError
-from tests.cluster.conftest import skip_if_server_version_lt
+from aredis.exceptions import RedisClusterException
 
 # 3rd party imports
 import pytest
@@ -39,7 +39,7 @@ class DummyConnection(object):
 
 class TestConnectionPool(object):
     async def get_pool(self, connection_kwargs=None, max_connections=None, max_connections_per_node=None,
-                 connection_class=DummyConnection):
+                       connection_class=DummyConnection):
         connection_kwargs = connection_kwargs or {}
         pool = ClusterConnectionPool(
             connection_class=connection_class,
@@ -130,6 +130,7 @@ class TestConnectionPool(object):
         with patch.object(ClusterConnectionPool, 'get_connection_by_slot', autospec=True) as pool_mock:
             def side_effect(self, *args, **kwargs):
                 return DummyConnection(port=1337)
+
             pool_mock.side_effect = side_effect
 
             connection = pool.get_connection_by_key("foo")
@@ -150,6 +151,7 @@ class TestConnectionPool(object):
         with patch.object(ClusterConnectionPool, 'get_connection_by_node', autospec=True) as pool_mock:
             def side_effect(self, *args, **kwargs):
                 return DummyConnection(port=1337)
+
             pool_mock.side_effect = side_effect
 
             connection = pool.get_connection_by_slot(12182)
@@ -181,6 +183,30 @@ class TestConnectionPool(object):
         node['port'] = 7000
         node = pool.get_master_node_by_slot(12182)
         node['port'] = 7002
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_connection_idle_check(self, event_loop):
+        pool = ClusterConnectionPool(startup_nodes=[dict(host='127.0.0.1', port=7000)],
+                                   max_idle_time=0.2, idle_check_interval=0.1)
+        conn = pool.get_connection_by_node({
+            'name': '127.0.0.1:7000',
+            'host': '127.0.0.1',
+            'port': 7000,
+            'server_type': 'master',
+        })
+        name = conn.node['name']
+        assert len(pool._in_use_connections[name]) == 1
+        # not ket could be found in dict for now
+        assert not pool._available_connections
+        pool.release(conn)
+        assert len(pool._in_use_connections[name]) == 0
+        assert len(pool._available_connections[name]) == 1
+        await asyncio.sleep(0.21)
+        assert len(pool._in_use_connections[name]) == 0
+        assert len(pool._available_connections[name]) == 0
+        last_active_at = conn.last_active_at
+        assert last_active_at == conn.last_active_at
+        assert conn._writer is None and conn._reader is None
 
 
 class TestReadOnlyConnectionPool(object):
@@ -327,7 +353,7 @@ class TestConnectionPoolURLParsing(object):
 
     def test_db_in_querystring(self):
         pool = ConnectionPool.from_url('redis://localhost/2?db=3',
-                                             db='1')
+                                       db='1')
         assert pool.connection_class == Connection
         assert pool.connection_kwargs == {
             'host': 'localhost',
