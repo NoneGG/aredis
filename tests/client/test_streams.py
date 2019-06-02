@@ -103,7 +103,7 @@ class TestStreams(object):
         with pytest.raises(ResponseError) as exc:
             await r.xreadgroup('wrong_group', 'lalala', count=10, block=10, test_stream='1')
         assert await r.xgroup_create('test_stream', 'test_group', '0') is True
-        entries = await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        entries = await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='>')
         assert len(entries[b'test_stream']) == 5
 
     @skip_if_server_version_lt('4.9.103')
@@ -132,7 +132,7 @@ class TestStreams(object):
         group_info = await r.xinfo_groups('test_stream')
         assert group_info[0][b'pending'] == 0
         assert await r.xgroup_set_id('test_stream', 'test_group', '0') is True
-        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='>')
         group_info = await r.xinfo_groups('test_stream')
         assert group_info[0][b'pending'] == 5
 
@@ -179,11 +179,11 @@ class TestStreams(object):
         assert group_info[0][b'pending'] == 0
         assert len(await r.xpending('test_stream', 'test_group', count=10, consumer='consumer1')) == 0
         assert await r.xgroup_set_id('test_stream', 'test_group', '0') is True
-        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='1')
+        await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='>')
         group_info = await r.xinfo_groups('test_stream')
         assert group_info[0][b'pending'] == 5
         assert len(await r.xpending('test_stream', 'test_group', count=10, consumer='consumer1')) == 5
-        xpending_entries_in_range = await r.xpending('test_stream', 'test_group', start='1', end='2', count=10,
+        xpending_entries_in_range = await r.xpending('test_stream', 'test_group', start='2', end='2', count=10,
                                                      consumer='consumer1')
         assert len(xpending_entries_in_range) == 1
         assert xpending_entries_in_range[0][0] == b'2-0'
