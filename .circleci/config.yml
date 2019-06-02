@@ -78,7 +78,7 @@ jobs:
   python-3.5-cluster-5:
     docker:
       - image: python:3.5
-      - image: grokzen/redis-cluster:5.0.1
+      - image: grokzen/redis-cluster:5.0.4
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
@@ -200,7 +200,7 @@ jobs:
   python-3.5-cluster-5-hiredis:
     docker:
       - image: python:3.5
-      - image: grokzen/redis-cluster:5.0
+      - image: grokzen/redis-cluster:5.0.4
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
@@ -233,7 +233,7 @@ jobs:
   python-3.6-cluster-5-hiredis:
     docker:
       - image: python:3.6
-      - image: grokzen/redis-cluster:5.0
+      - image: grokzen/redis-cluster:5.0.4
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
