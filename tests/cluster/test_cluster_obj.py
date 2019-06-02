@@ -420,9 +420,9 @@ async def test_access_correct_slave_with_readonly_mode_client(sr):
 
     with patch.object(ClusterConnectionPool, 'get_node_by_slot') as return_slave_mock:
         return_slave_mock.return_value = {
-            'name': '127.0.0.1:7003',
+            'name': '127.0.0.1:7004',
             'host': '127.0.0.1',
-            'port': 7003,
+            'port': 7004,
             'server_type': 'slave',
         }
 
