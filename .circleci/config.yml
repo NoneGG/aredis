@@ -108,7 +108,7 @@ jobs:
   python-3.6-cluster-5:
     docker:
       - image: python:3.6
-      - image: grokzen/redis-cluster:5.0-rc1
+      - image: grokzen/redis-cluster:5.0.4
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
