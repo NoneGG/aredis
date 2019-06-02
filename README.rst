@@ -1,6 +1,6 @@
 aredis
 ======
-|pypi-ver| |travis-status| |circleci-status| |python-ver|
+|pypi-ver| |circleci-status| |python-ver|
 
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value)
@@ -104,11 +104,6 @@ For benchmark in my environment please see: `benchmark`_
 .. |circleci-status| image:: https://img.shields.io/circleci/project/github/NoneGG/aredis/master.svg
     :alt: CircleCI build status
     :target: https://circleci.com/gh/NoneGG/aredis/tree/master
-
-.. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
-    :alt: Travis build status
-    :scale: 100%
-    :target: https://travis-ci.org/NoneGG/aredis
 
 .. |pypi-ver| image::  https://img.shields.io/pypi/v/aredis.svg
     :target: https://pypi.python.org/pypi/aredis/

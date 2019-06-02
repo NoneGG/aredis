@@ -6,7 +6,7 @@
 Welcome to aredis's documentation!
 ==================================
 
-|pypi-ver| |travis-status| |python-ver|
+|pypi-ver| |circleci-status| |python-ver|
 
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value). And the cluster part is ported from `redis-py-cluster <https://github.com/Grokzen/redis-py-cluster>`_
@@ -171,9 +171,9 @@ The Community Guide
     license
     todo
 
-.. |travis-status| image:: https://travis-ci.org/NoneGG/aredis.png?branch=master
-    :alt: Travis build status
-    :target: https://travis-ci.org/NoneGG/aredis
+.. |circleci-status| image:: https://img.shields.io/circleci/project/github/NoneGG/aredis/master.svg
+    :alt: CircleCI build status
+    :target: https://circleci.com/gh/NoneGG/aredis/tree/master
 
 .. |pypi-ver| image::  https://img.shields.io/pypi/v/aredis.svg
     :target: https://pypi.python.org/pypi/aredis/
