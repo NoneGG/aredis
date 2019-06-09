@@ -101,3 +101,9 @@ master
     * opt: add socket_keepalive options
     * new: add ssl param in get_redis_link to support ssl mode
     * new: add ssl_context to StrictRedis constructor and make it higher priority than ssl parameter
+
+1.1.5
+-----
+    * new: Dev conn pool max idle time (#111) release connection if max-idle-time exceeded
+    * update: discard travis-CI
+    * Fix bug: new stream id used for test_streams
