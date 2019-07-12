@@ -1,17 +1,12 @@
-import sys
-import typing
 import inspect
+import sys
 from itertools import chain
 
-from aredis.client import (StrictRedisCluster, StrictRedis)
-from aredis.exceptions import (RedisError, ConnectionError,
-                               TimeoutError, ResponseError,
-                               WatchError, ExecAbortError,
-                               MovedError, AskError,
-                               TryAgainError, RedisClusterException,
-                               ClusterTransactionError)
-from aredis.utils import (dict_merge,
-                          clusterdown_wrapper)
+from aredis.client import (StrictRedis, StrictRedisCluster)
+from aredis.exceptions import (AskError, ClusterTransactionError, ConnectionError, ExecAbortError, MovedError,
+                               RedisClusterException, RedisError, ResponseError, TimeoutError, TryAgainError,
+                               WatchError)
+from aredis.utils import (clusterdown_wrapper, dict_merge)
 
 ERRORS_ALLOW_RETRY = (ConnectionError, TimeoutError, MovedError, AskError, TryAgainError)
 
@@ -475,7 +470,6 @@ class StrictClusterPipeline(StrictRedisCluster):
             self._unwatch(conn)
         if raise_on_error:
             self.raise_first_error(stack)
-
 
     @clusterdown_wrapper
     async def send_cluster_commands(self, stack, raise_on_error=True, allow_redirections=True):
