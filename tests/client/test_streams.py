@@ -67,17 +67,6 @@ class TestStreams(object):
 
     @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_xrange_empty_payload(self, r):
-        await r.flushdb()
-        for idx in range(1, 10):
-            await r.xadd('test_stream', dict(), stream_id=idx,
-                         max_len=10, approximate=False)
-        entries = await r.xrange('test_stream', count=5)
-        assert len(entries) == 5 and isinstance(entries, list) and isinstance(entries[0], tuple)
-        assert entries[0][1] == dict()
-
-    @skip_if_server_version_lt('4.9.103')
-    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xrevrange(self, r):
         await r.flushdb()
         for idx in range(1, 10):
