@@ -9,7 +9,7 @@ def stream_list(response):
         for r in response:
             kv_pairs = r[1]
             kv_dict = dict()
-            while len(kv_pairs) > 1:
+            while kv_pairs and len(kv_pairs) > 1:
                 kv_dict[kv_pairs.pop()] = kv_pairs.pop()
             result.append((r[0], kv_dict))
     return result
