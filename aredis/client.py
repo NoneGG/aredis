@@ -281,8 +281,8 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         passed along to the ConnectionPool class's initializer. In the case
         of conflicting arguments, querystring arguments always win.
         """
-        connection_pool = ClusterConnectionPool.from_url(url, db=db, **kwargs)
-        return cls(connection_pool=connection_pool, skip_full_coverage_check=skip_full_coverage_check)
+        connection_pool = ClusterConnectionPool.from_url(url, db=db, skip_full_coverage_check=skip_full_coverage_check, **kwargs)
+        return cls(connection_pool=connection_pool)
 
     def __repr__(self):
         """
