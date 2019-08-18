@@ -137,5 +137,12 @@ setup(
     ext_modules=[
         Extension(name='aredis.speedups',
                   sources=['aredis/speedups.c']),
+    ],
+    # The good news is that the standard library always
+    # takes the precedence over site packages,
+    # so even if a local contextvars module is installed,
+    # the one from the standard library will be used.
+    install_requires=[
+        'contextvars;python_version<"3.7"'
     ]
 )

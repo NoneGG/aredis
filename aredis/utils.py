@@ -1,8 +1,7 @@
 import sys
 from functools import wraps
 
-from aredis.exceptions import (RedisClusterException,
-                               ClusterDownError)
+from aredis.exceptions import (ClusterDownError, RedisClusterException)
 
 _C_EXTENSION_SPEEDUP = False
 try:
@@ -56,7 +55,15 @@ class dummy(object):
     """
     Instances of this class can be used as an attribute container.
     """
-    pass
+
+    def __init__(self):
+        self.token = None
+
+    def set(self, value):
+        self.token = value
+
+    def get(self):
+        return self.token
 
 
 # ++++++++++ response callbacks ++++++++++++++
