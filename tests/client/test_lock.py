@@ -138,12 +138,12 @@ class TestLock(object):
 
     @pytest.mark.asyncio()
     async def test_concurrent_lock_acquire(self, r):
-        lock = self.get_lock(r, 'test', timeout=0.5)
+        lock = self.get_lock(r, 'test', timeout=1)
 
         async def coro(lock):
             is_error_raised = False
             await lock.acquire(blocking=True)
-            await asyncio.sleep(1)
+            await asyncio.sleep(1.5)
             try:
                 await lock.release()
             except LockError as exc:
