@@ -1,6 +1,9 @@
 from __future__ import with_statement
-import pytest
+
+import asyncio
 import time
+
+import pytest
 
 from aredis.exceptions import LockError, ResponseError
 from aredis.lock import Lock, LuaLock
@@ -18,7 +21,7 @@ class TestLock(object):
         await r.flushdb()
         lock = self.get_lock(r, 'foo')
         assert await lock.acquire(blocking=False)
-        assert await r.get('foo') == lock.local.token
+        assert await r.get('foo') == lock.local.get()
         assert await r.ttl('foo') == -1
         await lock.release()
         assert await r.get('foo') is None
@@ -63,7 +66,7 @@ class TestLock(object):
         # blocking_timeout prevents a deadlock if the lock can't be acquired
         # for some reason
         async with self.get_lock(r, 'foo', blocking_timeout=0.2) as lock:
-            assert await r.get('foo') == lock.local.token
+            assert await r.get('foo') == lock.local.get()
         assert await r.get('foo') is None
 
     @pytest.mark.asyncio()
@@ -87,7 +90,7 @@ class TestLock(object):
         with pytest.raises(LockError):
             await lock.release()
         # even though we errored, the token is still cleared
-        assert lock.local.token is None
+        assert lock.local.get() is None
 
     @pytest.mark.asyncio()
     async def test_extend_lock(self, r):
@@ -133,6 +136,23 @@ class TestLock(object):
         with pytest.raises(LockError):
             await lock.extend(10)
 
+    @pytest.mark.asyncio()
+    async def test_concurrent_lock_acquire(self, r):
+        lock = self.get_lock(r, 'test', timeout=1)
+
+        async def coro(lock):
+            is_error_raised = False
+            await lock.acquire(blocking=True)
+            await asyncio.sleep(1.5)
+            try:
+                await lock.release()
+            except LockError as exc:
+                is_error_raised = True
+            return is_error_raised
+
+        results = await asyncio.gather(coro(lock), coro(lock))
+        assert not (results[0] and results[1])
+
 
 class TestLuaLock(TestLock):
     lock_class = LuaLock
@@ -170,6 +190,7 @@ class TestLockClassSelection(object):
         @classmethod
         def mock_register(cls, redis):
             return
+
         monkeypatch.setattr(LuaLock, 'register_scripts', mock_register)
         try:
             lock = r.lock('foo')
@@ -183,6 +204,7 @@ class TestLockClassSelection(object):
         @classmethod
         def mock_register(cls, redis):
             raise ResponseError()
+
         monkeypatch.setattr(LuaLock, 'register_scripts', mock_register)
         try:
             lock = r.lock('foo')

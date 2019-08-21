@@ -1,8 +1,9 @@
 import asyncio
-import threading
 import time as mod_time
 import uuid
 import warnings
+
+import contextvars
 
 from aredis.connection import ClusterConnection
 from aredis.exceptions import LockError, WatchError
@@ -77,8 +78,7 @@ class Lock(object):
         self.blocking = blocking
         self.blocking_timeout = blocking_timeout
         self.thread_local = bool(thread_local)
-        self.local = threading.local() if self.thread_local else dummy()
-        self.local.token = None
+        self.local = contextvars.ContextVar('token', default=None) if self.thread_local else dummy()
         if self.timeout and self.sleep > self.timeout:
             raise LockError("'sleep' must be less than 'timeout'")
 
@@ -113,7 +113,7 @@ class Lock(object):
             stop_trying_at = mod_time.time() + blocking_timeout
         while True:
             if await self.do_acquire(token):
-                self.local.token = token
+                self.local.set(token)
                 return True
             if not blocking:
                 return False
@@ -131,10 +131,10 @@ class Lock(object):
 
     async def release(self):
         "Releases the already acquired lock"
-        expected_token = self.local.token
+        expected_token = self.local.get()
         if expected_token is None:
             raise LockError("Cannot release an unlocked lock")
-        self.local.token = None
+        self.local.set(None)
         await self.do_release(expected_token)
 
     async def do_release(self, expected_token):
@@ -155,7 +155,7 @@ class Lock(object):
         ``additional_time`` can be specified as an integer or a float, both
         representing the number of seconds to add.
         """
-        if self.local.token is None:
+        if self.local.get() is None:
             raise LockError("Cannot extend an unlocked lock")
         if self.timeout is None:
             raise LockError("Cannot extend a lock with no timeout")
@@ -165,7 +165,7 @@ class Lock(object):
         pipe = await self.redis.pipeline()
         await pipe.watch(self.name)
         lock_value = await pipe.get(self.name)
-        if lock_value != self.local.token:
+        if lock_value != self.local.get():
             raise LockError("Cannot extend a lock that's no longer owned")
         expiration = await pipe.pttl(self.name)
         if expiration is None or expiration < 0:
@@ -246,7 +246,7 @@ class LuaLock(Lock):
     async def do_extend(self, additional_time):
         additional_time = int(additional_time * 1000)
         if not bool(await self.lua_extend.execute(keys=[self.name],
-                                                  args=[self.local.token, additional_time],
+                                                  args=[self.local.get(), additional_time],
                                                   client=self.redis)):
             raise LockError("Cannot extend a lock that's no longer owned")
         return True
@@ -337,7 +337,7 @@ class ClusterLock(LuaLock):
                     if check_finished_at > stop_trying_at:
                         await self.do_release(token)
                         return False
-                    self.local.token = token
+                    self.local.set(token)
                     # validity time is considered to be the
                     # initial validity time minus the time elapsed during check
                     await self.do_extend(lock_acquired_at - check_finished_at)

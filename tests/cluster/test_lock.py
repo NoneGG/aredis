@@ -16,7 +16,7 @@ class TestLock(object):
         await r.flushdb()
         lock = self.get_lock(r, 'foo', timeout=3)
         assert await lock.acquire(blocking=False)
-        assert await r.get('foo') == lock.local.token
+        assert await r.get('foo') == lock.local.get()
         assert await r.ttl('foo') == 3
         await lock.release()
         assert await r.get('foo') is None
@@ -61,7 +61,7 @@ class TestLock(object):
         # blocking_timeout prevents a deadlock if the lock can't be acquired
         # for some reason
         async with self.get_lock(r, 'foo', timeout=3, blocking_timeout=0.2) as lock:
-            assert await r.get('foo') == lock.local.token
+            assert await r.get('foo') == lock.local.get()
         assert await r.get('foo') is None
 
     @pytest.mark.asyncio()
@@ -85,7 +85,7 @@ class TestLock(object):
         with pytest.raises(LockError):
             await lock.release()
         # even though we errored, the token is still cleared
-        assert lock.local.token is None
+        assert lock.local.get() is None
 
     @pytest.mark.asyncio()
     async def test_extend_lock(self, r):
