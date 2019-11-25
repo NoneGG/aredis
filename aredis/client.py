@@ -1,6 +1,9 @@
 import asyncio
 import sys
-from asyncio.futures import CancelledError
+try:
+    from asyncio import CancelledError
+except ImportError:
+    from asyncio.futures import CancelledError
 
 from aredis.commands.cluster import ClusterCommandMixin
 from aredis.commands.connection import ClusterConnectionCommandMixin, ConnectionCommandMixin
