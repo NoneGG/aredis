@@ -132,7 +132,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8'
     ],
     ext_modules=[
         Extension(name='aredis.speedups',
@@ -143,6 +145,6 @@ setup(
     # so even if a local contextvars module is installed,
     # the one from the standard library will be used.
     install_requires=[
-        'contextvars;python_version<"3.7"'
+        'contextvars;python_version<"3.9"'
     ]
 )
