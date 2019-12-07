@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import os
 import platform
 import socket
@@ -17,13 +18,14 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
                                InvalidResponse, AskError,
                                MovedError, TryAgainError,
                                ClusterDownError, ClusterCrossSlotError)
-from aredis.utils import b, nativestr
+from aredis.utils import b, nativestr, LOOP_DEPRECATED
 
 try:
     import hiredis
     HIREDIS_AVAILABLE = True
 except ImportError:
     HIREDIS_AVAILABLE = False
+
 
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
@@ -34,8 +36,7 @@ SYM_EMPTY = b('')
 
 async def exec_with_timeout(coroutine, timeout, *, loop=None):
     try:
-        python_version = platform.python_version()
-        if python_version.startswith("3.8"):
+        if LOOP_DEPRECATED:
             return await asyncio.wait_for(coroutine, timeout)
         else:
             return await asyncio.wait_for(coroutine, timeout, loop=loop)
