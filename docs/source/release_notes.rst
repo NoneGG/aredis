@@ -107,3 +107,10 @@ master
     * new: Dev conn pool max idle time (#111) release connection if max-idle-time exceeded
     * update: discard travis-CI
     * Fix bug: new stream id used for test_streams
+
+1.1.6
+-----
+    * Fixbug: parsing stream messgae with empty payload will cause error(#116)
+    * Fixbug: Let ClusterConnectionPool handle skip_full_coverage_check (#118)
+    * New: threading local issue in coroutine, use contextvars instead of threading local in case of the safety of thread local mechanism being broken by coroutine (#120)
+    * New: support Python 3.8
