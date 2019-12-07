@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import os
 import platform
 import socket
@@ -25,6 +26,12 @@ try:
 except ImportError:
     HIREDIS_AVAILABLE = False
 
+python_version = platform.python_version()
+if python_version.startswith("3.8"):
+    LOOP_DEPRECATED = True
+else:
+    LOOP_DEPRECATED = False
+
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
 SYM_CRLF = b('\r\n')
@@ -34,8 +41,7 @@ SYM_EMPTY = b('')
 
 async def exec_with_timeout(coroutine, timeout, *, loop=None):
     try:
-        python_version = platform.python_version()
-        if python_version.startswith("3.8"):
+        if LOOP_DEPRECATED:
             return await asyncio.wait_for(coroutine, timeout)
         else:
             return await asyncio.wait_for(coroutine, timeout, loop=loop)
