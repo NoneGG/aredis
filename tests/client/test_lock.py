@@ -136,23 +136,6 @@ class TestLock(object):
         with pytest.raises(LockError):
             await lock.extend(10)
 
-    @pytest.mark.asyncio()
-    async def test_concurrent_lock_acquire(self, r):
-        lock = self.get_lock(r, 'test', timeout=1)
-
-        async def coro(lock):
-            is_error_raised = False
-            await lock.acquire(blocking=True)
-            await asyncio.sleep(1.5)
-            try:
-                await lock.release()
-            except LockError as exc:
-                is_error_raised = True
-            return is_error_raised
-
-        results = await asyncio.gather(coro(lock), coro(lock))
-        assert not (results[0] and results[1])
-
 
 class TestLuaLock(TestLock):
     lock_class = LuaLock
