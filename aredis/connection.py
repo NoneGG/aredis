@@ -1,5 +1,6 @@
 import asyncio
 import os
+import platform
 import socket
 import ssl
 import sys
@@ -20,7 +21,6 @@ from aredis.utils import b, nativestr
 
 try:
     import hiredis
-
     HIREDIS_AVAILABLE = True
 except ImportError:
     HIREDIS_AVAILABLE = False
@@ -34,7 +34,11 @@ SYM_EMPTY = b('')
 
 async def exec_with_timeout(coroutine, timeout, *, loop=None):
     try:
-        return await asyncio.wait_for(coroutine, timeout, loop=loop)
+        python_version = platform.python_version
+        if python_version.startswith("3.8"):
+            return await asyncio.wait_for(coroutine, timeout)
+        else:
+            return await asyncio.wait_for(coroutine, timeout, loop=loop)
     except asyncio.TimeoutError as exc:
         raise TimeoutError(exc)
 
