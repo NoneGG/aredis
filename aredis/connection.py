@@ -34,7 +34,7 @@ SYM_EMPTY = b('')
 
 async def exec_with_timeout(coroutine, timeout, *, loop=None):
     try:
-        python_version = platform.python_version
+        python_version = platform.python_version()
         if python_version.startswith("3.8"):
             return await asyncio.wait_for(coroutine, timeout)
         else:
