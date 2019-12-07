@@ -1,7 +1,6 @@
 import asyncio
 import functools
 import os
-import platform
 import socket
 import ssl
 import sys
@@ -19,6 +18,7 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
                                MovedError, TryAgainError,
                                ClusterDownError, ClusterCrossSlotError)
 from aredis.utils import b, nativestr
+from aredis import LOOP_DEPRECATED
 
 try:
     import hiredis
@@ -26,11 +26,6 @@ try:
 except ImportError:
     HIREDIS_AVAILABLE = False
 
-python_version = platform.python_version()
-if python_version.startswith("3.8"):
-    LOOP_DEPRECATED = True
-else:
-    LOOP_DEPRECATED = False
 
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
