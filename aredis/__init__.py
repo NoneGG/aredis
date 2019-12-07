@@ -1,5 +1,3 @@
-import platform
-from distutils.version import StrictVersion
 from aredis.client import (StrictRedis, StrictRedisCluster)
 from aredis.connection import (
     Connection,
@@ -21,8 +19,6 @@ __version__ = '1.1.5'
 
 VERSION = tuple(map(int, __version__.split('.')))
 
-python_version = platform.python_version()
-LOOP_DEPRECATED = StrictVersion(python_version) >= StrictVersion("3.8.0")
 
 __all__ = [
     'StrictRedis', 'StrictRedisCluster',

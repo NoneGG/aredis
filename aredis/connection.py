@@ -17,8 +17,7 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
                                InvalidResponse, AskError,
                                MovedError, TryAgainError,
                                ClusterDownError, ClusterCrossSlotError)
-from aredis.utils import b, nativestr
-from aredis import LOOP_DEPRECATED
+from aredis.utils import b, nativestr, LOOP_DEPRECATED
 
 try:
     import hiredis
