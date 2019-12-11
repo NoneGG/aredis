@@ -114,3 +114,7 @@ master
     * Fixbug: Let ClusterConnectionPool handle skip_full_coverage_check (#118)
     * New: threading local issue in coroutine, use contextvars instead of threading local in case of the safety of thread local mechanism being broken by coroutine (#120)
     * New: support Python 3.8
+
+1.1.7
+-----
+    * Fixbug: ModuleNotFoundError raised when install aredis 1.1.6 with Python3.6
