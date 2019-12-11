@@ -145,6 +145,6 @@ setup(
     # so even if a local contextvars module is installed,
     # the one from the standard library will be used.
     install_requires=[
-        'contextvars;python_version<"3.9"'
+        'contextvars;python_version<"3.7"'
     ]
 )
