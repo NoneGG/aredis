@@ -122,7 +122,7 @@ class SentinelConnectionPool(ConnectionPool):
             return slave_address
         # Fallback to the master connection
         try:
-            return await self.get_master_address()
+            return [await self.get_master_address()]
         except MasterNotFoundError:
             pass
         raise SlaveNotFoundError('No slave found for %r' % (self.service_name))
