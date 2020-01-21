@@ -314,6 +314,10 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             if len(slots) != 1:
                 raise RedisClusterException("{0} - all keys must map to the same key slot".format(command))
             return slots.pop()
+        elif command == 'XREAD':
+            # ('XREAD', 'BLOCK', '0', 'STREAMS', '_pubsub::sms_republished_v1_neo', '$')
+            key = args[4]
+            return self.connection_pool.nodes.keyslot(key)
 
         key = args[1]
 
