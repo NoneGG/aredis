@@ -315,7 +315,11 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 raise RedisClusterException("{0} - all keys must map to the same key slot".format(command))
             return slots.pop()
         elif command == 'XREAD':
-            key = args[4]
+            try:
+                idx = args.index('STREAMS') + 1
+            except ValueError:
+                raise RedisClusterException("{0} - XREAD arguments do not contain STREAMS operand".format(command))
+            key = args[idx]
         else:
             key = args[1]
 
