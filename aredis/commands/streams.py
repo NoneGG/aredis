@@ -175,7 +175,7 @@ class StreamsCommandMixin:
         """
         pieces = []
         if block is not None:
-            if not isinstance(block, int) or block < 1:
+            if not isinstance(block, int) or block < 0:
                 raise RedisError("XREAD block must be a positive integer")
             pieces.append("BLOCK")
             pieces.append(str(block))
