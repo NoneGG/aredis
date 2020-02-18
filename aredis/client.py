@@ -160,6 +160,7 @@ class StrictRedis(*mixins):
         except CancelledError:
             # do not retry when coroutine is cancelled
             connection.disconnect()
+            raise
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
@@ -415,9 +416,9 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
                 await r.send_command(*args)
                 return await self.parse_response(r, command, **kwargs)
-            except (RedisClusterException, BusyLoadingError):
+            except (RedisClusterException, BusyLoadingError, CancelledError):
                 raise
-            except (CancelledError, ConnectionError, TimeoutError):
+            except (ConnectionError, TimeoutError):
                 try_random_node = True
 
                 if ttl < self.RedisClusterRequestTTL / 2:
@@ -462,6 +463,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             except CancelledError:
                 # do not retry when coroutine is cancelled
                 connection.disconnect()
+                raise
             except (ConnectionError, TimeoutError) as e:
                 connection.disconnect()
 

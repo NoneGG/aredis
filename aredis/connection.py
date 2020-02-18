@@ -8,7 +8,10 @@ import sys
 import time
 import warnings
 import inspect
-from concurrent.futures import CancelledError
+try:
+    from asyncio import CancelledError
+except ImportError:
+    from asyncio.futures import CancelledError
 from io import BytesIO
 
 from aredis.exceptions import (ConnectionError, TimeoutError,
