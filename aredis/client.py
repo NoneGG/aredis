@@ -1,9 +1,5 @@
 import asyncio
 import sys
-try:
-    from asyncio import CancelledError
-except ImportError:
-    from asyncio.futures import CancelledError
 
 from aredis.commands.cluster import ClusterCommandMixin
 from aredis.commands.connection import ClusterConnectionCommandMixin, ConnectionCommandMixin
@@ -22,6 +18,7 @@ from aredis.commands.sorted_set import ClusterSortedSetCommandMixin, SortedSetCo
 from aredis.commands.streams import StreamsCommandMixin
 from aredis.commands.strings import ClusterStringsCommandMixin, StringsCommandMixin
 from aredis.commands.transaction import ClusterTransactionCommandMixin, TransactionCommandMixin
+from aredis.compat import CancelledError
 from aredis.connection import RedisSSLContext, UnixDomainSocketConnection
 from aredis.exceptions import (AskError, BusyLoadingError, ClusterDownError, ClusterError, ConnectionError, MovedError,
                                RedisClusterException, TimeoutError, TryAgainError)
@@ -285,7 +282,8 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         passed along to the ConnectionPool class's initializer. In the case
         of conflicting arguments, querystring arguments always win.
         """
-        connection_pool = ClusterConnectionPool.from_url(url, db=db, skip_full_coverage_check=skip_full_coverage_check, **kwargs)
+        connection_pool = ClusterConnectionPool.from_url(url, db=db, skip_full_coverage_check=skip_full_coverage_check,
+                                                         **kwargs)
         return cls(connection_pool=connection_pool)
 
     def __repr__(self):
