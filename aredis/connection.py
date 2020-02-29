@@ -1,16 +1,14 @@
 import asyncio
-import functools
+import inspect
 import os
-import platform
 import socket
 import ssl
 import sys
 import time
 import warnings
-import inspect
-from concurrent.futures import CancelledError
 from io import BytesIO
 
+import aredis.compat
 from aredis.exceptions import (ConnectionError, TimeoutError,
                                RedisError, ExecAbortError,
                                BusyLoadingError, NoScriptError,
@@ -22,10 +20,10 @@ from aredis.utils import b, nativestr, LOOP_DEPRECATED
 
 try:
     import hiredis
+
     HIREDIS_AVAILABLE = True
 except ImportError:
     HIREDIS_AVAILABLE = False
-
 
 SYM_STAR = b('*')
 SYM_DOLLAR = b('$')
@@ -309,7 +307,7 @@ class HiredisParser(BaseParser):
                 buffer = await self._stream.read(self._read_size)
             # CancelledError will be caught by client so that command won't be retried again
             # For more detailed discussion please see https://github.com/NoneGG/aredis/issues/56
-            except CancelledError:
+            except aredis.compat.CancelledError:
                 raise
             except Exception:
                 e = sys.exc_info()[1]
@@ -461,7 +459,7 @@ class BaseConnection:
             if isinstance(command, str):
                 command = [command]
             self._writer.writelines(command)
-        except asyncio.futures.TimeoutError:
+        except aredis.compat.TimeoutError:
             self.disconnect()
             raise TimeoutError("Timeout writing to socket")
         except Exception:

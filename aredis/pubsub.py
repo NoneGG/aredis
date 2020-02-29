@@ -1,10 +1,7 @@
 import asyncio
 import threading
-try:
-    from asyncio import CancelledError
-except ImportError:
-    from asyncio.futures import CancelledError
 
+from aredis.compat import CancelledError
 from aredis.exceptions import PubSubError, ConnectionError, TimeoutError
 from aredis.utils import (list_or_args,
                           iteritems,
