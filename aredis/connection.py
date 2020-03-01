@@ -394,6 +394,10 @@ class BaseConnection:
         except Exception:
             pass
 
+    @property
+    def is_connected(self):
+        return bool(self._reader and self._writer)
+
     def register_connect_callback(self, callback):
         self._connect_callbacks.append(callback)
 
@@ -402,7 +406,7 @@ class BaseConnection:
 
     async def can_read(self):
         "See if there's data that can be read."
-        if not (self._reader and self._writer):
+        if not self.is_connected:
             await self.connect()
         return self._parser.can_read()
 
@@ -478,7 +482,7 @@ class BaseConnection:
             raise
 
     async def send_command(self, *args):
-        if not (self._reader and self._writer):
+        if not self.is_connected:
             await self.connect()
         await self.send_packed_command(self.pack_command(*args))
         self.awaiting_response = True
