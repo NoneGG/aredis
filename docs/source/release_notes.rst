@@ -118,3 +118,12 @@ master
 1.1.7
 -----
     * Fixbug: ModuleNotFoundError raised when install aredis 1.1.6 with Python3.6
+
+1.1.8
+-----
+    * Fixbug: connection is disconnected before idel check, valueError will be raised if a connection(not exist) is removed from connection list
+    * Fixbug: abstract compat.py to handle import problem of asyncio.future
+    * Fixbug: When cancelling a task, CancelledError exception is not propagated to client
+    * Fixbug: XREAD command should accept 0 as a block argument
+    * Fixbug: In redis cluster mode, XREAD command does not function properly
+    * Fixbug: slave connection params when there are no slaves
