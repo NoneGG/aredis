@@ -18,19 +18,13 @@ To install aredis, simply:
 
 .. code-block:: bash
 
-    $ sudo pip3 install aredis
-
-or alternatively (you really should be using pip though):
-
-.. code-block:: bash
-
-    $ sudo easy_install aredis
+    $ pip3 install aredis
 
 or from source:
 
 .. code-block:: bash
 
-    $ sudo python setup.py install
+    $ python setup.py install
 
 
 Getting started
