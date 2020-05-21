@@ -35,7 +35,7 @@ to the official command syntax. There are a few exceptions:
 Loop
 ^^^^
 
-The event loop can be set with the loop keyworkd argugment. If no loop is given
+The event loop can be set with the loop keyword argugment. If no loop is given
 the default event loop will be
 
 **warning**
