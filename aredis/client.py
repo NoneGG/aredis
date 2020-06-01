@@ -142,12 +142,12 @@ class StrictRedis(*mixins):
         return "{}<{}>".format(type(self).__name__, repr(self.connection_pool))
 
     def set_response_callback(self, command, callback):
-        "Set a custom Response Callback"
+        """Sets a custom Response Callback"""
         self.response_callbacks[command] = callback
 
     # COMMAND EXECUTION AND PROTOCOL PARSING
     async def execute_command(self, *args, **options):
-        "Execute a command and return a parsed response"
+        """Executes a command and returns a parsed response"""
         pool = self.connection_pool
         command_name = args[0]
         connection = pool.get_connection()
@@ -168,7 +168,7 @@ class StrictRedis(*mixins):
             pool.release(connection)
 
     async def parse_response(self, connection, command_name, **options):
-        "Parses a response from the Redis server"
+        """Parses a response from the Redis server"""
         response = await connection.read_response()
         if command_name in self.response_callbacks:
             callback = self.response_callbacks[command_name]
@@ -177,7 +177,7 @@ class StrictRedis(*mixins):
 
     async def pipeline(self, transaction=True, shard_hint=None):
         """
-        Return a new pipeline object that can queue multiple commands for
+        Returns a new pipeline object that can queue multiple commands for
         later execution. ``transaction`` indicates whether all commands
         should be executed atomically. Apart from making a group of operations
         atomic, pipelines are useful for reducing the back-and-forth overhead
@@ -287,21 +287,17 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         return cls(connection_pool=connection_pool)
 
     def __repr__(self):
-        """
-        """
         servers = list({'{0}:{1}'.format(info['host'], info['port'])
                         for info in self.connection_pool.nodes.startup_nodes})
         servers.sort()
         return "{0}<{1}>".format(type(self).__name__, ', '.join(servers))
 
     def set_result_callback(self, command, callback):
-        "Set a custom Result Callback"
+        "Sets a custom Result Callback"
         self.result_callbacks[command] = callback
 
     def _determine_slot(self, *args):
-        """
-        figure out what slot based on command and args
-        """
+        """Figures out what slot based on command and args"""
         if len(args) <= 1:
             raise RedisClusterException("No way to dispatch this command to Redis Cluster. Missing key.")
         command = args[0]
@@ -338,6 +334,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
     def determine_node(self, *args, **kwargs):
         """
+        TODO: document
         """
         command = args[0]
         node_flag = self.nodes_flags.get(command)
@@ -364,7 +361,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
     @clusterdown_wrapper
     async def execute_command(self, *args, **kwargs):
         """
-        Send a command to a node in the cluster
+        Sends a command to a node in the cluster
         """
         if not self.connection_pool.initialized:
             await self.connection_pool.initialize()

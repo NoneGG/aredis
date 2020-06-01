@@ -51,7 +51,7 @@ class ReadOnlyError(ResponseError):
 
 
 class LockError(RedisError, ValueError):
-    "Errors acquiring or releasing a lock"
+    """Errors acquiring or releasing a lock"""
     # NOTE: For backwards compatability, this class derives from ValueError.
     # This was originally chosen to behave like threading.Lock.
     pass
@@ -71,38 +71,26 @@ class CompressError(CacheError):
 
 
 class RedisClusterException(Exception):
-    """
-    """
     pass
 
 
 class RedisClusterError(Exception):
-    """
-    """
     pass
 
 
 class ClusterDownException(Exception):
-    """
-    """
     pass
 
 
 class ClusterError(RedisError):
-    """
-    """
     pass
 
 
 class ClusterCrossSlotError(ResponseError):
-    """
-    """
     message = "Keys in request don't hash to the same slot"
 
 
 class ClusterDownError(ClusterError, ResponseError):
-    """
-    """
 
     def __init__(self, resp):
         self.args = (resp,)
@@ -136,14 +124,10 @@ class AskError(ResponseError):
 
 
 class TryAgainError(ResponseError):
-    """
-    """
 
     def __init__(self, *args, **kwargs):
         pass
 
 
 class MovedError(AskError):
-    """
-    """
     pass

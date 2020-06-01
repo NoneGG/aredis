@@ -44,9 +44,8 @@ class IdentityGenerator(object):
 
 class Compressor(object):
     """
-    use zlib to compress and decompress cache in redis,
-    you may overwrite your own Compressor
-    with api compress and decompress
+    Uses zlib to compress and decompress Redis cache. You may implement your
+    own Compressor implementing `compress` and `decompress` methods
     """
 
     min_length = 15
@@ -85,9 +84,8 @@ class Compressor(object):
 
 class Serializer(object):
     """
-    use json to serialize and deserialize cache to str,
-    you may overwrite your own serialize
-    with api serialize and deserialize
+    Uses json to serialize and deserialize cache to str. You may implement
+    your own Serializer implemting `serialize` and `deserialize` methods.
     """
 
     def __init__(self, encoding='utf-8'):
@@ -187,18 +185,18 @@ class BasicCache(object):
         return count_deleted
 
     async def exist(self, key, param=None):
-        """see if specific identity exists"""
+        """Checks if specific identity exists"""
         identity = self._gen_identity(key, param)
         return await self.client.exists(identity)
 
     async def ttl(self, key, param=None):
-        """get time to live of a specific identity"""
+        """Gets time to live of a specific identity"""
         identity = self._gen_identity(key, param)
         return await self.client.ttl(identity)
 
 
 class Cache(BasicCache):
-    """cache provides basic function"""
+    """Provides basic caching"""
 
     async def get(self, key, param=None):
         identity = self._gen_identity(key, param)
@@ -223,12 +221,12 @@ class Cache(BasicCache):
 
 class HerdCache(BasicCache):
     """
-    Cache that handle thundering herd problem
+    Cache that handles thundering herd problem
     (https://en.wikipedia.org/wiki/Thundering_herd_problem)
-    by cache expire time in set instead directly
-    using expire operation of redis.
-    This kind of cache is suitable for low consistency scene
-    where update work is expensive
+    by cacheing expiration time in set instead of directly using expire
+    operation of redis.
+    This kind of cache is suitable for low consistency scene where update
+    operations are expensive.
     """
 
     def __init__(self, client, app='', identity_generator_class=IdentityGenerator,
@@ -242,7 +240,7 @@ class HerdCache(BasicCache):
 
     async def set(self, key, value, param=None, expire_time=None, herd_timeout=None):
         """
-        Use key and param to generate identity and pack the content,
+        Uses key and param to generate identity and pack the content,
         expire the key within real_timeout if expire_time is given.
         real_timeout is equal to the sum of expire_time and herd_time.
         The content is cached with expire_time.
@@ -269,11 +267,10 @@ class HerdCache(BasicCache):
 
     async def get(self, key, param=None, extend_herd_timeout=None):
         """
-        Use key or identity generate from key and param to
-        get cached content and expire time.
-        Compare expire time with time.now(), return None and
-        set cache with extended timeout if cache is expired,
-        else, return unpacked content
+        Uses key or identity generated from key and param to get cached
+        content and expiratiom time.
+        Uses time.now() to check expiration. If expired, returns unpacked
+        content. Otherwise returns None and sets cache with extended timeout
         """
         identity = self._gen_identity(key, param)
         res = await self.client.get(identity)

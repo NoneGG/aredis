@@ -139,7 +139,7 @@ class SocketBuffer(object):
 
 
 class BaseParser(object):
-    "Plain Python parsing class"
+    """Plain Python parsing class"""
 
     EXCEPTION_CLASSES = {
         'ERR': {
@@ -157,7 +157,7 @@ class BaseParser(object):
     }
 
     def parse_error(self, response):
-        "Parse an error response"
+        """Parse an error response"""
         error_code = response.split(' ')[0]
         if error_code in self.EXCEPTION_CLASSES:
             response = response[len(error_code) + 1:]
@@ -182,14 +182,14 @@ class PythonParser(BaseParser):
             pass
 
     def on_connect(self, connection):
-        "Called when the stream connects"
+        """Called when the stream connects"""
         self._stream = connection._reader
         self._buffer = SocketBuffer(self._stream, self._read_size)
         if connection.decode_responses:
             self.encoding = connection.encoding
 
     def on_disconnect(self):
-        "Called when the stream disconnects"
+        """Called when the stream disconnects"""
         if self._stream is not None:
             self._stream = None
         if self._buffer is not None:
@@ -252,7 +252,7 @@ class PythonParser(BaseParser):
 
 
 class HiredisParser(BaseParser):
-    "Parser class for connections using Hiredis"
+    """Parser class for connections using Hiredis"""
 
     def __init__(self, read_size):
         if not HIREDIS_AVAILABLE:
@@ -405,7 +405,7 @@ class BaseConnection:
         self._connect_callbacks = list()
 
     async def can_read(self):
-        "See if there's data that can be read."
+        """Checks for data that can be read"""
         if not self.is_connected:
             await self.connect()
         return self._parser.can_read()
@@ -457,7 +457,7 @@ class BaseConnection:
         return response
 
     async def send_packed_command(self, command):
-        "Send an already packed command to the Redis server"
+        """Sends an already packed command to the Redis server"""
         if not self._writer:
             await self.connect()
         try:
@@ -489,7 +489,7 @@ class BaseConnection:
         self.last_active_at = time.time()
 
     def encode(self, value):
-        "Return a bytestring representation of the value"
+        """Returns a bytestring representation of the value"""
         if isinstance(value, bytes):
             return value
         elif isinstance(value, int):
@@ -503,7 +503,7 @@ class BaseConnection:
         return value
 
     def disconnect(self):
-        "Disconnects from the Redis server"
+        """Disconnects from the Redis server"""
         self._parser.on_disconnect()
         try:
             self._writer.close()

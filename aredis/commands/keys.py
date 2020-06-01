@@ -25,7 +25,7 @@ def sort_return_tuples(response, **options):
 
 
 def parse_object(response, infotype):
-    "Parse the results of an OBJECT command"
+    """Parse the results of an OBJECT command"""
     if infotype in ('idletime', 'refcount'):
         return int_or_none(response)
     return response
@@ -54,7 +54,7 @@ class KeysCommandMixin:
     )
 
     async def delete(self, *names):
-        "Delete one or more keys specified by ``names``"
+        """Delete one or more keys specified by ``names``"""
         return await self.execute_command('DEL', *names)
 
     async def dump(self, name):
@@ -65,7 +65,7 @@ class KeysCommandMixin:
         return await self.execute_command('DUMP', name)
 
     async def exists(self, name):
-        "Returns a boolean indicating whether key ``name`` exists"
+        """Returns a boolean indicating whether key ``name`` exists"""
         return await self.execute_command('EXISTS', name)
 
     async def expire(self, name, time):
@@ -87,19 +87,19 @@ class KeysCommandMixin:
         return await self.execute_command('EXPIREAT', name, when)
 
     async def keys(self, pattern='*'):
-        "Returns a list of keys matching ``pattern``"
+        """Returns a list of keys matching ``pattern``"""
         return await self.execute_command('KEYS', pattern)
 
     async def move(self, name, db):
-        "Moves the key ``name`` to a different Redis database ``db``"
+        """Moves the key ``name`` to a different Redis database ``db``"""
         return await self.execute_command('MOVE', name, db)
 
     async def object(self, infotype, key):
-        "Return the encoding, idletime, or refcount about the key"
+        """Returns the encoding, idletime, or refcount about the key"""
         return await self.execute_command('OBJECT', infotype, key, infotype=infotype)
 
     async def persist(self, name):
-        "Removes an expiration on ``name``"
+        """Removes an expiration on ``name``"""
         return await self.execute_command('PERSIST', name)
 
     async def pexpire(self, name, time):
@@ -125,26 +125,28 @@ class KeysCommandMixin:
         return await self.execute_command('PEXPIREAT', name, when)
 
     async def pttl(self, name):
-        "Returns the number of milliseconds until the key ``name`` will expire"
+        """
+        Returns the number of milliseconds until the key ``name`` will expire
+        """
         return await self.execute_command('PTTL', name)
 
     async def randomkey(self):
-        "Returns the name of a random key"
+        """Returns the name of a random key"""
         return await self.execute_command('RANDOMKEY')
 
     async def rename(self, src, dst):
         """
-        Rename key ``src`` to ``dst``
+        Renames key ``src`` to ``dst``
         """
         return await self.execute_command('RENAME', src, dst)
 
     async def renamenx(self, src, dst):
-        "Rename key ``src`` to ``dst`` if ``dst`` doesn't already exist"
+        """Renames key ``src`` to ``dst`` if ``dst`` doesn't already exist"""
         return await self.execute_command('RENAMENX', src, dst)
 
     async def restore(self, name, ttl, value, replace=False):
         """
-        Create a key using the provided serialized value, previously obtained
+        Creates a key using the provided serialized value, previously obtained
         using DUMP.
         """
         params = [name, ttl, value]
@@ -155,22 +157,22 @@ class KeysCommandMixin:
     async def sort(self, name, start=None, num=None, by=None, get=None,
              desc=False, alpha=False, store=None, groups=False):
         """
-        Sort and return the list, set or sorted set at ``name``.
+        Sorts and returns a list, set or sorted set at ``name``.
 
-        ``start`` and ``num`` allow for paging through the sorted data
+        ``start`` and ``num`` are for paginating sorted data
 
         ``by`` allows using an external key to weight and sort the items.
             Use an "*" to indicate where in the key the item value is located
 
-        ``get`` allows for returning items from external keys rather than the
+        ``get`` is for returning items from external keys rather than the
             sorted data itself.  Use an "*" to indicate where int he key
             the item value is located
 
-        ``desc`` allows for reversing the sort
+        ``desc`` is for reversing the sort
 
-        ``alpha`` allows for sorting lexicographically rather than numerically
+        ``alpha`` is for sorting lexicographically rather than numerically
 
-        ``store`` allows for storing the result of the sort into
+        ``store`` is for storing the result of the sort into
             the key ``store``
 
         ``groups`` if set to True and if ``get`` contains at least two
@@ -227,15 +229,15 @@ class KeysCommandMixin:
         return await self.execute_command('TOUCH', *keys)
 
     async def ttl(self, name):
-        "Returns the number of seconds until the key ``name`` will expire"
+        """Returns the number of seconds until the key ``name`` will expire"""
         return await self.execute_command('TTL', name)
 
     async def type(self, name):
-        "Returns the type of key ``name``"
+        """Returns the type of key ``name``"""
         return await self.execute_command('TYPE', name)
 
     async def unlink(self, *keys):
-        """removes the specified keys in a different thread, not blocking"""
+        """Removes the specified keys in a different thread, not blocking"""
         return await self.execute_command('UNLINK', *keys)
 
     async def wait(self, num_replicas, timeout):

@@ -31,7 +31,7 @@ def parse_config_get(response, **options):
 
 
 def timestamp_to_datetime(response):
-    "Converts a unix timestamp to a Python datetime object"
+    """Converts a unix timestamp to a Python datetime object"""
     if not response:
         return None
     try:
@@ -42,7 +42,9 @@ def timestamp_to_datetime(response):
 
 
 def parse_debug_object(response):
-    "Parse the results of Redis's DEBUG OBJECT command into a Python dict"
+    """
+    Parses the results of Redis's DEBUG OBJECT command into a Python dict
+    """
     # The 'type' of the object is the first item in the response, but isn't
     # prefixed with a name
     response = nativestr(response)
@@ -60,7 +62,7 @@ def parse_debug_object(response):
 
 
 def parse_info(response):
-    "Parse the result of Redis's INFO command into a Python dict"
+    """Parses the result of Redis's INFO command into a Python dict"""
     info = {}
     response = nativestr(response)
 
@@ -162,67 +164,71 @@ class ServerCommandMixin:
     )
 
     async def bgrewriteaof(self):
-        "Tell the Redis server to rewrite the AOF file from data in memory."
+        """Tell the Redis server to rewrite the AOF file from data in memory"""
         return await self.execute_command('BGREWRITEAOF')
 
     async def bgsave(self):
         """
-        Tell the Redis server to save its data to disk.  Unlike save(),
+        Tells the Redis server to save its data to disk.  Unlike save(),
         this method is asynchronous and returns immediately.
         """
         return await self.execute_command('BGSAVE')
 
     async def client_kill(self, address):
-        "Disconnects the client at ``address`` (ip:port)"
+        """Disconnects the client at ``address`` (ip:port)"""
         return await self.execute_command('CLIENT KILL', address)
 
     async def client_list(self):
-        "Returns a list of currently connected clients"
+        """Returns a list of currently connected clients"""
         return await self.execute_command('CLIENT LIST')
 
     async def client_getname(self):
-        "Returns the current connection name"
+        """Returns the current connection name"""
         return await self.execute_command('CLIENT GETNAME')
 
     async def client_setname(self, name):
-        "Sets the current connection name"
+        """Sets the current connection name"""
         return await self.execute_command('CLIENT SETNAME', name)
 
     async def client_pause(self, timeout=0):
-        """suspend all the Redis clients for the
-        specified amount of time (in milliseconds)."""
+        """
+        Suspends all the Redis clients for the specified amount of time
+        (in milliseconds).
+        """
         return await self.execute_command('CLIENT PAUSE', timeout)
 
     async def config_get(self, pattern="*"):
-        "Return a dictionary of configuration based on the ``pattern``"
+        """Returns a dictionary of configuration based on the ``pattern``"""
         return await self.execute_command('CONFIG GET', pattern)
 
     async def config_set(self, name, value):
-        "Set config item ``name`` with ``value``"
+        """Sets config item ``name`` to ``value``"""
         return await self.execute_command('CONFIG SET', name, value)
 
     async def config_resetstat(self):
-        "Reset runtime statistics"
+        """Resets runtime statistics"""
         return await self.execute_command('CONFIG RESETSTAT')
 
     async def config_rewrite(self):
-        "Rewrite config file with the minimal change to reflect running config"
+        """
+        Rewrites config file with the minimal change to reflect running config
+        """
         return await self.execute_command('CONFIG REWRITE')
 
     async def dbsize(self):
-        "Returns the number of keys in the current database"
+        """Returns the number of keys in the current database"""
         return await self.execute_command('DBSIZE')
 
     async def debug_object(self, key):
-        "Returns version specific meta information about a given key"
+        """Returns version specific meta information about a given key"""
         return await self.execute_command('DEBUG OBJECT', key)
 
     async def flushall(self):
-        "Delete all keys in all databases on the current host"
+        """Deletes all keys in all databases on the current host"""
         return await self.execute_command('FLUSHALL')
 
     async def flushdb(self):
-        "Delete all keys in the current database"
+        """Deletes all keys in the current database"""
         return await self.execute_command('FLUSHDB')
 
     async def info(self, section=None):
@@ -242,20 +248,20 @@ class ServerCommandMixin:
 
     async def lastsave(self):
         """
-        Return a Python datetime object representing the last time the
+        Returns a Python datetime object representing the last time the
         Redis database was saved to disk
         """
         return await self.execute_command('LASTSAVE')
 
     async def save(self):
         """
-        Tell the Redis server to save its data to disk,
+        Tells the Redis server to save its data to disk,
         blocking until the save is complete
         """
         return await self.execute_command('SAVE')
 
     async def shutdown(self):
-        "Shutdown the server"
+        """Stops Redis server"""
         try:
             await self.execute_command('SHUTDOWN')
         except ConnectionError:
@@ -265,7 +271,7 @@ class ServerCommandMixin:
 
     async def slaveof(self, host=None, port=None):
         """
-        Set the server to be a replicated slave of the instance identified
+        Sets the server to be a replicated slave of the instance identified
         by the ``host`` and ``port``. If called without arguments, the
         instance is promoted to a master instead.
         """
@@ -275,7 +281,7 @@ class ServerCommandMixin:
 
     async def slowlog_get(self, num=None):
         """
-        Get the entries from the slowlog. If ``num`` is specified, get the
+        Gets the entries from the slowlog. If ``num`` is specified, get the
         most recent ``num`` items.
         """
         args = ['SLOWLOG GET']
@@ -284,11 +290,11 @@ class ServerCommandMixin:
         return await self.execute_command(*args)
 
     async def slowlog_len(self):
-        "Get the number of items in the slowlog"
+        """Gets the number of items in the slowlog"""
         return await self.execute_command('SLOWLOG LEN')
 
     async def slowlog_reset(self):
-        "Remove all items in the slowlog"
+        """Removes all items in the slowlog"""
         return await self.execute_command('SLOWLOG RESET')
 
     async def time(self):
@@ -300,7 +306,7 @@ class ServerCommandMixin:
 
     async def role(self):
         """
-        Provide information on the role of a Redis instance in the context of replication,
+        Provides information on the role of a Redis instance in the context of replication,
         by returning if the instance is currently a master, slave, or sentinel.
         The command also returns additional information about the state of the replication
         (if the role is master or slave)

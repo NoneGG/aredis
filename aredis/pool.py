@@ -38,12 +38,12 @@ URL_QUERY_ARGUMENT_PARSERS = {
 
 
 class ConnectionPool(object):
-    "Generic connection pool"
+    """Generic connection pool"""
 
     @classmethod
     def from_url(cls, url, db=None, decode_components=False, **kwargs):
         """
-        Return a connection pool configured from the given URL.
+        Returns a connection pool configured from the given URL.
 
         For example::
 
@@ -152,7 +152,7 @@ class ConnectionPool(object):
                  max_idle_time=0, idle_check_interval=1,
                  **connection_kwargs):
         """
-        Create a connection pool. If max_connections is set, then this
+        Creates a connection pool. If max_connections is set, then this
         object raises redis.ConnectionError when the pool's limit is reached.
 
         By default, TCP connections are created connection_class is specified.
@@ -211,7 +211,7 @@ class ConnectionPool(object):
                 self.reset()
 
     def get_connection(self, *args, **kwargs):
-        "Get a connection from the pool"
+        """Gets a connection from the pool"""
         self._checkpid()
         try:
             connection = self._available_connections.pop()
@@ -221,7 +221,7 @@ class ConnectionPool(object):
         return connection
 
     def make_connection(self):
-        "Create a new connection"
+        """Creates a new connection"""
         if self._created_connections >= self.max_connections:
             raise ConnectionError("Too many connections")
         self._created_connections += 1
@@ -232,7 +232,7 @@ class ConnectionPool(object):
         return connection
 
     def release(self, connection):
-        "Releases the connection back to the pool"
+        """Releases the connection back to the pool"""
         self._checkpid()
         if connection.pid != self.pid:
             return
@@ -245,7 +245,7 @@ class ConnectionPool(object):
             self._available_connections.append(connection)
 
     def disconnect(self):
-        "Disconnects all connections in the pool"
+        """Closes all connections in the pool"""
         all_conns = chain(self._available_connections,
                           self._in_use_connections)
         for connection in all_conns:
@@ -254,9 +254,7 @@ class ConnectionPool(object):
 
 
 class ClusterConnectionPool(ConnectionPool):
-    """
-    Custom connection pool for rediscluster
-    """
+    """Custom connection pool for rediscluster"""
     RedisClusterDefaultTimeout = None
 
     def __init__(self, startup_nodes=None, connection_class=ClusterConnection,
@@ -310,7 +308,8 @@ class ClusterConnectionPool(ConnectionPool):
 
     def __repr__(self):
         """
-        Return a string with all unique ip:port combinations that this pool is connected to.
+        Returns a string with all unique ip:port combinations that this pool
+        is connected to
         """
         return "{0}<{1}>".format(
             type(self).__name__,
@@ -335,9 +334,7 @@ class ClusterConnectionPool(ConnectionPool):
             await asyncio.sleep(self.idle_check_interval)
 
     def reset(self):
-        """
-        Resets the connection pool back to a clean state.
-        """
+        """Resets the connection pool back to a clean state"""
         self.pid = os.getpid()
         self._created_connections_per_node = {}  # Dict(Node, Int)
         self._available_connections = {}  # Dict(Node, List)
@@ -346,8 +343,6 @@ class ClusterConnectionPool(ConnectionPool):
         self.initialized = False
 
     def _checkpid(self):
-        """
-        """
         if self.pid != os.getpid():
             with self._check_lock:
                 if self.pid == os.getpid():
@@ -385,9 +380,7 @@ class ClusterConnectionPool(ConnectionPool):
         return connection
 
     def make_connection(self, node):
-        """
-        Create a new connection
-        """
+        """Creates a new connection"""
         if self.count_all_num_connections(node) >= self.max_connections:
             if self.max_connections_per_node:
                 raise RedisClusterException("Too many connection ({0}) for node: {1}"
@@ -410,9 +403,7 @@ class ClusterConnectionPool(ConnectionPool):
         return connection
 
     def release(self, connection):
-        """
-        Releases the connection back to the pool
-        """
+        """Releases the connection back to the pool"""
         self._checkpid()
         if connection.pid != self.pid:
             return
@@ -435,9 +426,7 @@ class ClusterConnectionPool(ConnectionPool):
             self._available_connections.setdefault(connection.node["name"], []).append(connection)
 
     def disconnect(self):
-        """
-        Nothing that requires any overwrite.
-        """
+        """Closes all connectins in the pool"""
         all_conns = chain(
             self._available_connections.values(),
             self._in_use_connections.values(),
@@ -448,17 +437,13 @@ class ClusterConnectionPool(ConnectionPool):
                 connection.disconnect()
 
     def count_all_num_connections(self, node):
-        """
-        """
         if self.max_connections_per_node:
             return self._created_connections_per_node.get(node['name'], 0)
 
         return sum([i for i in self._created_connections_per_node.values()])
 
     def get_random_connection(self):
-        """
-        Open new connection to random redis server.
-        """
+        """Opens new connection to random redis server"""
         if self._available_connections:
             node_name = random.choice(list(self._available_connections.keys()))
             conn_list = self._available_connections[node_name]
@@ -474,8 +459,6 @@ class ClusterConnectionPool(ConnectionPool):
         raise Exception("Cant reach a single startup node.")
 
     def get_connection_by_key(self, key):
-        """
-        """
         if not key:
             raise RedisClusterException("No way to dispatch this command to Redis Cluster.")
 
@@ -483,7 +466,8 @@ class ClusterConnectionPool(ConnectionPool):
 
     def get_connection_by_slot(self, slot):
         """
-        Determine what server a specific slot belongs to and return a redis object that is connected
+        Determines what server a specific slot belongs to and return a redis
+        object that is connected
         """
         self._checkpid()
 
@@ -493,9 +477,7 @@ class ClusterConnectionPool(ConnectionPool):
             return self.get_random_connection()
 
     def get_connection_by_node(self, node):
-        """
-        get a connection by node
-        """
+        """Gets a connection by node"""
         self._checkpid()
         self.nodes.set_node_name(node)
 

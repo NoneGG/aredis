@@ -110,7 +110,7 @@ class SentinelConnectionPool(ConnectionPool):
         return master_address
 
     async def rotate_slaves(self):
-        "Round-robin slave balancer"
+        """Round-robin slave balancer"""
         slaves = await self.sentinel_manager.discover_slaves(self.service_name)
         slave_address = list()
         if slaves:
@@ -225,7 +225,7 @@ class Sentinel(object):
         raise MasterNotFoundError("No master found for %r" % (service_name,))
 
     def filter_slaves(self, slaves):
-        "Remove slaves that are in an ODOWN or SDOWN state"
+        """Removes slaves that are in an ODOWN or SDOWN state"""
         slaves_alive = []
         for slave in slaves:
             if slave['is_odown'] or slave['is_sdown']:
@@ -234,7 +234,7 @@ class Sentinel(object):
         return slaves_alive
 
     async def discover_slaves(self, service_name):
-        "Returns a list of alive slaves for service ``service_name``"
+        """Returns a list of alive slaves for service ``service_name``"""
         for sentinel in self.sentinels:
             try:
                 slaves = await sentinel.sentinel_slaves(service_name)

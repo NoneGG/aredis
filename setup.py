@@ -35,8 +35,9 @@ except ImportError:
 
 class custom_build_ext(build_ext):
     """
-    These code comes from tornado.
-    Allow C extension building to fail.
+    NOTE: This code was originally taken from tornado.
+
+    Allows C extension building to fail.
 
     The C extension speeds up crc16, but is not essential.
     """
@@ -70,7 +71,7 @@ Fedora users should issue the following command:
 If you are seeing this message on OSX please read the documentation
 here:
 
-http://api.mongodb.org/python/current/installation.html#osx
+https://api.mongodb.org/python/current/installation.html#osx
 ********************************************************************
 """
 
