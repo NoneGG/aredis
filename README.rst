@@ -30,9 +30,9 @@ or from source:
 Getting started
 ---------------
 
-`For more example`_
+`More examples`_
 
-.. _For more example: https://github.com/NoneGG/aredis/tree/master/examples
+.. _More examples: https://github.com/NoneGG/aredis/tree/master/examples
 
 single node client
 ^^^^^^^^^^^^^^^^^^
