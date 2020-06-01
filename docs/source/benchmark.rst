@@ -1,6 +1,6 @@
 Benchmark
 =========
-benchmark/comparation.py run on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser
+benchmarks/comparison.py run on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser
 
 local redis server
 ^^^^^^^^^^^^^^^^^^
@@ -41,5 +41,5 @@ Advantage
 
 1. aredis can be used howerver you install hiredis or not.
 2. aredis' API are mostly ported from redis-py, which is easy to use indeed and make it easy to port your code with asyncio
-3. according to my test, aredis is efficient enough (please run benchmarks/comparation.py to see which async redis client is suitable for you)
+3. according to my test, aredis is efficient enough (please run benchmarks/comparison.py to see which async redis client is suitable for you)
 4. aredis can be run both with asyncio and uvloop, the latter can double the speed of your async code.
