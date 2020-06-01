@@ -1,6 +1,6 @@
 Benchmark
 =========
-During test benchmarks/comparison.py ran on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser.
+During test benchmarks/comparison.py ran on a virtual machine (Ubuntu, 4G RAM and 2 CPUs) with hiredis installed.
 
 local redis server
 ^^^^^^^^^^^^^^^^^^
