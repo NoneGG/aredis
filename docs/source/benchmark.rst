@@ -1,6 +1,6 @@
 Benchmark
 =========
-benchmarks/comparison.py run on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser
+During test benchmarks/comparison.py ran on virtual machine(ubuntu, 4G memory and 2 cpu) with hiredis as parser.
 
 local redis server
 ^^^^^^^^^^^^^^^^^^
@@ -19,8 +19,8 @@ local redis server
 redis server in local area network
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Only run with uvloop, or it will be too slow.
-Although it seems like that running code in synchronous way perform more well than in asynchronous way,
-the point is that it won't block the other code to run.
+Although it seems like that running code in synchronous way perform better than in asynchronous way,
+the point is that it won't block other code.
 
 +-----------------+--------------+----------------+---------------------+--------+
 |num of query/time|aredis(uvloop)|aioredis(uvloop)|asyncio_redis(uvloop)|redis-py|
@@ -34,12 +34,12 @@ the point is that it won't block the other code to run.
 |100000           |   58.4715    |      60.9220   |        189.06       | 58.979 |
 +-----------------+--------------+----------------+---------------------+--------+
 
-**test result may change according to your computer performance and network (you may run the sheet yourself to determine which one is the most suitable for you)**
+**test results may differ depending on your workstation and network hardware (you may run the benchmark yourself to determine which one is the most suitable for you)**
 
-Advantage
-^^^^^^^^^
+Advantages
+^^^^^^^^^^
 
-1. aredis can be used howerver you install hiredis or not.
-2. aredis' API are mostly ported from redis-py, which is easy to use indeed and make it easy to port your code with asyncio
-3. according to my test, aredis is efficient enough (please run benchmarks/comparison.py to see which async redis client is suitable for you)
-4. aredis can be run both with asyncio and uvloop, the latter can double the speed of your async code.
+1. hiredis is an optional dependency for aredis.
+2. API of aredis was mostly ported from redis-py, which is easy to use. It lets you easily port existing code to work with asyncio.
+3. aredis has a decent efficiency (please run benchmarks/comparison.py to see which async redis client is suitable for you).
+4. uvloop evant loop is supported by aredis, it can double the speed of your async code.
