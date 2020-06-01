@@ -34,7 +34,7 @@ the point is that it won't block other code.
 |100000           |   58.4715    |      60.9220   |        189.06       | 58.979 |
 +-----------------+--------------+----------------+---------------------+--------+
 
-**test results may differ depending on your workstation and network hardware (you may run the benchmark yourself to determine which one is the most suitable for you)**
+**test results may differ depending on your workstation and networking hardware (you may run the benchmark yourself to determine which one is the most suitable for you)**
 
 Advantages
 ^^^^^^^^^^
