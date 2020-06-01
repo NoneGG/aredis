@@ -19,8 +19,7 @@ local redis server
 redis server in local area network
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Only run with uvloop, or it will be too slow.
-Although it seems like that running code in synchronous way perform better than in asynchronous way,
-the point is that it won't block other code.
+Although synchronous code may perform better than in asynchronous, asynchronous won't block other code.
 
 +-----------------+--------------+----------------+---------------------+--------+
 |num of query/time|aredis(uvloop)|aioredis(uvloop)|asyncio_redis(uvloop)|redis-py|
