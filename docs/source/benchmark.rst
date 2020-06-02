@@ -41,4 +41,4 @@ Advantages
 1. hiredis is an optional dependency for aredis.
 2. API of aredis was mostly ported from redis-py, which is easy to use. It lets you easily port existing code to work with asyncio.
 3. aredis has a decent efficiency (please run benchmarks/comparison.py to see which async redis client is suitable for you).
-4. uvloop evant loop is supported by aredis, it can double the speed of your async code.
+4. uvloop event loop is supported by aredis, it can double the speed of your async code.
