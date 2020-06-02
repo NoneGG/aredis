@@ -144,7 +144,7 @@ class BasicCache(object):
         return identity
 
     def _pack(self, content):
-        """pack the content using serializer and compressor"""
+        """Packs the content using serializer and compressor"""
         if self.serializer:
             content = self.serializer.serialize(content)
         if self.compressor:
@@ -152,7 +152,7 @@ class BasicCache(object):
         return content
 
     def _unpack(self, content):
-        """unpack cache using serializer and compressor"""
+        """Unpacks cache using serializer and compressor"""
         if self.compressor:
             try:
                 content = self.compressor.decompress(content)
@@ -164,7 +164,7 @@ class BasicCache(object):
 
     async def delete(self, key, param=None):
         """
-        delete cache corresponding to identity
+        Deletes cache corresponding to identity
         generated from key and param
         """
         identity = self._gen_identity(key, param)
@@ -172,7 +172,7 @@ class BasicCache(object):
 
     async def delete_pattern(self, pattern, count=None):
         """
-        delete cache according to pattern in redis,
+        Deletes cache according to pattern in redis,
         delete `count` keys each time
         """
         cursor = '0'
@@ -269,7 +269,7 @@ class HerdCache(BasicCache):
         """
         Uses key or identity generated from key and param to get cached
         content and expiratiom time.
-        Uses time.now() to check expiration. If expired, returns unpacked
+        Uses time.now() to check expiration. If not expired, returns unpacked
         content. Otherwise returns None and sets cache with extended timeout
         """
         identity = self._gen_identity(key, param)
