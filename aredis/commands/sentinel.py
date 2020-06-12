@@ -91,40 +91,40 @@ class SentinelCommandMixin:
     }
 
     async def sentinel(self, *args):
-        "Redis Sentinel's SENTINEL command."
+        """Redis Sentinel's SENTINEL command."""
         warnings.warn(DeprecationWarning('Use the individual sentinel_* methods'))
 
     async def sentinel_get_master_addr_by_name(self, service_name):
-        "Returns a (host, port) pair for the given ``service_name``"
+        """Returns a (host, port) pair for the given ``service_name``"""
         return await self.execute_command('SENTINEL GET-MASTER-ADDR-BY-NAME',
                                           service_name)
 
     async def sentinel_master(self, service_name):
-        "Returns a dictionary containing the specified masters state."
+        """Returns a dictionary containing the specified masters state."""
         return await self.execute_command('SENTINEL MASTER', service_name)
 
     async def sentinel_masters(self):
-        "Returns a list of dictionaries containing each master's state."
+        """Returns a list of dictionaries containing each master's state."""
         return await self.execute_command('SENTINEL MASTERS')
 
     async def sentinel_monitor(self, name, ip, port, quorum):
-        "Add a new master to Sentinel to be monitored"
+        """Adds a new master to Sentinel to be monitored"""
         return await self.execute_command('SENTINEL MONITOR', name, ip, port, quorum)
 
     async def sentinel_remove(self, name):
-        "Remove a master from Sentinel's monitoring"
+        """Removes a master from Sentinel's monitoring"""
         return await self.execute_command('SENTINEL REMOVE', name)
 
     async def sentinel_sentinels(self, service_name):
-        "Returns a list of sentinels for ``service_name``"
+        """Returns a list of sentinels for ``service_name``"""
         return await self.execute_command('SENTINEL SENTINELS', service_name)
 
     async def sentinel_set(self, name, option, value):
-        "Set Sentinel monitoring parameters for a given master"
+        """Sets Sentinel monitoring parameters for a given master"""
         return await self.execute_command('SENTINEL SET', name, option, value)
 
     async def sentinel_slaves(self, service_name):
-        "Returns a list of slaves for ``service_name``"
+        """Returns a list of slaves for ``service_name``"""
         return await self.execute_command('SENTINEL SLAVES', service_name)
 
 

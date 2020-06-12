@@ -113,7 +113,7 @@ def int_or_none(response):
 
 
 def pairs_to_dict(response):
-    "Create a dict given a list of key/value pairs"
+    """Creates a dict given a list of key/value pairs"""
     it = iter(response)
     return dict(zip(it, it))
 
@@ -121,7 +121,7 @@ def pairs_to_dict(response):
 # ++++++++++ result callbacks (cluster)++++++++++++++
 def merge_result(res):
     """
-    Merge all items in `res` into a list.
+    Merges all items in `res` into a list.
 
     This command is used when sending a command to multiple nodes
     and they result from each node should be merged into a single list.
@@ -226,8 +226,6 @@ if not _C_EXTENSION_SPEEDUP:
 
 
     def _crc16(data):
-        """
-        """
         crc = 0
         for byte in data:
             crc = ((crc << 8) & 0xff00) ^ x_mode_m_crc16_lookup[((crc >> 8) & 0xff) ^ byte]

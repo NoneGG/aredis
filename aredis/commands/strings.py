@@ -288,7 +288,9 @@ class StringsCommandMixin:
         return await self.execute_command('SETEX', name, time, value)
 
     async def setnx(self, name, value):
-        "Set the value of key ``name`` to ``value`` if key doesn't exist"
+        """
+        Sets the value of key ``name`` to ``value`` if key doesn't exist
+        """
         return await self.execute_command('SETNX', name, value)
 
     async def setrange(self, name, offset, value):
@@ -305,12 +307,12 @@ class StringsCommandMixin:
         return await self.execute_command('SETRANGE', name, offset, value)
 
     async def strlen(self, name):
-        "Return the number of bytes stored in the value of ``name``"
+        """Returns the number of bytes stored in the value of ``name``"""
         return await self.execute_command('STRLEN', name)
 
     async def substr(self, name, start, end=-1):
         """
-        Return a substring of the string at key ``name``. ``start`` and ``end``
+        Returns a substring of the string at key ``name``. ``start`` and ``end``
         are 0-based integers specifying the portion of the string to return.
         """
         return await self.execute_command('SUBSTR', name, start, end)

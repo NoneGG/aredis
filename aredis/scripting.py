@@ -5,7 +5,7 @@ from aredis.utils import b
 
 
 class Script(object):
-    "An executable Lua script object returned by ``register_script``"
+    """An executable Lua script object returned by ``register_script``"""
 
     def __init__(self, registered_client, script):
         self.registered_client = registered_client
@@ -13,7 +13,7 @@ class Script(object):
         self.sha = hashlib.sha1(b(script)).hexdigest()
 
     async def execute(self, keys=[], args=[], client=None):
-        "Execute the script, passing any required ``args``"
+        """Executes the script, passing any required ``args``"""
         if client is None:
             client = self.registered_client
         args = tuple(keys) + tuple(args)

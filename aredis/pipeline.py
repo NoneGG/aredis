@@ -75,7 +75,7 @@ class BasePipeline(object):
 
     def multi(self):
         """
-        Start a transactional block of the pipeline after WATCH commands
+        Starts a transactional block of the pipeline after WATCH commands
         are issued. End the transactional block with `execute`.
         """
         if self.explicit_transaction:
@@ -93,7 +93,7 @@ class BasePipeline(object):
 
     async def immediate_execute_command(self, *args, **options):
         """
-        Execute a command immediately, but don't auto-retry on a
+        Executes a command immediately, but don't auto-retry on a
         ConnectionError if we're already WATCHing a variable. Used when
         issuing WATCH or subsequent commands retrieving their values but before
         MULTI is called.
@@ -124,7 +124,7 @@ class BasePipeline(object):
 
     def pipeline_execute_command(self, *args, **options):
         """
-        Stage a command to be executed when execute() is next called
+        Stages a command to be executed next execute() invocation
 
         Returns the current Pipeline object back so commands can be
         chained together, such as:
@@ -263,7 +263,7 @@ class BasePipeline(object):
                     s.sha = await immediate('SCRIPT LOAD', s.script)
 
     async def execute(self, raise_on_error=True):
-        "Execute all the commands in the current pipeline"
+        """Executes all the commands in the current pipeline"""
         stack = self.command_stack
         if not stack:
             return []
@@ -302,18 +302,18 @@ class BasePipeline(object):
             await self.reset()
 
     async def watch(self, *names):
-        "Watches the values at keys ``names``"
+        """Watches the values at keys ``names``"""
         if self.explicit_transaction:
             raise RedisError('Cannot issue a WATCH after a MULTI')
         return await self.execute_command('WATCH', *names)
 
     async def unwatch(self):
-        "Unwatches all previously specified keys"
+        """Unwatches all previously specified keys"""
         return self.watching and await self.execute_command('UNWATCH') or True
 
 
 class StrictPipeline(BasePipeline, StrictRedis):
-    "Pipeline for the StrictRedis class"
+    """Pipeline for the StrictRedis class"""
     pass
 
 
@@ -334,18 +334,12 @@ class StrictClusterPipeline(StrictRedisCluster):
         self.explicit_transaction = False
 
     def __repr__(self):
-        """
-        """
         return "{0}".format(type(self).__name__)
 
     def __del__(self):
-        """
-        """
         self.reset()
 
     def __len__(self):
-        """
-        """
         return len(self.command_stack)
 
     async def __aenter__(self):
@@ -355,9 +349,7 @@ class StrictClusterPipeline(StrictRedisCluster):
         self.reset()
 
     def _determine_slot(self, *args):
-        """
-        figure out what slot based on command and args
-        """
+        """Figure out what slot based on command and args"""
         if len(args) <= 1:
             raise RedisClusterException("No way to dispatch this command to Redis Cluster. Missing key.")
         command = args[0]
@@ -410,9 +402,7 @@ class StrictClusterPipeline(StrictRedisCluster):
             self.reset()
 
     def reset(self):
-        """
-        Reset back to empty pipeline.
-        """
+        """Empties pipeline"""
         self.command_stack = []
 
         self.scripts = set()
@@ -474,7 +464,7 @@ class StrictClusterPipeline(StrictRedisCluster):
     @clusterdown_wrapper
     async def send_cluster_commands(self, stack, raise_on_error=True, allow_redirections=True):
         """
-        Send a bunch of cluster commands to the redis cluster.
+        Sends a bunch of cluster commands to the redis cluster.
 
         `allow_redirections` If the pipeline should follow `ASK` & `MOVED` responses
         automatically. If set to false it will raise RedisClusterException.
@@ -571,22 +561,16 @@ class StrictClusterPipeline(StrictRedisCluster):
         return response
 
     def _fail_on_redirect(self, allow_redirections):
-        """
-        """
         if not allow_redirections:
             raise RedisClusterException("ASK & MOVED redirection not allowed in this pipeline")
 
     def _multi(self):
-        """
-        """
         raise RedisClusterException("method multi() is not implemented")
 
     def immediate_execute_command(self, *args, **options):
         raise RedisClusterException("method immediate_execute_command() is not implemented")
 
     def load_scripts(self):
-        """
-        """
         raise RedisClusterException("method load_scripts() is not implemented")
 
     async def _watch(self, node, conn, names):
@@ -604,20 +588,16 @@ class StrictClusterPipeline(StrictRedisCluster):
         return await conn.read_response()
 
     async def _unwatch(self, conn):
-        "Unwatches all previously specified keys"
+        """Unwatches all previously specified keys"""
         await conn.send_command('UNWATCH')
         res = await conn.read_response()
         return self.watching and res or True
 
     def script_load_for_pipeline(self, *args, **kwargs):
-        """
-        """
         raise RedisClusterException("method script_load_for_pipeline() is not implemented")
 
     def delete(self, *names):
-        """
-        "Delete a key specified by ``names``"
-        """
+        """Deletes a key specified by ``names``"""
         if len(names) != 1:
             raise RedisClusterException("deleting multiple keys is not implemented in pipeline command")
 
@@ -626,7 +606,8 @@ class StrictClusterPipeline(StrictRedisCluster):
 
 def block_pipeline_command(func):
     """
-    Prints error because some pipelined commands should be blocked when running in cluster-mode
+    Prints error because some pipelined commands should be blocked when
+    running in cluster-mode
     """
 
     def inner(*args, **kwargs):
@@ -703,6 +684,7 @@ StrictClusterPipeline.time = block_pipeline_command(StrictClusterPipeline.time)
 
 class PipelineCommand(object):
     """
+    TODO: document
     """
 
     def __init__(self, args, options=None, position=None):
@@ -718,11 +700,10 @@ class PipelineCommand(object):
 
 class NodeCommands(object):
     """
+    TODO: document
     """
 
     def __init__(self, parse_response, connection, in_transaction=False):
-        """
-        """
         self.parse_response = parse_response
         self.connection = connection
         self.commands = []
@@ -732,14 +713,10 @@ class NodeCommands(object):
         self.commands.extend(c)
 
     def append(self, c):
-        """
-        """
         self.commands.append(c)
 
     async def write(self):
-        """
-        Code borrowed from StrictRedis so it can be fixed
-        """
+        """NOTE: Code was borrowed from StrictRedis so it can be fixed"""
         connection = self.connection
         commands = self.commands
 

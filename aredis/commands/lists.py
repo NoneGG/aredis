@@ -95,24 +95,26 @@ class ListsCommandMixin:
         return await self.execute_command('LINSERT', name, where, refvalue, value)
 
     async def llen(self, name):
-        "Return the length of the list ``name``"
+        """Returns the length of the list ``name``"""
         return await self.execute_command('LLEN', name)
 
     async def lpop(self, name):
-        "Remove and return the first item of the list ``name``"
+        """RemoveS and returns the first item of the list ``name``"""
         return await self.execute_command('LPOP', name)
 
     async def lpush(self, name, *values):
-        "Push ``values`` onto the head of the list ``name``"
+        """Pushes ``values`` onto the head of the list ``name``"""
         return await self.execute_command('LPUSH', name, *values)
 
     async def lpushx(self, name, value):
-        "Push ``value`` onto the head of the list ``name`` if ``name`` exists"
+        """
+        Pushes ``value`` onto the head of the list ``name`` if ``name`` exists
+        """
         return await self.execute_command('LPUSHX', name, value)
 
     async def lrange(self, name, start, end):
         """
-        Return a slice of the list ``name`` between
+        Returns a slice of the list ``name`` between
         position ``start`` and ``end``
 
         ``start`` and ``end`` can be negative numbers just like
@@ -122,7 +124,7 @@ class ListsCommandMixin:
 
     async def lrem(self, name, count, value):
         """
-        Remove the first ``count`` occurrences of elements equal to ``value``
+        Removes the first ``count`` occurrences of elements equal to ``value``
         from the list stored at ``name``.
 
         The count argument influences the operation in the following ways:
@@ -133,12 +135,12 @@ class ListsCommandMixin:
         return await self.execute_command('LREM', name, count, value)
 
     async def lset(self, name, index, value):
-        "Set ``position`` of list ``name`` to ``value``"
+        """Sets ``position`` of list ``name`` to ``value``"""
         return await self.execute_command('LSET', name, index, value)
 
     async def ltrim(self, name, start, end):
         """
-        Trim the list ``name``, removing all values not within the slice
+        Trims the list ``name``, removing all values not within the slice
         between ``start`` and ``end``
 
         ``start`` and ``end`` can be negative numbers just like
@@ -147,7 +149,7 @@ class ListsCommandMixin:
         return await self.execute_command('LTRIM', name, start, end)
 
     async def rpop(self, name):
-        "Remove and return the last item of the list ``name``"
+        """Removes and return the last item of the list ``name``"""
         return await self.execute_command('RPOP', name)
 
     async def rpoplpush(self, src, dst):
@@ -158,11 +160,13 @@ class ListsCommandMixin:
         return await self.execute_command('RPOPLPUSH', src, dst)
 
     async def rpush(self, name, *values):
-        "Push ``values`` onto the tail of the list ``name``"
+        """Pushes ``values`` onto the tail of the list ``name``"""
         return await self.execute_command('RPUSH', name, *values)
 
     async def rpushx(self, name, value):
-        "Push ``value`` onto the tail of the list ``name`` if ``name`` exists"
+        """
+        Pushes ``value`` onto the tail of the list ``name`` if ``name`` exists
+        """
         return await self.execute_command('RPUSHX', name, value)
 
 
@@ -170,7 +174,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
 
     async def brpoplpush(self, src, dst, timeout=0):
         """
-        Pop a value off the tail of ``src``, push it on the head of ``dst``
+        Pops a value off the tail of ``src``, push it on the head of ``dst``
         and then return it.
 
         This command blocks until a value is in ``src`` or until ``timeout``
@@ -212,28 +216,28 @@ class ClusterListsCommandMixin(ListsCommandMixin):
         return None
 
     async def sort(self, name, start=None, num=None, by=None, get=None, desc=False, alpha=False, store=None, groups=None):
-        """Sort and return the list, set or sorted set at ``name``.
+        """Sorts and returns a list, set or sorted set at ``name``.
 
         :start: and :num:
-            allow for paging through the sorted data
+            are for paging through the sorted data
 
         :by:
             allows using an external key to weight and sort the items.
             Use an "*" to indicate where in the key the item value is located
 
         :get:
-            allows for returning items from external keys rather than the
+            is for returning items from external keys rather than the
             sorted data itself.  Use an "*" to indicate where int he key
             the item value is located
 
         :desc:
-            allows for reversing the sort
+            is for reversing the sort
 
         :alpha:
-            allows for sorting lexicographically rather than numerically
+            is for sorting lexicographically rather than numerically
 
         :store:
-            allows for storing the result of the sort into the key `store`
+            is for storing the result of the sort into the key `store`
 
         ClusterImpl:
             A full implementation of the server side sort mechanics because many of the

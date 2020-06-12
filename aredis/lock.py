@@ -130,7 +130,7 @@ class Lock(object):
         return await self.redis.set(self.name, token, nx=True, px=timeout)
 
     async def release(self):
-        "Releases the already acquired lock"
+        """Releases the already acquired lock"""
         expected_token = self.local.get()
         if expected_token is None:
             raise LockError("Cannot release an unlocked lock")

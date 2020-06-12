@@ -30,57 +30,59 @@ class SetsCommandMixin:
     )
 
     async def sadd(self, name, *values):
-        "Add ``value(s)`` to set ``name``"
+        """Adds ``value(s)`` to set ``name``"""
         return await self.execute_command('SADD', name, *values)
 
     async def scard(self, name):
-        "Return the number of elements in set ``name``"
+        """Returns the number of elements in set ``name``"""
         return await self.execute_command('SCARD', name)
 
     async def sdiff(self, keys, *args):
-        "Return the difference of sets specified by ``keys``"
+        """Returns the difference of sets specified by ``keys``"""
         args = list_or_args(keys, args)
         return await self.execute_command('SDIFF', *args)
 
     async def sdiffstore(self, dest, keys, *args):
         """
-        Store the difference of sets specified by ``keys`` into a new
+        Stores the difference of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
         return await self.execute_command('SDIFFSTORE', dest, *args)
 
     async def sinter(self, keys, *args):
-        "Return the intersection of sets specified by ``keys``"
+        """Returns the intersection of sets specified by ``keys``"""
         args = list_or_args(keys, args)
         return await self.execute_command('SINTER', *args)
 
     async def sinterstore(self, dest, keys, *args):
         """
-        Store the intersection of sets specified by ``keys`` into a new
+        Stores the intersection of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
         return await self.execute_command('SINTERSTORE', dest, *args)
 
     async def sismember(self, name, value):
-        "Return a boolean indicating if ``value`` is a member of set ``name``"
+        """
+        Returns a boolean indicating if ``value`` is a member of set ``name``
+        """
         return await self.execute_command('SISMEMBER', name, value)
 
     async def smembers(self, name):
-        "Return all members of the set ``name``"
+        """Returns all members of the set ``name``"""
         return await self.execute_command('SMEMBERS', name)
 
     async def smove(self, src, dst, value):
-        "Move ``value`` from set ``src`` to set ``dst`` atomically"
+        """Moves ``value`` from set ``src`` to set ``dst`` atomically"""
         return await self.execute_command('SMOVE', src, dst, value)
 
     async def spop(self, name, count=None):
         """
-        Remove and return a random member of set ``name``
+        Removes and returns a random member of set ``name``
         ``count`` should be type of int and default set to 1.
         If ``count`` is supplied, pops a list of ``count`` random
-+        members of set ``name``
+        members of set ``name``
         """
         if count and isinstance(count, int):
             return await self.execute_command('SPOP', name, count)
@@ -99,17 +101,17 @@ class SetsCommandMixin:
         return await self.execute_command('SRANDMEMBER', name, *args)
 
     async def srem(self, name, *values):
-        "Remove ``values`` from set ``name``"
+        """Removes ``values`` from set ``name``"""
         return await self.execute_command('SREM', name, *values)
 
     async def sunion(self, keys, *args):
-        "Return the union of sets specified by ``keys``"
+        """Returns the union of sets specified by ``keys``"""
         args = list_or_args(keys, args)
         return await self.execute_command('SUNION', *args)
 
     async def sunionstore(self, dest, keys, *args):
         """
-        Store the union of sets specified by ``keys`` into a new
+        Stores the union of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
@@ -117,12 +119,12 @@ class SetsCommandMixin:
 
     async def sscan(self, name, cursor=0, match=None, count=None):
         """
-        Incrementally return lists of elements in a set. Also return a cursor
-        indicating the scan position.
+        Incrementally returns lists of elements in a set. Also returns a
+        cursor pointing to the scan position.
 
-        ``match`` allows for filtering the keys by pattern
+        ``match`` is for filtering the keys by pattern
 
-        ``count`` allows for hint the minimum number of returns
+        ``count`` is for hint the minimum number of returns
         """
         pieces = [name, cursor]
         if match is not None:
@@ -144,7 +146,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def sdiff(self, keys, *args):
         """
-        Return the difference of sets specified by ``keys``
+        Returns the difference of sets specified by ``keys``
 
         Cluster impl:
             Querry all keys and diff all sets and return result
@@ -159,7 +161,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def sdiffstore(self, dest, keys, *args):
         """
-        Store the difference of sets specified by ``keys`` into a new
+        Stores the difference of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
         Overwrites dest key if it exists.
 
@@ -175,7 +177,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def sinter(self, keys, *args):
         """
-        Return the intersection of sets specified by ``keys``
+        Returns the intersection of sets specified by ``keys``
 
         Cluster impl:
             Querry all keys, intersection and return result
@@ -190,7 +192,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def sinterstore(self, dest, keys, *args):
         """
-        Store the intersection of sets specified by ``keys`` into a new
+        Stores the intersection of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
 
         Cluster impl:
@@ -207,7 +209,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def smove(self, src, dst, value):
         """
-        Move ``value`` from set ``src`` to set ``dst`` atomically
+        Moves ``value`` from set ``src`` to set ``dst`` atomically
 
         Cluster impl:
             SMEMBERS --> SREM --> SADD. Function is no longer atomic.
@@ -222,7 +224,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def sunion(self, keys, *args):
         """
-        Return the union of sets specified by ``keys``
+        Returns the union of sets specified by ``keys``
 
         Cluster impl:
             Querry all keys, union and return result
@@ -239,7 +241,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
     async def sunionstore(self, dest, keys, *args):
         """
-        Store the union of sets specified by ``keys`` into a new
+        Stores the union of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
 
         Cluster impl:

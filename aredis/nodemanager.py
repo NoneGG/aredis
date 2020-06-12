@@ -8,6 +8,7 @@ from aredis.exceptions import (ConnectionError,
 
 class NodeManager(object):
     """
+    TODO: document
     """
     RedisClusterHashSlots = 16384
 
@@ -37,7 +38,7 @@ class NodeManager(object):
             raise RedisClusterException("No startup nodes provided")
 
     def encode(self, value):
-        """Return a bytestring representation of the value"""
+        """Returns a bytestring representation of the value"""
         if isinstance(value, bytes):
             return value
         elif isinstance(value, int):
@@ -51,7 +52,7 @@ class NodeManager(object):
         return value
 
     def keyslot(self, key):
-        """Calculate keyslot for a given key."""
+        """Calculates keyslot for a given key"""
         key = self.encode(key)
         return hash_slot(key)
 
@@ -73,9 +74,7 @@ class NodeManager(object):
         return random.choice(self.startup_nodes)
 
     def random_startup_node_iter(self):
-        """
-        Generator that will return a random startup nodes. Works as a generator.
-        """
+        """A generator that returns a random startup nodes"""
         while True:
             yield random.choice(self.startup_nodes)
 
@@ -99,7 +98,8 @@ class NodeManager(object):
 
     async def initialize(self):
         """
-        Init the slots cache by asking all startup nodes what the current cluster configuration is
+        Initializes the slots cache by asking all startup nodes what the
+        current cluster configuration is.
 
         TODO: Currently the last node will have the last say about how the configuration is setup.
         Maybe it should stop to try after it have correctly covered all slots or when one node is reached
@@ -205,7 +205,7 @@ class NodeManager(object):
 
     async def cluster_require_full_coverage(self, nodes_cache):
         """
-        if exists 'cluster-require-full-coverage no' config on redis servers,
+        If exists 'cluster-require-full-coverage no' config on redis servers,
         then even all slots are not covered, cluster still will be able to
         respond
         """
@@ -224,7 +224,7 @@ class NodeManager(object):
 
     def set_node_name(self, n):
         """
-        Format the name for the given node object
+        Formats the name for the given node object
 
         # TODO: This shold not be constructed this way. It should update the name of the node in the node cache dict
         """
@@ -232,9 +232,7 @@ class NodeManager(object):
             n['name'] = '{0}:{1}'.format(n['host'], n['port'])
 
     def set_node(self, host, port, server_type=None):
-        """
-        Update data for a node.
-        """
+        """Updates data for a node"""
         node_name = "{0}:{1}".format(host, port)
         node = {
             'host': host,
@@ -262,7 +260,5 @@ class NodeManager(object):
         self.startup_nodes = [dict(node) for node in uniq]
 
     async def reset(self):
-        """
-        Drop all node data and start over from startup_nodes
-        """
+        """Drops all node data and start over from startup_nodes"""
         await self.initialize()

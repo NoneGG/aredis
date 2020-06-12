@@ -56,7 +56,7 @@ class PubSub(object):
         self.reset()
 
     async def on_connect(self, connection):
-        "Re-subscribe to any channels and patterns previously subscribed to"
+        """Re-subscribe to any channels and patterns previously subscribed to"""
         # NOTE: for python3, we can't pass bytestrings as keyword arguments
         # so we need to decode channel/pattern names back to str strings
         # before passing them to [p]subscribe.
@@ -77,8 +77,8 @@ class PubSub(object):
 
     def encode(self, value):
         """
-        Encode the value so that it's identical to what we'll
-        read off the connection
+        Encodes the value so that it's identical to what we'll read off the
+        connection
         """
         if self.decode_responses and isinstance(value, bytes):
             value = value.decode(self.encoding)
@@ -88,11 +88,11 @@ class PubSub(object):
 
     @property
     def subscribed(self):
-        "Indicates if there are subscriptions to any channels or patterns"
+        """Indicates if there are subscriptions to any channels or patterns"""
         return bool(self.channels or self.patterns)
 
     async def execute_command(self, *args, **kwargs):
-        "Execute a publish/subscribe command"
+        """Executes a publish/subscribe command"""
 
         # NOTE: don't parse the response in this function -- it could pull a
         # legitimate message off the stack if the connection is already
@@ -129,7 +129,7 @@ class PubSub(object):
             return await command(*args)
 
     async def parse_response(self, block=True, timeout=0):
-        "Parse the response from a publish/subscribe command"
+        """Parses the response from a publish/subscribe command"""
         connection = self.connection
         if connection is None:
             raise RuntimeError(
@@ -145,7 +145,7 @@ class PubSub(object):
 
     async def psubscribe(self, *args, **kwargs):
         """
-        Subscribe to channel patterns. Patterns supplied as keyword arguments
+        Subscribes to channel patterns. Patterns supplied as keyword arguments
         expect a pattern name as the key and a callable as the value. A
         pattern's callable will be invoked automatically when a message is
         received on that pattern rather than producing a message via
@@ -166,7 +166,7 @@ class PubSub(object):
 
     async def punsubscribe(self, *args):
         """
-        Unsubscribe from the supplied patterns. If empy, unsubscribe from
+        Unsubscribes from the supplied patterns. If empy, unsubscribe from
         all patterns.
         """
         if args:
@@ -175,7 +175,7 @@ class PubSub(object):
 
     async def subscribe(self, *args, **kwargs):
         """
-        Subscribe to channels. Channels supplied as keyword arguments expect
+        Subscribes to channels. Channels supplied as keyword arguments expect
         a channel name as the key and a callable as the value. A channel's
         callable will be invoked automatically when a message is received on
         that channel rather than producing a message via ``listen()`` or
@@ -196,7 +196,7 @@ class PubSub(object):
 
     async def unsubscribe(self, *args):
         """
-        Unsubscribe from the supplied channels. If empty, unsubscribe from
+        Unsubscribes from the supplied channels. If empty, unsubscribe from
         all channels
         """
         if args:
@@ -204,13 +204,15 @@ class PubSub(object):
         return await self.execute_command('UNSUBSCRIBE', *args)
 
     async def listen(self):
-        "Listen for messages on channels this client has been subscribed to"
+        """
+        Listens for messages on channels this client has been subscribed to
+        """
         if self.subscribed:
             return self.handle_message(await self.parse_response(block=True))
 
     async def get_message(self, ignore_subscribe_messages=False, timeout=0):
         """
-        Get the next message if one is available, otherwise None.
+        Gets the next message if one is available, otherwise None.
 
         If timeout is specified, the system will wait for `timeout` seconds
         before returning. Timeout should be specified as a floating point
@@ -329,18 +331,16 @@ class PubSubWorkerThread(threading.Thread):
 
 
 class ClusterPubSub(PubSub):
-    """
-    Wrapper for PubSub class.
-    """
+    """Wrappers for the PubSub class"""
 
     def __init__(self, *args, **kwargs):
         super(ClusterPubSub, self).__init__(*args, **kwargs)
 
     async def execute_command(self, *args, **kwargs):
         """
-        Execute a publish/subscribe command.
+        Executes a publish/subscribe command.
 
-        Taken code from redis-py and tweak to make it work within a cluster.
+        NOTE: The code was initially taken from redis-py and tweaked to make it work within a cluster.
         """
         # NOTE: don't parse the response in this function -- it could pull a
         # legitimate message off the stack if the connection is already
