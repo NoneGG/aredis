@@ -8,6 +8,18 @@ number of back-and-forth TCP packets between the client and server.
 
 Pipelines are quite simple to use:
 
+
+.. code-block:: python
+
+    async with await client.pipeline() as pipe:
+        await pipe.delete('bar')
+        await pipe.set('bar', 'foo')
+        await pipe.execute()  # needs to be called explicitly
+        
+        
+Here are more examples:
+
+
 .. code-block:: python
 
     >>> async def example(client):
