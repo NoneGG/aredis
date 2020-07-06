@@ -22,17 +22,17 @@ Here are more examples:
 
 .. code-block:: python
 
-    >>> async def example(client):
-    >>>     async with await client.pipeline(transaction=True) as pipe:
-    >>>     # will return self to send another command
-    >>>     pipe = await (await pipe.flushdb()).set('foo', 'bar')
-    >>>     # can also directly send command
-    >>>     await pipe.set('bar', 'foo')
-    >>>     # commands will be buffered
-    >>>     await pipe.keys('*')
-    >>>     res = await pipe.execute()
-    >>>     # results should be in order corresponding to your command
-    >>>     assert res == [True, True, True, [b'bar', b'foo']]
+    async def example(client):
+        async with await client.pipeline(transaction=True) as pipe:
+            # will return self to send another command
+            pipe = await (await pipe.flushdb()).set('foo', 'bar')
+            # can also directly send command
+            await pipe.set('bar', 'foo')
+            # commands will be buffered
+            await pipe.keys('*')
+            res = await pipe.execute()
+            # results should be in order corresponding to your command
+            assert res == [True, True, True, [b'bar', b'foo']]
 
 For ease of use, all commands being buffered into the pipeline return the
 pipeline object itself. Which enable you to use it like the example provided.
