@@ -64,7 +64,7 @@ class TestRedisCommands:
     @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_getname(self, r):
-        assert await r.client_getname() is None
+        assert await r.client_getname() == 'test'
 
     @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
