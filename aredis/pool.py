@@ -37,7 +37,7 @@ URL_QUERY_ARGUMENT_PARSERS = {
 }
 
 
-class ConnectionPool(object):
+class ConnectionPool:
     """Generic connection pool"""
 
     @classmethod

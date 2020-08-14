@@ -58,7 +58,7 @@ def make_subscribe_test_data(pubsub, type):
     assert False, 'invalid subscribe type: %s' % type
 
 
-class TestPubSubSubscribeUnsubscribe(object):
+class TestPubSubSubscribeUnsubscribe:
 
     async def _test_subscribe_unsubscribe(self, p, sub_type, unsub_type, sub_func,
                                           unsub_func, keys):
@@ -226,7 +226,7 @@ class TestPubSubSubscribeUnsubscribe(object):
         assert p.subscribed is False
 
 
-class TestPubSubMessages(object):
+class TestPubSubMessages:
     def setup_method(self, method):
         self.message = None
 
@@ -359,7 +359,7 @@ class TestPubSubMessages(object):
         await p.unsubscribe()
 
 
-# class TestPubSubAutoDecoding(object):
+# class TestPubSubAutoDecoding:
 #     "These tests only validate that we get unicode values back"
 #
 #     channel = 'uni' + chr(56) + 'code'
@@ -458,7 +458,7 @@ class TestPubSubMessages(object):
 #                                                  pattern=self.pattern)
 #
 #
-class TestPubSubRedisDown(object):
+class TestPubSubRedisDown:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_channel_subscribe(self, r):
@@ -468,7 +468,7 @@ class TestPubSubRedisDown(object):
             await p.subscribe('foo')
 
 
-class TestPubSubPubSubSubcommands(object):
+class TestPubSubPubSubSubcommands:
 
     @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)

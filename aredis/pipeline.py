@@ -11,7 +11,7 @@ from aredis.utils import (clusterdown_wrapper, dict_merge)
 ERRORS_ALLOW_RETRY = (ConnectionError, TimeoutError, MovedError, AskError, TryAgainError)
 
 
-class BasePipeline(object):
+class BasePipeline:
     """
     Pipelines provide a way to transmit multiple commands to the Redis server
     in one transmission.  This is convenient for batch processing, such as
@@ -682,7 +682,7 @@ StrictClusterPipeline.sunionstore = block_pipeline_command(StrictClusterPipeline
 StrictClusterPipeline.time = block_pipeline_command(StrictClusterPipeline.time)
 
 
-class PipelineCommand(object):
+class PipelineCommand:
     """
     TODO: document
     """
@@ -698,7 +698,7 @@ class PipelineCommand(object):
         self.asking = False
 
 
-class NodeCommands(object):
+class NodeCommands:
     """
     TODO: document
     """

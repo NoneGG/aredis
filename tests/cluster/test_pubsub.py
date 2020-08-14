@@ -61,7 +61,7 @@ def make_subscribe_test_data(pubsub, type):
     assert False, 'invalid subscribe type: {0}'.format(type)
 
 
-class TestPubSubSubscribeUnsubscribe(object):
+class TestPubSubSubscribeUnsubscribe:
 
     async def _test_subscribe_unsubscribe(self, p, sub_type, unsub_type, sub_func, unsub_func, keys):
         for key in keys:
@@ -223,7 +223,7 @@ class TestPubSubSubscribeUnsubscribe(object):
         assert p.subscribed is False
 
 
-class TestPubSubMessages(object):
+class TestPubSubMessages:
     """
     Bug: Currently in cluster mode publish command will behave different then in
          standard/non cluster mode. See (docs/Pubsub.md) for details.
@@ -350,7 +350,7 @@ class TestPubSubMessages(object):
                                             'test message', pattern=pattern)
 
 
-class TestPubSubAutoDecoding(object):
+class TestPubSubAutoDecoding:
     "These tests only validate that we get unicode values back"
 
     channel = 'uni' + chr(4456) + 'code'
@@ -454,7 +454,7 @@ class TestPubSubAutoDecoding(object):
                                                  pattern=self.pattern)
 
 
-class TestPubSubRedisDown(object):
+class TestPubSubRedisDown:
 
     @pytest.mark.asyncio
     async def test_channel_subscribe(self, r):
@@ -502,7 +502,7 @@ def test_pubsub_thread_publish():
         print("Error: unable to start thread")
 #
 #
-# class TestPubSubPubSubSubcommands(object):
+# class TestPubSubPubSubSubcommands:
 #     """
 #     Test Pub/Sub subcommands of PUBSUB
 #     @see https://redis.io/commands/pubsub

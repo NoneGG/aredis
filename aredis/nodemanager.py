@@ -6,7 +6,7 @@ from aredis.exceptions import (ConnectionError,
                                RedisClusterException)
 
 
-class NodeManager(object):
+class NodeManager:
     """
     TODO: document
     """

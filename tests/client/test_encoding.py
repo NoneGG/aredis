@@ -4,7 +4,7 @@ import pickle
 import aredis
 
 
-class TestEncoding(object):
+class TestEncoding:
     @pytest.fixture()
     def r(self, request):
         return aredis.StrictRedis(decode_responses=True)

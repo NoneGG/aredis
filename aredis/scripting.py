@@ -4,7 +4,7 @@ from aredis.exceptions import NoScriptError
 from aredis.utils import b
 
 
-class Script(object):
+class Script:
     """An executable Lua script object returned by ``register_script``"""
 
     def __init__(self, registered_client, script):

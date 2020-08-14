@@ -8,7 +8,7 @@ from aredis.exceptions import RedisError, ResponseError
 from tests.client.conftest import skip_if_server_version_lt
 
 
-class TestStreams(object):
+class TestStreams:
 
     @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)

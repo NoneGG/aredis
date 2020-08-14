@@ -25,7 +25,7 @@ import pytest
 from mock import patch, Mock
 
 
-class DummyConnection(object):
+class DummyConnection:
     description_format = "DummyConnection<>"
 
     def __init__(self, host="localhost", port=7000, socket_timeout=None, **kwargs):
@@ -37,7 +37,7 @@ class DummyConnection(object):
         self.awaiting_response = False
 
 
-class TestConnectionPool(object):
+class TestConnectionPool:
     async def get_pool(self, connection_kwargs=None, max_connections=None, max_connections_per_node=None,
                        connection_class=DummyConnection):
         connection_kwargs = connection_kwargs or {}
@@ -209,7 +209,7 @@ class TestConnectionPool(object):
         assert conn._writer is None and conn._reader is None
 
 
-class TestReadOnlyConnectionPool(object):
+class TestReadOnlyConnectionPool:
     async def get_pool(self, connection_kwargs=None, max_connections=None, startup_nodes=None):
         startup_nodes = startup_nodes or [{'host': '127.0.0.1', 'port': 7000}]
         connection_kwargs = connection_kwargs or {}
@@ -256,7 +256,7 @@ class TestReadOnlyConnectionPool(object):
         assert actual_ports == expected_ports
 
 
-class TestConnectionPoolURLParsing(object):
+class TestConnectionPoolURLParsing:
     def test_defaults(self):
         pool = ConnectionPool.from_url('redis://localhost')
         assert pool.connection_class == Connection
@@ -385,7 +385,7 @@ class TestConnectionPoolURLParsing(object):
         }
 
 
-class TestConnectionPoolUnixSocketURLParsing(object):
+class TestConnectionPoolUnixSocketURLParsing:
     def test_defaults(self):
         pool = ConnectionPool.from_url('unix:///socket')
         assert pool.connection_class == UnixDomainSocketConnection

@@ -4,7 +4,7 @@ from aredis.exceptions import LockError
 from aredis.lock import ClusterLock
 
 
-class TestLock(object):
+class TestLock:
     lock_class = ClusterLock
 
     def get_lock(self, redis, *args, **kwargs):

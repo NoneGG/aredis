@@ -56,7 +56,7 @@ def ban_python_version_lt(min_version):
     return decorator
 
 
-class dummy(object):
+class dummy:
     """
     Instances of this class can be used as an attribute container.
     """
@@ -247,7 +247,7 @@ if not _C_EXTENSION_SPEEDUP:
     hash_slot = _hash_slot
 
 
-class NodeFlag(object):
+class NodeFlag:
     BLOCKED = 'blocked'
     ALL_NODES = 'all-nodes'
     ALL_MASTERS = 'all-masters'

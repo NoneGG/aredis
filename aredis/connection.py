@@ -43,7 +43,7 @@ async def exec_with_timeout(coroutine, timeout, *, loop=None):
         raise TimeoutError(exc)
 
 
-class SocketBuffer(object):
+class SocketBuffer:
     def __init__(self, stream_reader, read_size):
         self._stream = stream_reader
         self.read_size = read_size
@@ -138,7 +138,7 @@ class SocketBuffer(object):
         self._sock = None
 
 
-class BaseParser(object):
+class BaseParser:
     """Plain Python parsing class"""
 
     EXCEPTION_CLASSES = {

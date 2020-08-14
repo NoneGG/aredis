@@ -12,7 +12,7 @@ from aredis.exceptions import (SerializeError,
                                CompressError)
 
 
-class IdentityGenerator(object):
+class IdentityGenerator:
     """
     Generator of identity for unique key,
     you may overwrite it to meet your customize requirements.
@@ -42,7 +42,7 @@ class IdentityGenerator(object):
         return identity
 
 
-class Compressor(object):
+class Compressor:
     """
     Uses zlib to compress and decompress Redis cache. You may implement your
     own Compressor implementing `compress` and `decompress` methods
@@ -82,7 +82,7 @@ class Compressor(object):
             raise CompressError('Content can not be decompressed.')
 
 
-class Serializer(object):
+class Serializer:
     """
     Uses json to serialize and deserialize cache to str. You may implement
     your own Serializer implemting `serialize` and `deserialize` methods.
@@ -112,7 +112,7 @@ class Serializer(object):
             raise SerializeError('Content can not be deserialized.')
 
 
-class BasicCache(object):
+class BasicCache:
     """Basic cache class, should not be used explicitly"""
 
     def __init__(self, client, app='', identity_generator_class=IdentityGenerator,

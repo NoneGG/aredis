@@ -139,7 +139,7 @@ class SentinelConnectionPool(ConnectionPool):
                           **self.connection_kwargs)
 
 
-class Sentinel(object):
+class Sentinel:
     """
     Redis Sentinel cluster client
 

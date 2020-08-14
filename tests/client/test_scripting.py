@@ -23,7 +23,7 @@ return "hello " .. name
 """
 
 
-class TestScripting(object):
+class TestScripting:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_eval(self, r):

@@ -8,7 +8,7 @@ import time
 from aredis.cache import Cache, HerdCache
 
 
-class TestCache(object):
+class TestCache:
 
     app = 'test_cache'
     key = 'test_key'
@@ -132,7 +132,7 @@ class TestCache(object):
         assert exists is False
 
 
-class TestHerdCache(object):
+class TestHerdCache:
 
     app = 'test_cache'
     key = 'test_key'
