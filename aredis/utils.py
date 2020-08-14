@@ -1,6 +1,4 @@
-import platform
 import sys
-from distutils.version import StrictVersion
 from functools import wraps
 
 from aredis.exceptions import (ClusterDownError, RedisClusterException)
@@ -13,8 +11,7 @@ try:
 except Exception:
     pass
 
-python_version = platform.python_version()
-LOOP_DEPRECATED = StrictVersion(python_version) >= StrictVersion("3.8.0")
+LOOP_DEPRECATED = sys.version_info >= (3, 8)
 
 
 def b(x):
