@@ -6,16 +6,16 @@ for new messages. Creating a `PubSub` object is easy.
 
 .. code-block:: python
 
-    >>> r = redis.StrictRedis(...)
-    >>> p = r.pubsub()
+    r = redis.StrictRedis(...)
+    p = r.pubsub()
 
 Once a `PubSub` instance is created, channels and patterns can be subscribed
 to.
 
 .. code-block:: python
 
-    >>> await p.subscribe('my-first-channel', 'my-second-channel', ...)
-    >>> await p.psubscribe('my-*', ...)
+    await p.subscribe('my-first-channel', 'my-second-channel', ...)
+    await p.psubscribe('my-*', ...)
 
 The `PubSub` instance is now subscribed to those channels/patterns. The
 subscription confirmations can be seen by reading messages from the `PubSub`
@@ -23,12 +23,12 @@ instance.
 
 .. code-block:: python
 
-    >>> await p.get_message()
-    {'pattern': None, 'type': 'subscribe', 'channel': 'my-second-channel', 'data': 1L}
-    >>> await p.get_message()
-    {'pattern': None, 'type': 'subscribe', 'channel': 'my-first-channel', 'data': 2L}
-    >>> await p.get_message()
-    {'pattern': None, 'type': 'psubscribe', 'channel': 'my-*', 'data': 3L}
+    await p.get_message()
+    # {'pattern': None, 'type': 'subscribe', 'channel': 'my-second-channel', 'data': 1L}
+    await p.get_message()
+    # {'pattern': None, 'type': 'subscribe', 'channel': 'my-first-channel', 'data': 2L}
+    await p.get_message()
+    # {'pattern': None, 'type': 'psubscribe', 'channel': 'my-*', 'data': 3L}
 
 Every message read from a `PubSub` instance will be a dictionary with the
 following keys.
@@ -52,26 +52,26 @@ Let's send a message now.
     # subscriptions. 'my-first-channel' matches both the 'my-first-channel'
     # subscription and the 'my-*' pattern subscription, so this message will
     # be delivered to 2 channels/patterns
-    >>> await r.publish('my-first-channel', 'some data')
-    2
-    >>> await p.get_message()
-    {'channel': 'my-first-channel', 'data': 'some data', 'pattern': None, 'type': 'message'}
-    >>> await p.get_message()
-    {'channel': 'my-first-channel', 'data': 'some data', 'pattern': 'my-*', 'type': 'pmessage'}
+    await r.publish('my-first-channel', 'some data')
+    # 2
+    await p.get_message()
+    # {'channel': 'my-first-channel', 'data': 'some data', 'pattern': None, 'type': 'message'}
+    await p.get_message()
+    # {'channel': 'my-first-channel', 'data': 'some data', 'pattern': 'my-*', 'type': 'pmessage'}
 
 Unsubscribing works just like subscribing. If no arguments are passed to
 [p]unsubscribe, all channels or patterns will be unsubscribed from.
 
 .. code-block:: python
 
-    >>> await p.unsubscribe()
-    >>> await p.punsubscribe('my-*')
-    >>> await p.get_message()
-    {'channel': 'my-second-channel', 'data': 2L, 'pattern': None, 'type': 'unsubscribe'}
-    >>> await p.get_message()
-    {'channel': 'my-first-channel', 'data': 1L, 'pattern': None, 'type': 'unsubscribe'}
-    >>> await p.get_message()
-    {'channel': 'my-*', 'data': 0L, 'pattern': None, 'type': 'punsubscribe'}
+    await p.unsubscribe()
+    await p.punsubscribe('my-*')
+    await p.get_message()
+    # {'channel': 'my-second-channel', 'data': 2L, 'pattern': None, 'type': 'unsubscribe'}
+    await p.get_message()
+    # {'channel': 'my-first-channel', 'data': 1L, 'pattern': None, 'type': 'unsubscribe'}
+    await p.get_message()
+    # {'channel': 'my-*', 'data': 0L, 'pattern': None, 'type': 'punsubscribe'}
 
 aredis also allows you to register callback functions to handle published
 messages. Message handlers take a single argument, the message, which is a
@@ -86,23 +86,25 @@ handled.
 
 .. code-block:: python
 
-    >>> def my_handler(message):
-    ...     print('MY HANDLER: ', message['data'])
-    >>> await p.subscribe(**{'my-channel': my_handler})
+    def my_handler(message):
+        print('MY HANDLER: ', message['data'])
+    await p.subscribe(**{'my-channel': my_handler})
     # read the subscribe confirmation message
-    >>> await p.get_message()
-    {'pattern': None, 'type': 'subscribe', 'channel': 'my-channel', 'data': 1L}
-    >>> await r.publish('my-channel', 'awesome data')
-    1
+    await p.get_message()
+    # {'pattern': None, 'type': 'subscribe', 'channel': 'my-channel', 'data': 1L}
+    await r.publish('my-channel', 'awesome data')
+    # 1
+
     # for the message handler to work, we need tell the instance to read data.
     # this can be done in several ways (read more below). we'll just use
     # the familiar get_message() function for now
-    >>> await message = p.get_message()
-    MY HANDLER:  awesome data
+    await message = p.get_message()
+    # 'MY HANDLER:  awesome data'
+
     # note here that the my_handler callback printed the string above.
     # `message` is None because the message was handled by our handler.
-    >>> print(message)
-    None
+    print(message)
+    # None
 
 If your application is not interested in the (sometimes noisy)
 subscribe/unsubscribe confirmation messages, you can ignore them by passing
@@ -112,13 +114,13 @@ application.
 
 .. code-block:: python
 
-    >>> p = r.pubsub(ignore_subscribe_messages=True)
-    >>> await p.subscribe('my-channel')
-    >>> await p.get_message()  # hides the subscribe message and returns None
-    >>> await r.publish('my-channel')
-    1
-    >>> await p.get_message()
-    {'channel': 'my-channel', 'data': 'my data', 'pattern': None, 'type': 'message'}
+    p = r.pubsub(ignore_subscribe_messages=True)
+    await p.subscribe('my-channel')
+    await p.get_message()  # hides the subscribe message and returns None
+    await r.publish('my-channel')
+    # 1
+    await p.get_message()
+    # {'channel': 'my-channel', 'data': 'my data', 'pattern': None, 'type': 'message'}
 
 There are three different strategies for reading messages.
 
@@ -131,11 +133,11 @@ This makes it trivial to integrate into an existing event loop inside your appli
 
 .. code-block:: python
 
-    >>> while True:
-    >>>     message = await p.get_message()
-    >>>     if message:
-    >>>         # do something with the message
-    >>>     await asyncio.sleep(0.001)  # be nice to the system :)
+    while True:
+        message = await p.get_message()
+        if message:
+            # do something with the message
+        await asyncio.sleep(0.001)  # be nice to the system :)
 
 Older versions of aredis only read messages with `pubsub.listen()`. listen()
 is a generator that blocks until a message is available. If your application
@@ -144,8 +146,8 @@ redis, listen() is an easy way to get up an running.
 
 .. code-block:: python
 
-    >>> for message in await p.listen():
-    ...     # do something with the message
+    for message in await p.listen():
+        # do something with the message
 
 The third option runs an event loop in a separate thread.
 `pubsub.run_in_thread()` creates a new thread and use the event loop in main thread.
@@ -161,11 +163,11 @@ subscribed to patterns or channels that don't have message handlers attached.
 
 .. code-block:: python
 
-    >>> await p.subscribe(**{'my-channel': my_handler})
-    >>> thread = p.run_in_thread(sleep_time=0.001)
+    await p.subscribe(**{'my-channel': my_handler})
+    thread = p.run_in_thread(sleep_time=0.001)
     # the event loop is now running in the background processing messages
     # when it's time to shut it down...
-    >>> thread.stop()
+    thread.stop()
 
 PubSub objects remember what channels and patterns they are subscribed to. In
 the event of a disconnection such as a network error or timeout, the
@@ -176,20 +178,20 @@ cannot be delivered. When you're finished with a PubSub object, call its
 
 .. code-block:: python
 
-    >>> p = r.pubsub()
-    >>> ...
-    >>> p.close()
+    p = r.pubsub()
+    ...
+    p.close()
 
 The PUBSUB set of subcommands CHANNELS, NUMSUB and NUMPAT are also
 supported:
 
 .. code-block:: pycon
 
-    >>> await r.pubsub_channels()
-    ['foo', 'bar']
-    >>> await r.pubsub_numsub('foo', 'bar')
-    [('foo', 9001), ('bar', 42)]
-    >>> await r.pubsub_numsub('baz')
-    [('baz', 0)]
-    >>> await r.pubsub_numpat()
-    1204
+    await r.pubsub_channels()
+    # ['foo', 'bar']
+    await r.pubsub_numsub('foo', 'bar')
+    # [('foo', 9001), ('bar', 42)]
+    await r.pubsub_numsub('baz')
+    # [('baz', 0)]
+    await r.pubsub_numpat()
+    # 1204

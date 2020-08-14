@@ -50,10 +50,10 @@ Detailed discussion about the problem is in `issue20 <https://github.com/NoneGG/
 
 .. code-block:: python
 
-    >>> import aredis
-    >>> import asyncio
-    >>> loop = asyncio.get_event_loop()
-    >>> r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
+    import aredis
+    import asyncio
+    loop = asyncio.get_event_loop()
+    r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
 
 Decoding
 ^^^^^^^^
@@ -79,7 +79,7 @@ commented out by default.
 
 .. code-block:: python
 
-    >>> r = redis.StrictRedis(unix_socket_path='/tmp/redis.sock')
+    r = redis.StrictRedis(unix_socket_path='/tmp/redis.sock')
 
 You can create your own Connection subclasses as well. This may be useful if
 you want to control the socket behavior within an async framework. To
@@ -90,7 +90,7 @@ specified during initialization.
 
 .. code-block:: python
 
-    >>> pool = redis.ConnectionPool(connection_class=YourConnectionClass,
+    pool = redis.ConnectionPool(connection_class=YourConnectionClass,
                                     your_arg='...', ...)
 
 Parsers

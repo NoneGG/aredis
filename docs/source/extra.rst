@@ -55,18 +55,19 @@ There are two kinds of `Lock class` available for now, you can also make your ow
 
 .. code-block:: python
 
-    >>> async def example():
-    >>>     client = aredis.StrictRedis()
-    >>>     await client.flushall()
-    >>>     lock = client.lock('lalala')
-    >>>     print(await lock.acquire())
-    >>>     print(await lock.acquire(blocking=False))
-    >>>     print(await lock.release())
-    >>>     print(await lock.acquire())
-    True
-    False
-    None
-    True
+    async def example():
+        client = aredis.StrictRedis()
+        await client.flushall()
+        lock = client.lock('lalala')
+        print(await lock.acquire())
+        print(await lock.acquire(blocking=False))
+        print(await lock.release())
+        print(await lock.acquire())
+
+    # True
+    # False
+    # None
+    # True
 
 
 Cluster Lock
@@ -113,18 +114,19 @@ Cluster Lock
 
 .. code-block:: python
 
-    >>> async def example():
-    >>>     client = aredis.StrictRedis()
-    >>>     await client.flushall()
-    >>>     lock = client.lock('lalala', lock_class=ClusterLock, timeout=1)
-    >>>     print(await lock.acquire())
-    >>>     print(await lock.acquire(blocking=False))
-    >>>     print(await lock.release())
-    >>>     print(await lock.acquire())
-    True
-    False
-    None
-    True
+    async def example():
+        client = aredis.StrictRedis()
+        await client.flushall()
+        lock = client.lock('lalala', lock_class=ClusterLock, timeout=1)
+        print(await lock.acquire())
+        print(await lock.acquire(blocking=False))
+        print(await lock.release())
+        print(await lock.acquire())
+
+    # True
+    # False
+    # None
+    # True
 
 Cache
 -----
@@ -156,23 +158,22 @@ and if you don't need it, just set them to None when intialize a cache:
 
 .. code-block:: python
 
-    >>> class CustomIdentityGenerator(IdentityGenerator):
-    >>>     def generate(self, key, content):
-    >>>         return key
-    >>>
-    >>> def expensive_work(data):
-    >>> """some work that waits for io or occupy cpu"""
-    >>>     return data
-    >>>
-    >>> async def example():
-    >>>     client = aredis.StrictRedis()
-    >>>     await client.flushall()
-    >>>     cache = client.cache('example_cache',
-    >>>             identity_generator_class=CustomIdentityGenerator)
-    >>>     data = {1: 1}
-    >>>     await cache.set('example_key', expensive_work(data), data)
-    >>>     res = await cache.get('example_key', data)
-    >>>     assert res == expensive_work(data)
+    class CustomIdentityGenerator(IdentityGenerator):
+        def generate(self, key, content):
+            return key
+    
+    def cpu_intensive_function(data):
+        return data
+    
+    async def example():
+        client = aredis.StrictRedis()
+        await client.flushall()
+        cache = client.cache('example_cache',
+                identity_generator_class=CustomIdentityGenerator)
+        data = {1: 1}
+        await cache.set('example_key', cpu_intensive_function(data), data)
+        res = await cache.get('example_key', data)
+        assert res == cpu_intensive_function(data)
 
 For ease of use and expandability, only `set`, `set_many`, `exists`, `delete`, `delete_many`,
 `ttl`, `get` APIs are realized.

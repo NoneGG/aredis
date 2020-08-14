@@ -15,8 +15,8 @@ Pipelines are quite simple to use:
         await pipe.delete('bar')
         await pipe.set('bar', 'foo')
         await pipe.execute()  # needs to be called explicitly
-        
-        
+
+
 Here are more examples:
 
 
@@ -44,7 +44,7 @@ off transactions.
 
 .. code-block:: python
 
-    >>> pipe = r.pipeline(transaction=False)
+    pipe = r.pipeline(transaction=False)
 
 A common issue occurs when requiring atomic transactions but needing to
 retrieve values in Redis prior for use within the transaction. For instance,
@@ -64,30 +64,30 @@ could do something like this:
 
 .. code-block:: python
 
-    >>> async def example():
-    >>>     async with await r.pipeline() as pipe:
-    ...         while 1:
-    ...             try:
-    ...                 # put a WATCH on the key that holds our sequence value
-    ...                 await pipe.watch('OUR-SEQUENCE-KEY')
-    ...                 # after WATCHing, the pipeline is put into immediate execution
-    ...                 # mode until we tell it to start buffering commands again.
-    ...                 # this allows us to get the current value of our sequence
-    ...                 current_value = await pipe.get('OUR-SEQUENCE-KEY')
-    ...                 next_value = int(current_value) + 1
-    ...                 # now we can put the pipeline back into buffered mode with MULTI
-    ...                 pipe.multi()
-    ...                 pipe.set('OUR-SEQUENCE-KEY', next_value)
-    ...                 # and finally, execute the pipeline (the set command)
-    ...                 await pipe.execute()
-    ...                 # if a WatchError wasn't raised during execution, everything
-    ...                 # we just did happened atomically.
-    ...                 break
-    ...             except WatchError:
-    ...                 # another client must have changed 'OUR-SEQUENCE-KEY' between
-    ...                 # the time we started WATCHing it and the pipeline's execution.
-    ...                 # our best bet is to just retry.
-    ...                 continue
+    async def example():
+        async with await r.pipeline() as pipe:
+            while True:
+                try:
+                    # put a WATCH on the key that holds our sequence value
+                    await pipe.watch('OUR-SEQUENCE-KEY')
+                    # after WATCHing, the pipeline is put into immediate execution
+                    # mode until we tell it to start buffering commands again.
+                    # this allows us to get the current value of our sequence
+                    current_value = await pipe.get('OUR-SEQUENCE-KEY')
+                    next_value = int(current_value) + 1
+                    # now we can put the pipeline back into buffered mode with MULTI
+                    pipe.multi()
+                    pipe.set('OUR-SEQUENCE-KEY', next_value)
+                    # and finally, execute the pipeline (the set command)
+                    await pipe.execute()
+                    # if a WatchError wasn't raised during execution, everything
+                    # we just did happened atomically.
+                    break
+                except WatchError:
+                    # another client must have changed 'OUR-SEQUENCE-KEY' between
+                    # the time we started WATCHing it and the pipeline's execution.
+                    # our best bet is to just retry.
+                    continue
 
 Note that, because the Pipeline must bind to a single connection for the
 duration of a WATCH, care must be taken to ensure that the connection is
@@ -98,18 +98,18 @@ explicitly calling reset():
 
 .. code-block:: python
 
-    >>> async def example():
-    >>>     async with await r.pipeline() as pipe:
-    >>>         while 1:
-    ...             try:
-    ...                 await pipe.watch('OUR-SEQUENCE-KEY')
-    ...                 ...
-    ...                 await pipe.execute()
-    ...                 break
-    ...             except WatchError:
-    ...                 continue
-    ...             finally:
-    ...                 await pipe.reset()
+    async def example():
+        async with await r.pipeline() as pipe:
+            while 1:
+                try:
+                    await pipe.watch('OUR-SEQUENCE-KEY')
+                    ...
+                    await pipe.execute()
+                    break
+                except WatchError:
+                    continue
+                finally:
+                    await pipe.reset()
 
 A convenience method named "transaction" exists for handling all the
 boilerplate of handling and retrying watch errors. It takes a callable that
@@ -119,11 +119,11 @@ which is much easier to read:
 
 .. code-block:: python
 
-    >>> async def client_side_incr(pipe):
-    ...     current_value = await pipe.get('OUR-SEQUENCE-KEY')
-    ...     next_value = int(current_value) + 1
-    ...     pipe.multi()
-    ...     await pipe.set('OUR-SEQUENCE-KEY', next_value)
-    >>>
-    >>> await r.transaction(client_side_incr, 'OUR-SEQUENCE-KEY')
-    [True]
+    async def client_side_incr(pipe):
+        current_value = await pipe.get('OUR-SEQUENCE-KEY')
+        next_value = int(current_value) + 1
+        pipe.multi()
+        await pipe.set('OUR-SEQUENCE-KEY', next_value)
+
+    await r.transaction(client_side_incr, 'OUR-SEQUENCE-KEY')
+    # [True]
