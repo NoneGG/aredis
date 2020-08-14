@@ -1,6 +1,12 @@
 #!/usr/bin/env python
-import os
 import sys
+
+if sys.version_info < (3, 5):
+    raise RuntimeError('aredis requires Python 3.5 or greater')
+
+import os
+import re
+import pathlib
 import warnings
 
 
@@ -101,13 +107,23 @@ https://api.mongodb.org/python/current/installation.html#osx
                                                   "failed."))
 
 
-f = open(os.path.join(os.path.dirname(__file__), 'README.rst'))
-long_description = f.read()
-f.close()
+_ROOT_DIR = pathlib.Path(__file__).parent
+
+with open(str(_ROOT_DIR / 'README.rst')) as f:
+    long_description = f.read()
+
+with open(str(_ROOT_DIR / 'aredis' / '__init__.py')) as f:
+    try:
+        str_regex = r"['\"]([^'\"]*)['\"]"
+        version = re.findall(
+            rf"^__version__ = {str_regex}$", f.read(), re.MULTILINE
+        )[0]
+    except IndexError:
+        raise RuntimeError("Unable to find version in __init__.py")
 
 setup(
     name='aredis',
-    version='1.1.8',
+    version=version,
     description='Python async client for Redis key-value store',
     long_description=long_description,
     url='https://github.com/NoneGG/aredis',
