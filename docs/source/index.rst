@@ -28,12 +28,6 @@ To install aredis, simply:
 
     $ pip3 install aredis
 
-or alternatively (you really should be using pip though):
-
-.. code-block:: bash
-
-    $ easy_install aredis
-
 or from source:
 
 .. code-block:: bash
