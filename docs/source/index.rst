@@ -48,6 +48,12 @@ Getting started
 
 .. _For more example: https://github.com/NoneGG/aredis/tree/master/examples
 
+Tip: since python 3.8 you can use asyncio REPL:
+
+.. code-block:: bash
+
+    $ python -m asyncio
+
 single node client
 ^^^^^^^^^^^^^^^^^^
 
