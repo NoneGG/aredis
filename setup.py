@@ -112,7 +112,7 @@ with open(str(_ROOT_DIR / 'aredis' / '__init__.py')) as f:
     str_regex = r"['\"]([^'\"]*)['\"]"
     try:
         version = re.findall(
-            rf"^__version__ = {str_regex}$", f.read(), re.MULTILINE
+            r"^__version__ = {0}$".format(str_regex), f.read(), re.MULTILINE
         )[0]
     except IndexError:
         raise RuntimeError("Unable to find version in __init__.py")
