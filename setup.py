@@ -113,8 +113,8 @@ with open(str(_ROOT_DIR / 'README.rst')) as f:
     long_description = f.read()
 
 with open(str(_ROOT_DIR / 'aredis' / '__init__.py')) as f:
+    str_regex = r"['\"]([^'\"]*)['\"]"
     try:
-        str_regex = r"['\"]([^'\"]*)['\"]"
         version = re.findall(
             rf"^__version__ = {str_regex}$", f.read(), re.MULTILINE
         )[0]
