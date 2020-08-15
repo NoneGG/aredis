@@ -46,11 +46,11 @@ class custom_build_ext(build_ext):
 
     warning_message = """
 ********************************************************************
-WARNING: %s could not
+WARNING: {target} could not
 be compiled. No C extensions are essential for aredis to run,
 although they do result in significant speed improvements for
 websockets.
-%s
+{comment}
 
 Here are some hints for popular operating systems:
 
@@ -79,28 +79,33 @@ https://api.mongodb.org/python/current/installation.html#osx
 
     def run(self):
         try:
-            build_ext.run(self)
-        except Exception:
-            e = sys.exc_info()[1]
-            sys.stdout.write('%s\n' % str(e))
-            warnings.warn(self.warning_message % ("Extension modules",
-                                                  "There was an issue with "
-                                                  "your platform configuration"
-                                                  " - see above."))
+            super().run()
+        except Exception as e:
+            print(e)
+            warnings.warn(
+                self.warning_message.format(
+                    target="Extension modules",
+                    comment=(
+                        "There is an issue with your platform configuration "
+                        "- see above."
+                    )
+                )
+            )
 
     def build_extension(self, ext):
-        name = ext.name
         try:
-            build_ext.build_extension(self, ext)
-        except Exception:
-            e = sys.exc_info()[1]
-            sys.stdout.write('%s\n' % str(e))
-            warnings.warn(self.warning_message % ("The %s extension "
-                                                  "module" % (name,),
-                                                  "The output above "
-                                                  "this warning shows how "
-                                                  "the compilation "
-                                                  "failed."))
+            super().build_extension(ext)
+        except Exception as e:
+            print(e)
+            warnings.warn(
+                self.warning_message.format(
+                    target="The {} extension ".format(ext.name),
+                    comment=(
+                        "The output above this warning shows how the "
+                        "compilation failed."
+                    )
+                )
+            )
 
 
 _ROOT_DIR = pathlib.Path(__file__).parent
@@ -112,7 +117,7 @@ with open(str(_ROOT_DIR / 'aredis' / '__init__.py')) as f:
     str_regex = r"['\"]([^'\"]*)['\"]"
     try:
         version = re.findall(
-            r"^__version__ = {0}$".format(str_regex), f.read(), re.MULTILINE
+            r"^__version__ = {}$".format(str_regex), f.read(), re.MULTILINE
         )[0]
     except IndexError:
         raise RuntimeError("Unable to find version in __init__.py")
