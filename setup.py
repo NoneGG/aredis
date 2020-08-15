@@ -134,7 +134,7 @@ setup(
     keywords=['Redis', 'key-value store', 'asyncio'],
     license='MIT',
     packages=['aredis', 'aredis.commands'],
-    extras_require={'hiredis': ['hiredis']},
+    extras_require={'hiredis': ['hiredis>=0.2.0']},
     tests_require=['pytest',
                    'pytest_asyncio>=0.5.0'],
     cmdclass={
