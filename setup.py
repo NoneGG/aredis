@@ -1,11 +1,7 @@
 #!/usr/bin/env python
-import sys
-
-if sys.version_info < (3, 5):
-    raise RuntimeError('aredis requires Python 3.5 or greater')
-
 import os
 import re
+import sys
 import pathlib
 import warnings
 
@@ -134,6 +130,7 @@ setup(
     keywords=['Redis', 'key-value store', 'asyncio'],
     license='MIT',
     packages=['aredis', 'aredis.commands'],
+    python_requires=">=3.5",
     extras_require={'hiredis': ['hiredis>=0.2.0']},
     tests_require=['pytest',
                    'pytest_asyncio>=0.5.0'],
