@@ -45,7 +45,7 @@ class BasePipeline(object):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.reset()
+        await self.execute()  # also resets
 
     def __len__(self):
         return len(self.command_stack)
