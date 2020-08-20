@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import os
 import re
 import sys
 import pathlib
-import warnings
 
 
 try:
@@ -46,10 +44,9 @@ class custom_build_ext(build_ext):
 
     warning_message = """
 ********************************************************************
-WARNING: {target} could not
-be compiled. No C extensions are essential for aredis to run,
-although they do result in significant speed improvements for
-websockets.
+{target} could not be compiled. No C extensions are essential for
+aredis to run, although they do result in significant speed
+improvements for websockets.
 {comment}
 
 Here are some hints for popular operating systems:
@@ -81,8 +78,8 @@ https://api.mongodb.org/python/current/installation.html#osx
         try:
             super().run()
         except Exception as e:
-            print(e)
-            warnings.warn(
+            self.warn(e)
+            self.warn(
                 self.warning_message.format(
                     target="Extension modules",
                     comment=(
@@ -96,8 +93,8 @@ https://api.mongodb.org/python/current/installation.html#osx
         try:
             super().build_extension(ext)
         except Exception as e:
-            print(e)
-            warnings.warn(
+            self.warn(e)
+            self.warn(
                 self.warning_message.format(
                     target="The {} extension ".format(ext.name),
                     comment=(
