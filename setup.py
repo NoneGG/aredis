@@ -44,9 +44,10 @@ class custom_build_ext(build_ext):
 
     warning_message = """
 ********************************************************************
-{target} could not be compiled. No C extensions are essential for
-aredis to run, although they do result in significant speed
-improvements for websockets.
+{target} could not
+be compiled. No C extensions are essential for aredis to run,
+although they do result in significant speed improvements for
+websockets.
 {comment}
 
 Here are some hints for popular operating systems:
