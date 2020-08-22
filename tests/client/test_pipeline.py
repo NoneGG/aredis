@@ -49,6 +49,20 @@ class TestPipeline(object):
             assert not pipe
 
     @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_pipeline_autoexecute(self, r):
+        await r.flushdb()
+        async with await r.pipeline() as pipe:
+            # Fill 'er up!
+            await pipe.set('d', 'd1')
+            await pipe.set('e', 'e1')
+            await pipe.set('f', 'f1')
+            assert len(pipe) == 3
+            assert pipe
+
+        # exiting with block calls execute() and reset(), so empty once again
+        assert len(pipe) == 0
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction(self, r):
         await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
