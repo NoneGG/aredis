@@ -14,7 +14,7 @@ Pipelines are quite simple to use:
     async with await client.pipeline() as pipe:
         await pipe.delete('bar')
         await pipe.set('bar', 'foo')
-        await pipe.execute()  # needs to be called explicitly
+        # pipe.execute() is called when `with` block is exited
         
         
 Here are more examples:
@@ -30,7 +30,7 @@ Here are more examples:
             await pipe.set('bar', 'foo')
             # commands will be buffered
             await pipe.keys('*')
-            res = await pipe.execute()
+            res = await pipe.execute()  # call explicitly to retrieve results
             # results should be in order corresponding to your command
             assert res == [True, True, True, [b'bar', b'foo']]
 
@@ -104,7 +104,7 @@ explicitly calling reset():
     ...             try:
     ...                 await pipe.watch('OUR-SEQUENCE-KEY')
     ...                 ...
-    ...                 await pipe.execute()
+    ...                 await pipe.execute()  # trigger any WatchError early
     ...                 break
     ...             except WatchError:
     ...                 continue
