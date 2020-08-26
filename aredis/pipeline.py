@@ -2,6 +2,7 @@ import inspect
 import sys
 from itertools import chain
 
+import aredis
 from aredis.client import (StrictRedis, StrictRedisCluster)
 from aredis.exceptions import (AskError, ClusterTransactionError, ConnectionError, ExecAbortError, MovedError,
                                RedisClusterException, RedisError, ResponseError, TimeoutError, TryAgainError,
@@ -283,7 +284,7 @@ class BasePipeline(object):
 
         try:
             return await exec(conn, stack, raise_on_error)
-        except (ConnectionError, TimeoutError) as e:
+        except (ConnectionError, TimeoutError, aredis.compat.CancelledError) as e:
             conn.disconnect()
             if not conn.retry_on_timeout and isinstance(e, TimeoutError):
                 raise
