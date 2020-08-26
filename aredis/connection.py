@@ -413,6 +413,8 @@ class BaseConnection:
     async def connect(self):
         try:
             await self._connect()
+        except aredis.compat.CancelledError:
+            raise
         except Exception as exc:
             raise ConnectionError()
         # run any user callbacks. right now the only internal callback
