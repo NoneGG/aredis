@@ -10,12 +10,12 @@ Sentinel connection to discover the master and slaves network addresses:
 
 .. code-block:: python
 
-    >>> from redis.sentinel import Sentinel
-    >>> sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
-    >>> await sentinel.discover_master('mymaster')
-    ('127.0.0.1', 6379)
-    >>> await sentinel.discover_slaves('mymaster')
-    [('127.0.0.1', 6380)]
+    from redis.sentinel import Sentinel
+    sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
+    await sentinel.discover_master('mymaster')
+    # ('127.0.0.1', 6379)
+    await sentinel.discover_slaves('mymaster')
+    # [('127.0.0.1', 6380)]
 
 You can also create Redis client connections from a Sentinel instance. You can
 connect to either the master (for write operations) or a slave (for read-only
@@ -23,11 +23,11 @@ operations).
 
 .. code-block:: pycon
 
-    >>> master = sentinel.master_for('mymaster', stream_timeout=0.1)
-    >>> slave = sentinel.slave_for('mymaster', stream_timeout=0.1)
-    >>> master.set('foo', 'bar')
-    >>> slave.get('foo')
-    'bar'
+    master = sentinel.master_for('mymaster', stream_timeout=0.1)
+    slave = sentinel.slave_for('mymaster', stream_timeout=0.1)
+    master.set('foo', 'bar')
+    slave.get('foo')
+    # 'bar'
 
 The master and slave objects are normal StrictRedis instances with their
 connection pool bound to the Sentinel instance. When a Sentinel backed client

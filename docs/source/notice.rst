@@ -50,10 +50,10 @@ Detailed discussion about the problem is in `issue20 <https://github.com/NoneGG/
 
 .. code-block:: python
 
-    >>> import aredis
-    >>> import asyncio
-    >>> loop = asyncio.get_event_loop()
-    >>> r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
+    import aredis
+    import asyncio
+    loop = asyncio.get_event_loop()
+    r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
 
 Decoding
 ^^^^^^^^
@@ -79,7 +79,7 @@ commented out by default.
 
 .. code-block:: python
 
-    >>> r = redis.StrictRedis(unix_socket_path='/tmp/redis.sock')
+    r = redis.StrictRedis(unix_socket_path='/tmp/redis.sock')
 
 You can create your own Connection subclasses as well. This may be useful if
 you want to control the socket behavior within an async framework. To
@@ -90,7 +90,7 @@ specified during initialization.
 
 .. code-block:: python
 
-    >>> pool = redis.ConnectionPool(connection_class=YourConnectionClass,
+    pool = redis.ConnectionPool(connection_class=YourConnectionClass,
                                     your_arg='...', ...)
 
 Parsers
@@ -108,12 +108,15 @@ kind enough to create Python bindings. Using Hiredis can provide up to a
 performance increase is most noticeable when retrieving many pieces of data,
 such as from LRANGE or SMEMBERS operations.
 
+
 Hiredis is available on PyPI, and can be installed as an extra dependency to
 aredis.
+
 
 .. code-block:: bash
 
     $ pip install aredis[hiredis]
+
 
 or
 

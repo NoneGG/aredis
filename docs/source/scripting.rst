@@ -16,12 +16,12 @@ it with the multiplier value and returns the result.
 
 .. code-block:: pycon
 
-    >>> r = redis.StrictRedis()
-    >>> lua = """
-    ... local value = redis.call('GET', KEYS[1])
-    ... value = tonumber(value)
-    ... return value * ARGV[1]"""
-    >>> multiply = r.register_script(lua)
+    r = redis.StrictRedis()
+    lua = """
+    local value = redis.call('GET', KEYS[1])
+    value = tonumber(value)
+    return value * ARGV[1]"""
+    multiply = r.register_script(lua)
 
 `multiply` is now a Script instance that is invoked by calling it like a
 function. Script instances accept the following optional arguments:
@@ -41,9 +41,9 @@ Continuing the example from above:
 
 .. code-block:: python
 
-    >>> await r.set('foo', 2)
-    >>> await multiply.execute(keys=['foo'], args=[5])
-    10
+    await r.set('foo', 2)
+    await multiply.execute(keys=['foo'], args=[5])
+    # 10
 
 The value of key 'foo' is set to 2. When multiply is invoked, the 'foo' key is
 passed to the script along with the multiplier value of 5. LUA executes the
@@ -54,10 +54,10 @@ that points to a completely different Redis server.
 
 .. code-block:: python
 
-    >>> r2 = redis.StrictRedis('redis2.example.com')
-    >>> await r2.set('foo', 3)
-    >>> multiply.execute(keys=['foo'], args=[5], client=r2)
-    15
+    r2 = redis.StrictRedis('redis2.example.com')
+    await r2.set('foo', 3)
+    multiply.execute(keys=['foo'], args=[5], client=r2)
+    # 15
 
 The Script object ensures that the LUA script is loaded into Redis's script
 cache. In the event of a NOSCRIPT error, it will load the script and retry
@@ -70,8 +70,8 @@ execution.
 
 .. code-block:: python
 
-    >>> pipe = await r.pipeline()
-    >>> await pipe.set('foo', 5)
-    >>> await multiply(keys=['foo'], args=[5], client=pipe)
-    >>> await pipe.execute()
-    [True, 25]
+    pipe = await r.pipeline()
+    await pipe.set('foo', 5)
+    await multiply(keys=['foo'], args=[5], client=pipe)
+    await pipe.execute()
+    # [True, 25]
