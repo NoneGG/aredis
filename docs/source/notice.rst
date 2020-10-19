@@ -108,11 +108,21 @@ kind enough to create Python bindings. Using Hiredis can provide up to a
 performance increase is most noticeable when retrieving many pieces of data,
 such as from LRANGE or SMEMBERS operations.
 
-Hiredis is available on PyPI, and can be installed via pip.
+
+Hiredis is available on PyPI, and can be installed as an extra dependency to
+aredis.
+
 
 .. code-block:: bash
 
-    $ pip install hiredis
+    $ pip install aredis[hiredis]
+
+
+or
+
+.. code-block:: bash
+
+    $ easy_install aredis[hiredis]
 
 Response Callbacks
 ^^^^^^^^^^^^^^^^^^

@@ -1,4 +1,5 @@
 *.pyc
+*.so
 aredis.egg-info
 build/
 dist/
