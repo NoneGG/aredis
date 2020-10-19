@@ -24,7 +24,7 @@ async def redis_server_time(client):
 
 
 # RESPONSE CALLBACKS
-class TestResponseCallbacks(object):
+class TestResponseCallbacks:
     "Tests for the response callback system"
 
     @pytest.mark.asyncio(forbid_global_loop=True)
@@ -36,7 +36,7 @@ class TestResponseCallbacks(object):
         assert await r.get('a') == 'static'
 
 
-class TestRedisCommands(object):
+class TestRedisCommands:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_command_on_invalid_key_type(self, r):
@@ -1988,7 +1988,7 @@ class TestRedisCommands(object):
                  (2.1909382939338684, 41.433790281840835)]]
 
 
-class TestBinarySave(object):
+class TestBinarySave:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_binary_get_set(self, r):

@@ -9,7 +9,7 @@ from aredis.utils import (list_or_args,
                           nativestr)
 
 
-class PubSub(object):
+class PubSub:
     """
     PubSub provides publish, subscribe and listen support to Redis channels.
 

@@ -8,7 +8,7 @@ from aredis.utils import (NodeFlag, nativestr,
                           string_keys_to_dict)
 
 
-class BitField(object):
+class BitField:
     """
     The command treats a Redis string as a array of bits,
     and is capable of addressing specific integer fields

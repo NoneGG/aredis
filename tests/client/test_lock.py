@@ -9,7 +9,7 @@ from aredis.exceptions import LockError, ResponseError
 from aredis.lock import Lock, LuaLock
 
 
-class TestLock(object):
+class TestLock:
     lock_class = Lock
 
     def get_lock(self, redis, *args, **kwargs):
@@ -141,7 +141,7 @@ class TestLuaLock(TestLock):
     lock_class = LuaLock
 
 
-class TestLockClassSelection(object):
+class TestLockClassSelection:
 
     @pytest.mark.asyncio()
     async def test_lock_class_argument(self, r):

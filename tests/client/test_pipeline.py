@@ -6,7 +6,7 @@ from aredis.exceptions import (WatchError,
                                ResponseError)
 
 
-class TestPipeline(object):
+class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline(self, r):

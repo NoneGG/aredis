@@ -15,7 +15,7 @@ import pytest
 from mock import patch
 
 
-class TestPipeline(object):
+class TestPipeline:
     """
     """
 
@@ -513,7 +513,7 @@ class TestPipeline(object):
 #         assert result == []
 #
 #
-# class TestReadOnlyPipeline(object):
+# class TestReadOnlyPipeline:
 #
 #     def test_pipeline_readonly(self, r, ro):
 #         """

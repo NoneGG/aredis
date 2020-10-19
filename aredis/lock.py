@@ -10,7 +10,7 @@ from aredis.exceptions import LockError, WatchError
 from aredis.utils import b, dummy
 
 
-class Lock(object):
+class Lock:
     """
     A shared, distributed Lock. Using Redis for locking allows the Lock
     to be shared across processes and/or machines.

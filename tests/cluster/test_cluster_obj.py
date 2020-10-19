@@ -27,7 +27,7 @@ class DummyConnectionPool(ClusterConnectionPool):
     pass
 
 
-class DummyConnection(object):
+class DummyConnection:
     pass
 
 

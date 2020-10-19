@@ -11,7 +11,7 @@ from aredis.exceptions import (ConnectionError, RedisError,
 from .conftest import skip_if_server_version_lt
 
 
-class DummyConnection(object):
+class DummyConnection:
     description = "DummyConnection<>"
 
     def __init__(self, **kwargs):
@@ -20,7 +20,7 @@ class DummyConnection(object):
         self.awaiting_response = False
 
 
-class TestConnectionPool(object):
+class TestConnectionPool:
     def get_pool(self, connection_kwargs=None, max_connections=None,
                  connection_class=DummyConnection):
         connection_kwargs = connection_kwargs or {}
@@ -87,7 +87,7 @@ class TestConnectionPool(object):
         assert conn._writer is None and conn._reader is None
 
 
-class TestConnectionPoolURLParsing(object):
+class TestConnectionPoolURLParsing:
     def test_defaults(self):
         pool = aredis.ConnectionPool.from_url('redis://localhost')
         assert pool.connection_class == aredis.Connection
@@ -248,7 +248,7 @@ class TestConnectionPoolURLParsing(object):
         }
 
 
-class TestConnectionPoolUnixSocketURLParsing(object):
+class TestConnectionPoolUnixSocketURLParsing:
     def test_defaults(self):
         pool = aredis.ConnectionPool.from_url('unix:///socket')
         assert pool.connection_class == aredis.UnixDomainSocketConnection
@@ -319,7 +319,7 @@ class TestConnectionPoolUnixSocketURLParsing(object):
         }
 
 
-class TestSSLConnectionURLParsing(object):
+class TestSSLConnectionURLParsing:
     def test_defaults(self):
         pool = aredis.ConnectionPool.from_url('rediss://localhost')
         assert pool.connection_class == aredis.Connection
@@ -352,7 +352,7 @@ class TestSSLConnectionURLParsing(object):
             assert pool.get_connection().ssl_context.verify_mode == ssl.CERT_REQUIRED
 
 
-class TestConnection(object):
+class TestConnection:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_on_connect_error(self, event_loop):

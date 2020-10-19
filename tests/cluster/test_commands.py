@@ -25,7 +25,7 @@ async def redis_server_time(client):
     return datetime.datetime.fromtimestamp(timestamp)
 
 
-class TestRedisCommands(object):
+class TestRedisCommands:
 
     @pytest.mark.asyncio
     @skip_if_server_version_lt('2.9.9')
@@ -1548,7 +1548,7 @@ class TestRedisCommands(object):
             [b('vodka'), b('milk'), b('gin'), b('apple juice')]
 
 
-class TestStrictCommands(object):
+class TestStrictCommands:
     @pytest.mark.asyncio
     async def test_strict_zadd(self, sr):
         await sr.flushdb()
@@ -1600,7 +1600,7 @@ class TestStrictCommands(object):
         assert res[3] == b('second')
 
 
-class TestBinarySave(object):
+class TestBinarySave:
     @pytest.mark.asyncio
     async def test_binary_get_set(self, r):
         await r.flushdb()

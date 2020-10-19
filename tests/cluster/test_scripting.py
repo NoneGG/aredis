@@ -29,7 +29,7 @@ return "hello " .. name
 """
 
 
-class TestScripting(object):
+class TestScripting:
 
     async def reset_scripts(self, r):
         await r.script_flush()
