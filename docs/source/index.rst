@@ -26,13 +26,13 @@ To install aredis, simply:
 
 .. code-block:: bash
 
-    $ pip3 install aredis
+    $ pip3 install aredis[hiredis]
 
 or alternatively (you really should be using pip though):
 
 .. code-block:: bash
 
-    $ easy_install aredis
+    $ easy_install aredis[hiredis]
 
 or from source:
 
