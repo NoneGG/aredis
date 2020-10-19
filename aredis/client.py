@@ -160,10 +160,10 @@ class StrictRedis(*mixins):
             raise
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
-            if not connection.retry_on_timeout and isinstance(e, TimeoutError):
-                raise
-            await connection.send_command(*args)
-            return await self.parse_response(connection, command_name, **options)
+            if connection.retry_on_timeout and isinstance(e, TimeoutError):
+                await connection.send_command(*args)
+                return await self.parse_response(connection, command_name, **options)
+            raise
         finally:
             pool.release(connection)
 
