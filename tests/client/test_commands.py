@@ -711,6 +711,17 @@ class TestRedisCommands:
         assert await r.set('a', '1', xx=True, px=10000)
         assert 0 < await r.ttl('a') <= 10
 
+    @skip_if_server_version_lt('5.9.0')
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_set_keepttl(self, r):
+        await r.flushdb()
+        await r.set('a', 'val')
+        assert await r.set('a', '1', xx=True, px=10000)
+        assert 0 < await r.ttl('a') <= 10
+        await r.set('a', '2', keepttl=True)
+        assert await r.get('a') == b('2')
+        assert 0 < await r.ttl('a') <= 10
+
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_setex(self, r):
         await r.flushdb()
