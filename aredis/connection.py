@@ -367,7 +367,7 @@ class BaseConnection:
     def __init__(self, retry_on_timeout=False, stream_timeout=None,
                  parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False,
-                 *, loop=None):
+                 *, client_name=None, loop=None):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
         self._reader = None
@@ -381,6 +381,7 @@ class BaseConnection:
         self.encoding = encoding
         self.decode_responses = decode_responses
         self.loop = loop
+        self.client_name = client_name
         # flag to show if a connection is waiting for response
         self.awaiting_response = False
         self.last_active_at = time.time()
@@ -444,6 +445,11 @@ class BaseConnection:
             await self.send_command('SELECT', self.db)
             if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Database')
+
+        if self.client_name is not None:
+            await self.send_command('CLIENT SETNAME', self.client_name)
+            if nativestr(await self.read_response()) != 'OK':
+                raise ConnectionError('Failed to set client name: {}'.format(self.client_name))
         self.last_active_at = time.time()
 
     async def read_response(self):
@@ -573,11 +579,11 @@ class Connection(BaseConnection):
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False, socket_keepalive=None,
-                 socket_keepalive_options=None, *, loop=None):
+                 socket_keepalive_options=None, *, client_name=None, loop=None):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
                                          parser_class, reader_read_size,
                                          encoding, decode_responses,
-                                         loop=loop)
+                                         client_name=client_name, loop=loop)
         self.host = host
         self.port = port
         self.password = password
@@ -626,11 +632,11 @@ class UnixDomainSocketConnection(BaseConnection):
     def __init__(self, path='', password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False, *, loop=None):
+                 encoding='utf-8', decode_responses=False, *, client_name=None, loop=None):
         super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
                                                          parser_class, reader_read_size,
                                                          encoding, decode_responses,
-                                                         loop=loop)
+                                                         client_name=client_name, loop=loop)
         self.path = path
         self.db = db
         self.password = password

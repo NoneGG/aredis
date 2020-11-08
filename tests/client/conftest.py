@@ -37,7 +37,7 @@ def skip_python_vsersion_lt(min_version):
 
 @pytest.fixture()
 def r(event_loop):
-    return aredis.StrictRedis(loop=event_loop)
+    return aredis.StrictRedis(client_name='test', loop=event_loop)
 
 
 class AsyncMock(Mock):
