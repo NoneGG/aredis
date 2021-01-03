@@ -115,7 +115,7 @@ class PubSub:
                 # disconnect if buffer is not empty in case of error
                 # when connection is reused
                 connection.disconnect()
-            return None
+            raise
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
