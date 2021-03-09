@@ -2,7 +2,15 @@ class RedisError(Exception):
     pass
 
 
-class AuthenticationError(RedisError):
+class AuthenticationFailureError(RedisError):
+    pass
+
+
+class AuthenticationRequiredError(RedisError):
+    pass
+
+
+class NoPermissionError(RedisError):
     pass
 
 

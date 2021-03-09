@@ -10,7 +10,8 @@ import warnings
 from io import BytesIO
 
 import aredis.compat
-from aredis.exceptions import (ConnectionError, TimeoutError,
+from aredis.exceptions import (AuthenticationFailureError, AuthenticationRequiredError,
+                               NoPermissionError, ConnectionError, TimeoutError,
                                RedisError, ExecAbortError,
                                BusyLoadingError, NoScriptError,
                                ReadOnlyError, ResponseError,
@@ -154,6 +155,9 @@ class BaseParser:
         'MOVED': MovedError,
         'CLUSTERDOWN': ClusterDownError,
         'CROSSSLOT': ClusterCrossSlotError,
+        'WRONGPASS': AuthenticationFailureError,
+        'NOAUTH': AuthenticationRequiredError,
+        'NOPERM': NoPermissionError,
     }
 
     def parse_error(self, response):
@@ -372,6 +376,7 @@ class BaseConnection:
         self._stream_timeout = stream_timeout
         self._reader = None
         self._writer = None
+        self.username = ''
         self.password = ''
         self.db = ''
         self.pid = os.getpid()
@@ -434,11 +439,16 @@ class BaseConnection:
     async def on_connect(self):
         self._parser.on_connect(self)
 
+        # if a username and a password is specified, authenticate
+        if self.username and self.password:
+            await self.send_command('AUTH', self.username, self.password)
+            if nativestr(await self.read_response()) != 'OK':
+                raise ConnectionError('Failed to set username or password')
         # if a password is specified, authenticate
-        if self.password:
+        elif self.password:
             await self.send_command('AUTH', self.password)
             if nativestr(await self.read_response()) != 'OK':
-                raise ConnectionError('Invalid Password')
+                raise ConnectionError('Failed to set password')
 
         # if a database is specified, switch to it
         if self.db:
@@ -575,7 +585,7 @@ class BaseConnection:
 class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
-    def __init__(self, host='127.0.0.1', port=6379, password=None,
+    def __init__(self, host='127.0.0.1', port=6379, username=None, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False, socket_keepalive=None,
@@ -586,6 +596,7 @@ class Connection(BaseConnection):
                                          client_name=client_name, loop=loop)
         self.host = host
         self.port = port
+        self.username = username
         self.password = password
         self.db = db
         self.ssl_context = ssl_context
@@ -629,7 +640,7 @@ class Connection(BaseConnection):
 class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
-    def __init__(self, path='', password=None,
+    def __init__(self, path='', username=None, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False, *, client_name=None, loop=None):
@@ -639,6 +650,7 @@ class UnixDomainSocketConnection(BaseConnection):
                                                          client_name=client_name, loop=loop)
         self.path = path
         self.db = db
+        self.username = username
         self.password = password
         self.ssl_context = ssl_context
         self._connect_timeout = connect_timeout
