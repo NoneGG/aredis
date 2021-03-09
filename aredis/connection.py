@@ -10,7 +10,8 @@ import warnings
 from io import BytesIO
 
 import aredis.compat
-from aredis.exceptions import (ConnectionError, TimeoutError,
+from aredis.exceptions import (AuthenticationFailureError, AuthenticationRequiredError,
+                               NoPermissionError, ConnectionError, TimeoutError,
                                RedisError, ExecAbortError,
                                BusyLoadingError, NoScriptError,
                                ReadOnlyError, ResponseError,
@@ -154,6 +155,9 @@ class BaseParser:
         'MOVED': MovedError,
         'CLUSTERDOWN': ClusterDownError,
         'CROSSSLOT': ClusterCrossSlotError,
+        'WRONGPASS': AuthenticationFailureError,
+        'NOAUTH': AuthenticationRequiredError,
+        'NOPERM': NoPermissionError,
     }
 
     def parse_error(self, response):
@@ -367,11 +371,12 @@ class BaseConnection:
     def __init__(self, retry_on_timeout=False, stream_timeout=None,
                  parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False,
-                 *, loop=None):
+                 *, client_name=None, loop=None):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
         self._reader = None
         self._writer = None
+        self.username = ''
         self.password = ''
         self.db = ''
         self.pid = os.getpid()
@@ -381,6 +386,7 @@ class BaseConnection:
         self.encoding = encoding
         self.decode_responses = decode_responses
         self.loop = loop
+        self.client_name = client_name
         # flag to show if a connection is waiting for response
         self.awaiting_response = False
         self.last_active_at = time.time()
@@ -433,17 +439,27 @@ class BaseConnection:
     async def on_connect(self):
         self._parser.on_connect(self)
 
+        # if a username and a password is specified, authenticate
+        if self.username and self.password:
+            await self.send_command('AUTH', self.username, self.password)
+            if nativestr(await self.read_response()) != 'OK':
+                raise ConnectionError('Failed to set username or password')
         # if a password is specified, authenticate
-        if self.password:
+        elif self.password:
             await self.send_command('AUTH', self.password)
             if nativestr(await self.read_response()) != 'OK':
-                raise ConnectionError('Invalid Password')
+                raise ConnectionError('Failed to set password')
 
         # if a database is specified, switch to it
         if self.db:
             await self.send_command('SELECT', self.db)
             if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Database')
+
+        if self.client_name is not None:
+            await self.send_command('CLIENT SETNAME', self.client_name)
+            if nativestr(await self.read_response()) != 'OK':
+                raise ConnectionError('Failed to set client name: {}'.format(self.client_name))
         self.last_active_at = time.time()
 
     async def read_response(self):
@@ -569,17 +585,18 @@ class BaseConnection:
 class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
-    def __init__(self, host='127.0.0.1', port=6379, password=None,
+    def __init__(self, host='127.0.0.1', port=6379, username=None, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False, socket_keepalive=None,
-                 socket_keepalive_options=None, *, loop=None):
+                 socket_keepalive_options=None, *, client_name=None, loop=None):
         super(Connection, self).__init__(retry_on_timeout, stream_timeout,
                                          parser_class, reader_read_size,
                                          encoding, decode_responses,
-                                         loop=loop)
+                                         client_name=client_name, loop=loop)
         self.host = host
         self.port = port
+        self.username = username
         self.password = password
         self.db = db
         self.ssl_context = ssl_context
@@ -623,16 +640,17 @@ class Connection(BaseConnection):
 class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
-    def __init__(self, path='', password=None,
+    def __init__(self, path='', username=None, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False, *, loop=None):
+                 encoding='utf-8', decode_responses=False, *, client_name=None, loop=None):
         super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
                                                          parser_class, reader_read_size,
                                                          encoding, decode_responses,
-                                                         loop=loop)
+                                                         client_name=client_name, loop=loop)
         self.path = path
         self.db = db
+        self.username = username
         self.password = password
         self.ssl_context = ssl_context
         self._connect_timeout = connect_timeout

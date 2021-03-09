@@ -103,10 +103,12 @@ class ConnectionPool:
                     url_options[name] = value[0]
 
         if decode_components:
+            username = unquote(url.username) if url.username else None
             password = unquote(url.password) if url.password else None
             path = unquote(url.path) if url.path else None
             hostname = unquote(url.hostname) if url.hostname else None
         else:
+            username = url.username
             password = url.password
             path = url.path
             hostname = url.hostname
@@ -114,6 +116,7 @@ class ConnectionPool:
         # We only support redis:// and unix:// schemes.
         if url.scheme == 'unix':
             url_options.update({
+                'username': username,
                 'password': password,
                 'path': path,
                 'connection_class': UnixDomainSocketConnection,
@@ -123,6 +126,7 @@ class ConnectionPool:
             url_options.update({
                 'host': hostname,
                 'port': int(url.port or 6379),
+                'username': username,
                 'password': password,
             })
 
