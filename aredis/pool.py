@@ -494,7 +494,8 @@ class ClusterConnectionPool(ConnectionPool):
     def get_master_node_by_slot(self, slot):
         return self.nodes.slots[slot][0]
 
-    def get_node_by_slot(self, slot):
-        if self.readonly:
+    def get_node_by_slot(self, slot, command):
+        #prevent movederr exception, optimized read lookup speed
+        if self.readonly and command in ["GET", "GETBIT", "HGETALL", "HMGET", "HLEN", "LLEN", "LINDEX", "MGET"]:
             return random.choice(self.nodes.slots[slot])
         return self.get_master_node_by_slot(slot)
