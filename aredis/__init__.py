@@ -4,7 +4,7 @@ from aredis.connection import (
     UnixDomainSocketConnection,
     ClusterConnection
 )
-from aredis.pool import ConnectionPool, ClusterConnectionPool
+from aredis.pool import ConnectionPool, ClusterConnectionPool, BlockingConnectionPool
 from aredis.exceptions import (
     AuthenticationError, BusyLoadingError, ConnectionError,
     DataError, InvalidResponse, PubSubError, ReadOnlyError,
@@ -23,7 +23,7 @@ VERSION = tuple(map(int, __version__.split('.')))
 __all__ = [
     'StrictRedis', 'StrictRedisCluster',
     'Connection', 'UnixDomainSocketConnection', 'ClusterConnection',
-    'ConnectionPool', 'ClusterConnectionPool',
+    'ConnectionPool', 'ClusterConnectionPool', 'BlockingConnectionPool',
     'AuthenticationError', 'BusyLoadingError', 'ConnectionError', 'DataError',
     'InvalidResponse', 'PubSubError', 'ReadOnlyError', 'RedisError',
     'ResponseError', 'TimeoutError', 'WatchError',

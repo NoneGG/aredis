@@ -151,6 +151,8 @@ class StrictRedis(*mixins):
         pool = self.connection_pool
         command_name = args[0]
         connection = pool.get_connection()
+        if asyncio.iscoroutine(connection):
+            connection = await connection
         try:
             await connection.send_command(*args)
             return await self.parse_response(connection, command_name, **options)
