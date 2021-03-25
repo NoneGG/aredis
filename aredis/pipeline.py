@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import sys
 from itertools import chain
@@ -104,6 +105,8 @@ class BasePipeline:
         # if this is the first call, we need a connection
         if not conn:
             conn = self.connection_pool.get_connection()
+            if asyncio.iscoroutine(conn):
+                conn = await conn
             self.connection = conn
         try:
             await conn.send_command(*args)
@@ -278,6 +281,8 @@ class BasePipeline:
         conn = self.connection
         if not conn:
             conn = self.connection_pool.get_connection()
+            if asyncio.iscoroutine(conn):
+                conn = await conn
             # assign to self.connection so reset() releases the connection
             # back to the pool after we're done
             self.connection = conn

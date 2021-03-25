@@ -216,14 +216,14 @@ class ConnectionPool:
         try:
             connection = self._available_connections.pop()
         except IndexError:
+            if self._created_connections >= self.max_connections:
+                raise ConnectionError("Too many connections")
             connection = self.make_connection()
         self._in_use_connections.add(connection)
         return connection
 
     def make_connection(self):
         """Creates a new connection"""
-        if self._created_connections >= self.max_connections:
-            raise ConnectionError("Too many connections")
         self._created_connections += 1
         connection = self.connection_class(**self.connection_kwargs)
         if self.max_idle_time > self.idle_check_interval > 0:
@@ -252,6 +252,131 @@ class ConnectionPool:
             connection.disconnect()
             self._created_connections -= 1
 
+
+class BlockingConnectionPool(ConnectionPool):
+    """
+    Blocking connection pool::
+
+        >>> from aredis import StrictRedis
+        >>> client = StrictRedis(connection_pool=BlockingConnectionPool())
+
+    It performs the same function as the default
+    :py:class:`~aredis.ConnectionPool` implementation, in that,
+    it maintains a pool of reusable connections that can be shared by
+    multiple redis clients.
+
+    The difference is that, in the event that a client tries to get a
+    connection from the pool when all of connections are in use, rather than
+    raising a :py:class:`~aredis.ConnectionError` (as the default
+    :py:class:`~aredis.ConnectionPool` implementation does), it
+    makes the client wait ("blocks") for a specified number of seconds until
+    a connection becomes available.
+
+    Use ``max_connections`` to increase / decrease the pool size::
+
+        >>> pool = BlockingConnectionPool(max_connections=10)
+
+    Use ``timeout`` to tell it either how many seconds to wait for a connection
+    to become available, or to block forever:
+
+        >>> # Block forever.
+        >>> pool = BlockingConnectionPool(timeout=None)
+
+        >>> # Raise a ``ConnectionError`` after five seconds if a connection is
+        >>> # not available.
+        >>> pool = BlockingConnectionPool(timeout=5)
+    """
+    def __init__(self, connection_class=Connection, queue_class=asyncio.LifoQueue,
+                 max_connections=None, timeout=20, max_idle_time=0, idle_check_interval=1,
+                 **connection_kwargs):
+
+        self.timeout = timeout
+        self.queue_class = queue_class
+
+        max_connections = max_connections or 50
+
+        super(BlockingConnectionPool, self).__init__(
+            connection_class=connection_class, max_connections=max_connections,
+            max_idle_time=max_idle_time, idle_check_interval=idle_check_interval,
+            **connection_kwargs)
+
+    async def disconnect_on_idle_time_exceeded(self, connection):
+        while True:
+            if (time.time() - connection.last_active_at > self.max_idle_time
+                    and not connection.awaiting_response):
+                # Unlike the non blocking pool, we don't free the connection object,
+                # but always reuse it
+                connection.disconnect()
+                break
+            await asyncio.sleep(self.idle_check_interval)
+
+    def reset(self):
+        self._pool = self.queue_class(self.max_connections)
+        while True:
+            try:
+                self._pool.put_nowait(None)
+            except asyncio.QueueFull:
+                break
+
+        super(BlockingConnectionPool, self).reset()
+
+    async def get_connection(self, *args, **kwargs):
+        """Gets a connection from the pool"""
+        self._checkpid()
+
+        connection = None
+
+        try:
+            connection = await asyncio.wait_for(
+                self._pool.get(),
+                self.timeout
+            )
+        except asyncio.TimeoutError:
+            raise ConnectionError("No connection available.")
+
+        if connection is None:
+            connection = self.make_connection()
+
+        self._in_use_connections.add(connection)
+        return connection
+
+    def release(self, connection):
+        """Releases the connection back to the pool"""
+        self._checkpid()
+        if connection.pid != self.pid:
+            return
+        self._in_use_connections.remove(connection)
+        # discard connection with unread response
+        if connection.awaiting_response:
+            connection.disconnect()
+            connection = None
+
+        try:
+            self._pool.put_nowait(connection)
+        except asyncio.QueueFull:
+            # perhaps the pool have been reset() ?
+            pass
+
+    def disconnect(self):
+        """Closes all connections in the pool"""
+        pooled_connections = []
+        while True:
+            try:
+                pooled_connections.append(self._pool.get_nowait())
+            except asyncio.QueueEmpty:
+                break
+
+        for conn in pooled_connections:
+            try:
+                self._pool.put_nowait(conn)
+            except asyncio.QueueFull:
+                pass
+
+        all_conns = chain(pooled_connections,
+                          self._in_use_connections)
+        for connection in all_conns:
+            if connection is not None:
+                connection.disconnect()
 
 class ClusterConnectionPool(ConnectionPool):
     """Custom connection pool for rediscluster"""
