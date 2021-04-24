@@ -328,7 +328,10 @@ class ClusterConnectionPool(ConnectionPool):
                     and not connection.awaiting_response):
                 connection.disconnect()
                 node = connection.node
-                self._available_connections[node['name']].remove(connection)
+                try:
+                    self._available_connections[node['name']].remove(connection)
+                except ValueError:
+                    pass
                 self._created_connections_per_node[node['name']] -= 1
                 break
             await asyncio.sleep(self.idle_check_interval)
