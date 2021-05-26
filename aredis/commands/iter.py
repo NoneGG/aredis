@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from collections import defaultdict
+import asyncio
 
 
 class IterCommandMixin:
@@ -81,17 +82,31 @@ class IterCommandMixin:
 class ClusterIterCommandMixin(IterCommandMixin):
 
     async def scan_iter(self, match=None, count=None):
+
+        async def iterate_node(node, queue):
+            nonlocal match, count
+            cursor = '0'
+            while cursor != 0:
+                pieces = [cursor]
+                if match is not None:
+                    pieces.extend(['MATCH', match])
+                if count is not None:
+                    pieces.extend(['COUNT', count])
+                response = await self.execute_command_on_nodes(
+                    [node], 'SCAN', *pieces)
+                cursor, data = list(response.values())[0]
+                for item in data:
+                    await queue.put(item)  # blocks if queue is full
+
+        # maxsize ensures we don't pull too much data into
+        # memory if we are not processing it yet
+        queue = asyncio.Queue(maxsize=1000)
+        tasks = []
         nodes = await self.cluster_nodes()
         for node in nodes:
             if 'master' in node['flags']:
-                cursor = '0'
-                while cursor != 0:
-                    pieces = [cursor]
-                    if match is not None:
-                        pieces.extend(['MATCH', match])
-                    if count is not None:
-                        pieces.extend(['COUNT', count])
-                    response = await self.execute_command_on_nodes([node], 'SCAN', *pieces)
-                    cursor, data = list(response.values())[0]
-                    for item in data:
-                        yield item
+                t = asyncio.create_task(iterate_node(node, queue))
+                tasks.append(t)
+
+        while not all(t.done() for t in tasks):
+            yield await queue.get()
