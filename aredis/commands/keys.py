@@ -249,7 +249,7 @@ class KeysCommandMixin:
         """
         return await self.execute_command('WAIT', num_replicas, timeout)
 
-    async def scan(self, cursor=0, match=None, count=None):
+    async def scan(self, cursor=0, match=None, count=None, type=None):
         """
         Incrementally return lists of key names. Also return a cursor
         indicating the scan position.
@@ -257,12 +257,16 @@ class KeysCommandMixin:
         ``match`` allows for filtering the keys by pattern
 
         ``count`` allows for hint the minimum number of returns
+
+        ``type`` filters results by a redis type
         """
         pieces = [cursor]
         if match is not None:
             pieces.extend([b('MATCH'), match])
         if count is not None:
             pieces.extend([b('COUNT'), count])
+        if type is not None:
+            pieces.extend([b('TYPE'), type])
         return await self.execute_command('SCAN', *pieces)
 
 

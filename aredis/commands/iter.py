@@ -10,7 +10,7 @@ class IterCommandMixin:
     """
     RESPONSE_CALLBACKS = {}
 
-    async def scan_iter(self, match=None, count=None):
+    async def scan_iter(self, match=None, count=None, type=None):
         """
         Make an iterator using the SCAN command so that the client doesn't
         need to remember the cursor position.
@@ -18,10 +18,13 @@ class IterCommandMixin:
         ``match`` allows for filtering the keys by pattern
 
         ``count`` allows for hint the minimum number of returns
+
+        ``type`` filters results by a redis type
         """
         cursor = '0'
         while cursor != 0:
-            cursor, data = await self.scan(cursor=cursor, match=match, count=count)
+            cursor, data = await self.scan(cursor=cursor, match=match,
+                                           count=count, type=type)
             for item in data:
                 yield item
 
@@ -80,7 +83,7 @@ class IterCommandMixin:
 
 class ClusterIterCommandMixin(IterCommandMixin):
 
-    async def scan_iter(self, match=None, count=None):
+    async def scan_iter(self, match=None, count=None, type=type):
         nodes = await self.cluster_nodes()
         for node in nodes:
             if 'master' in node['flags']:
@@ -91,6 +94,8 @@ class ClusterIterCommandMixin(IterCommandMixin):
                         pieces.extend(['MATCH', match])
                     if count is not None:
                         pieces.extend(['COUNT', count])
+                    if type is not None:
+                        pieces.extend(['TYPE', type])
                     response = await self.execute_command_on_nodes([node], 'SCAN', *pieces)
                     cursor, data = list(response.values())[0]
                     for item in data:
