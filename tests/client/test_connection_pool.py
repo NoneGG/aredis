@@ -86,7 +86,7 @@ class TestConnectionPool:
         assert last_active_at == conn.last_active_at
         assert conn._writer is None and conn._reader is None
 
-
+    
 class TestConnectionPoolURLParsing:
     def test_defaults(self):
         pool = aredis.ConnectionPool.from_url('redis://localhost')
@@ -225,6 +225,50 @@ class TestConnectionPoolURLParsing:
             'Invalid value for `stream_timeout` in connection URL.',
         ]
 
+    def test_max_connections_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('redis://localhost?max_connections=32')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'max_connections': 32
+        }
+    
+    def test_max_idle_times_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('redis://localhost?max_idle_time=5')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'max_idle_time': 5
+        }
+
+    def test_idle_check_interval_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('redis://localhost?idle_check_interval=1')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'idle_check_interval': 1
+        }
+
+    def test_reader_read_size_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('redis://localhost?reader_read_size=65535')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'reader_read_size': 65535
+        }
+
     def test_extra_querystring_options(self):
         pool = aredis.ConnectionPool.from_url('redis://localhost?a=1&b=2')
         assert pool.connection_class == aredis.Connection
@@ -305,6 +349,50 @@ class TestConnectionPoolUnixSocketURLParsing:
             'path': '/socket',
             'db': 2,
             'password': None,
+        }
+
+    def test_max_connections_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('unix:///localhost?max_connections=32')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'max_connections': 32
+        }
+    
+    def test_max_idle_times_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('unix:///localhost?max_idle_time=5')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'max_idle_time': 5
+        }
+
+    def test_idle_check_interval_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('unix:///localhost?idle_check_interval=1')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'idle_check_interval': 1
+        }
+
+    def test_reader_read_size_querystring_option(self):
+        pool = aredis.ConnectionPool.from_url('unix:///localhost?reader_read_size=65535')
+        assert pool.connection_class == aredis.Connection
+        assert pool.connection_kwargs == {
+            'host': 'localhost',
+            'port': 6379,
+            'db': 0,
+            'password': None,
+            'reader_read_size': 65535
         }
 
     def test_extra_querystring_options(self):
