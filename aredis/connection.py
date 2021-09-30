@@ -330,7 +330,7 @@ else:
 
 class RedisSSLContext:
     def __init__(self, keyfile=None, certfile=None,
-                 cert_reqs=None, ca_certs=None):
+                 cert_reqs=None, ca_certs=None, check_hostname=False):
         self.keyfile = keyfile
         self.certfile = certfile
         if cert_reqs is None:
@@ -348,6 +348,7 @@ class RedisSSLContext:
             self.cert_reqs = CERT_REQS[cert_reqs]
         self.ca_certs = ca_certs
         self.context = None
+        self.check_hostname = check_hostname
 
     def get(self):
         if not self.keyfile:
@@ -358,6 +359,8 @@ class RedisSSLContext:
             self.context.load_cert_chain(certfile=self.certfile,
                                          keyfile=self.keyfile)
             self.context.load_verify_locations(self.ca_certs)
+        self.context.check_hostname = self.check_hostname
+        self.context.verify_mode = self.cert_reqs
         return self.context
 
 
