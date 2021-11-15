@@ -593,11 +593,21 @@ class Connection(BaseConnection):
         self.socket_keepalive_options = socket_keepalive_options or {}
 
     async def _connect(self):
+        if LOOP_DEPRECATED:
+            connection = asyncio.open_connection(
+                host=self.host,
+                port=self.port,
+                ssl=self.ssl_context
+            )
+        else:
+            connection = asyncio.open_connection(
+                host=self.host,
+                port=self.port,
+                ssl=self.ssl_context,
+                loop=self.loop
+            )
         reader, writer = await exec_with_timeout(
-            asyncio.open_connection(host=self.host,
-                                    port=self.port,
-                                    ssl=self.ssl_context,
-                                    loop=self.loop),
+            connection,
             self._connect_timeout,
             loop=self.loop
         )
