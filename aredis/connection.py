@@ -652,10 +652,19 @@ class UnixDomainSocketConnection(BaseConnection):
         }
 
     async def _connect(self):
+        if LOOP_DEPRECATED:
+            connection = asyncio.open_unix_connection(
+                path=self.path,
+                ssl=self.ssl_context
+            )
+        else:
+            connection = asyncio.open_unix_connection(
+                path=self.path,
+                ssl=self.ssl_context,
+                loop=self.loop
+            )
         reader, writer = await exec_with_timeout(
-            asyncio.open_unix_connection(path=self.path,
-                                         ssl=self.ssl_context,
-                                         loop=self.loop),
+            connection,
             self._connect_timeout,
             loop=self.loop
         )
