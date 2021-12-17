@@ -16,7 +16,7 @@ it with the multiplier value and returns the result.
 
 .. code-block:: pycon
 
-    r = redis.StrictRedis()
+    r = aredis.StrictRedis()
     lua = """
     local value = redis.call('GET', KEYS[1])
     value = tonumber(value)
@@ -54,7 +54,7 @@ that points to a completely different Redis server.
 
 .. code-block:: python
 
-    r2 = redis.StrictRedis('redis2.example.com')
+    r2 = aredis.StrictRedis('redis2.example.com')
     await r2.set('foo', 3)
     multiply.execute(keys=['foo'], args=[5], client=r2)
     # 15

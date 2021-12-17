@@ -10,7 +10,7 @@ Sentinel connection to discover the master and slaves network addresses:
 
 .. code-block:: python
 
-    from redis.sentinel import Sentinel
+    from aredis.sentinel import Sentinel
     sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
     await sentinel.discover_master('mymaster')
     # ('127.0.0.1', 6379)
