@@ -3,7 +3,20 @@ coredis
 
 .. container:: badges
 
-   |pypi-ver| |circleci-status| |python-ver|
+   .. image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg?style=flat-square
+      :alt: CircleCI build status
+      :target: https://circleci.com/gh/alisaifee/coredis/tree/master
+      :class: header-badge
+
+   .. image::  https://img.shields.io/pypi/v/coredis.svg?style=flat-square
+      :target: https://pypi.python.org/pypi/coredis/
+      :alt: Latest Version in PyPI
+      :class: header-badge
+
+   .. image:: https://img.shields.io/pypi/pyversions/coredis.svg?style=flat-square
+      :target: https://pypi.python.org/pypi/coredis/
+      :alt: Supported Python versions
+      :class: header-badge
 
 coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_, an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 
@@ -159,14 +172,3 @@ The Community Guide
     license
     todo
 
-.. |circleci-status| image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg
-    :alt: CircleCI build status
-    :target: https://circleci.com/gh/alisaifee/coredis/tree/master
-
-.. |pypi-ver| image::  https://img.shields.io/pypi/v/coredis.svg
-    :target: https://pypi.python.org/pypi/coredis/
-    :alt: Latest Version in PyPI
-
-.. |python-ver| image:: https://img.shields.io/pypi/pyversions/coredis.svg
-    :target: https://pypi.python.org/pypi/coredis/
-    :alt: Supported Python versions
