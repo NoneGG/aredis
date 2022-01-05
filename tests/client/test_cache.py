@@ -42,7 +42,7 @@ class TestCache:
         content = await r.get(identity)
         content = cache._unpack(content)
         assert content == self.data
-        await asyncio.sleep(1, loop=event_loop)
+        await asyncio.sleep(1.1, loop=event_loop)
         content = await r.get(identity)
         assert content is None
 
