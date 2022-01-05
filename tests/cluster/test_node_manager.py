@@ -6,12 +6,18 @@ import asyncio
 import uuid
 
 # rediscluster imports
-from coredis import StrictRedis, StrictRedisCluster, RedisClusterException, ConnectionError
+from coredis import (
+    StrictRedis,
+    StrictRedisCluster,
+    RedisClusterException,
+    ConnectionError,
+)
 from coredis.nodemanager import NodeManager
 
 # 3rd party imports
 import pytest
 from mock import patch, Mock
+
 
 def test_set_node_name(s):
     """
@@ -57,15 +63,51 @@ async def test_init_slots_cache_not_all_slots(s):
         orig_exec_method = link.execute_command
 
         async def patch_execute_command(*args, **kwargs):
-            if args == ('CLUSTER SLOTS',):
+            if args == ("CLUSTER SLOTS",):
                 # Missing slot 5460
                 return {
-                    (0, 5459): [{'host': '127.0.0.1', 'port': 7000, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                {'host': '127.0.0.1', 'port': 7003, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-                    (5461, 10922): [{'host': '127.0.0.1', 'port': 7001, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                    {'host': '127.0.0.1', 'port': 7004, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-                    (10923, 16383): [{'host': '127.0.0.1', 'port': 7002, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                    {'host': '127.0.0.1', 'port': 7005, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
+                    (0, 5459): [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7000,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        },
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7003,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "slave",
+                        },
+                    ],
+                    (5461, 10922): [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7001,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        },
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7004,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "slave",
+                        },
+                    ],
+                    (10923, 16383): [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7002,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        },
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7005,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "slave",
+                        },
+                    ],
                 }
 
             return await orig_exec_method(*args, **kwargs)
@@ -80,7 +122,9 @@ async def test_init_slots_cache_not_all_slots(s):
     with pytest.raises(RedisClusterException) as ex:
         await s.connection_pool.initialize()
 
-    assert str(ex.value).startswith("Not all slots are covered after query all startup_nodes.")
+    assert str(ex.value).startswith(
+        "Not all slots are covered after query all startup_nodes."
+    )
 
 
 @pytest.mark.asyncio
@@ -95,18 +139,54 @@ async def test_init_slots_cache_not_all_slots_not_require_full_coverage(s):
         orig_exec_method = link.execute_command
 
         async def patch_execute_command(*args, **kwargs):
-            if args == ('CLUSTER SLOTS',):
+            if args == ("CLUSTER SLOTS",):
                 # Missing slot 5460
                 return {
-                    (0, 5459): [{'host': '127.0.0.1', 'port': 7000, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                {'host': '127.0.0.1', 'port': 7003, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-                    (5461, 10922): [{'host': '127.0.0.1', 'port': 7001, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                    {'host': '127.0.0.1', 'port': 7004, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-                    (10923, 16383): [{'host': '127.0.0.1', 'port': 7002, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                    {'host': '127.0.0.1', 'port': 7005, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
+                    (0, 5459): [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7000,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        },
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7003,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "slave",
+                        },
+                    ],
+                    (5461, 10922): [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7001,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        },
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7004,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "slave",
+                        },
+                    ],
+                    (10923, 16383): [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7002,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        },
+                        {
+                            "host": "127.0.0.1",
+                            "port": 7005,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "slave",
+                        },
+                    ],
                 }
-            elif args == ('CONFIG GET', 'cluster-require-full-coverage'):
-                return {'cluster-require-full-coverage': 'no'}
+            elif args == ("CONFIG GET", "cluster-require-full-coverage"):
+                return {"cluster-require-full-coverage": "no"}
             else:
                 return await orig_exec_method(*args, **kwargs)
 
@@ -128,18 +208,55 @@ async def test_init_slots_cache(s):
     Test that slots cache can in initialized and all slots are covered
     """
     good_slots_resp = {
-        (0, 5460): [{'host': '127.0.0.1', 'port': 7000, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                    {'host': '127.0.0.1', 'port': 7003, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-        (5461, 10922): [{'host': '127.0.0.1', 'port': 7001, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                        {'host': '127.0.0.1', 'port': 7004, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-        (10923, 16383): [{'host': '127.0.0.1', 'port': 7002, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                        {'host': '127.0.0.1', 'port': 7005, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
+        (0, 5460): [
+            {
+                "host": "127.0.0.1",
+                "port": 7000,
+                "node_id": str(uuid.uuid4()),
+                "server_type": "master",
+            },
+            {
+                "host": "127.0.0.1",
+                "port": 7003,
+                "node_id": str(uuid.uuid4()),
+                "server_type": "slave",
+            },
+        ],
+        (5461, 10922): [
+            {
+                "host": "127.0.0.1",
+                "port": 7001,
+                "node_id": str(uuid.uuid4()),
+                "server_type": "master",
+            },
+            {
+                "host": "127.0.0.1",
+                "port": 7004,
+                "node_id": str(uuid.uuid4()),
+                "server_type": "slave",
+            },
+        ],
+        (10923, 16383): [
+            {
+                "host": "127.0.0.1",
+                "port": 7002,
+                "node_id": str(uuid.uuid4()),
+                "server_type": "master",
+            },
+            {
+                "host": "127.0.0.1",
+                "port": 7005,
+                "node_id": str(uuid.uuid4()),
+                "server_type": "slave",
+            },
+        ],
     }
 
-    with patch.object(StrictRedis, 'execute_command') as execute_command_mock:
+    with patch.object(StrictRedis, "execute_command") as execute_command_mock:
+
         async def patch_execute_command(*args, **kwargs):
-            if args == ('CONFIG GET', 'cluster-require-full-coverage'):
-                return {'cluster-require-full-coverage': 'yes'}
+            if args == ("CONFIG GET", "cluster-require-full-coverage"):
+                return {"cluster-require-full-coverage": "yes"}
             else:
                 return good_slots_resp
 
@@ -148,16 +265,16 @@ async def test_init_slots_cache(s):
         await s.connection_pool.nodes.initialize()
         assert len(s.connection_pool.nodes.slots) == NodeManager.RedisClusterHashSlots
         for slot_info, node_info in good_slots_resp.items():
-            all_hosts = ['127.0.0.1', '127.0.0.2']
+            all_hosts = ["127.0.0.1", "127.0.0.2"]
             all_ports = [7000, 7001, 7002, 7003, 7004, 7005]
             slot_start = slot_info[0]
             slot_end = slot_info[1]
             for i in range(slot_start, slot_end + 1):
                 assert len(s.connection_pool.nodes.slots[i]) == len(node_info)
-                assert s.connection_pool.nodes.slots[i][0]['host'] in all_hosts
-                assert s.connection_pool.nodes.slots[i][1]['host'] in all_hosts
-                assert s.connection_pool.nodes.slots[i][0]['port'] in all_ports
-                assert s.connection_pool.nodes.slots[i][1]['port'] in all_ports
+                assert s.connection_pool.nodes.slots[i][0]["host"] in all_hosts
+                assert s.connection_pool.nodes.slots[i][1]["host"] in all_hosts
+                assert s.connection_pool.nodes.slots[i][0]["port"] in all_ports
+                assert s.connection_pool.nodes.slots[i][1]["port"] in all_ports
 
     assert len(s.connection_pool.nodes.nodes) == 6
 
@@ -189,10 +306,12 @@ async def test_init_slots_cache_slots_collision():
      servers.
     """
 
-    n = NodeManager(startup_nodes=[
-        {"host": "127.0.0.1", "port": 7000},
-        {"host": "127.0.0.1", "port": 7001},
-    ])
+    n = NodeManager(
+        startup_nodes=[
+            {"host": "127.0.0.1", "port": 7000},
+            {"host": "127.0.0.1", "port": 7001},
+        ]
+    )
 
     def monkey_link(host=None, port=None, *args, **kwargs):
         """
@@ -200,17 +319,65 @@ async def test_init_slots_cache_slots_collision():
         """
         if port == 7000:
             result = {
-                (0, 5460): [{'host': '127.0.0.1', 'port': 7000, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                            {'host': '127.0.0.1', 'port': 7003, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-                (5461, 10922): [{'host': '127.0.0.1', 'port': 7001, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                {'host': '127.0.0.1', 'port': 7004, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
+                (0, 5460): [
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7000,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "master",
+                    },
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7003,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "slave",
+                    },
+                ],
+                (5461, 10922): [
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7001,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "master",
+                    },
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7004,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "slave",
+                    },
+                ],
             }
         elif port == 7001:
             result = {
-                (0, 5460): [{'host': '127.0.0.1', 'port': 7001, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                            {'host': '127.0.0.1', 'port': 7003, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
-                (5461, 10922): [{'host': '127.0.0.1', 'port': 7000, 'node_id': str(uuid.uuid4()), 'server_type': 'master'},
-                                {'host': '127.0.0.1', 'port': 7004, 'node_id': str(uuid.uuid4()), 'server_type': 'slave'}],
+                (0, 5460): [
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7001,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "master",
+                    },
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7003,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "slave",
+                    },
+                ],
+                (5461, 10922): [
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7000,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "master",
+                    },
+                    {
+                        "host": "127.0.0.1",
+                        "port": 7004,
+                        "node_id": str(uuid.uuid4()),
+                        "server_type": "slave",
+                    },
+                ],
             }
         else:
             result = dict()
@@ -219,10 +386,10 @@ async def test_init_slots_cache_slots_collision():
         orig_execute_command = r.execute_command
 
         async def execute_command(*args, **kwargs):
-            if args == ('CLUSTER SLOTS',):
+            if args == ("CLUSTER SLOTS",):
                 return result
-            elif args == ('CONFIG GET', 'cluster-require-full-coverage'):
-                return {'cluster-require-full-coverage': 'yes'}
+            elif args == ("CONFIG GET", "cluster-require-full-coverage"):
+                return {"cluster-require-full-coverage": "yes"}
             else:
                 return orig_execute_command(*args, **kwargs)
 
@@ -232,7 +399,9 @@ async def test_init_slots_cache_slots_collision():
     n.get_redis_link = monkey_link
     with pytest.raises(RedisClusterException) as ex:
         await n.initialize()
-    assert str(ex.value).startswith("startup_nodes could not agree on a valid slots cache."), str(ex.value)
+    assert str(ex.value).startswith(
+        "startup_nodes could not agree on a valid slots cache."
+    ), str(ex.value)
 
 
 @pytest.mark.asyncio
@@ -255,10 +424,15 @@ async def test_all_nodes_masters():
     Set a list of nodes with random masters/slaves config and it shold be possible
     to itterate over all of them.
     """
-    n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7000}, {"host": "127.0.0.1", "port": 7001}])
+    n = NodeManager(
+        startup_nodes=[
+            {"host": "127.0.0.1", "port": 7000},
+            {"host": "127.0.0.1", "port": 7001},
+        ]
+    )
     await n.initialize()
 
-    nodes = [node for node in n.nodes.values() if node['server_type'] == 'master']
+    nodes = [node for node in n.nodes.values() if node["server_type"] == "master"]
 
     for node in n.all_masters():
         assert node in nodes
@@ -282,7 +456,7 @@ async def test_cluster_slots_error():
     Check that exception is raised if initialize can't execute
     'CLUSTER SLOTS' command.
     """
-    with patch.object(StrictRedisCluster, 'execute_command') as execute_command_mock:
+    with patch.object(StrictRedisCluster, "execute_command") as execute_command_mock:
         execute_command_mock.side_effect = Exception("foobar")
 
         n = NodeManager(startup_nodes=[{}])
@@ -306,7 +480,7 @@ def test_set_node():
     assert len(n.slots) == 0, "no slots should exist"
     res = n.set_node(host="127.0.0.1", port=7000, server_type="master")
     assert res == expected
-    assert n.nodes == {expected['name']: expected}
+    assert n.nodes == {expected["name"]: expected}
 
 
 @pytest.mark.asyncio
@@ -314,6 +488,7 @@ async def test_reset():
     """
     Test that reset method resets variables back to correct default values.
     """
+
     class AsyncMock(Mock):
         def __await__(self):
             future = asyncio.Future(loop=asyncio.get_event_loop())
@@ -333,13 +508,21 @@ async def test_cluster_one_instance():
     If the cluster exists of only 1 node then there is some hacks that must
     be validated they work.
     """
-    with patch.object(StrictRedis, 'execute_command') as mock_execute_command:
+    with patch.object(StrictRedis, "execute_command") as mock_execute_command:
+
         async def patch_execute_command(*args, **kwargs):
-            if args == ('CONFIG GET', 'cluster-require-full-coverage'):
-                return {'cluster-require-full-coverage': 'yes'}
+            if args == ("CONFIG GET", "cluster-require-full-coverage"):
+                return {"cluster-require-full-coverage": "yes"}
             else:
                 return {
-                    (0, 16383): [{'host': '', 'port': 7006, 'node_id': str(uuid.uuid4()), 'server_type': 'master'}],
+                    (0, 16383): [
+                        {
+                            "host": "",
+                            "port": 7006,
+                            "node_id": str(uuid.uuid4()),
+                            "server_type": "master",
+                        }
+                    ],
                 }
 
         mock_execute_command.side_effect = patch_execute_command
@@ -347,28 +530,34 @@ async def test_cluster_one_instance():
         n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7006}])
         await n.initialize()
 
-        del n.nodes['127.0.0.1:7006']['node_id']
+        del n.nodes["127.0.0.1:7006"]["node_id"]
         assert n.nodes == {
             "127.0.0.1:7006": {
-                'host': '127.0.0.1',
-                'name': '127.0.0.1:7006',
-                'port': 7006,
-                'server_type': 'master',
-            }}
-
-        assert len(n.slots) == 16384
-        for i in range(0, 16384):
-            assert n.slots[i] == [{
                 "host": "127.0.0.1",
                 "name": "127.0.0.1:7006",
                 "port": 7006,
                 "server_type": "master",
-            }]
+            }
+        }
+
+        assert len(n.slots) == 16384
+        for i in range(0, 16384):
+            assert n.slots[i] == [
+                {
+                    "host": "127.0.0.1",
+                    "name": "127.0.0.1:7006",
+                    "port": 7006,
+                    "server_type": "master",
+                }
+            ]
 
 
 @pytest.mark.asyncio
 async def test_initialize_follow_cluster():
-    n = NodeManager(nodemanager_follow_cluster=True, startup_nodes=[{'host': '127.0.0.1', 'port': 7000}])
+    n = NodeManager(
+        nodemanager_follow_cluster=True,
+        startup_nodes=[{"host": "127.0.0.1", "port": 7000}],
+    )
     n.orig_startup_nodes = None
     await n.initialize()
 
@@ -379,13 +568,14 @@ async def test_init_with_down_node():
     If I can't connect to one of the nodes, everything should still work.
     But if I can't connect to any of the nodes, exception should be thrown.
     """
+
     def get_redis_link(host, port, decode_responses=False):
         if port == 7000:
-            raise ConnectionError('mock connection error for 7000')
+            raise ConnectionError("mock connection error for 7000")
         return StrictRedis(host=host, port=port, decode_responses=decode_responses)
 
-    with patch.object(NodeManager, 'get_redis_link', side_effect=get_redis_link):
+    with patch.object(NodeManager, "get_redis_link", side_effect=get_redis_link):
         n = NodeManager(startup_nodes=[{"host": "127.0.0.1", "port": 7000}])
         with pytest.raises(RedisClusterException) as e:
             await n.initialize()
-        assert 'Redis Cluster cannot be connected' in str(e.value)
+        assert "Redis Cluster cannot be connected" in str(e.value)

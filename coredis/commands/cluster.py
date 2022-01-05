@@ -1,15 +1,10 @@
-from coredis.utils import (bool_ok,
-                          nativestr,
-                          NodeFlag,
-                          list_keys_to_dict,
-                          dict_merge)
-from coredis.exceptions import (RedisError,
-                               ClusterError)
+from coredis.utils import bool_ok, nativestr, NodeFlag, list_keys_to_dict, dict_merge
+from coredis.exceptions import RedisError, ClusterError
 
 
 def parse_cluster_info(response, **options):
     response = nativestr(response)
-    return dict([line.split(':') for line in response.splitlines() if line])
+    return dict([line.split(":") for line in response.splitlines() if line])
 
 
 def parse_cluster_nodes(resp, **options):
@@ -21,27 +16,23 @@ def parse_cluster_nodes(resp, **options):
         resp = [nativestr(row) for row in resp]
     else:
         resp = nativestr(resp)
-    current_host = options.get('current_host', '')
+    current_host = options.get("current_host", "")
 
     def parse_slots(s):
         slots, migrations = [], []
-        for r in s.split(' '):
-            if '->-' in r:
-                slot_id, dst_node_id = r[1:-1].split('->-', 1)
-                migrations.append({
-                    'slot': int(slot_id),
-                    'node_id': dst_node_id,
-                    'state': 'migrating'
-                })
-            elif '-<-' in r:
-                slot_id, src_node_id = r[1:-1].split('-<-', 1)
-                migrations.append({
-                    'slot': int(slot_id),
-                    'node_id': src_node_id,
-                    'state': 'importing'
-                })
-            elif '-' in r:
-                start, end = r.split('-')
+        for r in s.split(" "):
+            if "->-" in r:
+                slot_id, dst_node_id = r[1:-1].split("->-", 1)
+                migrations.append(
+                    {"slot": int(slot_id), "node_id": dst_node_id, "state": "migrating"}
+                )
+            elif "-<-" in r:
+                slot_id, src_node_id = r[1:-1].split("-<-", 1)
+                migrations.append(
+                    {"slot": int(slot_id), "node_id": src_node_id, "state": "importing"}
+                )
+            elif "-" in r:
+                start, end = r.split("-")
                 slots.extend(range(int(start), int(end) + 1))
             else:
                 slots.append(int(r))
@@ -53,28 +44,36 @@ def parse_cluster_nodes(resp, **options):
 
     nodes = []
     for line in resp:
-        parts = line.split(' ', 8)
-        self_id, addr, flags, master_id, ping_sent, \
-            pong_recv, config_epoch, link_state = parts[:8]
+        parts = line.split(" ", 8)
+        (
+            self_id,
+            addr,
+            flags,
+            master_id,
+            ping_sent,
+            pong_recv,
+            config_epoch,
+            link_state,
+        ) = parts[:8]
 
-        host, port = addr.rsplit(':', 1)
+        host, port = addr.rsplit(":", 1)
 
         node = {
-            'id': self_id,
-            'host': host or current_host,
-            'port': int(port.split('@')[0]),
-            'flags': tuple(flags.split(',')),
-            'master': master_id if master_id != '-' else None,
-            'ping-sent': int(ping_sent),
-            'pong-recv': int(pong_recv),
-            'link-state': link_state,
-            'slots': [],
-            'migrations': [],
+            "id": self_id,
+            "host": host or current_host,
+            "port": int(port.split("@")[0]),
+            "flags": tuple(flags.split(",")),
+            "master": master_id if master_id != "-" else None,
+            "ping-sent": int(ping_sent),
+            "pong-recv": int(pong_recv),
+            "link-state": link_state,
+            "slots": [],
+            "migrations": [],
         }
 
         if len(parts) >= 9:
             slots, migrations = parse_slots(parts[8])
-            node['slots'], node['migrations'] = tuple(slots), migrations
+            node["slots"], node["migrations"] = tuple(slots), migrations
 
         nodes.append(node)
 
@@ -87,55 +86,60 @@ def parse_cluster_slots(response):
         min_slot, max_slot = slot_info[:2]
         nodes = slot_info[2:]
         parse_node = lambda node: {
-            'host': node[0],
-            'port': node[1],
-            'node_id': node[2] if len(node) > 2 else '',
-            'server_type': 'slave'
+            "host": node[0],
+            "port": node[1],
+            "node_id": node[2] if len(node) > 2 else "",
+            "server_type": "slave",
         }
         res[(min_slot, max_slot)] = [parse_node(node) for node in nodes]
-        res[(min_slot, max_slot)][0]['server_type'] = 'master'
+        res[(min_slot, max_slot)][0]["server_type"] = "master"
     return res
-
 
 
 class ClusterCommandMixin:
 
-    NODES_FLAGS = dict_merge({
-        'CLUSTER INFO': NodeFlag.ALL_NODES,
-        'CLUSTER COUNTKEYSINSLOT': NodeFlag.SLOT_ID
-    },
-    list_keys_to_dict(
-        ['CLUSTER NODES', 'CLUSTER SLOTS'], NodeFlag.RANDOM
-    )
+    NODES_FLAGS = dict_merge(
+        {
+            "CLUSTER INFO": NodeFlag.ALL_NODES,
+            "CLUSTER COUNTKEYSINSLOT": NodeFlag.SLOT_ID,
+        },
+        list_keys_to_dict(["CLUSTER NODES", "CLUSTER SLOTS"], NodeFlag.RANDOM),
     )
 
     RESPONSE_CALLBACKS = {
-        'CLUSTER ADDSLOTS': bool_ok,
-        'CLUSTER COUNT-FAILURE-REPORTS': lambda x: int(x),
-        'CLUSTER COUNTKEYSINSLOT': lambda x: int(x),
-        'CLUSTER DELSLOTS': bool_ok,
-        'CLUSTER FAILOVER': bool_ok,
-        'CLUSTER FORGET': bool_ok,
-        'CLUSTER INFO': parse_cluster_info,
-        'CLUSTER KEYSLOT': lambda x: int(x),
-        'CLUSTER MEET': bool_ok,
-        'CLUSTER NODES': parse_cluster_nodes,
-        'CLUSTER REPLICATE': bool_ok,
-        'CLUSTER RESET': bool_ok,
-        'CLUSTER SAVECONFIG': bool_ok,
-        'CLUSTER SET-CONFIG-EPOCH': bool_ok,
-        'CLUSTER SETSLOT': bool_ok,
-        'CLUSTER SLAVES': parse_cluster_nodes,
-        'CLUSTER SLOTS': parse_cluster_slots,
-        'ASKING': bool_ok,
-        'READONLY': bool_ok,
-        'READWRITE': bool_ok,
+        "CLUSTER ADDSLOTS": bool_ok,
+        "CLUSTER COUNT-FAILURE-REPORTS": lambda x: int(x),
+        "CLUSTER COUNTKEYSINSLOT": lambda x: int(x),
+        "CLUSTER DELSLOTS": bool_ok,
+        "CLUSTER FAILOVER": bool_ok,
+        "CLUSTER FORGET": bool_ok,
+        "CLUSTER INFO": parse_cluster_info,
+        "CLUSTER KEYSLOT": lambda x: int(x),
+        "CLUSTER MEET": bool_ok,
+        "CLUSTER NODES": parse_cluster_nodes,
+        "CLUSTER REPLICATE": bool_ok,
+        "CLUSTER RESET": bool_ok,
+        "CLUSTER SAVECONFIG": bool_ok,
+        "CLUSTER SET-CONFIG-EPOCH": bool_ok,
+        "CLUSTER SETSLOT": bool_ok,
+        "CLUSTER SLAVES": parse_cluster_nodes,
+        "CLUSTER SLOTS": parse_cluster_slots,
+        "ASKING": bool_ok,
+        "READONLY": bool_ok,
+        "READWRITE": bool_ok,
     }
 
     RESULT_CALLBACKS = dict_merge(
         list_keys_to_dict(
-            ['CLUSTER INFO', 'CLUSTER ADDSLOTS', 'CLUSTER COUNT-FAILURE-REPORTS',
-            'CLUSTER DELSLOTS', 'CLUSTER FAILOVER', 'CLUSTER FORGET'], lambda res: res
+            [
+                "CLUSTER INFO",
+                "CLUSTER ADDSLOTS",
+                "CLUSTER COUNT-FAILURE-REPORTS",
+                "CLUSTER DELSLOTS",
+                "CLUSTER FAILOVER",
+                "CLUSTER FORGET",
+            ],
+            lambda res: res,
         )
     )
 
@@ -150,8 +154,8 @@ class ClusterCommandMixin:
         """
         out = {}
         for node in mapping:
-            for slot in node['slots']:
-                out[str(slot)] = node['id']
+            for slot in node["slots"]:
+                out[str(slot)] = node["id"]
         return out
 
     async def cluster_addslots(self, node_id, *slots):
@@ -160,15 +164,17 @@ class ClusterCommandMixin:
 
         Sends to specefied node
         """
-        return await self.execute_command('CLUSTER ADDSLOTS', *slots, node_id=node_id)
+        return await self.execute_command("CLUSTER ADDSLOTS", *slots, node_id=node_id)
 
-    async def cluster_count_failure_report(self, node_id=''):
+    async def cluster_count_failure_report(self, node_id=""):
         """
         Return the number of failure reports active for a given node
 
         Sends to specefied node
         """
-        return await self.execute_command('CLUSTER COUNT-FAILURE-REPORTS', node_id=node_id)
+        return await self.execute_command(
+            "CLUSTER COUNT-FAILURE-REPORTS", node_id=node_id
+        )
 
     async def cluster_countkeysinslot(self, slot_id):
         """
@@ -176,7 +182,7 @@ class ClusterCommandMixin:
 
         Send to node based on specefied slot_id
         """
-        return await self.execute_command('CLUSTER COUNTKEYSINSLOT', slot_id)
+        return await self.execute_command("CLUSTER COUNTKEYSINSLOT", slot_id)
 
     async def cluster_delslots(self, *slots):
         """
@@ -188,7 +194,11 @@ class ClusterCommandMixin:
         cluster_nodes = self._nodes_slots_to_slots_nodes(await self.cluster_nodes())
         res = list()
         for slot in slots:
-            res.append(await self.execute_command('CLUSTER DELSLOTS', slot, node_id=cluster_nodes[slot]))
+            res.append(
+                await self.execute_command(
+                    "CLUSTER DELSLOTS", slot, node_id=cluster_nodes[slot]
+                )
+            )
         return res
 
     async def cluster_failover(self, node_id, option):
@@ -197,9 +207,9 @@ class ClusterCommandMixin:
 
         Sends to specefied node
         """
-        if not isinstance(option, str) or option.upper() not in {'FORCE', 'TAKEOVER'}:
-            raise ClusterError('Wrong option provided')
-        return await self.execute_command('CLUSTER FAILOVER', option, node_id=node_id)
+        if not isinstance(option, str) or option.upper() not in {"FORCE", "TAKEOVER"}:
+            raise ClusterError("Wrong option provided")
+        return await self.execute_command("CLUSTER FAILOVER", option, node_id=node_id)
 
     async def cluster_forget(self, node_id):
         """
@@ -208,7 +218,7 @@ class ClusterCommandMixin:
 
         Sends to all nodes in the cluster
         """
-        return await self.execute_command('CLUSTER FORGET', node_id)
+        return await self.execute_command("CLUSTER FORGET", node_id)
 
     async def cluster_info(self):
         """
@@ -216,7 +226,7 @@ class ClusterCommandMixin:
 
         Sends to random node in the cluster
         """
-        return await self.execute_command('CLUSTER INFO')
+        return await self.execute_command("CLUSTER INFO")
 
     async def cluster_keyslot(self, name):
         """
@@ -224,7 +234,7 @@ class ClusterCommandMixin:
 
         Sends to random node in the cluster
         """
-        return await self.execute_command('CLUSTER KEYSLOT', name)
+        return await self.execute_command("CLUSTER KEYSLOT", name)
 
     async def cluster_meet(self, node_id, host, port):
         """
@@ -232,7 +242,7 @@ class ClusterCommandMixin:
 
         Sends to specefied node
         """
-        return await self.execute_command('CLUSTER MEET', host, port, node_id=node_id)
+        return await self.execute_command("CLUSTER MEET", host, port, node_id=node_id)
 
     async def cluster_nodes(self):
         """
@@ -240,7 +250,7 @@ class ClusterCommandMixin:
 
         Sends to random node in the cluster
         """
-        return await self.execute_command('CLUSTER NODES')
+        return await self.execute_command("CLUSTER NODES")
 
     async def cluster_replicate(self, target_node_id):
         """
@@ -248,7 +258,7 @@ class ClusterCommandMixin:
 
         Sends to specefied node
         """
-        return await self.execute_command('CLUSTER REPLICATE', target_node_id)
+        return await self.execute_command("CLUSTER REPLICATE", target_node_id)
 
     async def cluster_reset(self, node_id, soft=True):
         """
@@ -259,8 +269,8 @@ class ClusterCommandMixin:
 
         Sends to specefied node
         """
-        option = 'SOFT' if soft else 'HARD'
-        return await self.execute_command('CLUSTER RESET', option, node_id=node_id)
+        option = "SOFT" if soft else "HARD"
+        return await self.execute_command("CLUSTER RESET", option, node_id=node_id)
 
     async def cluster_reset_all_nodes(self, soft=True):
         """
@@ -271,13 +281,12 @@ class ClusterCommandMixin:
 
         Sends to all nodes in the cluster
         """
-        option = 'SOFT' if soft else 'HARD'
+        option = "SOFT" if soft else "HARD"
         res = list()
         for node in await self.cluster_nodes():
             res.append(
-                await self.execute_command(
-                    'CLUSTER RESET', option, node_id=node['id']
-                ))
+                await self.execute_command("CLUSTER RESET", option, node_id=node["id"])
+            )
         return res
 
     async def cluster_save_config(self):
@@ -286,7 +295,7 @@ class ClusterCommandMixin:
 
         Sends to all nodes in the cluster
         """
-        return await self.execute_command('CLUSTER SAVECONFIG')
+        return await self.execute_command("CLUSTER SAVECONFIG")
 
     async def cluster_set_config_epoch(self, node_id, epoch):
         """
@@ -294,8 +303,9 @@ class ClusterCommandMixin:
 
         Sends to specefied node
         """
-        return await self.execute_command('CLUSTER SET-CONFIG-EPOCH', epoch, node_id=node_id)
-
+        return await self.execute_command(
+            "CLUSTER SET-CONFIG-EPOCH", epoch, node_id=node_id
+        )
 
     async def cluster_setslot(self, node_id, slot_id, state):
         """
@@ -303,19 +313,21 @@ class ClusterCommandMixin:
 
         Sends to specified node
         """
-        if state.upper() in {'IMPORTING', 'MIGRATING', 'NODE'} and node_id is not None:
-            return await self.execute_command('CLUSTER SETSLOT', slot_id, state, node_id)
-        elif state.upper() == 'STABLE':
-            return await self.execute_command('CLUSTER SETSLOT', slot_id, 'STABLE')
+        if state.upper() in {"IMPORTING", "MIGRATING", "NODE"} and node_id is not None:
+            return await self.execute_command(
+                "CLUSTER SETSLOT", slot_id, state, node_id
+            )
+        elif state.upper() == "STABLE":
+            return await self.execute_command("CLUSTER SETSLOT", slot_id, "STABLE")
         else:
-            raise RedisError('Invalid slot state: {0}'.format(state))
+            raise RedisError("Invalid slot state: {0}".format(state))
 
     async def cluster_get_keys_in_slot(self, slot_id, count):
         """
         Return local key names in the specified hash slot
         Sends to specified node
         """
-        return await self.execute_command('CLUSTER GETKEYSINSLOT', slot_id, count)
+        return await self.execute_command("CLUSTER GETKEYSINSLOT", slot_id, count)
 
     async def cluster_slaves(self, target_node_id):
         """
@@ -323,7 +335,7 @@ class ClusterCommandMixin:
 
         Sends to targeted cluster node
         """
-        return await self.execute_command('CLUSTER SLAVES', target_node_id)
+        return await self.execute_command("CLUSTER SLAVES", target_node_id)
 
     async def cluster_slots(self):
         """
@@ -331,4 +343,4 @@ class ClusterCommandMixin:
 
         Sends to random node in the cluster
         """
-        return await self.execute_command('CLUSTER SLOTS')
+        return await self.execute_command("CLUSTER SLOTS")

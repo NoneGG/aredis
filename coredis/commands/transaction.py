@@ -1,18 +1,14 @@
 import asyncio
 import warnings
-from coredis.exceptions import (RedisClusterException,
-                               WatchError)
-from coredis.utils import (string_keys_to_dict,
-                          bool_ok)
+from coredis.exceptions import RedisClusterException, WatchError
+from coredis.utils import string_keys_to_dict, bool_ok
 
 from coredis.utils import LOOP_DEPRECATED
 
+
 class TransactionCommandMixin:
 
-    RESPONSE_CALLBACKS = string_keys_to_dict(
-            'WATCH UNWATCH',
-            bool_ok
-        )
+    RESPONSE_CALLBACKS = string_keys_to_dict("WATCH UNWATCH", bool_ok)
 
     async def transaction(self, func, *watches, **kwargs):
         """
@@ -20,9 +16,9 @@ class TransactionCommandMixin:
         while watching all keys specified in `watches`. The 'func' callable
         should expect a single argument which is a Pipeline object.
         """
-        shard_hint = kwargs.pop('shard_hint', None)
-        value_from_callable = kwargs.pop('value_from_callable', False)
-        watch_delay = kwargs.pop('watch_delay', None)
+        shard_hint = kwargs.pop("shard_hint", None)
+        value_from_callable = kwargs.pop("value_from_callable", False)
+        watch_delay = kwargs.pop("watch_delay", None)
         async with await self.pipeline(True, shard_hint) as pipe:
             while True:
                 try:
@@ -37,8 +33,7 @@ class TransactionCommandMixin:
                             await asyncio.sleep(watch_delay)
                         else:
                             await asyncio.sleep(
-                                watch_delay,
-                                loop=self.connection_pool.loop
+                                watch_delay, loop=self.connection_pool.loop
                             )
                     continue
 
@@ -46,18 +41,16 @@ class TransactionCommandMixin:
         """
         Watches the values at keys ``names``, or None if the key doesn't exist
         """
-        warnings.warn(DeprecationWarning('Call WATCH from a Pipeline object'))
+        warnings.warn(DeprecationWarning("Call WATCH from a Pipeline object"))
 
     async def unwatch(self):
         """
         Unwatches the value at key ``name``, or None of the key doesn't exist
         """
-        warnings.warn(
-            DeprecationWarning('Call UNWATCH from a Pipeline object'))
+        warnings.warn(DeprecationWarning("Call UNWATCH from a Pipeline object"))
 
 
 class ClusterTransactionCommandMixin(TransactionCommandMixin):
-
     async def transaction(self, func, *watches, **kwargs):
         """
         Convenience method for executing the callable `func` as a transaction
@@ -67,9 +60,9 @@ class ClusterTransactionCommandMixin(TransactionCommandMixin):
         cluster transaction can only be run with commands in the same node,
         otherwise error will be raised.
         """
-        shard_hint = kwargs.pop('shard_hint', None)
-        value_from_callable = kwargs.pop('value_from_callable', False)
-        watch_delay = kwargs.pop('watch_delay', None)
+        shard_hint = kwargs.pop("shard_hint", None)
+        value_from_callable = kwargs.pop("value_from_callable", False)
+        watch_delay = kwargs.pop("watch_delay", None)
         async with await self.pipeline(True, shard_hint, watches=watches) as pipe:
             while True:
                 try:
@@ -82,7 +75,6 @@ class ClusterTransactionCommandMixin(TransactionCommandMixin):
                             await asyncio.sleep(watch_delay)
                         else:
                             await asyncio.sleep(
-                                watch_delay,
-                                loop=self.connection_pool.loop
+                                watch_delay, loop=self.connection_pool.loop
                             )
                     continue

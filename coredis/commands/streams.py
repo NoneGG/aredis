@@ -1,6 +1,5 @@
 from coredis.exceptions import RedisError
-from coredis.utils import (dict_merge, pairs_to_dict,
-                          string_keys_to_dict, bool_ok)
+from coredis.utils import dict_merge, pairs_to_dict, string_keys_to_dict, bool_ok
 
 
 def stream_list(response):
@@ -29,29 +28,29 @@ def list_of_pairs_to_dict(response):
 
 def parse_xinfo_stream(response):
     res = pairs_to_dict(response)
-    if res['first-entry'] and len(res['first-entry']) > 0:
-        res['first-entry'][1] = pairs_to_dict(res['first-entry'][1])
-    if res['last-entry'] and len(res['last-entry']) > 0:
-        res['last-entry'][1] = pairs_to_dict(res['last-entry'][1])
+    if res["first-entry"] and len(res["first-entry"]) > 0:
+        res["first-entry"][1] = pairs_to_dict(res["first-entry"][1])
+    if res["last-entry"] and len(res["last-entry"]) > 0:
+        res["last-entry"][1] = pairs_to_dict(res["last-entry"][1])
     return res
 
 
 class StreamsCommandMixin:
     RESPONSE_CALLBACKS = dict_merge(
-        string_keys_to_dict('XREVRANGE XRANGE', stream_list),
-        string_keys_to_dict('XREAD XREADGROUP', multi_stream_list),
+        string_keys_to_dict("XREVRANGE XRANGE", stream_list),
+        string_keys_to_dict("XREAD XREADGROUP", multi_stream_list),
         {
-            'XINFO GROUPS': list_of_pairs_to_dict,
-            'XINFO STREAM': parse_xinfo_stream,
-            'XINFO CONSUMERS': list_of_pairs_to_dict,
-            'XGROUP SETID': bool_ok,
-            'XGROUP CREATE': bool_ok
-        }
+            "XINFO GROUPS": list_of_pairs_to_dict,
+            "XINFO STREAM": parse_xinfo_stream,
+            "XINFO CONSUMERS": list_of_pairs_to_dict,
+            "XGROUP SETID": bool_ok,
+            "XGROUP CREATE": bool_ok,
+        },
     )
 
-    async def xadd(self, name: str, entry: dict,
-                   max_len=None, stream_id='*',
-                   approximate=True) -> str:
+    async def xadd(
+        self, name: str, entry: dict, max_len=None, stream_id="*", approximate=True
+    ) -> str:
         """
         Appends the specified stream entry to the stream at the specified key.
         If the key does not exist, as a side effect of running
@@ -83,22 +82,22 @@ class StreamsCommandMixin:
         if max_len is not None:
             if not isinstance(max_len, int) or max_len < 1:
                 raise RedisError("XADD maxlen must be a positive integer")
-            pieces.append('MAXLEN')
+            pieces.append("MAXLEN")
             if approximate:
-                pieces.append('~')
+                pieces.append("~")
             pieces.append(str(max_len))
         pieces.append(stream_id)
         for kv in entry.items():
             pieces.extend(list(kv))
-        return await self.execute_command('XADD', name, *pieces)
+        return await self.execute_command("XADD", name, *pieces)
 
     async def xlen(self, name: str) -> int:
         """
         Returns the number of elements in a given stream.
         """
-        return await self.execute_command('XLEN', name)
+        return await self.execute_command("XLEN", name)
 
-    async def xrange(self, name: str, start='-', end='+', count=None) -> list:
+    async def xrange(self, name: str, start="-", end="+", count=None) -> list:
         """
         Read stream values within an interval.
 
@@ -123,9 +122,9 @@ class StreamsCommandMixin:
                 raise RedisError("XRANGE count must be a positive integer")
             pieces.append("COUNT")
             pieces.append(str(count))
-        return await self.execute_command('XRANGE', name, *pieces)
+        return await self.execute_command("XRANGE", name, *pieces)
 
-    async def xrevrange(self, name: str, start='+', end='-', count=None) -> list:
+    async def xrevrange(self, name: str, start="+", end="-", count=None) -> list:
         """
         Read stream values within an interval, in reverse order.
 
@@ -149,7 +148,7 @@ class StreamsCommandMixin:
                 raise RedisError("XREVRANGE count must be a positive integer")
             pieces.append("COUNT")
             pieces.append(str(count))
-        return await self.execute_command('XREVRANGE', name, *pieces)
+        return await self.execute_command("XREVRANGE", name, *pieces)
 
     async def xread(self, count=None, block=None, **streams) -> dict:
         """
@@ -190,10 +189,11 @@ class StreamsCommandMixin:
             pieces.append(partial_stream[0])
             ids.append(partial_stream[1])
         pieces.extend(ids)
-        return await self.execute_command('XREAD', *pieces)
+        return await self.execute_command("XREAD", *pieces)
 
-    async def xreadgroup(self, group: str, consumer_id: str,
-                         count=None, block=None, **streams):
+    async def xreadgroup(
+        self, group: str, consumer_id: str, count=None, block=None, **streams
+    ):
         """
         Available since 5.0.0.
 
@@ -218,7 +218,7 @@ class StreamsCommandMixin:
         :param streams: stream_name - stream_id mapping
         :return dict like {stream_name: [(stream_id: entry), ...]}
         """
-        pieces = ['GROUP', group, consumer_id]
+        pieces = ["GROUP", group, consumer_id]
         if block is not None:
             if not isinstance(block, int) or block < 1:
                 raise RedisError("XREAD block must be a positive integer")
@@ -235,10 +235,11 @@ class StreamsCommandMixin:
             pieces.append(partial_stream[0])
             ids.append(partial_stream[1])
         pieces.extend(ids)
-        return await self.execute_command('XREADGROUP', *pieces)
+        return await self.execute_command("XREADGROUP", *pieces)
 
-    async def xpending(self, name: str, group: str,
-                       start='-', end='+', count=None, consumer=None) -> list:
+    async def xpending(
+        self, name: str, group: str, start="-", end="+", count=None, consumer=None
+    ) -> list:
         """
         Available since 5.0.0.
 
@@ -275,7 +276,7 @@ class StreamsCommandMixin:
             if consumer is not None:
                 pieces.append(str(consumer))
         # todo: may there be a parse function
-        return await self.execute_command('XPENDING', *pieces)
+        return await self.execute_command("XPENDING", *pieces)
 
     async def xtrim(self, name: str, max_len: int, approximate=True) -> int:
         """
@@ -293,11 +294,11 @@ class StreamsCommandMixin:
 
         :return: number of entries trimmed
         """
-        pieces = ['MAXLEN']
+        pieces = ["MAXLEN"]
         if approximate:
-            pieces.append('~')
+            pieces.append("~")
         pieces.append(max_len)
-        return await self.execute_command('XTRIM', name, *pieces)
+        return await self.execute_command("XTRIM", name, *pieces)
 
     async def xdel(self, name: str, stream_id: str) -> int:
         """
@@ -311,7 +312,7 @@ class StreamsCommandMixin:
         :param name: name of the stream
         :param stream_id: id of the options appended to the stream.
         """
-        return await self.execute_command('XDEL', name, stream_id)
+        return await self.execute_command("XDEL", name, stream_id)
 
     async def xinfo_consumers(self, name: str, group: str) -> list:
         """
@@ -324,7 +325,7 @@ class StreamsCommandMixin:
         :param name: name of the stream
         :param group: name of the consumer group
         """
-        return await self.execute_command('XINFO CONSUMERS', name, group)
+        return await self.execute_command("XINFO CONSUMERS", name, group)
 
     async def xinfo_groups(self, name: str) -> list:
         """
@@ -336,7 +337,7 @@ class StreamsCommandMixin:
 
         :param name: name of the stream
         """
-        return await self.execute_command('XINFO GROUPS', name)
+        return await self.execute_command("XINFO GROUPS", name)
 
     async def xinfo_stream(self, name: str) -> dict:
         """
@@ -348,7 +349,7 @@ class StreamsCommandMixin:
 
         :param name: name of the stream
         """
-        return await self.execute_command('XINFO STREAM', name)
+        return await self.execute_command("XINFO STREAM", name)
 
     async def xack(self, name: str, group: str, stream_id: str) -> int:
         """
@@ -361,9 +362,11 @@ class StreamsCommandMixin:
         :param stream_id: id of the entry the consumer wants to mark
         :return: number of entry marked
         """
-        return await self.execute_command('XACK', name, group, stream_id)
+        return await self.execute_command("XACK", name, group, stream_id)
 
-    async def xclaim(self, name: str, group: str, consumer: str, min_idle_time: int, *stream_ids):
+    async def xclaim(
+        self, name: str, group: str, consumer: str, min_idle_time: int, *stream_ids
+    ):
         """
         [NOTICE] Not officially released yet
 
@@ -379,9 +382,11 @@ class StreamsCommandMixin:
             is zero, messages are claimed regardless of their idle time.
         :param stream_ids:
         """
-        return await self.execute_command('XCLAIM', name, group, consumer, min_idle_time, *stream_ids)
+        return await self.execute_command(
+            "XCLAIM", name, group, consumer, min_idle_time, *stream_ids
+        )
 
-    async def xgroup_create(self, name: str, group: str, stream_id='$') -> bool:
+    async def xgroup_create(self, name: str, group: str, stream_id="$") -> bool:
         """
         [NOTICE] Not officially released yet
         XGROUP is used in order to create, destroy and manage consumer groups.
@@ -394,7 +399,7 @@ class StreamsCommandMixin:
             in the stream history to start with.
             Of course, you can specify any other valid ID
         """
-        return await self.execute_command('XGROUP CREATE', name, group, stream_id)
+        return await self.execute_command("XGROUP CREATE", name, group, stream_id)
 
     async def xgroup_set_id(self, name: str, group: str, stream_id: str) -> bool:
         """
@@ -408,7 +413,7 @@ class StreamsCommandMixin:
             in the stream history to start with.
             Of course, you can specify any other valid ID
         """
-        return await self.execute_command('XGROUP SETID', name, group, stream_id)
+        return await self.execute_command("XGROUP SETID", name, group, stream_id)
 
     async def xgroup_destroy(self, name: str, group: str) -> int:
         """
@@ -417,7 +422,7 @@ class StreamsCommandMixin:
         :param name: name of the stream
         :param group: name of the consumer group
         """
-        return await self.execute_command('XGROUP DESTROY', name, group)
+        return await self.execute_command("XGROUP DESTROY", name, group)
 
     async def xgroup_del_consumer(self, name: str, group: str, consumer: str) -> int:
         """
@@ -427,4 +432,4 @@ class StreamsCommandMixin:
         :param group: name of the consumer group
         :param consumer: name of the consumer
         """
-        return await self.execute_command('XGROUP DELCONSUMER', name, group, consumer)
+        return await self.execute_command("XGROUP DELCONSUMER", name, group, consumer)

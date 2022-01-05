@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
 
 import random
-from coredis.utils import (b, hash_slot)
-from coredis.exceptions import (ConnectionError,
-                               RedisClusterException)
+from coredis.utils import b, hash_slot
+from coredis.exceptions import ConnectionError, RedisClusterException
 
 
 class NodeManager:
     """
     TODO: document
     """
+
     RedisClusterHashSlots = 16384
 
-    def __init__(self, startup_nodes=None, reinitialize_steps=None,
-                 skip_full_coverage_check=False,
-                 nodemanager_follow_cluster=False, **connection_kwargs):
+    def __init__(
+        self,
+        startup_nodes=None,
+        reinitialize_steps=None,
+        skip_full_coverage_check=False,
+        nodemanager_follow_cluster=False,
+        **connection_kwargs
+    ):
         """
         :skip_full_coverage_check:
             Skips the check of cluster-require-full-coverage config, useful for clusters
@@ -58,7 +63,7 @@ class NodeManager:
 
     def node_from_slot(self, slot):
         for node in self.slots[slot]:
-            if node['server_type'] == 'master':
+            if node["server_type"] == "master":
                 return node
 
     def all_nodes(self):
@@ -83,18 +88,23 @@ class NodeManager:
 
     def get_redis_link(self, host, port):
         from coredis.client import StrictRedis
+
         allowed_keys = (
-            'password',
-            'stream_timeout',
-            'connect_timeout',
-            'retry_on_timeout',
-            'ssl_context',
-            'parser_class',
-            'reader_read_size',
-            'loop'
+            "password",
+            "stream_timeout",
+            "connect_timeout",
+            "retry_on_timeout",
+            "ssl_context",
+            "parser_class",
+            "reader_read_size",
+            "loop",
         )
-        connection_kwargs = {k: v for k, v in self.connection_kwargs.items() if k in allowed_keys}
-        return StrictRedis(host=host, port=port, decode_responses=True, **connection_kwargs)
+        connection_kwargs = {
+            k: v for k, v in self.connection_kwargs.items() if k in allowed_keys
+        }
+        return StrictRedis(
+            host=host, port=port, decode_responses=True, **connection_kwargs
+        )
 
     async def initialize(self):
         """
@@ -120,33 +130,39 @@ class NodeManager:
 
         for node in nodes:
             try:
-                r = self.get_redis_link(host=node['host'], port=node['port'])
+                r = self.get_redis_link(host=node["host"], port=node["port"])
                 cluster_slots = await r.cluster_slots()
                 startup_nodes_reachable = True
             except ConnectionError:
                 continue
             except Exception:
-                raise RedisClusterException('ERROR sending "cluster slots" command to redis server: {0}'.format(node))
+                raise RedisClusterException(
+                    'ERROR sending "cluster slots" command to redis server: {0}'.format(
+                        node
+                    )
+                )
 
             all_slots_covered = True
 
             # If there's only one server in the cluster, its ``host`` is ''
             # Fix it to the host in startup_nodes
             if len(cluster_slots) == 1 and len(self.startup_nodes) == 1:
-                single_node_slots = cluster_slots.get((0, self.RedisClusterHashSlots - 1))[0]
-                if len(single_node_slots['host']) == 0:
-                    single_node_slots['host'] = self.startup_nodes[0]['host']
-                    single_node_slots['server_type'] = 'master'
+                single_node_slots = cluster_slots.get(
+                    (0, self.RedisClusterHashSlots - 1)
+                )[0]
+                if len(single_node_slots["host"]) == 0:
+                    single_node_slots["host"] = self.startup_nodes[0]["host"]
+                    single_node_slots["server_type"] = "master"
 
             # No need to decode response because StrictRedis should handle that for us...
             for min_slot, max_slot in cluster_slots:
                 nodes = cluster_slots.get((min_slot, max_slot))
                 master_node, slave_nodes = nodes[0], nodes[1:]
 
-                if master_node['host'] == '':
-                    master_node['host'] = node['host']
+                if master_node["host"] == "":
+                    master_node["host"] = node["host"]
                 self.set_node_name(master_node)
-                nodes_cache[master_node['name']] = master_node
+                nodes_cache[master_node["name"]] = master_node
 
                 for i in range(min_slot, max_slot + 1):
                     if i not in tmp_slots:
@@ -154,18 +170,23 @@ class NodeManager:
 
                         for slave_node in slave_nodes:
                             self.set_node_name(slave_node)
-                            nodes_cache[slave_node['name']] = slave_node
+                            nodes_cache[slave_node["name"]] = slave_node
                             tmp_slots[i].append(slave_node)
                     else:
                         # Validate that 2 nodes want to use the same slot cache setup
-                        if tmp_slots[i][0]['name'] != node['name']:
-                            disagreements.append('{0} vs {1} on slot: {2}'.format(
-                                tmp_slots[i][0]['name'], node['name'], i),
+                        if tmp_slots[i][0]["name"] != node["name"]:
+                            disagreements.append(
+                                "{0} vs {1} on slot: {2}".format(
+                                    tmp_slots[i][0]["name"], node["name"], i
+                                ),
                             )
 
                             if len(disagreements) > 5:
-                                raise RedisClusterException('startup_nodes could not agree on a valid slots cache. {0}'
-                                                            .format(', '.join(disagreements)))
+                                raise RedisClusterException(
+                                    "startup_nodes could not agree on a valid slots cache. {0}".format(
+                                        ", ".join(disagreements)
+                                    )
+                                )
 
                 self.populate_startup_nodes()
                 self.refresh_table_asap = False
@@ -173,7 +194,9 @@ class NodeManager:
             if self._skip_full_coverage_check:
                 need_full_slots_coverage = False
             else:
-                need_full_slots_coverage = await self.cluster_require_full_coverage(nodes_cache)
+                need_full_slots_coverage = await self.cluster_require_full_coverage(
+                    nodes_cache
+                )
 
             # Validate if all slots are covered or if we should try next startup node
             for i in range(0, self.RedisClusterHashSlots):
@@ -185,12 +208,18 @@ class NodeManager:
                 break
 
         if not startup_nodes_reachable:
-            raise RedisClusterException('Redis Cluster cannot be connected. '
-                                        'Please provide at least one reachable node.')
+            raise RedisClusterException(
+                "Redis Cluster cannot be connected. "
+                "Please provide at least one reachable node."
+            )
 
         if not all_slots_covered:
-            raise RedisClusterException('Not all slots are covered after query all startup_nodes. '
-                                        '{0} of {1} covered...'.format(len(tmp_slots), self.RedisClusterHashSlots))
+            raise RedisClusterException(
+                "Not all slots are covered after query all startup_nodes. "
+                "{0} of {1} covered...".format(
+                    len(tmp_slots), self.RedisClusterHashSlots
+                )
+            )
 
         # Set the tmp variables to the real variables
         self.slots = tmp_slots
@@ -212,9 +241,9 @@ class NodeManager:
         nodes = nodes_cache or self.nodes
 
         async def node_require_full_coverage(node):
-            r_node = self.get_redis_link(host=node['host'], port=node['port'])
-            node_config = await r_node.config_get('cluster-require-full-coverage')
-            return 'yes' in node_config.values()
+            r_node = self.get_redis_link(host=node["host"], port=node["port"])
+            node_config = await r_node.config_get("cluster-require-full-coverage")
+            return "yes" in node_config.values()
 
         # at least one node should have cluster-require-full-coverage yes
         for node in nodes.values():
@@ -228,17 +257,17 @@ class NodeManager:
 
         # TODO: This shold not be constructed this way. It should update the name of the node in the node cache dict
         """
-        if 'name' not in n:
-            n['name'] = '{0}:{1}'.format(n['host'], n['port'])
+        if "name" not in n:
+            n["name"] = "{0}:{1}".format(n["host"], n["port"])
 
     def set_node(self, host, port, server_type=None):
         """Updates data for a node"""
         node_name = "{0}:{1}".format(host, port)
         node = {
-            'host': host,
-            'port': port,
-            'name': node_name,
-            'server_type': server_type
+            "host": host,
+            "port": port,
+            "name": node_name,
+            "server_type": server_type,
         }
         self.nodes[node_name] = node
         return node

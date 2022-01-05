@@ -1,6 +1,5 @@
 from coredis.lock import Lock, LuaLock
-from coredis.cache import (Cache, IdentityGenerator,
-                          Serializer, Compressor)
+from coredis.cache import Cache, IdentityGenerator, Serializer, Compressor
 from coredis.exceptions import ResponseError
 
 
@@ -8,10 +7,16 @@ class ExtraCommandMixin:
 
     RESPONSE_CALLBACKS = {}
 
-    def cache(self, name, cache_class=Cache,
-              identity_generator_class=IdentityGenerator,
-              compressor_class=Compressor,
-              serializer_class=Serializer, *args, **kwargs):
+    def cache(
+        self,
+        name,
+        cache_class=Cache,
+        identity_generator_class=IdentityGenerator,
+        compressor_class=Compressor,
+        serializer_class=Serializer,
+        *args,
+        **kwargs
+    ):
         """
         Return a cache object using default identity generator,
         serializer and compressor.
@@ -28,14 +33,25 @@ class ExtraCommandMixin:
         content before compress, can be overwritten with API
         `serialize` and `deserialize` retained.
         """
-        return cache_class(self, app=name,
-                           identity_generator_class=identity_generator_class,
-                           compressor_class=compressor_class,
-                           serializer_class=serializer_class,
-                           *args, **kwargs)
+        return cache_class(
+            self,
+            app=name,
+            identity_generator_class=identity_generator_class,
+            compressor_class=compressor_class,
+            serializer_class=serializer_class,
+            *args,
+            **kwargs
+        )
 
-    def lock(self, name, timeout=None, sleep=0.1, blocking_timeout=None,
-             lock_class=None, thread_local=True):
+    def lock(
+        self,
+        name,
+        timeout=None,
+        sleep=0.1,
+        blocking_timeout=None,
+        lock_class=None,
+        thread_local=True,
+    ):
         """
         Return a new Lock object using key ``name`` that mimics
         the behavior of threading.Lock.
@@ -89,6 +105,11 @@ class ExtraCommandMixin:
                 except ResponseError:
                     self._use_lua_lock = False
             lock_class = self._use_lua_lock and LuaLock or Lock
-        return lock_class(self, name, timeout=timeout, sleep=sleep,
-                          blocking_timeout=blocking_timeout,
-                          thread_local=thread_local)
+        return lock_class(
+            self,
+            name,
+            timeout=timeout,
+            sleep=sleep,
+            blocking_timeout=blocking_timeout,
+            thread_local=thread_local,
+        )

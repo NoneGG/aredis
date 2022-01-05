@@ -8,8 +8,7 @@ except ImportError:
     import json
 
 from coredis.utils import b
-from coredis.exceptions import (SerializeError,
-                               CompressError)
+from coredis.exceptions import SerializeError, CompressError
 
 
 class IdentityGenerator:
@@ -18,9 +17,9 @@ class IdentityGenerator:
     you may overwrite it to meet your customize requirements.
     """
 
-    TEMPLATE = '{app}:{key}:{content}'
+    TEMPLATE = "{app}:{key}:{content}"
 
-    def __init__(self, app, encoding='utf-8'):
+    def __init__(self, app, encoding="utf-8"):
         self.app = app
         self.encoding = encoding
 
@@ -51,7 +50,7 @@ class Compressor:
     min_length = 15
     preset = 6
 
-    def __init__(self, encoding='utf-8'):
+    def __init__(self, encoding="utf-8"):
         self.encoding = encoding
 
     def _trans_type(self, content):
@@ -62,7 +61,7 @@ class Compressor:
         elif isinstance(content, float):
             content = b(repr(content))
         if not isinstance(content, bytes):
-            raise TypeError('Wrong data type({}) to compress'.format(type(content)))
+            raise TypeError("Wrong data type({}) to compress".format(type(content)))
         return content
 
     def compress(self, content):
@@ -71,7 +70,7 @@ class Compressor:
             try:
                 return zlib.compress(content, self.preset)
             except zlib.error as exc:
-                raise CompressError('Content can not be compressed.')
+                raise CompressError("Content can not be compressed.")
         return content
 
     def decompress(self, content):
@@ -79,7 +78,7 @@ class Compressor:
         try:
             return zlib.decompress(content)
         except zlib.error as exc:
-            raise CompressError('Content can not be decompressed.')
+            raise CompressError("Content can not be decompressed.")
 
 
 class Serializer:
@@ -88,36 +87,42 @@ class Serializer:
     your own Serializer implemting `serialize` and `deserialize` methods.
     """
 
-    def __init__(self, encoding='utf-8'):
+    def __init__(self, encoding="utf-8"):
         self.encoding = encoding
 
     def _trans_type(self, content):
         if isinstance(content, bytes):
             content = content.decode(self.encoding)
         if not isinstance(content, str):
-            raise TypeError('Wrong data type({}) to compress'.format(type(content)))
+            raise TypeError("Wrong data type({}) to compress".format(type(content)))
         return content
 
     def serialize(self, content):
         try:
             return json.dumps(content)
         except Exception as exc:
-            raise SerializeError('Content can not be serialized.')
+            raise SerializeError("Content can not be serialized.")
 
     def deserialize(self, content):
         content = self._trans_type(content)
         try:
             return json.loads(content)
         except Exception as exc:
-            raise SerializeError('Content can not be deserialized.')
+            raise SerializeError("Content can not be deserialized.")
 
 
 class BasicCache:
     """Basic cache class, should not be used explicitly"""
 
-    def __init__(self, client, app='', identity_generator_class=IdentityGenerator,
-                 compressor_class=Compressor, serializer_class=Serializer,
-                 encoding='utf-8'):
+    def __init__(
+        self,
+        client,
+        app="",
+        identity_generator_class=IdentityGenerator,
+        compressor_class=Compressor,
+        serializer_class=Serializer,
+        encoding="utf-8",
+    ):
         self.client = client
         self.identity_generator = self.compressor = self.serializer = None
         # set identity generator, compressor and serializer to None if not needed
@@ -175,7 +180,7 @@ class BasicCache:
         Deletes cache according to pattern in redis,
         delete `count` keys each time
         """
-        cursor = '0'
+        cursor = "0"
         count_deleted = 0
         while cursor != 0:
             cursor, identities = await self.client.scan(
@@ -229,14 +234,27 @@ class HerdCache(BasicCache):
     operations are expensive.
     """
 
-    def __init__(self, client, app='', identity_generator_class=IdentityGenerator,
-                 compressor_class=Compressor, serializer_class=Serializer,
-                 default_herd_timeout=1, extend_herd_timeout=1, encoding='utf-8'):
+    def __init__(
+        self,
+        client,
+        app="",
+        identity_generator_class=IdentityGenerator,
+        compressor_class=Compressor,
+        serializer_class=Serializer,
+        default_herd_timeout=1,
+        extend_herd_timeout=1,
+        encoding="utf-8",
+    ):
         self.default_herd_timeout = default_herd_timeout
         self.extend_herd_timeout = extend_herd_timeout
-        super(HerdCache, self).__init__(client, app, identity_generator_class,
-                                        compressor_class, serializer_class,
-                                        encoding)
+        super(HerdCache, self).__init__(
+            client,
+            app,
+            identity_generator_class,
+            compressor_class,
+            serializer_class,
+            encoding,
+        )
 
     async def set(self, key, value, param=None, expire_time=None, herd_timeout=None):
         """

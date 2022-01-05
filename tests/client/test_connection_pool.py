@@ -6,8 +6,12 @@ import re
 import asyncio
 
 from coredis.pool import to_bool
-from coredis.exceptions import (ConnectionError, RedisError,
-                               BusyLoadingError, ReadOnlyError)
+from coredis.exceptions import (
+    ConnectionError,
+    RedisError,
+    BusyLoadingError,
+    ReadOnlyError,
+)
 
 
 class DummyConnection:
@@ -20,17 +24,22 @@ class DummyConnection:
 
 
 class TestConnectionPool:
-    def get_pool(self, connection_kwargs=None, max_connections=None,
-                 connection_class=DummyConnection):
+    def get_pool(
+        self,
+        connection_kwargs=None,
+        max_connections=None,
+        connection_class=DummyConnection,
+    ):
         connection_kwargs = connection_kwargs or {}
         pool = coredis.ConnectionPool(
             connection_class=connection_class,
             max_connections=max_connections,
-            **connection_kwargs)
+            **connection_kwargs
+        )
         return pool
 
     def test_connection_creation(self):
-        connection_kwargs = {'foo': 'bar', 'biz': 'baz'}
+        connection_kwargs = {"foo": "bar", "biz": "baz"}
         pool = self.get_pool(connection_kwargs=connection_kwargs)
         connection = pool.get_connection()
         assert isinstance(connection, DummyConnection)
@@ -57,23 +66,31 @@ class TestConnectionPool:
         assert c1 == c2
 
     def test_repr_contains_db_info_tcp(self):
-        connection_kwargs = {'host': 'localhost', 'port': 6379, 'db': 1}
-        pool = self.get_pool(connection_kwargs=connection_kwargs,
-                             connection_class=coredis.Connection)
-        expected = 'ConnectionPool<Connection<host=localhost,port=6379,db=1>>'
+        connection_kwargs = {"host": "localhost", "port": 6379, "db": 1}
+        pool = self.get_pool(
+            connection_kwargs=connection_kwargs, connection_class=coredis.Connection
+        )
+        expected = "ConnectionPool<Connection<host=localhost,port=6379,db=1>>"
         assert repr(pool) == expected
 
     def test_repr_contains_db_info_unix(self):
-        connection_kwargs = {'path': '/abc', 'db': 1}
-        pool = self.get_pool(connection_kwargs=connection_kwargs,
-                             connection_class=coredis.UnixDomainSocketConnection)
-        expected = 'ConnectionPool<UnixDomainSocketConnection<path=/abc,db=1>>'
+        connection_kwargs = {"path": "/abc", "db": 1}
+        pool = self.get_pool(
+            connection_kwargs=connection_kwargs,
+            connection_class=coredis.UnixDomainSocketConnection,
+        )
+        expected = "ConnectionPool<UnixDomainSocketConnection<path=/abc,db=1>>"
         assert repr(pool) == expected
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_connection_idle_check(self, event_loop):
-        rs = coredis.StrictRedis(host='127.0.0.1', port=6379, db=0,
-                                max_idle_time=0.2, idle_check_interval=0.1)
+        rs = coredis.StrictRedis(
+            host="127.0.0.1",
+            port=6379,
+            db=0,
+            max_idle_time=0.2,
+            idle_check_interval=0.1,
+        )
         await rs.info()
         assert len(rs.connection_pool._available_connections) == 1
         assert len(rs.connection_pool._in_use_connections) == 0
@@ -88,271 +105,282 @@ class TestConnectionPool:
 
 class TestConnectionPoolURLParsing:
     def test_defaults(self):
-        pool = coredis.ConnectionPool.from_url('redis://localhost')
+        pool = coredis.ConnectionPool.from_url("redis://localhost")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 0,
-            'password': None,
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "password": None,
         }
 
     def test_hostname(self):
-        pool = coredis.ConnectionPool.from_url('redis://myhost')
+        pool = coredis.ConnectionPool.from_url("redis://myhost")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'myhost',
-            'port': 6379,
-            'db': 0,
-            'password': None,
+            "host": "myhost",
+            "port": 6379,
+            "db": 0,
+            "password": None,
         }
 
     def test_quoted_hostname(self):
-        pool = coredis.ConnectionPool.from_url('redis://my %2F host %2B%3D+',
-                                             decode_components=True)
+        pool = coredis.ConnectionPool.from_url(
+            "redis://my %2F host %2B%3D+", decode_components=True
+        )
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'my / host +=+',
-            'port': 6379,
-            'db': 0,
-            'password': None,
+            "host": "my / host +=+",
+            "port": 6379,
+            "db": 0,
+            "password": None,
         }
 
     def test_port(self):
-        pool = coredis.ConnectionPool.from_url('redis://localhost:6380')
+        pool = coredis.ConnectionPool.from_url("redis://localhost:6380")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6380,
-            'db': 0,
-            'password': None,
+            "host": "localhost",
+            "port": 6380,
+            "db": 0,
+            "password": None,
         }
 
     def test_password(self):
-        pool = coredis.ConnectionPool.from_url('redis://:mypassword@localhost')
+        pool = coredis.ConnectionPool.from_url("redis://:mypassword@localhost")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 0,
-            'password': 'mypassword',
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "password": "mypassword",
         }
 
     def test_quoted_password(self):
         pool = coredis.ConnectionPool.from_url(
-            'redis://:%2Fmypass%2F%2B word%3D%24+@localhost',
-            decode_components=True)
+            "redis://:%2Fmypass%2F%2B word%3D%24+@localhost", decode_components=True
+        )
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 0,
-            'password': '/mypass/+ word=$+',
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "password": "/mypass/+ word=$+",
         }
 
     def test_db_as_argument(self):
-        pool = coredis.ConnectionPool.from_url('redis://localhost', db='1')
+        pool = coredis.ConnectionPool.from_url("redis://localhost", db="1")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 1,
-            'password': None,
+            "host": "localhost",
+            "port": 6379,
+            "db": 1,
+            "password": None,
         }
 
     def test_db_in_path(self):
-        pool = coredis.ConnectionPool.from_url('redis://localhost/2', db='1')
+        pool = coredis.ConnectionPool.from_url("redis://localhost/2", db="1")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 2,
-            'password': None,
+            "host": "localhost",
+            "port": 6379,
+            "db": 2,
+            "password": None,
         }
 
     def test_db_in_querystring(self):
-        pool = coredis.ConnectionPool.from_url('redis://localhost/2?db=3',
-                                             db='1')
+        pool = coredis.ConnectionPool.from_url("redis://localhost/2?db=3", db="1")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 3,
-            'password': None,
+            "host": "localhost",
+            "port": 6379,
+            "db": 3,
+            "password": None,
         }
 
     def test_extra_typed_querystring_options(self):
         pool = coredis.ConnectionPool.from_url(
-            'redis://localhost/2?stream_timeout=20&connect_timeout=10'
+            "redis://localhost/2?stream_timeout=20&connect_timeout=10"
         )
 
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 2,
-            'stream_timeout': 20.0,
-            'connect_timeout': 10.0,
-            'password': None,
+            "host": "localhost",
+            "port": 6379,
+            "db": 2,
+            "stream_timeout": 20.0,
+            "connect_timeout": 10.0,
+            "password": None,
         }
 
     def test_boolean_parsing(self):
         for expected, value in (
-                (None, None),
-                (None, ''),
-                (False, 0), (False, '0'),
-                (False, 'f'), (False, 'F'), (False, 'False'),
-                (False, 'n'), (False, 'N'), (False, 'No'),
-                (True, 1), (True, '1'),
-                (True, 'y'), (True, 'Y'), (True, 'Yes'),
+            (None, None),
+            (None, ""),
+            (False, 0),
+            (False, "0"),
+            (False, "f"),
+            (False, "F"),
+            (False, "False"),
+            (False, "n"),
+            (False, "N"),
+            (False, "No"),
+            (True, 1),
+            (True, "1"),
+            (True, "y"),
+            (True, "Y"),
+            (True, "Yes"),
         ):
             assert expected is to_bool(value)
 
     def test_invalid_extra_typed_querystring_options(self):
         import warnings
+
         with warnings.catch_warnings(record=True) as warning_log:
             coredis.ConnectionPool.from_url(
-                'redis://localhost/2?stream_timeout=_&'
-                'connect_timeout=abc'
+                "redis://localhost/2?stream_timeout=_&" "connect_timeout=abc"
             )
         # Compare the message values
         assert [
-            str(m.message) for m in
-            sorted(warning_log, key=lambda l: str(l.message))
+            str(m.message) for m in sorted(warning_log, key=lambda l: str(l.message))
         ] == [
-            'Invalid value for `connect_timeout` in connection URL.',
-            'Invalid value for `stream_timeout` in connection URL.',
+            "Invalid value for `connect_timeout` in connection URL.",
+            "Invalid value for `stream_timeout` in connection URL.",
         ]
 
     def test_extra_querystring_options(self):
-        pool = coredis.ConnectionPool.from_url('redis://localhost?a=1&b=2')
+        pool = coredis.ConnectionPool.from_url("redis://localhost?a=1&b=2")
         assert pool.connection_class == coredis.Connection
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 0,
-            'password': None,
-            'a': '1',
-            'b': '2'
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "password": None,
+            "a": "1",
+            "b": "2",
         }
 
     def test_client_creates_connection_pool(self):
-        r = coredis.StrictRedis.from_url('redis://myhost')
+        r = coredis.StrictRedis.from_url("redis://myhost")
         assert r.connection_pool.connection_class == coredis.Connection
         assert r.connection_pool.connection_kwargs == {
-            'host': 'myhost',
-            'port': 6379,
-            'db': 0,
-            'password': None,
+            "host": "myhost",
+            "port": 6379,
+            "db": 0,
+            "password": None,
         }
 
 
 class TestConnectionPoolUnixSocketURLParsing:
     def test_defaults(self):
-        pool = coredis.ConnectionPool.from_url('unix:///socket')
+        pool = coredis.ConnectionPool.from_url("unix:///socket")
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/socket',
-            'db': 0,
-            'password': None,
+            "path": "/socket",
+            "db": 0,
+            "password": None,
         }
 
     def test_password(self):
-        pool = coredis.ConnectionPool.from_url('unix://:mypassword@/socket')
+        pool = coredis.ConnectionPool.from_url("unix://:mypassword@/socket")
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/socket',
-            'db': 0,
-            'password': 'mypassword',
+            "path": "/socket",
+            "db": 0,
+            "password": "mypassword",
         }
 
     def test_quoted_password(self):
         pool = coredis.ConnectionPool.from_url(
-            'unix://:%2Fmypass%2F%2B word%3D%24+@/socket',
-            decode_components=True)
+            "unix://:%2Fmypass%2F%2B word%3D%24+@/socket", decode_components=True
+        )
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/socket',
-            'db': 0,
-            'password': '/mypass/+ word=$+',
+            "path": "/socket",
+            "db": 0,
+            "password": "/mypass/+ word=$+",
         }
 
     def test_quoted_path(self):
         pool = coredis.ConnectionPool.from_url(
-            'unix://:mypassword@/my%2Fpath%2Fto%2F..%2F+_%2B%3D%24ocket',
-            decode_components=True)
+            "unix://:mypassword@/my%2Fpath%2Fto%2F..%2F+_%2B%3D%24ocket",
+            decode_components=True,
+        )
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/my/path/to/../+_+=$ocket',
-            'db': 0,
-            'password': 'mypassword',
+            "path": "/my/path/to/../+_+=$ocket",
+            "db": 0,
+            "password": "mypassword",
         }
 
     def test_db_as_argument(self):
-        pool = coredis.ConnectionPool.from_url('unix:///socket', db=1)
+        pool = coredis.ConnectionPool.from_url("unix:///socket", db=1)
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/socket',
-            'db': 1,
-            'password': None,
+            "path": "/socket",
+            "db": 1,
+            "password": None,
         }
 
     def test_db_in_querystring(self):
-        pool = coredis.ConnectionPool.from_url('unix:///socket?db=2', db=1)
+        pool = coredis.ConnectionPool.from_url("unix:///socket?db=2", db=1)
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/socket',
-            'db': 2,
-            'password': None,
+            "path": "/socket",
+            "db": 2,
+            "password": None,
         }
 
     def test_extra_querystring_options(self):
-        pool = coredis.ConnectionPool.from_url('unix:///socket?a=1&b=2')
+        pool = coredis.ConnectionPool.from_url("unix:///socket?a=1&b=2")
         assert pool.connection_class == coredis.UnixDomainSocketConnection
         assert pool.connection_kwargs == {
-            'path': '/socket',
-            'db': 0,
-            'password': None,
-            'a': '1',
-            'b': '2'
+            "path": "/socket",
+            "db": 0,
+            "password": None,
+            "a": "1",
+            "b": "2",
         }
 
 
 class TestSSLConnectionURLParsing:
     def test_defaults(self):
-        pool = coredis.ConnectionPool.from_url('rediss://localhost')
+        pool = coredis.ConnectionPool.from_url("rediss://localhost")
         assert pool.connection_class == coredis.Connection
-        assert pool.connection_kwargs.pop('ssl_context') is not None
+        assert pool.connection_kwargs.pop("ssl_context") is not None
         assert pool.connection_kwargs == {
-            'host': 'localhost',
-            'port': 6379,
-            'db': 0,
-            'password': None,
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "password": None,
         }
 
     def test_cert_reqs_options(self):
         import ssl
+
         with pytest.raises(TypeError) as e:
             pool = coredis.ConnectionPool.from_url(
-                'rediss://?ssl_cert_reqs=none&ssl_keyfile=test')
-            assert e.message == 'certfile should be a valid filesystem path'
+                "rediss://?ssl_cert_reqs=none&ssl_keyfile=test"
+            )
+            assert e.message == "certfile should be a valid filesystem path"
             assert pool.get_connection().ssl_context.verify_mode == ssl.CERT_NONE
 
         with pytest.raises(TypeError) as e:
             pool = coredis.ConnectionPool.from_url(
-                'rediss://?ssl_cert_reqs=optional&ssl_keyfile=test')
-            assert e.message == 'certfile should be a valid filesystem path'
+                "rediss://?ssl_cert_reqs=optional&ssl_keyfile=test"
+            )
+            assert e.message == "certfile should be a valid filesystem path"
             assert pool.get_connection().ssl_context.verify_mode == ssl.CERT_OPTIONAL
 
         with pytest.raises(TypeError) as e:
             pool = coredis.ConnectionPool.from_url(
-                'rediss://?ssl_cert_reqs=required&ssl_keyfile=test')
-            assert e.message == 'certfile should be a valid filesystem path'
+                "rediss://?ssl_cert_reqs=required&ssl_keyfile=test"
+            )
+            assert e.message == "certfile should be a valid filesystem path"
             assert pool.get_connection().ssl_context.verify_mode == ssl.CERT_REQUIRED
 
 
 class TestConnection:
-
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_on_connect_error(self, event_loop):
         """
@@ -376,7 +404,7 @@ class TestConnection:
         """
         client = coredis.StrictRedis(loop=event_loop)
         with pytest.raises(BusyLoadingError):
-            await client.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
+            await client.execute_command("DEBUG", "ERROR", "LOADING fake message")
         pool = client.connection_pool
         assert len(pool._available_connections) == 0
 
@@ -389,7 +417,9 @@ class TestConnection:
         client = coredis.StrictRedis(loop=event_loop)
         pipe = await client.pipeline()
         with pytest.raises(BusyLoadingError):
-            await pipe.immediate_execute_command('DEBUG', 'ERROR', 'LOADING fake message')
+            await pipe.immediate_execute_command(
+                "DEBUG", "ERROR", "LOADING fake message"
+            )
         pool = client.connection_pool
         assert not pipe.connection
         assert len(pool._available_connections) == 0
@@ -402,7 +432,7 @@ class TestConnection:
         """
         client = coredis.StrictRedis(loop=event_loop)
         pipe = await client.pipeline()
-        await pipe.execute_command('DEBUG', 'ERROR', 'LOADING fake message')
+        await pipe.execute_command("DEBUG", "ERROR", "LOADING fake message")
         with pytest.raises(RedisError):
             await pipe.execute()
         pool = client.connection_pool
@@ -416,24 +446,24 @@ class TestConnection:
         "READONLY errors get turned in ReadOnlyError exceptions"
         client = coredis.StrictRedis(loop=event_loop)
         with pytest.raises(ReadOnlyError):
-            await client.execute_command('DEBUG', 'ERROR', 'READONLY blah blah')
+            await client.execute_command("DEBUG", "ERROR", "READONLY blah blah")
 
     def test_connect_from_url_tcp(self):
-        connection = coredis.StrictRedis.from_url('redis://localhost')
+        connection = coredis.StrictRedis.from_url("redis://localhost")
         pool = connection.connection_pool
 
-        assert re.match('(.*)<(.*)<(.*)>>', repr(pool)).groups() == (
-            'ConnectionPool',
-            'Connection',
-            'host=localhost,port=6379,db=0',
+        assert re.match("(.*)<(.*)<(.*)>>", repr(pool)).groups() == (
+            "ConnectionPool",
+            "Connection",
+            "host=localhost,port=6379,db=0",
         )
 
     def test_connect_from_url_unix(self):
-        connection = coredis.StrictRedis.from_url('unix:///path/to/socket')
+        connection = coredis.StrictRedis.from_url("unix:///path/to/socket")
         pool = connection.connection_pool
 
-        assert re.match('(.*)<(.*)<(.*)>>', repr(pool)).groups() == (
-            'ConnectionPool',
-            'UnixDomainSocketConnection',
-            'path=/path/to/socket,db=0',
+        assert re.match("(.*)<(.*)<(.*)>>", repr(pool)).groups() == (
+            "ConnectionPool",
+            "UnixDomainSocketConnection",
+            "path=/path/to/socket,db=0",
         )

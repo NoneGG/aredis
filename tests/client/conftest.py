@@ -10,12 +10,12 @@ _REDIS_VERSIONS = {}
 
 
 async def get_version(**kwargs):
-    params = {'host': 'localhost', 'port': 6379, 'db': 0}
+    params = {"host": "localhost", "port": 6379, "db": 0}
     params.update(kwargs)
-    key = '%s:%s' % (params['host'], params['port'])
+    key = "%s:%s" % (params["host"], params["port"])
     if key not in _REDIS_VERSIONS:
         client = coredis.StrictRedis(**params)
-        _REDIS_VERSIONS[key] = (await client.info())['redis_version']
+        _REDIS_VERSIONS[key] = (await client.info())["redis_version"]
         client.connection_pool.disconnect()
     return _REDIS_VERSIONS[key]
 
@@ -26,7 +26,6 @@ def r(event_loop):
 
 
 class AsyncMock(Mock):
-
     def __init__(self, *args, **kwargs):
         super(AsyncMock, self).__init__(*args, **kwargs)
 
@@ -55,5 +54,5 @@ def _gen_mock_resp(r, response, *, loop):
 @pytest.fixture()
 def mock_resp_role(event_loop):
     r = coredis.StrictRedis(loop=event_loop)
-    response = [b'master', 169, [[b'172.17.0.2', b'7004', b'169']]]
+    response = [b"master", 169, [[b"172.17.0.2", b"7004", b"169"]]]
     return _gen_mock_resp(r, response, loop=event_loop)

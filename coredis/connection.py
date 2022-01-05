@@ -10,13 +10,22 @@ import warnings
 from io import BytesIO
 
 import coredis.compat
-from coredis.exceptions import (ConnectionError, TimeoutError,
-                               RedisError, ExecAbortError,
-                               BusyLoadingError, NoScriptError,
-                               ReadOnlyError, ResponseError,
-                               InvalidResponse, AskError,
-                               MovedError, TryAgainError,
-                               ClusterDownError, ClusterCrossSlotError)
+from coredis.exceptions import (
+    ConnectionError,
+    TimeoutError,
+    RedisError,
+    ExecAbortError,
+    BusyLoadingError,
+    NoScriptError,
+    ReadOnlyError,
+    ResponseError,
+    InvalidResponse,
+    AskError,
+    MovedError,
+    TryAgainError,
+    ClusterDownError,
+    ClusterCrossSlotError,
+)
 from coredis.utils import b, nativestr, LOOP_DEPRECATED
 
 try:
@@ -26,11 +35,11 @@ try:
 except ImportError:
     HIREDIS_AVAILABLE = False
 
-SYM_STAR = b('*')
-SYM_DOLLAR = b('$')
-SYM_CRLF = b('\r\n')
-SYM_LF = b('\n')
-SYM_EMPTY = b('')
+SYM_STAR = b("*")
+SYM_DOLLAR = b("$")
+SYM_CRLF = b("\r\n")
+SYM_LF = b("\n")
+SYM_EMPTY = b("")
 
 
 async def exec_with_timeout(coroutine, timeout, *, loop=None):
@@ -67,7 +76,7 @@ class SocketBuffer:
                 data = await self._stream.read(self.read_size)
                 # an empty string indicates the server shutdown the socket
                 if isinstance(data, bytes) and len(data) == 0:
-                    raise ConnectionError('Socket closed on remote end')
+                    raise ConnectionError("Socket closed on remote end")
                 buf.write(data)
                 data_length = len(data)
                 self.bytes_written += data_length
@@ -78,8 +87,7 @@ class SocketBuffer:
                 break
         except socket.error:
             e = sys.exc_info()[1]
-            raise ConnectionError("Error while reading from socket: %s" %
-                                  (e.args,))
+            raise ConnectionError("Error while reading from socket: %s" % (e.args,))
 
     async def read(self, length):
         length = length + 2  # make sure to read the \r\n terminator
@@ -142,25 +150,23 @@ class BaseParser:
     """Plain Python parsing class"""
 
     EXCEPTION_CLASSES = {
-        'ERR': {
-            'max number of clients reached': ConnectionError
-        },
-        'EXECABORT': ExecAbortError,
-        'LOADING': BusyLoadingError,
-        'NOSCRIPT': NoScriptError,
-        'READONLY': ReadOnlyError,
-        'ASK': AskError,
-        'TRYAGAIN': TryAgainError,
-        'MOVED': MovedError,
-        'CLUSTERDOWN': ClusterDownError,
-        'CROSSSLOT': ClusterCrossSlotError,
+        "ERR": {"max number of clients reached": ConnectionError},
+        "EXECABORT": ExecAbortError,
+        "LOADING": BusyLoadingError,
+        "NOSCRIPT": NoScriptError,
+        "READONLY": ReadOnlyError,
+        "ASK": AskError,
+        "TRYAGAIN": TryAgainError,
+        "MOVED": MovedError,
+        "CLUSTERDOWN": ClusterDownError,
+        "CROSSSLOT": ClusterCrossSlotError,
     }
 
     def parse_error(self, response):
         """Parse an error response"""
-        error_code = response.split(' ')[0]
+        error_code = response.split(" ")[0]
         if error_code in self.EXCEPTION_CLASSES:
-            response = response[len(error_code) + 1:]
+            response = response[len(error_code) + 1 :]
             exception_class = self.EXCEPTION_CLASSES[error_code]
             if isinstance(exception_class, dict):
                 exception_class = exception_class.get(response, ResponseError)
@@ -202,19 +208,18 @@ class PythonParser(BaseParser):
 
     async def read_response(self):
         if not self._buffer:
-            raise ConnectionError('Socket closed on remote end')
+            raise ConnectionError("Socket closed on remote end")
         response = await self._buffer.readline()
         if not response:
-            raise ConnectionError('Socket closed on remote end')
+            raise ConnectionError("Socket closed on remote end")
 
         byte, response = chr(response[0]), response[1:]
 
-        if byte not in ('-', '+', ':', '$', '*'):
-            raise InvalidResponse("Protocol Error: %s, %s" %
-                                  (str(byte), str(response)))
+        if byte not in ("-", "+", ":", "$", "*"):
+            raise InvalidResponse("Protocol Error: %s, %s" % (str(byte), str(response)))
 
         # server returned an error
-        if byte == '-':
+        if byte == "-":
             response = response.decode()
             error = self.parse_error(response)
             # if the error is a ConnectionError, raise immediately so the user
@@ -227,19 +232,19 @@ class PythonParser(BaseParser):
             # necessary, so just return the exception instance here.
             return error
         # single value
-        elif byte == '+':
+        elif byte == "+":
             pass
         # int value
-        elif byte == ':':
+        elif byte == ":":
             response = int(response)
         # bulk response
-        elif byte == '$':
+        elif byte == "$":
             length = int(response)
             if length == -1:
                 return None
             response = await self._buffer.read(length)
         # multi-bulk response
-        elif byte == '*':
+        elif byte == "*":
             length = int(response)
             if length == -1:
                 return None
@@ -278,11 +283,11 @@ class HiredisParser(BaseParser):
     def on_connect(self, connection):
         self._stream = connection._reader
         kwargs = {
-            'protocolError': InvalidResponse,
-            'replyError': ResponseError,
+            "protocolError": InvalidResponse,
+            "replyError": ResponseError,
         }
         if connection.decode_responses:
-            kwargs['encoding'] = connection.encoding
+            kwargs["encoding"] = connection.encoding
         self._reader = hiredis.Reader(**kwargs)
         self._next_response = False
 
@@ -312,7 +317,9 @@ class HiredisParser(BaseParser):
                 raise
             except Exception:
                 e = sys.exc_info()[1]
-                raise ConnectionError("Error {} while reading from stream: {}".format(type(e), e.args))
+                raise ConnectionError(
+                    "Error {} while reading from stream: {}".format(type(e), e.args)
+                )
             if not buffer:
                 raise ConnectionError("Socket closed on remote end")
             self._reader.feed(buffer)
@@ -329,22 +336,21 @@ else:
 
 
 class RedisSSLContext:
-    def __init__(self, keyfile=None, certfile=None,
-                 cert_reqs=None, ca_certs=None):
+    def __init__(self, keyfile=None, certfile=None, cert_reqs=None, ca_certs=None):
         self.keyfile = keyfile
         self.certfile = certfile
         if cert_reqs is None:
             self.cert_reqs = ssl.CERT_NONE
         elif isinstance(cert_reqs, str):
             CERT_REQS = {
-                'none': ssl.CERT_NONE,
-                'optional': ssl.CERT_OPTIONAL,
-                'required': ssl.CERT_REQUIRED
+                "none": ssl.CERT_NONE,
+                "optional": ssl.CERT_OPTIONAL,
+                "required": ssl.CERT_REQUIRED,
             }
             if cert_reqs not in CERT_REQS:
                 raise RedisError(
-                    "Invalid SSL Certificate Requirements Flag: %s" %
-                    cert_reqs)
+                    "Invalid SSL Certificate Requirements Flag: %s" % cert_reqs
+                )
             self.cert_reqs = CERT_REQS[cert_reqs]
         self.ca_certs = ca_certs
         self.context = None
@@ -355,25 +361,31 @@ class RedisSSLContext:
         else:
             self.context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
             self.context.verify_mode = self.cert_reqs
-            self.context.load_cert_chain(certfile=self.certfile,
-                                         keyfile=self.keyfile)
+            self.context.load_cert_chain(certfile=self.certfile, keyfile=self.keyfile)
             self.context.load_verify_locations(self.ca_certs)
         return self.context
 
 
 class BaseConnection:
-    description = 'BaseConnection'
+    description = "BaseConnection"
 
-    def __init__(self, retry_on_timeout=False, stream_timeout=None,
-                 parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False,
-                 *, loop=None):
+    def __init__(
+        self,
+        retry_on_timeout=False,
+        stream_timeout=None,
+        parser_class=DefaultParser,
+        reader_read_size=65535,
+        encoding="utf-8",
+        decode_responses=False,
+        *,
+        loop=None
+    ):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
         self._reader = None
         self._writer = None
-        self.password = ''
-        self.db = ''
+        self.password = ""
+        self.db = ""
         self.pid = os.getpid()
         self.retry_on_timeout = retry_on_timeout
         self._description_args = dict()
@@ -435,20 +447,22 @@ class BaseConnection:
 
         # if a password is specified, authenticate
         if self.password:
-            await self.send_command('AUTH', self.password)
-            if nativestr(await self.read_response()) != 'OK':
-                raise ConnectionError('Invalid Password')
+            await self.send_command("AUTH", self.password)
+            if nativestr(await self.read_response()) != "OK":
+                raise ConnectionError("Invalid Password")
 
         # if a database is specified, switch to it
         if self.db:
-            await self.send_command('SELECT', self.db)
-            if nativestr(await self.read_response()) != 'OK':
-                raise ConnectionError('Invalid Database')
+            await self.send_command("SELECT", self.db)
+            if nativestr(await self.read_response()) != "OK":
+                raise ConnectionError("Invalid Database")
         self.last_active_at = time.time()
 
     async def read_response(self):
         try:
-            response = await exec_with_timeout(self._parser.read_response(), self._stream_timeout, loop=self.loop)
+            response = await exec_with_timeout(
+                self._parser.read_response(), self._stream_timeout, loop=self.loop
+            )
             self.last_active_at = time.time()
         except TimeoutError:
             self.disconnect()
@@ -473,12 +487,13 @@ class BaseConnection:
             e = sys.exc_info()[1]
             self.disconnect()
             if len(e.args) == 1:
-                errno, errmsg = 'UNKNOWN', e.args[0]
+                errno, errmsg = "UNKNOWN", e.args[0]
             else:
                 errno = e.args[0]
                 errmsg = e.args[1]
-            raise ConnectionError("Error %s while writing to socket. %s." %
-                                  (errno, errmsg))
+            raise ConnectionError(
+                "Error %s while writing to socket. %s." % (errno, errmsg)
+            )
         except:
             self.disconnect()
             raise
@@ -523,25 +538,24 @@ class BaseConnection:
         # manually. All of these arguements get wrapped in the Token class
         # to prevent them from being encoded.
         command = args[0]
-        if ' ' in command:
+        if " " in command:
             args = tuple([b(s) for s in command.split()]) + args[1:]
         else:
             args = (b(command),) + args[1:]
 
-        buff = SYM_EMPTY.join(
-            (SYM_STAR, b(str(len(args))), SYM_CRLF))
+        buff = SYM_EMPTY.join((SYM_STAR, b(str(len(args))), SYM_CRLF))
         for arg in map(self.encode, args):
             # to avoid large string mallocs, chunk the command into the
             # output list if we're sending large values
             if len(buff) > 6000 or len(arg) > 6000:
-                buff = SYM_EMPTY.join(
-                    (buff, SYM_DOLLAR, b(str(len(arg))), SYM_CRLF))
+                buff = SYM_EMPTY.join((buff, SYM_DOLLAR, b(str(len(arg))), SYM_CRLF))
                 output.append(buff)
                 output.append(b(arg))
                 buff = SYM_CRLF
             else:
-                buff = SYM_EMPTY.join((buff, SYM_DOLLAR, b(str(len(arg))),
-                                       SYM_CRLF, b(arg), SYM_CRLF))
+                buff = SYM_EMPTY.join(
+                    (buff, SYM_DOLLAR, b(str(len(arg))), SYM_CRLF, b(arg), SYM_CRLF)
+                )
         output.append(buff)
         return output
 
@@ -567,53 +581,61 @@ class BaseConnection:
 
 
 class Connection(BaseConnection):
-    description = 'Connection<host={host},port={port},db={db}>'
+    description = "Connection<host={host},port={port},db={db}>"
 
-    def __init__(self, host='127.0.0.1', port=6379, password=None,
-                 db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
-                 ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False, socket_keepalive=None,
-                 socket_keepalive_options=None, *, loop=None):
-        super(Connection, self).__init__(retry_on_timeout, stream_timeout,
-                                         parser_class, reader_read_size,
-                                         encoding, decode_responses,
-                                         loop=loop)
+    def __init__(
+        self,
+        host="127.0.0.1",
+        port=6379,
+        password=None,
+        db=0,
+        retry_on_timeout=False,
+        stream_timeout=None,
+        connect_timeout=None,
+        ssl_context=None,
+        parser_class=DefaultParser,
+        reader_read_size=65535,
+        encoding="utf-8",
+        decode_responses=False,
+        socket_keepalive=None,
+        socket_keepalive_options=None,
+        *,
+        loop=None
+    ):
+        super(Connection, self).__init__(
+            retry_on_timeout,
+            stream_timeout,
+            parser_class,
+            reader_read_size,
+            encoding,
+            decode_responses,
+            loop=loop,
+        )
         self.host = host
         self.port = port
         self.password = password
         self.db = db
         self.ssl_context = ssl_context
         self._connect_timeout = connect_timeout
-        self._description_args = {
-            'host': self.host,
-            'port': self.port,
-            'db': self.db
-        }
+        self._description_args = {"host": self.host, "port": self.port, "db": self.db}
         self.socket_keepalive = socket_keepalive
         self.socket_keepalive_options = socket_keepalive_options or {}
 
     async def _connect(self):
         if LOOP_DEPRECATED:
             connection = asyncio.open_connection(
-                host=self.host,
-                port=self.port,
-                ssl=self.ssl_context
+                host=self.host, port=self.port, ssl=self.ssl_context
             )
         else:
             connection = asyncio.open_connection(
-                host=self.host,
-                port=self.port,
-                ssl=self.ssl_context,
-                loop=self.loop
+                host=self.host, port=self.port, ssl=self.ssl_context, loop=self.loop
             )
         reader, writer = await exec_with_timeout(
-            connection,
-            self._connect_timeout,
-            loop=self.loop
+            connection, self._connect_timeout, loop=self.loop
         )
         self._reader = reader
         self._writer = writer
-        sock = writer.transport.get_extra_info('socket')
+        sock = writer.transport.get_extra_info("socket")
         if sock is not None:
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             try:
@@ -633,40 +655,49 @@ class Connection(BaseConnection):
 class UnixDomainSocketConnection(BaseConnection):
     description = "UnixDomainSocketConnection<path={path},db={db}>"
 
-    def __init__(self, path='', password=None,
-                 db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
-                 ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
-                 encoding='utf-8', decode_responses=False, *, loop=None):
-        super(UnixDomainSocketConnection, self).__init__(retry_on_timeout, stream_timeout,
-                                                         parser_class, reader_read_size,
-                                                         encoding, decode_responses,
-                                                         loop=loop)
+    def __init__(
+        self,
+        path="",
+        password=None,
+        db=0,
+        retry_on_timeout=False,
+        stream_timeout=None,
+        connect_timeout=None,
+        ssl_context=None,
+        parser_class=DefaultParser,
+        reader_read_size=65535,
+        encoding="utf-8",
+        decode_responses=False,
+        *,
+        loop=None
+    ):
+        super(UnixDomainSocketConnection, self).__init__(
+            retry_on_timeout,
+            stream_timeout,
+            parser_class,
+            reader_read_size,
+            encoding,
+            decode_responses,
+            loop=loop,
+        )
         self.path = path
         self.db = db
         self.password = password
         self.ssl_context = ssl_context
         self._connect_timeout = connect_timeout
-        self._description_args = {
-            'path': self.path,
-            'db': self.db
-        }
+        self._description_args = {"path": self.path, "db": self.db}
 
     async def _connect(self):
         if LOOP_DEPRECATED:
             connection = asyncio.open_unix_connection(
-                path=self.path,
-                ssl=self.ssl_context
+                path=self.path, ssl=self.ssl_context
             )
         else:
             connection = asyncio.open_unix_connection(
-                path=self.path,
-                ssl=self.ssl_context,
-                loop=self.loop
+                path=self.path, ssl=self.ssl_context, loop=self.loop
             )
         reader, writer = await exec_with_timeout(
-            connection,
-            self._connect_timeout,
-            loop=self.loop
+            connection, self._connect_timeout, loop=self.loop
         )
         self._reader = reader
         self._writer = writer
@@ -678,7 +709,7 @@ class ClusterConnection(Connection):
     description = "ClusterConnection<host={host},port={port}>"
 
     def __init__(self, *args, **kwargs):
-        self.readonly = kwargs.pop('readonly', False)
+        self.readonly = kwargs.pop("readonly", False)
         super(ClusterConnection, self).__init__(*args, **kwargs)
 
     async def on_connect(self):
@@ -687,10 +718,10 @@ class ClusterConnection(Connection):
         set during object initialization.
         """
         if self.db:
-            warnings.warn('SELECT DB is not allowed in cluster mode')
-            self.db = ''
+            warnings.warn("SELECT DB is not allowed in cluster mode")
+            self.db = ""
         await super(ClusterConnection, self).on_connect()
         if self.readonly:
-            await self.send_command('READONLY')
-            if nativestr(await self.read_response()) != 'OK':
-                raise ConnectionError('READONLY command failed')
+            await self.send_command("READONLY")
+            if nativestr(await self.read_response()) != "OK":
+                raise ConnectionError("READONLY command failed")

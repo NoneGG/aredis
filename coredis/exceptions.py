@@ -52,6 +52,7 @@ class ReadOnlyError(ResponseError):
 
 class LockError(RedisError, ValueError):
     """Errors acquiring or releasing a lock"""
+
     # NOTE: For backwards compatability, this class derives from ValueError.
     # This was originally chosen to behave like threading.Lock.
     pass
@@ -59,6 +60,7 @@ class LockError(RedisError, ValueError):
 
 class CacheError(RedisError):
     """Basic error of coredis.cache"""
+
     pass
 
 
@@ -91,14 +93,12 @@ class ClusterCrossSlotError(ResponseError):
 
 
 class ClusterDownError(ClusterError, ResponseError):
-
     def __init__(self, resp):
         self.args = (resp,)
         self.message = resp
 
 
 class ClusterTransactionError(ClusterError):
-
     def __init__(self, msg):
         self.msg = msg
 
@@ -117,14 +117,13 @@ class AskError(ResponseError):
         """should only redirect to master node"""
         self.args = (resp,)
         self.message = resp
-        slot_id, new_node = resp.split(' ')
-        host, port = new_node.rsplit(':', 1)
+        slot_id, new_node = resp.split(" ")
+        host, port = new_node.rsplit(":", 1)
         self.slot_id = int(slot_id)
         self.node_addr = self.host, self.port = host, int(port)
 
 
 class TryAgainError(ResponseError):
-
     def __init__(self, *args, **kwargs):
         pass
 

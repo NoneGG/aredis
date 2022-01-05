@@ -1,11 +1,14 @@
 import datetime
 from coredis.exceptions import RedisError
-from coredis.utils import (NodeFlag, nativestr,
-                          iteritems,
-                          list_or_args,
-                          dict_merge,
-                          bool_ok,
-                          string_keys_to_dict)
+from coredis.utils import (
+    NodeFlag,
+    nativestr,
+    iteritems,
+    list_or_args,
+    dict_merge,
+    bool_ok,
+    string_keys_to_dict,
+)
 
 
 class BitField:
@@ -22,7 +25,7 @@ class BitField:
     """
 
     def __init__(self, redis_client, key):
-        self._command_stack = ['BITFIELD', key]
+        self._command_stack = ["BITFIELD", key]
         self.redis = redis_client
 
     def __del__(self):
@@ -32,14 +35,14 @@ class BitField:
         """
         Set the specified bit field and returns its old value.
         """
-        self._command_stack.extend(['SET', type, offset, value])
+        self._command_stack.extend(["SET", type, offset, value])
         return self
 
     def get(self, type, offset):
         """
         Returns the specified bit field.
         """
-        self._command_stack.extend(['GET', type, offset])
+        self._command_stack.extend(["GET", type, offset])
         return self
 
     def incrby(self, type, offset, increment):
@@ -47,16 +50,16 @@ class BitField:
         Increments or decrements (if a negative increment is given)
         the specified bit field and returns the new value.
         """
-        self._command_stack.extend(['INCRBY', type, offset, increment])
+        self._command_stack.extend(["INCRBY", type, offset, increment])
         return self
 
-    def overflow(self, type='SAT'):
+    def overflow(self, type="SAT"):
         """
         fine-tune the behavior of the increment or decrement overflow,
         have no effect unless used before `incrby`
         three types are available: WRAP|SAT|FAIL
         """
-        self._command_stack.extend(['OVERFLOW', type])
+        self._command_stack.extend(["OVERFLOW", type])
         return self
 
     async def exc(self):
@@ -66,19 +69,15 @@ class BitField:
 
 class StringsCommandMixin:
     RESPONSE_CALLBACKS = dict_merge(
+        string_keys_to_dict("MSETNX PSETEX SETEX SETNX", bool),
         string_keys_to_dict(
-            'MSETNX PSETEX SETEX SETNX',
-            bool
-        ),
-        string_keys_to_dict(
-            'BITCOUNT BITPOS DECRBY GETBIT INCRBY '
-            'STRLEN SETBIT', int
+            "BITCOUNT BITPOS DECRBY GETBIT INCRBY " "STRLEN SETBIT", int
         ),
         {
-            'INCRBYFLOAT': float,
-            'MSET': bool_ok,
-            'SET': lambda r: r and nativestr(r) == 'OK',
-        }
+            "INCRBYFLOAT": float,
+            "MSET": bool_ok,
+            "SET": lambda r: r and nativestr(r) == "OK",
+        },
     )
 
     async def append(self, key, value):
@@ -87,7 +86,7 @@ class StringsCommandMixin:
         doesn't already exist, create it with a value of ``value``.
         Returns the new length of the value at ``key``.
         """
-        return await self.execute_command('APPEND', key, value)
+        return await self.execute_command("APPEND", key, value)
 
     async def bitcount(self, key, start=None, end=None):
         """
@@ -98,17 +97,16 @@ class StringsCommandMixin:
         if start is not None and end is not None:
             params.append(start)
             params.append(end)
-        elif (start is not None and end is None) or \
-                (end is not None and start is None):
+        elif (start is not None and end is None) or (end is not None and start is None):
             raise RedisError("Both start and end must be specified")
-        return await self.execute_command('BITCOUNT', *params)
+        return await self.execute_command("BITCOUNT", *params)
 
     async def bitop(self, operation, dest, *keys):
         """
         Perform a bitwise operation using ``operation`` between ``keys`` and
         store the result in ``dest``.
         """
-        return await self.execute_command('BITOP', operation, dest, *keys)
+        return await self.execute_command("BITOP", operation, dest, *keys)
 
     async def bitpos(self, key, bit, start=None, end=None):
         """
@@ -118,7 +116,7 @@ class StringsCommandMixin:
         means to look at the first three bytes.
         """
         if bit not in (0, 1):
-            raise RedisError('bit must be 0 or 1')
+            raise RedisError("bit must be 0 or 1")
         params = [key, bit]
 
         start is not None and params.append(start)
@@ -126,9 +124,8 @@ class StringsCommandMixin:
         if start is not None and end is not None:
             params.append(end)
         elif start is None and end is not None:
-            raise RedisError("start argument is not set, "
-                             "when end is specified")
-        return await self.execute_command('BITPOS', *params)
+            raise RedisError("start argument is not set, " "when end is specified")
+        return await self.execute_command("BITPOS", *params)
 
     def bitfield(self, key):
         return BitField(self, key)
@@ -138,38 +135,38 @@ class StringsCommandMixin:
         Decrements the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as 0 - ``amount``
         """
-        return await self.execute_command('DECRBY', name, amount)
+        return await self.execute_command("DECRBY", name, amount)
 
     async def get(self, name):
         """
         Return the value at key ``name``, or None if the key doesn't exist
         """
-        return await self.execute_command('GET', name)
+        return await self.execute_command("GET", name)
 
     async def getbit(self, name, offset):
         "Returns a boolean indicating the value of ``offset`` in ``name``"
-        return await self.execute_command('GETBIT', name, offset)
+        return await self.execute_command("GETBIT", name, offset)
 
     async def getrange(self, key, start, end):
         """
         Returns the substring of the string value stored at ``key``,
         determined by the offsets ``start`` and ``end`` (both are inclusive)
         """
-        return await self.execute_command('GETRANGE', key, start, end)
+        return await self.execute_command("GETRANGE", key, start, end)
 
     async def getset(self, name, value):
         """
         Sets the value at key ``name`` to ``value``
         and returns the old value at key ``name`` atomically.
         """
-        return await self.execute_command('GETSET', name, value)
+        return await self.execute_command("GETSET", name, value)
 
     async def incr(self, name, amount=1):
         """
         Increments the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as ``amount``
         """
-        return await self.execute_command('INCRBY', name, amount)
+        return await self.execute_command("INCRBY", name, amount)
 
     async def incrby(self, name, amount=1):
         """
@@ -186,14 +183,14 @@ class StringsCommandMixin:
         Increments the value at key ``name`` by floating ``amount``.
         If no key exists, the value will be initialized as ``amount``
         """
-        return await self.execute_command('INCRBYFLOAT', name, amount)
+        return await self.execute_command("INCRBYFLOAT", name, amount)
 
     async def mget(self, keys, *args):
         """
         Returns a list of values ordered identically to ``keys``
         """
         args = list_or_args(keys, args)
-        return await self.execute_command('MGET', *args)
+        return await self.execute_command("MGET", *args)
 
     async def mset(self, *args, **kwargs):
         """
@@ -202,12 +199,12 @@ class StringsCommandMixin:
         """
         if args:
             if len(args) != 1 or not isinstance(args[0], dict):
-                raise RedisError('MSET requires **kwargs or a single dict arg')
+                raise RedisError("MSET requires **kwargs or a single dict arg")
             kwargs.update(args[0])
         items = []
         for pair in iteritems(kwargs):
             items.extend(pair)
-        return await self.execute_command('MSET', *items)
+        return await self.execute_command("MSET", *items)
 
     async def msetnx(self, *args, **kwargs):
         """
@@ -217,13 +214,12 @@ class StringsCommandMixin:
         """
         if args:
             if len(args) != 1 or not isinstance(args[0], dict):
-                raise RedisError('MSETNX requires **kwargs or a single '
-                                 'dict arg')
+                raise RedisError("MSETNX requires **kwargs or a single " "dict arg")
             kwargs.update(args[0])
         items = []
         for pair in iteritems(kwargs):
             items.extend(pair)
-        return await self.execute_command('MSETNX', *items)
+        return await self.execute_command("MSETNX", *items)
 
     async def psetex(self, name, time_ms, value):
         """
@@ -234,7 +230,7 @@ class StringsCommandMixin:
         if isinstance(time_ms, datetime.timedelta):
             ms = int(time_ms.microseconds / 1000)
             time_ms = (time_ms.seconds + time_ms.days * 24 * 3600) * 1000 + ms
-        return await self.execute_command('PSETEX', name, time_ms, value)
+        return await self.execute_command("PSETEX", name, time_ms, value)
 
     async def set(self, name, value, ex=None, px=None, nx=False, xx=False):
         """
@@ -252,22 +248,22 @@ class StringsCommandMixin:
         """
         pieces = [name, value]
         if ex is not None:
-            pieces.append('EX')
+            pieces.append("EX")
             if isinstance(ex, datetime.timedelta):
                 ex = ex.seconds + ex.days * 24 * 3600
             pieces.append(ex)
         if px is not None:
-            pieces.append('PX')
+            pieces.append("PX")
             if isinstance(px, datetime.timedelta):
                 ms = int(px.microseconds / 1000)
                 px = (px.seconds + px.days * 24 * 3600) * 1000 + ms
             pieces.append(px)
 
         if nx:
-            pieces.append('NX')
+            pieces.append("NX")
         if xx:
-            pieces.append('XX')
-        return await self.execute_command('SET', *pieces)
+            pieces.append("XX")
+        return await self.execute_command("SET", *pieces)
 
     async def setbit(self, name, offset, value):
         """
@@ -275,7 +271,7 @@ class StringsCommandMixin:
         indicating the previous value of ``offset``.
         """
         value = value and 1 or 0
-        return await self.execute_command('SETBIT', name, offset, value)
+        return await self.execute_command("SETBIT", name, offset, value)
 
     async def setex(self, name, time, value):
         """
@@ -285,13 +281,13 @@ class StringsCommandMixin:
         """
         if isinstance(time, datetime.timedelta):
             time = time.seconds + time.days * 24 * 3600
-        return await self.execute_command('SETEX', name, time, value)
+        return await self.execute_command("SETEX", name, time, value)
 
     async def setnx(self, name, value):
         """
         Sets the value of key ``name`` to ``value`` if key doesn't exist
         """
-        return await self.execute_command('SETNX', name, value)
+        return await self.execute_command("SETNX", name, value)
 
     async def setrange(self, name, offset, value):
         """
@@ -304,25 +300,23 @@ class StringsCommandMixin:
 
         Returns the length of the new string.
         """
-        return await self.execute_command('SETRANGE', name, offset, value)
+        return await self.execute_command("SETRANGE", name, offset, value)
 
     async def strlen(self, name):
         """Returns the number of bytes stored in the value of ``name``"""
-        return await self.execute_command('STRLEN', name)
+        return await self.execute_command("STRLEN", name)
 
     async def substr(self, name, start, end=-1):
         """
         Returns a substring of the string at key ``name``. ``start`` and ``end``
         are 0-based integers specifying the portion of the string to return.
         """
-        return await self.execute_command('SUBSTR', name, start, end)
+        return await self.execute_command("SUBSTR", name, start, end)
 
 
 class ClusterStringsCommandMixin(StringsCommandMixin):
 
-    NODES_FLAGS = {
-        'BITOP': NodeFlag.BLOCKED
-    }
+    NODES_FLAGS = {"BITOP": NodeFlag.BLOCKED}
 
     async def mget(self, keys, *args):
         """
@@ -351,7 +345,7 @@ class ClusterStringsCommandMixin(StringsCommandMixin):
         """
         if args:
             if len(args) != 1 or not isinstance(args[0], dict):
-                raise RedisError('MSET requires **kwargs or a single dict arg')
+                raise RedisError("MSET requires **kwargs or a single dict arg")
             kwargs.update(args[0])
 
         for pair in iteritems(kwargs):
@@ -371,7 +365,7 @@ class ClusterStringsCommandMixin(StringsCommandMixin):
         """
         if args:
             if len(args) != 1 or not isinstance(args[0], dict):
-                raise RedisError('MSETNX requires **kwargs or a single dict arg')
+                raise RedisError("MSETNX requires **kwargs or a single dict arg")
             kwargs.update(args[0])
 
         # Itterate over all items and fail fast if one value is True.

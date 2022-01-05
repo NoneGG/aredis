@@ -1,25 +1,18 @@
-from coredis.utils import (b, dict_merge,
-                          bool_ok, nativestr,
-                          string_keys_to_dict)
-from coredis.exceptions import (DataError,
-                               RedisClusterException,
-                               RedisError)
+from coredis.utils import b, dict_merge, bool_ok, nativestr, string_keys_to_dict
+from coredis.exceptions import DataError, RedisClusterException, RedisError
 
 
 class ListsCommandMixin:
 
     RESPONSE_CALLBACKS = dict_merge(
-        string_keys_to_dict(
-            'BLPOP BRPOP',
-            lambda r: r and tuple(r) or None
-        ),
+        string_keys_to_dict("BLPOP BRPOP", lambda r: r and tuple(r) or None),
         string_keys_to_dict(
             # these return OK, or int if redis-server is >=1.3.4
-            'LPUSH RPUSH',
-            lambda r: isinstance(r, int) and r or nativestr(r) == 'OK'
+            "LPUSH RPUSH",
+            lambda r: isinstance(r, int) and r or nativestr(r) == "OK",
         ),
-        string_keys_to_dict('LSET LTRIM', bool_ok),
-        string_keys_to_dict('LINSERT LLEN LPUSHX RPUSHX', int),
+        string_keys_to_dict("LSET LTRIM", bool_ok),
+        string_keys_to_dict("LINSERT LLEN LPUSHX RPUSHX", int),
     )
 
     async def blpop(self, keys, timeout=0):
@@ -40,7 +33,7 @@ class ListsCommandMixin:
         else:
             keys = list(keys)
         keys.append(timeout)
-        return await self.execute_command('BLPOP', *keys)
+        return await self.execute_command("BLPOP", *keys)
 
     async def brpop(self, keys, timeout=0):
         """
@@ -60,7 +53,7 @@ class ListsCommandMixin:
         else:
             keys = list(keys)
         keys.append(timeout)
-        return await self.execute_command('BRPOP', *keys)
+        return await self.execute_command("BRPOP", *keys)
 
     async def brpoplpush(self, src, dst, timeout=0):
         """
@@ -73,7 +66,7 @@ class ListsCommandMixin:
         """
         if timeout is None:
             timeout = 0
-        return await self.execute_command('BRPOPLPUSH', src, dst, timeout)
+        return await self.execute_command("BRPOPLPUSH", src, dst, timeout)
 
     async def lindex(self, name, index):
         """
@@ -82,7 +75,7 @@ class ListsCommandMixin:
         Negative indexes are supported and will return an item at the
         end of the list
         """
-        return await self.execute_command('LINDEX', name, index)
+        return await self.execute_command("LINDEX", name, index)
 
     async def linsert(self, name, where, refvalue, value):
         """
@@ -92,25 +85,25 @@ class ListsCommandMixin:
         Returns the new length of the list on success or -1 if ``refvalue``
         is not in the list.
         """
-        return await self.execute_command('LINSERT', name, where, refvalue, value)
+        return await self.execute_command("LINSERT", name, where, refvalue, value)
 
     async def llen(self, name):
         """Returns the length of the list ``name``"""
-        return await self.execute_command('LLEN', name)
+        return await self.execute_command("LLEN", name)
 
     async def lpop(self, name):
         """RemoveS and returns the first item of the list ``name``"""
-        return await self.execute_command('LPOP', name)
+        return await self.execute_command("LPOP", name)
 
     async def lpush(self, name, *values):
         """Pushes ``values`` onto the head of the list ``name``"""
-        return await self.execute_command('LPUSH', name, *values)
+        return await self.execute_command("LPUSH", name, *values)
 
     async def lpushx(self, name, value):
         """
         Pushes ``value`` onto the head of the list ``name`` if ``name`` exists
         """
-        return await self.execute_command('LPUSHX', name, value)
+        return await self.execute_command("LPUSHX", name, value)
 
     async def lrange(self, name, start, end):
         """
@@ -120,7 +113,7 @@ class ListsCommandMixin:
         ``start`` and ``end`` can be negative numbers just like
         Python slicing notation
         """
-        return await self.execute_command('LRANGE', name, start, end)
+        return await self.execute_command("LRANGE", name, start, end)
 
     async def lrem(self, name, count, value):
         """
@@ -132,11 +125,11 @@ class ListsCommandMixin:
             count < 0: Remove elements equal to value moving from tail to head.
             count = 0: Remove all elements equal to value.
         """
-        return await self.execute_command('LREM', name, count, value)
+        return await self.execute_command("LREM", name, count, value)
 
     async def lset(self, name, index, value):
         """Sets ``position`` of list ``name`` to ``value``"""
-        return await self.execute_command('LSET', name, index, value)
+        return await self.execute_command("LSET", name, index, value)
 
     async def ltrim(self, name, start, end):
         """
@@ -146,32 +139,31 @@ class ListsCommandMixin:
         ``start`` and ``end`` can be negative numbers just like
         Python slicing notation
         """
-        return await self.execute_command('LTRIM', name, start, end)
+        return await self.execute_command("LTRIM", name, start, end)
 
     async def rpop(self, name):
         """Removes and return the last item of the list ``name``"""
-        return await self.execute_command('RPOP', name)
+        return await self.execute_command("RPOP", name)
 
     async def rpoplpush(self, src, dst):
         """
         RPOP a value off of the ``src`` list and atomically LPUSH it
         on to the ``dst`` list.  Returns the value.
         """
-        return await self.execute_command('RPOPLPUSH', src, dst)
+        return await self.execute_command("RPOPLPUSH", src, dst)
 
     async def rpush(self, name, *values):
         """Pushes ``values`` onto the tail of the list ``name``"""
-        return await self.execute_command('RPUSH', name, *values)
+        return await self.execute_command("RPUSH", name, *values)
 
     async def rpushx(self, name, value):
         """
         Pushes ``value`` onto the tail of the list ``name`` if ``name`` exists
         """
-        return await self.execute_command('RPUSHX', name, value)
+        return await self.execute_command("RPUSHX", name, value)
 
 
 class ClusterListsCommandMixin(ListsCommandMixin):
-
     async def brpoplpush(self, src, dst, timeout=0):
         """
         Pops a value off the tail of ``src``, push it on the head of ``dst``
@@ -215,7 +207,18 @@ class ClusterListsCommandMixin(ListsCommandMixin):
 
         return None
 
-    async def sort(self, name, start=None, num=None, by=None, get=None, desc=False, alpha=False, store=None, groups=None):
+    async def sort(
+        self,
+        name,
+        start=None,
+        num=None,
+        by=None,
+        get=None,
+        desc=False,
+        alpha=False,
+        store=None,
+        groups=None,
+    ):
         """Sorts and returns a list, set or sorted set at ``name``.
 
         :start: and :num:
@@ -243,8 +246,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             A full implementation of the server side sort mechanics because many of the
             options work on multiple keys that can exist on multiple servers.
         """
-        if (start is None and num is not None) or \
-                (start is not None and num is None):
+        if (start is None and num is not None) or (start is not None and num is None):
             raise RedisError("RedisError: ``start`` and ``num`` must both be specified")
         try:
             data_type = b(await self.type(name))
@@ -256,7 +258,9 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             elif data_type == b("list"):
                 data = await self.lrange(name, 0, -1)
             else:
-                raise RedisClusterException("Unable to sort data type : {0}".format(data_type))
+                raise RedisClusterException(
+                    "Unable to sort data type : {0}".format(data_type)
+                )
             if by is not None:
                 # _sort_using_by_arg mutates data so we don't
                 # need need a return value.
@@ -268,7 +272,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             if desc:
                 data = data[::-1]
             if not (start is None and num is None):
-                data = data[start:start + num]
+                data = data[start : start + num]
 
             if get:
                 data = await self._retrive_data_from_sort(data, get)
@@ -281,15 +285,21 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                     await self.delete(store)
                     await self.rpush(store, *data)
                 else:
-                    raise RedisClusterException("Unable to store sorted data for data type : {0}".format(data_type))
+                    raise RedisClusterException(
+                        "Unable to store sorted data for data type : {0}".format(
+                            data_type
+                        )
+                    )
 
                 return len(data)
 
             if groups:
                 if not get or isinstance(get, str) or len(get) < 2:
-                    raise DataError('when using "groups" the "get" argument '
-                                    'must be specified and contain at least '
-                                    'two keys')
+                    raise DataError(
+                        'when using "groups" the "get" argument '
+                        "must be specified and contain at least "
+                        "two keys"
+                    )
                 n = len(get)
                 return list(zip(*[data[i::n] for i in range(n)]))
             else:
@@ -319,14 +329,14 @@ class ClusterListsCommandMixin(ListsCommandMixin):
         if getattr(k, "decode", None):
             k = k.decode("utf-8")
 
-        if '*' in g:
-            g = g.replace('*', k)
-            if '->' in g:
-                key, hash_key = g.split('->')
+        if "*" in g:
+            g = g.replace("*", k)
+            if "->" in g:
+                key, hash_key = g.split("->")
                 single_item = await self.get(key, {}).get(hash_key)
             else:
                 single_item = await self.get(g)
-        elif '#' in g:
+        elif "#" in g:
             single_item = k
         else:
             single_item = None
@@ -349,9 +359,9 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             if getattr(arg, "decode", None):
                 arg = arg.decode("utf-8")
 
-            key = by.replace('*', arg)
-            if '->' in by:
-                key, hash_key = key.split('->')
+            key = by.replace("*", arg)
+            if "->" in by:
+                key, hash_key = key.split("->")
                 v = await self.hget(key, hash_key)
                 if alpha:
                     return v
@@ -359,6 +369,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                     return float(v)
             else:
                 return await self.get(key)
+
         sorted_data = []
         for d in data:
             sorted_data.append((d, await _by_key(d)))

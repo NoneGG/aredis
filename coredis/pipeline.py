@@ -3,13 +3,29 @@ import sys
 from itertools import chain
 
 import coredis
-from coredis.client import (StrictRedis, StrictRedisCluster)
-from coredis.exceptions import (AskError, ClusterTransactionError, ConnectionError, ExecAbortError, MovedError,
-                               RedisClusterException, RedisError, ResponseError, TimeoutError, TryAgainError,
-                               WatchError)
-from coredis.utils import (clusterdown_wrapper, dict_merge)
+from coredis.client import StrictRedis, StrictRedisCluster
+from coredis.exceptions import (
+    AskError,
+    ClusterTransactionError,
+    ConnectionError,
+    ExecAbortError,
+    MovedError,
+    RedisClusterException,
+    RedisError,
+    ResponseError,
+    TimeoutError,
+    TryAgainError,
+    WatchError,
+)
+from coredis.utils import clusterdown_wrapper, dict_merge
 
-ERRORS_ALLOW_RETRY = (ConnectionError, TimeoutError, MovedError, AskError, TryAgainError)
+ERRORS_ALLOW_RETRY = (
+    ConnectionError,
+    TimeoutError,
+    MovedError,
+    AskError,
+    TryAgainError,
+)
 
 
 class BasePipeline:
@@ -31,10 +47,9 @@ class BasePipeline:
     on a key of a different datatype.
     """
 
-    UNWATCH_COMMANDS = {'DISCARD', 'EXEC', 'UNWATCH'}
+    UNWATCH_COMMANDS = {"DISCARD", "EXEC", "UNWATCH"}
 
-    def __init__(self, connection_pool, response_callbacks, transaction,
-                 shard_hint):
+    def __init__(self, connection_pool, response_callbacks, transaction, shard_hint):
         self.connection_pool = connection_pool
         self.connection = None
         self.response_callbacks = response_callbacks
@@ -60,7 +75,7 @@ class BasePipeline:
             try:
                 # call this manually since our unwatch or
                 # immediate_execute_command methods can call reset()
-                await self.connection.send_command('UNWATCH')
+                await self.connection.send_command("UNWATCH")
                 await self.connection.read_response()
             except ConnectionError:
                 # disconnect will also remove any previous WATCHes
@@ -80,15 +95,15 @@ class BasePipeline:
         are issued. End the transactional block with `execute`.
         """
         if self.explicit_transaction:
-            raise RedisError('Cannot issue nested calls to MULTI')
+            raise RedisError("Cannot issue nested calls to MULTI")
         if self.command_stack:
-            raise RedisError('Commands without an initial WATCH have already '
-                             'been issued')
+            raise RedisError(
+                "Commands without an initial WATCH have already " "been issued"
+            )
         self.explicit_transaction = True
 
     async def execute_command(self, *args, **kwargs):
-        if (self.watching or args[0] == 'WATCH') and \
-                not self.explicit_transaction:
+        if (self.watching or args[0] == "WATCH") and not self.explicit_transaction:
             return await self.immediate_execute_command(*args, **kwargs)
         return self.pipeline_execute_command(*args, **kwargs)
 
@@ -139,7 +154,7 @@ class BasePipeline:
         return self
 
     async def _execute_transaction(self, connection, commands, raise_on_error):
-        cmds = chain([(('MULTI',), {})], commands, [(('EXEC',), {})])
+        cmds = chain([(("MULTI",), {})], commands, [(("EXEC",), {})])
         all_cmds = connection.pack_commands([args for args, _ in cmds])
         await connection.send_packed_command(all_cmds)
         errors = []
@@ -149,14 +164,14 @@ class BasePipeline:
         # so that we read all the additional command messages from
         # the socket
         try:
-            await self.parse_response(connection, '_')
+            await self.parse_response(connection, "_")
         except ResponseError:
             errors.append((0, sys.exc_info()[1]))
 
         # and all the other commands
         for i, command in enumerate(commands):
             try:
-                await self.parse_response(connection, '_')
+                await self.parse_response(connection, "_")
             except ResponseError:
                 ex = sys.exc_info()[1]
                 self.annotate_exception(ex, i + 1, command[0])
@@ -164,10 +179,10 @@ class BasePipeline:
 
         # parse the EXEC.
         try:
-            response = await self.parse_response(connection, '_')
+            response = await self.parse_response(connection, "_")
         except ExecAbortError:
             if self.explicit_transaction:
-                await self.immediate_execute_command('DISCARD')
+                await self.immediate_execute_command("DISCARD")
             if errors:
                 raise errors[0][1]
             raise sys.exc_info()[1]
@@ -181,8 +196,9 @@ class BasePipeline:
 
         if len(response) != len(commands):
             self.connection.disconnect()
-            raise ResponseError("Wrong number of response items from "
-                                "pipeline execution")
+            raise ResponseError(
+                "Wrong number of response items from " "pipeline execution"
+            )
 
         # find any errors in the response and raise if necessary
         if raise_on_error:
@@ -214,7 +230,8 @@ class BasePipeline:
         for args, options in commands:
             try:
                 response.append(
-                    await self.parse_response(connection, args[0], **options))
+                    await self.parse_response(connection, args[0], **options)
+                )
             except ResponseError:
                 response.append(sys.exc_info()[1])
 
@@ -229,9 +246,12 @@ class BasePipeline:
                 raise r
 
     def annotate_exception(self, exception, number, command):
-        cmd = str(' ').join(map(str, command))
-        msg = str('Command # %d (%s) of pipeline caused error: %s') % (
-            number, cmd, str(exception.args[0]))
+        cmd = str(" ").join(map(str, command))
+        msg = str("Command # %d (%s) of pipeline caused error: %s") % (
+            number,
+            cmd,
+            str(exception.args[0]),
+        )
         exception.args = (msg,) + exception.args[1:]
 
     async def _parse(self, connection, command_name, **options):
@@ -246,7 +266,7 @@ class BasePipeline:
         result = await self._parse(connection, command_name, **options)
         if command_name in self.UNWATCH_COMMANDS:
             self.watching = False
-        elif command_name == 'WATCH':
+        elif command_name == "WATCH":
             self.watching = True
         return result
 
@@ -257,11 +277,11 @@ class BasePipeline:
         shas = [s.sha for s in scripts]
         # we can't use the normal script_* methods because they would just
         # get buffered in the pipeline.
-        exists = await immediate('SCRIPT EXISTS', *shas)
+        exists = await immediate("SCRIPT EXISTS", *shas)
         if not all(exists):
             for s, exist in zip(scripts, exists):
                 if not exist:
-                    s.sha = await immediate('SCRIPT LOAD', s.script)
+                    s.sha = await immediate("SCRIPT LOAD", s.script)
 
     async def execute(self, raise_on_error=True):
         """Executes all the commands in the current pipeline"""
@@ -294,8 +314,9 @@ class BasePipeline:
             # than a temporary failure, the WATCH that the user next issues
             # will fail, propegating the real ConnectionError
             if self.watching:
-                raise WatchError("A ConnectionError occured on while watching "
-                                 "one or more keys")
+                raise WatchError(
+                    "A ConnectionError occured on while watching " "one or more keys"
+                )
             # otherwise, it's safe to retry since the transaction isn't
             # predicated on any state
             return await exec(conn, stack, raise_on_error)
@@ -305,30 +326,41 @@ class BasePipeline:
     async def watch(self, *names):
         """Watches the values at keys ``names``"""
         if self.explicit_transaction:
-            raise RedisError('Cannot issue a WATCH after a MULTI')
-        return await self.execute_command('WATCH', *names)
+            raise RedisError("Cannot issue a WATCH after a MULTI")
+        return await self.execute_command("WATCH", *names)
 
     async def unwatch(self):
         """Unwatches all previously specified keys"""
-        return self.watching and await self.execute_command('UNWATCH') or True
+        return self.watching and await self.execute_command("UNWATCH") or True
 
 
 class StrictPipeline(BasePipeline, StrictRedis):
     """Pipeline for the StrictRedis class"""
+
     pass
 
 
 class StrictClusterPipeline(StrictRedisCluster):
-    def __init__(self, connection_pool, result_callbacks=None,
-                 response_callbacks=None, startup_nodes=None,
-                 transaction=False, watches=None):
+    def __init__(
+        self,
+        connection_pool,
+        result_callbacks=None,
+        response_callbacks=None,
+        startup_nodes=None,
+        transaction=False,
+        watches=None,
+    ):
         self.command_stack = []
         self.refresh_table_asap = False
         self.connection_pool = connection_pool
-        self.result_callbacks = result_callbacks or self.__class__.RESULT_CALLBACKS.copy()
+        self.result_callbacks = (
+            result_callbacks or self.__class__.RESULT_CALLBACKS.copy()
+        )
         self.startup_nodes = startup_nodes if startup_nodes else []
         self.nodes_flags = self.__class__.NODES_FLAGS.copy()
-        self.response_callbacks = dict_merge(response_callbacks or self.__class__.RESPONSE_CALLBACKS.copy())
+        self.response_callbacks = dict_merge(
+            response_callbacks or self.__class__.RESPONSE_CALLBACKS.copy()
+        )
         self.transaction = transaction
         self.watches = watches or None
         self.watching = False
@@ -352,15 +384,19 @@ class StrictClusterPipeline(StrictRedisCluster):
     def _determine_slot(self, *args):
         """Figure out what slot based on command and args"""
         if len(args) <= 1:
-            raise RedisClusterException("No way to dispatch this command to Redis Cluster. Missing key.")
+            raise RedisClusterException(
+                "No way to dispatch this command to Redis Cluster. Missing key."
+            )
         command = args[0]
 
-        if command in ['EVAL', 'EVALSHA']:
+        if command in ["EVAL", "EVALSHA"]:
             numkeys = args[2]
-            keys = args[3: 3 + numkeys]
+            keys = args[3 : 3 + numkeys]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
             if len(slots) != 1:
-                raise RedisClusterException("{0} - all keys must map to the same key slot".format(command))
+                raise RedisClusterException(
+                    "{0} - all keys must map to the same key slot".format(command)
+                )
             return slots.pop()
 
         key = args[1]
@@ -371,7 +407,9 @@ class StrictClusterPipeline(StrictRedisCluster):
         return self.pipeline_execute_command(*args, **kwargs)
 
     def pipeline_execute_command(self, *args, **options):
-        self.command_stack.append(PipelineCommand(args, options, len(self.command_stack)))
+        self.command_stack.append(
+            PipelineCommand(args, options, len(self.command_stack))
+        )
         return self
 
     def raise_first_error(self, stack):
@@ -382,9 +420,10 @@ class StrictClusterPipeline(StrictRedisCluster):
                 raise r
 
     def annotate_exception(self, exception, number, command):
-        cmd = ' '.join(str(x) for x in command)
-        msg = 'Command # {0} ({1}) of pipeline caused error: {2}'.format(
-            number, cmd, exception.args[0])
+        cmd = " ".join(str(x) for x in command)
+        msg = "Command # {0} ({1}) of pipeline caused error: {2}".format(
+            number, cmd, exception.args[0]
+        )
         exception.args = (msg,) + exception.args[1:]
 
     async def execute(self, raise_on_error=True):
@@ -429,18 +468,20 @@ class StrictClusterPipeline(StrictRedisCluster):
 
             # now that we know the name of the node ( it's just a string in the form of host:port )
             # we can build a list of commands for each node.
-            if node.get('name') != hashed_node['name']:
+            if node.get("name") != hashed_node["name"]:
                 # raise error if commands in a transaction can not hash to same node
                 if len(node) > 0:
-                    raise ClusterTransactionError("Keys in request don't hash to the same node")
+                    raise ClusterTransactionError(
+                        "Keys in request don't hash to the same node"
+                    )
             node = hashed_node
         conn = self.connection_pool.get_connection_by_node(node)
         if self.watches:
             await self._watch(node, conn, self.watches)
         node_commands = NodeCommands(self.parse_response, conn, in_transaction=True)
-        node_commands.append(PipelineCommand(('MULTI',)))
+        node_commands.append(PipelineCommand(("MULTI",)))
         node_commands.extend(attempt)
-        node_commands.append(PipelineCommand(('EXEC',)))
+        node_commands.append(PipelineCommand(("EXEC",)))
         self.explicit_transaction = True
         await node_commands.write()
         # todo: make this place clear
@@ -448,7 +489,7 @@ class StrictClusterPipeline(StrictRedisCluster):
             await node_commands.read()
         except ExecAbortError:
             if self.explicit_transaction:
-                await conn.send_command('DISCARD')
+                await conn.send_command("DISCARD")
                 await conn.read_response()
 
         # If at least one watched key is modified before the EXEC command,
@@ -463,7 +504,9 @@ class StrictClusterPipeline(StrictRedisCluster):
             self.raise_first_error(stack)
 
     @clusterdown_wrapper
-    async def send_cluster_commands(self, stack, raise_on_error=True, allow_redirections=True):
+    async def send_cluster_commands(
+        self, stack, raise_on_error=True, allow_redirections=True
+    ):
         """
         Sends a bunch of cluster commands to the redis cluster.
 
@@ -490,9 +533,12 @@ class StrictClusterPipeline(StrictRedisCluster):
 
             # now that we know the name of the node ( it's just a string in the form of host:port )
             # we can build a list of commands for each node.
-            node_name = node['name']
+            node_name = node["name"]
             if node_name not in nodes:
-                nodes[node_name] = NodeCommands(self.parse_response, self.connection_pool.get_connection_by_node(node))
+                nodes[node_name] = NodeCommands(
+                    self.parse_response,
+                    self.connection_pool.get_connection_by_node(node),
+                )
 
             nodes[node_name].append(c)
 
@@ -527,7 +573,10 @@ class StrictClusterPipeline(StrictRedisCluster):
         # if we have more commands to attempt, we've run into problems.
         # collect all the commands we are allowed to retry.
         # (MOVED, ASK, or connection errors or timeout errors)
-        attempt = sorted([c for c in attempt if isinstance(c.result, ERRORS_ALLOW_RETRY)], key=lambda x: x.position)
+        attempt = sorted(
+            [c for c in attempt if isinstance(c.result, ERRORS_ALLOW_RETRY)],
+            key=lambda x: x.position,
+        )
         if attempt and allow_redirections:
             # RETRY MAGIC HAPPENS HERE!
             # send these remaing comamnds one at a time using `execute_command`
@@ -544,11 +593,15 @@ class StrictClusterPipeline(StrictRedisCluster):
             # If a lot of commands have failed, we'll be setting the
             # flag to rebuild the slots table from scratch. So MOVED errors should
             # correct themselves fairly quickly.
-            await self.connection_pool.nodes.increment_reinitialize_counter(len(attempt))
+            await self.connection_pool.nodes.increment_reinitialize_counter(
+                len(attempt)
+            )
             for c in attempt:
                 try:
                     # send each command individually like we do in the main client.
-                    c.result = await super(StrictClusterPipeline, self).execute_command(*c.args, **c.options)
+                    c.result = await super(StrictClusterPipeline, self).execute_command(
+                        *c.args, **c.options
+                    )
                 except RedisError as e:
                     c.result = e
 
@@ -563,13 +616,17 @@ class StrictClusterPipeline(StrictRedisCluster):
 
     def _fail_on_redirect(self, allow_redirections):
         if not allow_redirections:
-            raise RedisClusterException("ASK & MOVED redirection not allowed in this pipeline")
+            raise RedisClusterException(
+                "ASK & MOVED redirection not allowed in this pipeline"
+            )
 
     def _multi(self):
         raise RedisClusterException("method multi() is not implemented")
 
     def immediate_execute_command(self, *args, **options):
-        raise RedisClusterException("method immediate_execute_command() is not implemented")
+        raise RedisClusterException(
+            "method immediate_execute_command() is not implemented"
+        )
 
     def load_scripts(self):
         raise RedisClusterException("method load_scripts() is not implemented")
@@ -577,32 +634,38 @@ class StrictClusterPipeline(StrictRedisCluster):
     async def _watch(self, node, conn, names):
         "Watches the values at keys ``names``"
         for name in names:
-            slot = self._determine_slot('WATCH', name)
+            slot = self._determine_slot("WATCH", name)
             dist_node = self.connection_pool.get_node_by_slot(slot)
-            if node.get('name') != dist_node['name']:
+            if node.get("name") != dist_node["name"]:
                 # raise error if commands in a transaction can not hash to same node
                 if len(node) > 0:
-                    raise ClusterTransactionError("Keys in request don't hash to the same node")
+                    raise ClusterTransactionError(
+                        "Keys in request don't hash to the same node"
+                    )
         if self.explicit_transaction:
-            raise RedisError('Cannot issue a WATCH after a MULTI')
-        await conn.send_command('WATCH', *names)
+            raise RedisError("Cannot issue a WATCH after a MULTI")
+        await conn.send_command("WATCH", *names)
         return await conn.read_response()
 
     async def _unwatch(self, conn):
         """Unwatches all previously specified keys"""
-        await conn.send_command('UNWATCH')
+        await conn.send_command("UNWATCH")
         res = await conn.read_response()
         return self.watching and res or True
 
     def script_load_for_pipeline(self, *args, **kwargs):
-        raise RedisClusterException("method script_load_for_pipeline() is not implemented")
+        raise RedisClusterException(
+            "method script_load_for_pipeline() is not implemented"
+        )
 
     def delete(self, *names):
         """Deletes a key specified by ``names``"""
         if len(names) != 1:
-            raise RedisClusterException("deleting multiple keys is not implemented in pipeline command")
+            raise RedisClusterException(
+                "deleting multiple keys is not implemented in pipeline command"
+            )
 
-        return self.execute_command('DEL', names[0])
+        return self.execute_command("DEL", names[0])
 
 
 def block_pipeline_command(func):
@@ -614,24 +677,46 @@ def block_pipeline_command(func):
     def inner(*args, **kwargs):
         raise RedisClusterException(
             "ERROR: Calling pipelined function {0} is blocked when running redis in cluster mode...".format(
-                func.__name__))
+                func.__name__
+            )
+        )
 
     return inner
 
 
 # Blocked pipeline commands
-StrictClusterPipeline.bgrewriteaof = block_pipeline_command(StrictClusterPipeline.bgrewriteaof)
+StrictClusterPipeline.bgrewriteaof = block_pipeline_command(
+    StrictClusterPipeline.bgrewriteaof
+)
 StrictClusterPipeline.bgsave = block_pipeline_command(StrictClusterPipeline.bgsave)
 StrictClusterPipeline.bitop = block_pipeline_command(StrictClusterPipeline.bitop)
-StrictClusterPipeline.brpoplpush = block_pipeline_command(StrictClusterPipeline.brpoplpush)
-StrictClusterPipeline.client_getname = block_pipeline_command(StrictClusterPipeline.client_getname)
-StrictClusterPipeline.client_kill = block_pipeline_command(StrictClusterPipeline.client_kill)
-StrictClusterPipeline.client_list = block_pipeline_command(StrictClusterPipeline.client_list)
-StrictClusterPipeline.client_setname = block_pipeline_command(StrictClusterPipeline.client_setname)
-StrictClusterPipeline.config_get = block_pipeline_command(StrictClusterPipeline.config_get)
-StrictClusterPipeline.config_resetstat = block_pipeline_command(StrictClusterPipeline.config_resetstat)
-StrictClusterPipeline.config_rewrite = block_pipeline_command(StrictClusterPipeline.config_rewrite)
-StrictClusterPipeline.config_set = block_pipeline_command(StrictClusterPipeline.config_set)
+StrictClusterPipeline.brpoplpush = block_pipeline_command(
+    StrictClusterPipeline.brpoplpush
+)
+StrictClusterPipeline.client_getname = block_pipeline_command(
+    StrictClusterPipeline.client_getname
+)
+StrictClusterPipeline.client_kill = block_pipeline_command(
+    StrictClusterPipeline.client_kill
+)
+StrictClusterPipeline.client_list = block_pipeline_command(
+    StrictClusterPipeline.client_list
+)
+StrictClusterPipeline.client_setname = block_pipeline_command(
+    StrictClusterPipeline.client_setname
+)
+StrictClusterPipeline.config_get = block_pipeline_command(
+    StrictClusterPipeline.config_get
+)
+StrictClusterPipeline.config_resetstat = block_pipeline_command(
+    StrictClusterPipeline.config_resetstat
+)
+StrictClusterPipeline.config_rewrite = block_pipeline_command(
+    StrictClusterPipeline.config_rewrite
+)
+StrictClusterPipeline.config_set = block_pipeline_command(
+    StrictClusterPipeline.config_set
+)
 StrictClusterPipeline.dbsize = block_pipeline_command(StrictClusterPipeline.dbsize)
 StrictClusterPipeline.echo = block_pipeline_command(StrictClusterPipeline.echo)
 StrictClusterPipeline.evalsha = block_pipeline_command(StrictClusterPipeline.evalsha)
@@ -648,38 +733,77 @@ StrictClusterPipeline.pfmerge = block_pipeline_command(StrictClusterPipeline.pfm
 StrictClusterPipeline.pfcount = block_pipeline_command(StrictClusterPipeline.pfcount)
 StrictClusterPipeline.ping = block_pipeline_command(StrictClusterPipeline.ping)
 StrictClusterPipeline.publish = block_pipeline_command(StrictClusterPipeline.publish)
-StrictClusterPipeline.randomkey = block_pipeline_command(StrictClusterPipeline.randomkey)
+StrictClusterPipeline.randomkey = block_pipeline_command(
+    StrictClusterPipeline.randomkey
+)
 StrictClusterPipeline.rename = block_pipeline_command(StrictClusterPipeline.rename)
 StrictClusterPipeline.renamenx = block_pipeline_command(StrictClusterPipeline.renamenx)
-StrictClusterPipeline.rpoplpush = block_pipeline_command(StrictClusterPipeline.rpoplpush)
+StrictClusterPipeline.rpoplpush = block_pipeline_command(
+    StrictClusterPipeline.rpoplpush
+)
 StrictClusterPipeline.save = block_pipeline_command(StrictClusterPipeline.save)
 StrictClusterPipeline.scan = block_pipeline_command(StrictClusterPipeline.scan)
-StrictClusterPipeline.script_exists = block_pipeline_command(StrictClusterPipeline.script_exists)
-StrictClusterPipeline.script_flush = block_pipeline_command(StrictClusterPipeline.script_flush)
-StrictClusterPipeline.script_kill = block_pipeline_command(StrictClusterPipeline.script_kill)
-StrictClusterPipeline.script_load = block_pipeline_command(StrictClusterPipeline.script_load)
+StrictClusterPipeline.script_exists = block_pipeline_command(
+    StrictClusterPipeline.script_exists
+)
+StrictClusterPipeline.script_flush = block_pipeline_command(
+    StrictClusterPipeline.script_flush
+)
+StrictClusterPipeline.script_kill = block_pipeline_command(
+    StrictClusterPipeline.script_kill
+)
+StrictClusterPipeline.script_load = block_pipeline_command(
+    StrictClusterPipeline.script_load
+)
 StrictClusterPipeline.sdiff = block_pipeline_command(StrictClusterPipeline.sdiff)
-StrictClusterPipeline.sdiffstore = block_pipeline_command(StrictClusterPipeline.sdiffstore)
+StrictClusterPipeline.sdiffstore = block_pipeline_command(
+    StrictClusterPipeline.sdiffstore
+)
 StrictClusterPipeline.sentinel_get_master_addr_by_name = block_pipeline_command(
-    StrictClusterPipeline.sentinel_get_master_addr_by_name)
-StrictClusterPipeline.sentinel_master = block_pipeline_command(StrictClusterPipeline.sentinel_master)
-StrictClusterPipeline.sentinel_masters = block_pipeline_command(StrictClusterPipeline.sentinel_masters)
-StrictClusterPipeline.sentinel_monitor = block_pipeline_command(StrictClusterPipeline.sentinel_monitor)
-StrictClusterPipeline.sentinel_remove = block_pipeline_command(StrictClusterPipeline.sentinel_remove)
-StrictClusterPipeline.sentinel_sentinels = block_pipeline_command(StrictClusterPipeline.sentinel_sentinels)
-StrictClusterPipeline.sentinel_set = block_pipeline_command(StrictClusterPipeline.sentinel_set)
-StrictClusterPipeline.sentinel_slaves = block_pipeline_command(StrictClusterPipeline.sentinel_slaves)
+    StrictClusterPipeline.sentinel_get_master_addr_by_name
+)
+StrictClusterPipeline.sentinel_master = block_pipeline_command(
+    StrictClusterPipeline.sentinel_master
+)
+StrictClusterPipeline.sentinel_masters = block_pipeline_command(
+    StrictClusterPipeline.sentinel_masters
+)
+StrictClusterPipeline.sentinel_monitor = block_pipeline_command(
+    StrictClusterPipeline.sentinel_monitor
+)
+StrictClusterPipeline.sentinel_remove = block_pipeline_command(
+    StrictClusterPipeline.sentinel_remove
+)
+StrictClusterPipeline.sentinel_sentinels = block_pipeline_command(
+    StrictClusterPipeline.sentinel_sentinels
+)
+StrictClusterPipeline.sentinel_set = block_pipeline_command(
+    StrictClusterPipeline.sentinel_set
+)
+StrictClusterPipeline.sentinel_slaves = block_pipeline_command(
+    StrictClusterPipeline.sentinel_slaves
+)
 StrictClusterPipeline.shutdown = block_pipeline_command(StrictClusterPipeline.shutdown)
 StrictClusterPipeline.sinter = block_pipeline_command(StrictClusterPipeline.sinter)
-StrictClusterPipeline.sinterstore = block_pipeline_command(StrictClusterPipeline.sinterstore)
+StrictClusterPipeline.sinterstore = block_pipeline_command(
+    StrictClusterPipeline.sinterstore
+)
 StrictClusterPipeline.slaveof = block_pipeline_command(StrictClusterPipeline.slaveof)
-StrictClusterPipeline.slowlog_get = block_pipeline_command(StrictClusterPipeline.slowlog_get)
-StrictClusterPipeline.slowlog_len = block_pipeline_command(StrictClusterPipeline.slowlog_len)
-StrictClusterPipeline.slowlog_reset = block_pipeline_command(StrictClusterPipeline.slowlog_reset)
+StrictClusterPipeline.slowlog_get = block_pipeline_command(
+    StrictClusterPipeline.slowlog_get
+)
+StrictClusterPipeline.slowlog_len = block_pipeline_command(
+    StrictClusterPipeline.slowlog_len
+)
+StrictClusterPipeline.slowlog_reset = block_pipeline_command(
+    StrictClusterPipeline.slowlog_reset
+)
 StrictClusterPipeline.smove = block_pipeline_command(StrictClusterPipeline.smove)
 StrictClusterPipeline.sort = block_pipeline_command(StrictClusterPipeline.sort)
 StrictClusterPipeline.sunion = block_pipeline_command(StrictClusterPipeline.sunion)
-StrictClusterPipeline.sunionstore = block_pipeline_command(StrictClusterPipeline.sunionstore)
+StrictClusterPipeline.sunionstore = block_pipeline_command(
+    StrictClusterPipeline.sunionstore
+)
 StrictClusterPipeline.time = block_pipeline_command(StrictClusterPipeline.time)
 
 
@@ -729,7 +853,9 @@ class NodeCommands:
         # build up all commands into a single request to increase network perf
         # send all the commands and catch connection and timeout errors.
         try:
-            await connection.send_packed_command(connection.pack_commands([c.args for c in commands]))
+            await connection.send_packed_command(
+                connection.pack_commands([c.args for c in commands])
+            )
         except (ConnectionError, TimeoutError) as e:
             for c in commands:
                 c.result = e
@@ -751,7 +877,7 @@ class NodeCommands:
             if c.result is None:
                 try:
                     if self.in_transaction:
-                        cmd = '_'
+                        cmd = "_"
                     else:
                         cmd = c.args[0]
                     c.result = await self.parse_response(connection, cmd, **c.options)

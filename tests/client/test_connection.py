@@ -3,19 +3,18 @@
 import socket
 
 import pytest
-from coredis import (Connection,
-                    UnixDomainSocketConnection)
+from coredis import Connection, UnixDomainSocketConnection
 
 
 @pytest.mark.asyncio(forbid_global_loop=True)
 async def test_connect_tcp(event_loop):
     conn = Connection(loop=event_loop)
-    assert conn.host == '127.0.0.1'
+    assert conn.host == "127.0.0.1"
     assert conn.port == 6379
-    assert str(conn) == 'Connection<host=127.0.0.1,port=6379,db=0>'
-    await conn.send_command('PING')
+    assert str(conn) == "Connection<host=127.0.0.1,port=6379,db=0>"
+    await conn.send_command("PING")
     res = await conn.read_response()
-    assert res == b'PONG'
+    assert res == b"PONG"
     assert (conn._reader is not None) and (conn._writer is not None)
     conn.disconnect()
     assert (conn._reader is None) and (conn._writer is None)
@@ -33,7 +32,7 @@ async def test_connect_tcp_keepalive_options(event_loop):
         },
     )
     await conn._connect()
-    sock = conn._writer.transport.get_extra_info('socket')
+    sock = conn._writer.transport.get_extra_info("socket")
     assert sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE) == 1
     for k, v in (
         (socket.TCP_KEEPIDLE, 1),
@@ -44,15 +43,11 @@ async def test_connect_tcp_keepalive_options(event_loop):
     conn.disconnect()
 
 
-@pytest.mark.parametrize('option', ['UNKNOWN', 999])
+@pytest.mark.parametrize("option", ["UNKNOWN", 999])
 @pytest.mark.asyncio(forbid_global_loop=True)
 async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option):
     conn = Connection(
-        loop=event_loop,
-        socket_keepalive=True,
-        socket_keepalive_options={
-            option: 1,
-        },
+        loop=event_loop, socket_keepalive=True, socket_keepalive_options={option: 1,},
     )
     with pytest.raises((socket.error, TypeError)):
         await conn._connect()

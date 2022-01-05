@@ -10,8 +10,8 @@ from coredis.cache import Cache, HerdCache
 
 class TestCache:
 
-    app = 'test_cache'
-    key = 'test_key'
+    app = "test_cache"
+    key = "test_key"
     data = {str(i): i for i in range(3)}
 
     def expensive_work(self, data):
@@ -21,9 +21,7 @@ class TestCache:
     async def test_set(self, r):
         await r.flushdb()
         cache = Cache(r, self.app)
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data)
+        res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
         identity = cache._gen_identity(self.key, self.data)
         content = await r.get(identity)
@@ -34,9 +32,9 @@ class TestCache:
     async def test_set_timeout(self, r, event_loop):
         await r.flushdb()
         cache = Cache(r, self.app)
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data, expire_time=1)
+        res = await cache.set(
+            self.key, self.expensive_work(self.data), self.data, expire_time=1
+        )
         assert res
         identity = cache._gen_identity(self.key, self.data)
         content = await r.get(identity)
@@ -50,9 +48,9 @@ class TestCache:
     async def test_set_with_plain_key(self, r):
         await r.flushdb()
         cache = Cache(r, self.app, identity_generator_class=None)
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data, expire_time=1)
+        res = await cache.set(
+            self.key, self.expensive_work(self.data), self.data, expire_time=1
+        )
         assert res
         identity = cache._gen_identity(self.key, self.data)
         assert identity == self.key
@@ -64,9 +62,9 @@ class TestCache:
     async def test_get(self, r):
         await r.flushdb()
         cache = Cache(r, self.app)
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data, expire_time=1)
+        res = await cache.set(
+            self.key, self.expensive_work(self.data), self.data, expire_time=1
+        )
         assert res
         content = await cache.get(self.key, self.data)
         assert content == self.data
@@ -75,8 +73,7 @@ class TestCache:
     async def test_set_many(self, r):
         await r.flushdb()
         cache = Cache(r, self.app)
-        res = await cache.set_many(self.expensive_work(self.data),
-                                   self.data)
+        res = await cache.set_many(self.expensive_work(self.data), self.data)
         assert res
         for key, value in self.data.items():
             assert await cache.get(key, self.data) == value
@@ -85,9 +82,9 @@ class TestCache:
     async def test_delete(self, r):
         await r.flushdb()
         cache = Cache(r, self.app)
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data, expire_time=1)
+        res = await cache.set(
+            self.key, self.expensive_work(self.data), self.data, expire_time=1
+        )
         assert res
         content = await cache.get(self.key, self.data)
         assert content == self.data
@@ -100,9 +97,8 @@ class TestCache:
     async def test_delete_pattern(self, r):
         await r.flushdb()
         cache = Cache(r, self.app)
-        await cache.set_many(self.expensive_work(self.data),
-                             self.data)
-        res = await cache.delete_pattern('test_*', 10)
+        await cache.set_many(self.expensive_work(self.data), self.data)
+        res = await cache.delete_pattern("test_*", 10)
         assert res == 3
         content = await cache.get(self.key, self.data)
         assert content is None
@@ -111,8 +107,9 @@ class TestCache:
     async def test_ttl(self, r, event_loop):
         await r.flushdb()
         cache = Cache(r, self.app)
-        await cache.set(self.key, self.expensive_work(self.data),
-                        self.data, expire_time=1)
+        await cache.set(
+            self.key, self.expensive_work(self.data), self.data, expire_time=1
+        )
         ttl = await cache.ttl(self.key, self.data)
         assert ttl > 0
         await asyncio.sleep(1.1)
@@ -123,8 +120,9 @@ class TestCache:
     async def test_exists(self, r, event_loop):
         await r.flushdb()
         cache = Cache(r, self.app)
-        await cache.set(self.key, self.expensive_work(self.data),
-                        self.data, expire_time=1)
+        await cache.set(
+            self.key, self.expensive_work(self.data), self.data, expire_time=1
+        )
         exists = await cache.exist(self.key, self.data)
         assert exists is True
         await asyncio.sleep(1.1)
@@ -134,8 +132,8 @@ class TestCache:
 
 class TestHerdCache:
 
-    app = 'test_cache'
-    key = 'test_key'
+    app = "test_cache"
+    key = "test_key"
     data = {str(i): i for i in range(3)}
 
     def expensive_work(self, data):
@@ -144,12 +142,9 @@ class TestHerdCache:
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set(self, r):
         await r.flushdb()
-        cache = HerdCache(r, self.app, default_herd_timeout=1,
-                          extend_herd_timeout=1)
+        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
         now = int(time.time())
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data)
+        res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
         identity = cache._gen_identity(self.key, self.data)
         content = await r.get(identity)
@@ -161,11 +156,8 @@ class TestHerdCache:
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_get(self, r):
         await r.flushdb()
-        cache = HerdCache(r, self.app, default_herd_timeout=1,
-                          extend_herd_timeout=1)
-        res = await cache.set(self.key,
-                              self.expensive_work(self.data),
-                              self.data)
+        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+        res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
         content = await cache.get(self.key, self.data)
         assert content == self.data
@@ -173,10 +165,8 @@ class TestHerdCache:
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_many(self, r):
         await r.flushdb()
-        cache = HerdCache(r, self.app, default_herd_timeout=1,
-                          extend_herd_timeout=1)
-        res = await cache.set_many(self.expensive_work(self.data),
-                                   self.data)
+        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+        res = await cache.set_many(self.expensive_work(self.data), self.data)
         assert res
         for key, value in self.data.items():
             assert await cache.get(key, self.data) == value
@@ -185,11 +175,8 @@ class TestHerdCache:
     async def test_herd(self, r, event_loop):
         await r.flushdb()
         now = int(time.time())
-        cache = HerdCache(r, self.app, default_herd_timeout=1,
-                          extend_herd_timeout=1)
-        await cache.set(self.key,
-                        self.expensive_work(self.data),
-                        self.data)
+        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+        await cache.set(self.key, self.expensive_work(self.data), self.data)
         await asyncio.sleep(1)
         # first get
         identity = cache._gen_identity(self.key, self.data)
