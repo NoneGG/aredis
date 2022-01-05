@@ -2,6 +2,8 @@ coredis
 ======
 |pypi-ver| |circleci-status| |python-ver|
 
+coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_
+
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value)
 
