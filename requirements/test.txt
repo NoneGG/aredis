@@ -1,4 +1,6 @@
+coverage
 mock
 pytest
 pytest-asyncio
+pytest-cov
 contextvars

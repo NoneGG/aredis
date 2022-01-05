@@ -1,376 +1,635 @@
-version: 2
+version: '2.1'
+orbs:
+  codecov: codecov/codecov@3.1.1
 
 jobs:
-  python-3.7-client-5:
+  python_37_client_5:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-client-6:
+  python_37_client_6:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-client-5:
+  python_38_client_5:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-client-6:
+  python_38_client_6:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-client-5:
+  python_39_client_5:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-client-6:
+  python_39_client_6:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-client-5:
+  python_310_client_5:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-client-6:
+  python_310_client_6:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-cluster-5:
+  python_37_cluster_5:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-cluster-6:
+  python_37_cluster_6:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-cluster-5:
+  python_38_cluster_5:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-cluster-6:
+  python_38_cluster_6:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-cluster-5:
+  python_39_cluster_5:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-cluster-6:
+  python_39_cluster_6:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-cluster-5:
+  python_310_cluster_5:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-cluster-6:
+  python_310_cluster_6:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-client-5-hiredis:
+  python_37_client_5_hiredis:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-client-6-hiredis:
+  python_37_client_6_hiredis:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
 
-  python-3.8-client-5-hiredis:
+  python_38_client_5_hiredis:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-client-6-hiredis:
+  python_38_client_6_hiredis:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-client-5-hiredis:
+  python_39_client_5_hiredis:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-client-6-hiredis:
+  python_39_client_6_hiredis:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-client-5-hiredis:
+  python_310_client_5_hiredis:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:5.0
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-client-6-hiredis:
+  python_310_client_6_hiredis:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: redis:6.2
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: pytest tests/client/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-cluster-5-hiredis:
+  python_37_cluster_5_hiredis:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.7-cluster-6-hiredis:
+  python_37_cluster_6_hiredis:
     docker:
       - image: python:3.7
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-cluster-5-hiredis:
+  python_38_cluster_5_hiredis:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.8-cluster-6-hiredis:
+  python_38_cluster_6_hiredis:
     docker:
       - image: python:3.8
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-cluster-5-hiredis:
+  python_39_cluster_5_hiredis:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.9-cluster-6-hiredis:
+  python_39_cluster_6_hiredis:
     docker:
       - image: python:3.9
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-cluster-5-hiredis:
+  python_310_cluster_5_hiredis:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:5.0.5
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
-  python-3.10-cluster-6-hiredis:
+  python_310_cluster_6_hiredis:
     docker:
       - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
       - image: grokzen/redis-cluster:6.2.1
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
     steps:
       - checkout
       - run: python -m pip install -r requirements/test.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/cluster/ --cov-report=xml
+      - codecov/upload:
+          file: coverage.xml
 
 workflows:
   version: 2
   run-jobs:
     jobs:
-      - python-3.7-client-5
-      - python-3.7-client-6
+      - python_37_client_5
+      - python_37_client_6
 
-      - python-3.8-client-5
-      - python-3.8-client-6
+      - python_38_client_5
+      - python_38_client_6
 
-      - python-3.9-client-5
-      - python-3.9-client-6
+      - python_39_client_5
+      - python_39_client_6
 
-      - python-3.10-client-5
-      - python-3.10-client-6
+      - python_310_client_5
+      - python_310_client_6
 
 
-      - python-3.7-cluster-5
-      - python-3.7-cluster-6
+      - python_37_cluster_5
+      - python_37_cluster_6
 
-      - python-3.8-cluster-5
-      - python-3.8-cluster-6
+      - python_38_cluster_5
+      - python_38_cluster_6
 
-      - python-3.9-cluster-5
-      - python-3.9-cluster-6
+      - python_39_cluster_5
+      - python_39_cluster_6
 
-      - python-3.10-cluster-5
-      - python-3.10-cluster-6
+      - python_310_cluster_5
+      - python_310_cluster_6
 
-      - python-3.7-client-5-hiredis
-      - python-3.7-client-6-hiredis
+      - python_37_client_5_hiredis
+      - python_37_client_6_hiredis
 
-      - python-3.8-client-5-hiredis
-      - python-3.8-client-6-hiredis
+      - python_38_client_5_hiredis
+      - python_38_client_6_hiredis
 
-      - python-3.9-client-5-hiredis
-      - python-3.9-client-6-hiredis
+      - python_39_client_5_hiredis
+      - python_39_client_6_hiredis
 
-      - python-3.10-client-5-hiredis
-      - python-3.10-client-6-hiredis
+      - python_310_client_5_hiredis
+      - python_310_client_6_hiredis
 
-      - python-3.7-cluster-5-hiredis
-      - python-3.7-cluster-6-hiredis
+      - python_37_cluster_5_hiredis
+      - python_37_cluster_6_hiredis
 
-      - python-3.8-cluster-5-hiredis
-      - python-3.8-cluster-6-hiredis
+      - python_38_cluster_5_hiredis
+      - python_38_cluster_6_hiredis
 
-      - python-3.9-cluster-5-hiredis
-      - python-3.9-cluster-6-hiredis
+      - python_39_cluster_5_hiredis
+      - python_39_cluster_6_hiredis
 
-      - python-3.10-cluster-5-hiredis
-      - python-3.10-cluster-6-hiredis
+      - python_310_cluster_5_hiredis
+      - python_310_cluster_6_hiredis
+

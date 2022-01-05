@@ -18,6 +18,11 @@ coredis
       :alt: Supported Python versions
       :class: header-badge
 
+   .. image:: https://codecov.io/gh/alisaifee/coredis/branch/master/graph/badge.svg
+      :target: https://codecov.io/gh/alisaifee/coredis
+      :alt: Code coverage
+      :class: header-badge
+
 coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_, an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 
 

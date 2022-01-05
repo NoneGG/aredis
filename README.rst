@@ -13,10 +13,13 @@
 .. |docs| image:: https://readthedocs.org/projects/coredis/badge/?version=latest
    :target: https://coredis.readthedocs.org
 
+.. |codecov| image:: https://codecov.io/gh/alisaifee/coredis/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/alisaifee/coredis
+
 coredis
 =======
 
-|docs| |pypi-ver| |circleci-status| |python-ver|
+|docs| |codecov| |pypi-ver| |circleci-status| |python-ver|
 
 coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_,
 an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
