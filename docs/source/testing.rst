@@ -58,5 +58,5 @@ To run test you should install dependency firstly.
 
 .. code-block:: bash
 
-    $ pip install -r dev_requirements.txt
+    $ pip install -r requirements/dev.txt
     $ pytest tests/

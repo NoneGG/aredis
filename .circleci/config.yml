@@ -7,7 +7,7 @@ jobs:
       - image: redis:5.0
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: pytest tests/client/
 
   python-3.7-client-6:
@@ -16,7 +16,7 @@ jobs:
       - image: redis:6.2
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: pytest tests/client/
 
   python-3.8-client-5:
@@ -25,7 +25,7 @@ jobs:
       - image: redis:5.0
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: pytest tests/client/
 
   python-3.8-client-6:
@@ -34,7 +34,7 @@ jobs:
       - image: redis:6.2
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: pytest tests/client/
 
   python-3.9-client-5:
@@ -43,7 +43,7 @@ jobs:
       - image: redis:5.0
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: pytest tests/client/
 
   python-3.9-client-6:
@@ -52,7 +52,7 @@ jobs:
       - image: redis:6.2
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: pytest tests/client/
 
   python-3.7-cluster-5:
@@ -61,7 +61,7 @@ jobs:
       - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
@@ -71,7 +71,7 @@ jobs:
       - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
@@ -81,7 +81,7 @@ jobs:
       - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
@@ -91,7 +91,7 @@ jobs:
       - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
@@ -101,7 +101,7 @@ jobs:
       - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
@@ -111,7 +111,7 @@ jobs:
       - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
@@ -121,7 +121,7 @@ jobs:
       - image: redis:5.0
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
@@ -131,7 +131,7 @@ jobs:
       - image: redis:6.2
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
@@ -142,7 +142,7 @@ jobs:
       - image: redis:5.0
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
@@ -152,7 +152,7 @@ jobs:
       - image: redis:6.2
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
@@ -162,7 +162,7 @@ jobs:
       - image: redis:5.0
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
@@ -172,7 +172,7 @@ jobs:
       - image: redis:6.2
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
@@ -182,7 +182,7 @@ jobs:
       - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
@@ -193,7 +193,7 @@ jobs:
       - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
@@ -204,7 +204,7 @@ jobs:
       - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
@@ -215,7 +215,7 @@ jobs:
       - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
@@ -226,7 +226,7 @@ jobs:
       - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
@@ -237,7 +237,7 @@ jobs:
       - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
-      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install -r requirements/test.txt.txt
       - run: python -m pip install hiredis
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
