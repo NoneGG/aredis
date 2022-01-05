@@ -1,7 +1,7 @@
 Author
 ======
 
-coredis is developed and maintained by Jason Chen (jason0916phoenix@gmail.com, please use 847671011@qq.com in case your email is not responsed)
+coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_ originally developed and maintained by Jason Chen.
 
 Most of its code come from `redis-py <https://github.com/andymccurdy/redis-py>`_ written by Andy McCurdy (sedrik@gmail.com).
 

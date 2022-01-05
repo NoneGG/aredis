@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'coredis'
-copyright = '2017, alisaifee'
+copyright = '2107, NoneGG\n2022, Ali-Akber Saifee'
 author = 'alisaifee'
 
 # The version info for the project you're documenting, acts as replacement for
