@@ -56,7 +56,7 @@ There are two kinds of `Lock class` available for now, you can also make your ow
 .. code-block:: python
 
     async def example():
-        client = aredis.StrictRedis()
+        client = coredis.StrictRedis()
         await client.flushall()
         lock = client.lock('lalala')
         print(await lock.acquire())
@@ -86,7 +86,7 @@ Cluster Lock
     Then the availability will be the same as one key in one node.
 
     For more discussion please see:
-    https://github.com/NoneGG/aredis/issues/55
+    https://github.com/alisaifee/coredis/issues/55
 
     To gather more ideas i also raise a problem in stackoverflow:
     Not_a_Golfer's solution is awesome, but considering the migration problem, i think this solution may be better.
@@ -115,7 +115,7 @@ Cluster Lock
 .. code-block:: python
 
     async def example():
-        client = aredis.StrictRedis()
+        client = coredis.StrictRedis()
         await client.flushall()
         lock = client.lock('lalala', lock_class=ClusterLock, timeout=1)
         print(await lock.acquire())
@@ -166,7 +166,7 @@ and if you don't need it, just set them to None when intialize a cache:
         return data
     
     async def example():
-        client = aredis.StrictRedis()
+        client = coredis.StrictRedis()
         await client.flushall()
         cache = client.cache('example_cache',
                 identity_generator_class=CustomIdentityGenerator)

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import aredis
+import coredis
 import asyncio
 import functools
 
@@ -23,7 +23,7 @@ def cached(app, cache):
     return decorator
 
 
-cache = aredis.StrictRedis().cache('example_cache')
+cache = coredis.StrictRedis().cache('example_cache')
 
 
 @cached(app='example', cache=cache)

@@ -1,5 +1,5 @@
 import asyncio
-from aredis import StrictRedis
+from coredis import StrictRedis
 from tornado.web import RequestHandler, Application
 from tornado.httpserver import HTTPServer
 from tornado.platform.asyncio import AsyncIOMainLoop

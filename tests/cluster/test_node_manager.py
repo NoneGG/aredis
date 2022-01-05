@@ -7,8 +7,8 @@ import uuid
 
 # rediscluster imports
 from tests.cluster.conftest import skip_if_server_version_lt
-from aredis import StrictRedis, StrictRedisCluster, RedisClusterException, ConnectionError
-from aredis.nodemanager import NodeManager
+from coredis import StrictRedis, StrictRedisCluster, RedisClusterException, ConnectionError
+from coredis.nodemanager import NodeManager
 
 # 3rd party imports
 import pytest

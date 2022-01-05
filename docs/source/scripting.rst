@@ -1,9 +1,9 @@
 LUA Scripting
 =============
 
-aredis supports the EVAL, EVALSHA, and SCRIPT commands. However, there are
+coredis supports the EVAL, EVALSHA, and SCRIPT commands. However, there are
 a number of edge cases that make these commands tedious to use in real world
-scenarios. Therefore, aredis exposes a Script object that makes scripting
+scenarios. Therefore, coredis exposes a Script object that makes scripting
 much easier to use.
 
 To create a Script instance, use the `register_script` function on a client
@@ -29,7 +29,7 @@ function. Script instances accept the following optional arguments:
 * **keys**: A list of key names that the script will access. This becomes the
   KEYS list in LUA.
 * **args**: A list of argument values. This becomes the ARGV list in LUA.
-* **client**: A aredis Client or Pipeline instance that will invoke the
+* **client**: A coredis Client or Pipeline instance that will invoke the
   script. If client isn't specified, the client that intiially
   created the Script instance (the one that `register_script` was
   invoked from) will be used.

@@ -3,7 +3,7 @@
 import socket
 
 import pytest
-from aredis import (Connection,
+from coredis import (Connection,
                     UnixDomainSocketConnection)
 
 

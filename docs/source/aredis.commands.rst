@@ -1,141 +1,141 @@
-aredis\.commands package
+coredis\.commands package
 ========================
 
 Submodules
 ----------
 
-aredis\.commands\.cluster module
+coredis\.commands\.cluster module
 --------------------------------
 
-.. automodule:: aredis.commands.cluster
+.. automodule:: coredis.commands.cluster
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.connection module
+coredis\.commands\.connection module
 -----------------------------------
 
-.. automodule:: aredis.commands.connection
+.. automodule:: coredis.commands.connection
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.extra module
+coredis\.commands\.extra module
 ------------------------------
 
-.. automodule:: aredis.commands.extra
+.. automodule:: coredis.commands.extra
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.geo module
+coredis\.commands\.geo module
 ----------------------------
 
-.. automodule:: aredis.commands.geo
+.. automodule:: coredis.commands.geo
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.hash module
+coredis\.commands\.hash module
 -----------------------------
 
-.. automodule:: aredis.commands.hash
+.. automodule:: coredis.commands.hash
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.hyperlog module
+coredis\.commands\.hyperlog module
 ---------------------------------
 
-.. automodule:: aredis.commands.hyperlog
+.. automodule:: coredis.commands.hyperlog
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.iter module
+coredis\.commands\.iter module
 -----------------------------
 
-.. automodule:: aredis.commands.iter
+.. automodule:: coredis.commands.iter
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.keys module
+coredis\.commands\.keys module
 -----------------------------
 
-.. automodule:: aredis.commands.keys
+.. automodule:: coredis.commands.keys
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.lists module
+coredis\.commands\.lists module
 ------------------------------
 
-.. automodule:: aredis.commands.lists
+.. automodule:: coredis.commands.lists
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.pubsub module
+coredis\.commands\.pubsub module
 -------------------------------
 
-.. automodule:: aredis.commands.pubsub
+.. automodule:: coredis.commands.pubsub
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.scripting module
+coredis\.commands\.scripting module
 ----------------------------------
 
-.. automodule:: aredis.commands.scripting
+.. automodule:: coredis.commands.scripting
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.sentinel module
+coredis\.commands\.sentinel module
 ---------------------------------
 
-.. automodule:: aredis.commands.sentinel
+.. automodule:: coredis.commands.sentinel
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.server module
+coredis\.commands\.server module
 -------------------------------
 
-.. automodule:: aredis.commands.server
+.. automodule:: coredis.commands.server
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.sets module
+coredis\.commands\.sets module
 -----------------------------
 
-.. automodule:: aredis.commands.sets
+.. automodule:: coredis.commands.sets
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.sorted\_set module
+coredis\.commands\.sorted\_set module
 ------------------------------------
 
-.. automodule:: aredis.commands.sorted_set
+.. automodule:: coredis.commands.sorted_set
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.strings module
+coredis\.commands\.strings module
 --------------------------------
 
-.. automodule:: aredis.commands.strings
+.. automodule:: coredis.commands.strings
     :members:
     :undoc-members:
     :show-inheritance:
 
-aredis\.commands\.transaction module
+coredis\.commands\.transaction module
 ------------------------------------
 
-.. automodule:: aredis.commands.transaction
+.. automodule:: coredis.commands.transaction
     :members:
     :undoc-members:
     :show-inheritance:
@@ -144,7 +144,7 @@ aredis\.commands\.transaction module
 Module contents
 ---------------
 
-.. automodule:: aredis.commands
+.. automodule:: coredis.commands
     :members:
     :undoc-members:
     :show-inheritance:

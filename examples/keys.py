@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from aredis import StrictRedis, StrictRedisCluster
+from coredis import StrictRedis, StrictRedisCluster
 
 
 async def example_client():

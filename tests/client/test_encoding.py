@@ -1,13 +1,13 @@
 from __future__ import with_statement
 import pytest
 import pickle
-import aredis
+import coredis
 
 
 class TestEncoding:
     @pytest.fixture()
     def r(self, request):
-        return aredis.StrictRedis(decode_responses=True)
+        return coredis.StrictRedis(decode_responses=True)
 
     @pytest.mark.asyncio()
     async def test_simple_encoding(self, r):
@@ -35,7 +35,7 @@ class TestEncoding:
 
     @pytest.mark.asyncio()
     async def test_pickled_object(self):
-        r = aredis.StrictRedis()
+        r = coredis.StrictRedis()
         obj = Exception('args')
         pickled_obj = pickle.dumps(obj)
         await r.set('pickled-obj', pickled_obj)

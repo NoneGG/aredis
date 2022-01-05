@@ -5,8 +5,8 @@ import time
 
 import pytest
 
-from aredis.exceptions import LockError, ResponseError
-from aredis.lock import Lock, LuaLock
+from coredis.exceptions import LockError, ResponseError
+from coredis.lock import Lock, LuaLock
 
 
 class TestLock:

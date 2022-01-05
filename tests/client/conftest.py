@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import aredis
+import coredis
 import asyncio
 import pytest
 import sys
@@ -16,7 +16,7 @@ async def get_version(**kwargs):
     params.update(kwargs)
     key = '%s:%s' % (params['host'], params['port'])
     if key not in _REDIS_VERSIONS:
-        client = aredis.StrictRedis(**params)
+        client = coredis.StrictRedis(**params)
         _REDIS_VERSIONS[key] = (await client.info())['redis_version']
         client.connection_pool.disconnect()
     return _REDIS_VERSIONS[key]
@@ -37,7 +37,7 @@ def skip_python_vsersion_lt(min_version):
 
 @pytest.fixture()
 def r(event_loop):
-    return aredis.StrictRedis(loop=event_loop)
+    return coredis.StrictRedis(loop=event_loop)
 
 
 class AsyncMock(Mock):
@@ -69,6 +69,6 @@ def _gen_mock_resp(r, response, *, loop):
 
 @pytest.fixture()
 def mock_resp_role(event_loop):
-    r = aredis.StrictRedis(loop=event_loop)
+    r = coredis.StrictRedis(loop=event_loop)
     response = [b'master', 169, [[b'172.17.0.2', b'7004', b'169']]]
     return _gen_mock_resp(r, response, loop=event_loop)

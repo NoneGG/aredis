@@ -5,8 +5,8 @@ from __future__ import with_statement
 
 # rediscluster imports
 import asyncio
-from aredis.exceptions import RedisClusterException, NoScriptError, ResponseError
-from aredis.utils import b
+from coredis.exceptions import RedisClusterException, NoScriptError, ResponseError
+from coredis.utils import b
 
 # 3rd party imports
 import pytest

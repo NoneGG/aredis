@@ -6,9 +6,9 @@ import time
 
 import pytest
 
-import aredis
-from aredis.exceptions import ConnectionError
-from aredis.utils import b
+import coredis
+from coredis.exceptions import ConnectionError
+from coredis.utils import b
 from .conftest import skip_if_server_version_lt
 
 
@@ -462,7 +462,7 @@ class TestPubSubRedisDown:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_channel_subscribe(self, r):
-        r = aredis.StrictRedis(host='localhost', port=6390)
+        r = coredis.StrictRedis(host='localhost', port=6390)
         p = r.pubsub()
         with pytest.raises(ConnectionError):
             await p.subscribe('foo')

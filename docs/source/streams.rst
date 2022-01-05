@@ -12,7 +12,7 @@ For now, according to `command manual <https://redis.io/commands#stream>`_
 , only `XADD`, `XRANGE`, `XREVRANGE`, `XLEN`,
 `XREAD`, `XREADGROUP`, `XPENDING` commands are released. But commands you can find in
 `stream introduction <https://redis.io/topics/streams-intro>`_
-are all supported in aredis,
+are all supported in coredis,
 you can try the new feature with it.
 
 

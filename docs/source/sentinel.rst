@@ -1,11 +1,11 @@
 Sentinel support
 ================
 
-aredis can be used together with `Redis Sentinel <http://redis.io/topics/sentinel>`_
+coredis can be used together with `Redis Sentinel <http://redis.io/topics/sentinel>`_
 to discover Redis nodes. You need to have at least one Sentinel daemon running
-in order to use aredis's Sentinel support.
+in order to use coredis's Sentinel support.
 
-Connecting aredis to the Sentinel instance(s) is easy. You can use a
+Connecting coredis to the Sentinel instance(s) is easy. You can use a
 Sentinel connection to discover the master and slaves network addresses:
 
 .. code-block:: python

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from aredis import Connection
+from coredis import Connection
 
 
 async def example(conn):

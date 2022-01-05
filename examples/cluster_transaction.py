@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from aredis import StrictRedisCluster
+from coredis import StrictRedisCluster
 
 
 async def func1(pipe):

@@ -3,7 +3,7 @@
 
 import asyncio
 import time
-from aredis import StrictRedis
+from coredis import StrictRedis
 
 
 async def example():

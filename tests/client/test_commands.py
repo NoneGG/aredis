@@ -2,14 +2,14 @@ from __future__ import with_statement
 import binascii
 import datetime
 import pytest
-import aredis
+import coredis
 import time
 from string import ascii_letters
 
-from aredis.utils import (b, iteritems,
+from coredis.utils import (b, iteritems,
                           iterkeys, itervalues)
-from aredis.commands.server import parse_info
-from aredis.exceptions import (RedisError,
+from coredis.commands.server import parse_info
+from coredis.exceptions import (RedisError,
                                ResponseError,
                                DataError)
 
@@ -29,8 +29,8 @@ class TestResponseCallbacks:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_response_callbacks(self, r):
-        assert r.response_callbacks == aredis.StrictRedis.RESPONSE_CALLBACKS
-        assert id(r.response_callbacks) != id(aredis.StrictRedis.RESPONSE_CALLBACKS)
+        assert r.response_callbacks == coredis.StrictRedis.RESPONSE_CALLBACKS
+        assert id(r.response_callbacks) != id(coredis.StrictRedis.RESPONSE_CALLBACKS)
         r.set_response_callback('GET', lambda x: 'static')
         await r.set('a', 'foo')
         assert await r.get('a') == 'static'
@@ -77,7 +77,7 @@ class TestRedisCommands:
     async def test_client_pause(self, r, event_loop):
         await r.flushdb()
         key = 'key_should_expire'
-        another_client = aredis.StrictRedis(loop=event_loop)
+        another_client = coredis.StrictRedis(loop=event_loop)
         await r.set(key, 1, px=100)
         assert await r.client_pause(100)
         res = await another_client.get(key)
@@ -152,7 +152,7 @@ class TestRedisCommands:
         assert await r.ping()
 
     async def slowlog(self, *, loop):
-        client = aredis.StrictRedis(loop=loop)
+        client = coredis.StrictRedis(loop=loop)
         current_config = await client.config_get()
         old_slower_than_value = current_config['slowlog-log-slower-than']
         old_max_length_value = current_config['slowlog-max-len']
@@ -161,7 +161,7 @@ class TestRedisCommands:
         return old_slower_than_value, old_max_length_value
 
     async def cleanup(self, old_slower_than_value, old_max_legnth_value, *, loop):
-        client = aredis.StrictRedis(loop=loop)
+        client = coredis.StrictRedis(loop=loop)
         await client.config_set('slowlog-log-slower-than', old_slower_than_value)
         await client.config_set('slowlog-max-len', old_max_legnth_value)
 

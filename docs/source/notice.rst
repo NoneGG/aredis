@@ -4,16 +4,16 @@ API Reference
 The connection part is rewritten to make client async, and most API is ported from redis-py.
 So most API and usage are the same as redis-py.
 If you use redis-py in your code, just use `async/await` syntax with your code.
-`for more examples <https://github.com/NoneGG/aredis/tree/master/examples>`_
+`for more examples <https://github.com/alisaifee/coredis/tree/master/examples>`_
 
 The `official Redis command documentation <http://redis.io/commands>`_ does a
-great job of explaining each command in detail. aredis only shift StrictRedis
+great job of explaining each command in detail. coredis only shift StrictRedis
 class from redis-py that implement these commands. The StrictRedis class attempts to adhere
 to the official command syntax. There are a few exceptions:
 
 * **SELECT**: Not implemented. See the explanation in the Thread Safety section
   below.
-* **DEL**: 'del' is a reserved keyword in the Python syntax. Therefore aredis
+* **DEL**: 'del' is a reserved keyword in the Python syntax. Therefore coredis
   uses 'delete' instead.
 * **CONFIG GET|SET**: These are implemented separately as config_get or config_set.
 * **MULTI/EXEC**: These are implemented as part of the Pipeline class. The
@@ -46,14 +46,14 @@ being thread safe to some degree) So the StricRedis is still thread safe if your
 But if you customize event loop yourself, please make sure your event loop is thread safe(maybe you should customize
 on the base of **BaseDefaultEventLoopPolicy** instead of **AbstractEventLoop**)
 
-Detailed discussion about the problem is in `issue20 <https://github.com/NoneGG/aredis/pull/20#issuecomment-285088890>`_
+Detailed discussion about the problem is in `issue20 <https://github.com/alisaifee/coredis/pull/20#issuecomment-285088890>`_
 
 .. code-block:: python
 
-    import aredis
+    import coredis
     import asyncio
     loop = asyncio.get_event_loop()
-    r = aredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
+    r = coredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
 
 Decoding
 ^^^^^^^^
@@ -68,7 +68,7 @@ If decode_responses is set to True and no encoding is specified, client will use
 Connections
 ^^^^^^^^^^^
 
-ConnectionPools manage a set of Connection instances. aredis ships with two
+ConnectionPools manage a set of Connection instances. coredis ships with two
 types of Connections. The default, Connection, is a normal TCP socket based
 connection. The UnixDomainSocketConnection allows for clients running on the
 same device as the server to connect via a unix domain socket. To use a
@@ -97,8 +97,8 @@ Parsers
 ^^^^^^^
 
 Parser classes provide a way to control how responses from the Redis server
-are parsed. aredis ships with two parser classes, the PythonParser and the
-HiredisParser. By default, aredis will attempt to use the HiredisParser if
+are parsed. coredis ships with two parser classes, the PythonParser and the
+HiredisParser. By default, coredis will attempt to use the HiredisParser if
 you have the hiredis module installed and will fallback to the PythonParser
 otherwise.
 
@@ -110,19 +110,19 @@ such as from LRANGE or SMEMBERS operations.
 
 
 Hiredis is available on PyPI, and can be installed as an extra dependency to
-aredis.
+coredis.
 
 
 .. code-block:: bash
 
-    $ pip install aredis[hiredis]
+    $ pip install coredis[hiredis]
 
 
 or
 
 .. code-block:: bash
 
-    $ easy_install aredis[hiredis]
+    $ easy_install coredis[hiredis]
 
 Response Callbacks
 ^^^^^^^^^^^^^^^^^^
@@ -158,7 +158,7 @@ database remains selected until another is selected or until the connection is
 closed. This creates an issue in that connections could be returned to the pool
 that are connected to a different database.
 
-As a result, aredis does not implement the SELECT command on client
+As a result, coredis does not implement the SELECT command on client
 instances. If you use multiple Redis databases within the same application, you
 should create a separate client instance (and possibly a separate connection
 pool) for each database.

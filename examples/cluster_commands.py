@@ -3,7 +3,7 @@
 
 import asyncio
 import logging
-from aredis import StrictRedisCluster
+from coredis import StrictRedisCluster
 
 
 async def example():

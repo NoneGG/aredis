@@ -31,7 +31,7 @@ master
 
 1.0.5
 -----
-    * fix bug in setup.py when using pip to install aredis
+    * fix bug in setup.py when using pip to install coredis
 
 1.0.6
 -----
@@ -42,7 +42,7 @@ master
 
 1.0.7
 -----
-    * introduce loop argument to aredis
+    * introduce loop argument to coredis
     * add support for command `cluster slots`
     * add support for redis cluster
 
@@ -69,8 +69,8 @@ master
 
 1.1.1
 -----
-    * fix bug: connection with unread response being released to connection pool will lead to parse error, now this kind of connection will be destructed directly. `related issue <https://github.com/NoneGG/aredis/issues/52>`_
-    * fix bug: remove Connection.can_read check which may lead to block in awaiting pubsub message. Connection.can_read api will be deprecated in next release. `related issue <https://github.com/NoneGG/aredis/issues/56>`_
+    * fix bug: connection with unread response being released to connection pool will lead to parse error, now this kind of connection will be destructed directly. `related issue <https://github.com/alisaifee/coredis/issues/52>`_
+    * fix bug: remove Connection.can_read check which may lead to block in awaiting pubsub message. Connection.can_read api will be deprecated in next release. `related issue <https://github.com/alisaifee/coredis/issues/56>`_
     * add c extension to speedup crc16, which will speedup cluster slot hashing
     * add error handling for asyncio.futures.Cancelled error, which may cause error in response parsing.
     * sync optimization of client list made by swilly22 from redis-py
@@ -90,7 +90,7 @@ master
     * allow use of zadd options for zadd in sorted sets
     * fix bug: use inspect.isawaitable instead of typing.Awaitable to judge if an object is awaitable
     * fix bug: implicitly disconnection on cancelled error (#84)
-    * new: add support for `streams`(including commands not officially released, see `streams <http://aredis.readthedocs.io/en/latest/streams.html>`_ )
+    * new: add support for `streams`(including commands not officially released, see `streams <http://coredis.readthedocs.io/en/latest/streams.html>`_ )
 
 1.1.4
 -----
@@ -117,7 +117,7 @@ master
 
 1.1.7
 -----
-    * Fixbug: ModuleNotFoundError raised when install aredis 1.1.6 with Python3.6
+    * Fixbug: ModuleNotFoundError raised when install coredis 1.1.6 with Python3.6
 
 1.1.8
 -----

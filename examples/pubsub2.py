@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import aredis
+import coredis
 import asyncio
 import logging
 
@@ -11,7 +11,7 @@ def my_handler(x):
 
 
 async def use_pubsub_in_thread():
-    client = aredis.StrictRedis()
+    client = coredis.StrictRedis()
     pubsub = client.pubsub()
     await pubsub.subscribe(**{'my-channel': my_handler})
     thread = pubsub.run_in_thread(daemon=True)

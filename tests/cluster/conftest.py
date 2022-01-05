@@ -7,7 +7,7 @@ import sys
 import json
 
 # rediscluster imports
-from aredis import StrictRedisCluster, StrictRedis
+from coredis import StrictRedisCluster, StrictRedis
 
 # 3rd party imports
 import pytest
@@ -74,8 +74,8 @@ def skip_if_server_version_lt(min_version):
 def skip_if_redis_py_version_lt(min_version):
     """
     """
-    import aredis
-    version = aredis.__version__
+    import coredis
+    version = coredis.__version__
     if StrictVersion(version) < StrictVersion(min_version):
         return pytest.mark.skipif(True, reason="")
     return pytest.mark.skipif(False, reason="")

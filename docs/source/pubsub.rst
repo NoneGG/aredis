@@ -1,7 +1,7 @@
 Publish / Subscribe
 ===================
 
-aredis includes a `PubSub` object that subscribes to channels and listens
+coredis includes a `PubSub` object that subscribes to channels and listens
 for new messages. Creating a `PubSub` object is easy.
 
 .. code-block:: python
@@ -73,7 +73,7 @@ Unsubscribing works just like subscribing. If no arguments are passed to
     await p.get_message()
     # {'channel': 'my-*', 'data': 0L, 'pattern': None, 'type': 'punsubscribe'}
 
-aredis also allows you to register callback functions to handle published
+coredis also allows you to register callback functions to handle published
 messages. Message handlers take a single argument, the message, which is a
 dictionary just like the examples above. To subscribe to a channel or pattern
 with a message handler, pass the channel or pattern name as a keyword argument
@@ -139,7 +139,7 @@ This makes it trivial to integrate into an existing event loop inside your appli
             # do something with the message
         await asyncio.sleep(0.001)  # be nice to the system :)
 
-Older versions of aredis only read messages with `pubsub.listen()`. listen()
+Older versions of coredis only read messages with `pubsub.listen()`. listen()
 is a generator that blocks until a message is available. If your application
 doesn't need to do anything else but receive and act on messages received from
 redis, listen() is an easy way to get up an running.
@@ -158,7 +158,7 @@ separate thread, and use `asyncio.run_coroutine_threadsafe()` to run coroutines.
 
 Note: Since we're running in a separate thread, there's no way to handle
 messages that aren't automatically handled with registered message handlers.
-Therefore, aredis prevents you from calling `run_in_thread()` if you're
+Therefore, coredis prevents you from calling `run_in_thread()` if you're
 subscribed to patterns or channels that don't have message handlers attached.
 
 .. code-block:: python

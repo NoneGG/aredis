@@ -45,7 +45,7 @@ class custom_build_ext(build_ext):
     warning_message = """
 ********************************************************************
 {target} could not
-be compiled. No C extensions are essential for aredis to run,
+be compiled. No C extensions are essential for coredis to run,
 although they do result in significant speed improvements for
 websockets.
 {comment}
@@ -111,7 +111,7 @@ _ROOT_DIR = pathlib.Path(__file__).parent
 with open(str(_ROOT_DIR / 'README.rst')) as f:
     long_description = f.read()
 
-with open(str(_ROOT_DIR / 'aredis' / '__init__.py')) as f:
+with open(str(_ROOT_DIR / 'coredis' / '__init__.py')) as f:
     str_regex = r"['\"]([^'\"]*)['\"]"
     try:
         version = re.findall(
@@ -121,18 +121,18 @@ with open(str(_ROOT_DIR / 'aredis' / '__init__.py')) as f:
         raise RuntimeError("Unable to find version in __init__.py")
 
 setup(
-    name='aredis',
+    name='coredis',
     version=version,
     description='Python async client for Redis key-value store',
     long_description=long_description,
-    url='https://github.com/NoneGG/aredis',
+    url='https://github.com/alisaifee/coredis',
     author='Jason Chen',
     author_email='847671011@qq.com',
     maintainer='Jason Chen',
     maintainer_email='847671011@qq.com',
     keywords=['Redis', 'key-value store', 'asyncio'],
     license='MIT',
-    packages=['aredis', 'aredis.commands'],
+    packages=['coredis', 'coredis.commands'],
     python_requires=">=3.5",
     extras_require={'hiredis': ['hiredis>=0.2.0']},
     tests_require=['pytest',
@@ -153,8 +153,8 @@ setup(
         'Programming Language :: Python :: 3.8'
     ],
     ext_modules=[
-        Extension(name='aredis.speedups',
-                  sources=['aredis/speedups.c']),
+        Extension(name='coredis.speedups',
+                  sources=['coredis/speedups.c']),
     ],
     # The good news is that the standard library always
     # takes the precedence over site packages,

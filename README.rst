@@ -1,4 +1,4 @@
-aredis
+coredis
 ======
 |pypi-ver| |circleci-status| |python-ver|
 
@@ -7,18 +7,18 @@ An efficient and user-friendly async redis client ported from `redis-py <https:/
 
 To get more information please read `full document`_
 
-.. _full document: http://aredis.readthedocs.io/en/latest/
+.. _full document: http://coredis.readthedocs.io/en/latest/
 
 Installation
 ------------
 
-aredis requires a running Redis server.
+coredis requires a running Redis server.
 
-To install aredis, simply:
+To install coredis, simply:
 
 .. code-block:: bash
 
-    $ pip3 install aredis[hiredis]
+    $ pip3 install coredis[hiredis]
 
 or from source:
 
@@ -32,7 +32,7 @@ Getting started
 
 `More examples`_
 
-.. _More examples: https://github.com/NoneGG/aredis/tree/master/examples
+.. _More examples: https://github.com/alisaifee/coredis/tree/master/examples
 
 Tip: since python 3.8 you can use asyncio REPL:
 
@@ -46,7 +46,7 @@ single node client
 .. code-block:: python
 
     import asyncio
-    from aredis import StrictRedis
+    from coredis import StrictRedis
 
     async def example():
         client = StrictRedis(host='127.0.0.1', port=6379, db=0)
@@ -71,7 +71,7 @@ cluster client
 .. code-block:: python
 
     import asyncio
-    from aredis import StrictRedisCluster
+    from coredis import StrictRedisCluster
 
     async def example():
         client = StrictRedisCluster(host='172.17.0.2', port=7001)
@@ -99,18 +99,18 @@ Please run test script in benchmarks dir to confirm the benchmark.
 
 For benchmark in my environment please see: `benchmark`_
 
-.. _benchmark: http://aredis.readthedocs.io/en/latest/benchmark.html
+.. _benchmark: http://coredis.readthedocs.io/en/latest/benchmark.html
 
-.. |circleci-status| image:: https://img.shields.io/circleci/project/github/NoneGG/aredis/master.svg
+.. |circleci-status| image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg
     :alt: CircleCI build status
-    :target: https://circleci.com/gh/NoneGG/aredis/tree/master
+    :target: https://circleci.com/gh/alisaifee/coredis/tree/master
 
-.. |pypi-ver| image::  https://img.shields.io/pypi/v/aredis.svg
-    :target: https://pypi.python.org/pypi/aredis/
+.. |pypi-ver| image::  https://img.shields.io/pypi/v/coredis.svg
+    :target: https://pypi.python.org/pypi/coredis/
     :alt: Latest Version in PyPI
 
-.. |python-ver| image:: https://img.shields.io/pypi/pyversions/aredis.svg
-    :target: https://pypi.python.org/pypi/aredis/
+.. |python-ver| image:: https://img.shields.io/pypi/pyversions/coredis.svg
+    :target: https://pypi.python.org/pypi/coredis/
     :alt: Supported Python versions
 
 Contributing

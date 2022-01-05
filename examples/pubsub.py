@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import aredis
+import coredis
 import asyncio
 import concurrent.futures
 import time
@@ -41,7 +41,7 @@ async def publish(client):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    client = aredis.StrictRedis()
+    client = coredis.StrictRedis()
     loop = asyncio.get_event_loop()
     loop.set_debug(enabled=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:

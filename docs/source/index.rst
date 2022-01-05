@@ -1,32 +1,32 @@
-.. aredis documentation master file, created by
+.. coredis documentation master file, created by
    sphinx-quickstart on Sun May  7 21:23:14 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to aredis's documentation!
+Welcome to coredis's documentation!
 ==================================
 
 |pypi-ver| |circleci-status| |python-ver|
 
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value). And the cluster part is ported from `redis-py-cluster <https://github.com/Grokzen/redis-py-cluster>`_
-aredis is the async version of these to redis clients, with effort to enable you using redis with asyncio more easily.
+coredis is the async version of these to redis clients, with effort to enable you using redis with asyncio more easily.
 
 The source code is `available on github`_.
 
-.. _available on github: https://github.com/NoneGG/aredis
+.. _available on github: https://github.com/alisaifee/coredis
 
 
 Installation
 ------------
 
-aredis requires a running Redis server.
+coredis requires a running Redis server.
 
-To install aredis, simply:
+To install coredis, simply:
 
 .. code-block:: bash
 
-    $ pip3 install aredis[hiredis]
+    $ pip3 install coredis[hiredis]
 
 
 or from source:
@@ -41,7 +41,7 @@ Getting started
 
 `For more example`_
 
-.. _For more example: https://github.com/NoneGG/aredis/tree/master/examples
+.. _For more example: https://github.com/alisaifee/coredis/tree/master/examples
 
 Tip: since python 3.8 you can use asyncio REPL:
 
@@ -55,7 +55,7 @@ single node client
 .. code-block:: python
 
     import asyncio
-    from aredis import StrictRedis
+    from coredis import StrictRedis
    
     async def example():
         client = StrictRedis(host='127.0.0.1', port=6379, db=0)
@@ -80,7 +80,7 @@ cluster client
 .. code-block:: python
 
     import asyncio
-    from aredis import StrictRedisCluster
+    from coredis import StrictRedisCluster
 
     async def example():
         client = StrictRedisCluster(host='172.17.0.2', port=7001)
@@ -106,7 +106,7 @@ cluster client
 Dependencies & supported python versions
 ----------------------------------------
 
-hiredis and uvloop can make aredis faster, but it is up to you whether to install them or not.
+hiredis and uvloop can make coredis faster, but it is up to you whether to install them or not.
 
 - Optional Python: hiredis >= `0.2.0`. Older versions might work but is not tested.
 - Optional event loop policy: uvloop >= `0.8.0`. Older versions might work but is not tested.
@@ -127,7 +127,7 @@ Experimental:
 
 .. note:: Python < 3.5
 
-    I tried to change my code to make aredis compatible for Python under 3.5, but it failed because of some api of asyncio.
+    I tried to change my code to make coredis compatible for Python under 3.5, but it failed because of some api of asyncio.
     Since asyncio is stabilize from Python 3.5, i think it may be better to use the new release of asyncio.
 
 
@@ -173,14 +173,14 @@ The Community Guide
     license
     todo
 
-.. |circleci-status| image:: https://img.shields.io/circleci/project/github/NoneGG/aredis/master.svg
+.. |circleci-status| image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg
     :alt: CircleCI build status
-    :target: https://circleci.com/gh/NoneGG/aredis/tree/master
+    :target: https://circleci.com/gh/alisaifee/coredis/tree/master
 
-.. |pypi-ver| image::  https://img.shields.io/pypi/v/aredis.svg
-    :target: https://pypi.python.org/pypi/aredis/
+.. |pypi-ver| image::  https://img.shields.io/pypi/v/coredis.svg
+    :target: https://pypi.python.org/pypi/coredis/
     :alt: Latest Version in PyPI
 
-.. |python-ver| image:: https://img.shields.io/pypi/pyversions/aredis.svg
-    :target: https://pypi.python.org/pypi/aredis/
+.. |python-ver| image:: https://img.shields.io/pypi/pyversions/coredis.svg
+    :target: https://pypi.python.org/pypi/coredis/
     :alt: Supported Python versions

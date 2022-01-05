@@ -1,5 +1,5 @@
 """
-`client reply off | on | skip` is hard to be supported by aredis gracefully because of the client pool usage.
+`client reply off | on | skip` is hard to be supported by coredis gracefully because of the client pool usage.
 The client is supposed to read response from server and release connection after the command being sent.
 But the connection is needed to be always reused if you need to turn on | off | skip the reply,
 it should always be the connection by which you send `client reply` command to server you use to send the rest commands.
@@ -7,7 +7,7 @@ it should always be the connection by which you send `client reply` command to s
 However, you can use the connection by your self like the example below~
 """
 
-from aredis import Connection
+from coredis import Connection
 import asyncio
 
 

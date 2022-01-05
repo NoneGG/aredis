@@ -1,7 +1,7 @@
 import pytest
 import time
-from aredis.exceptions import LockError
-from aredis.lock import ClusterLock
+from coredis.exceptions import LockError
+from coredis.lock import ClusterLock
 
 
 class TestLock:

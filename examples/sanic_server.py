@@ -1,5 +1,5 @@
 import asyncio
-import aredis
+import coredis
 from sanic.app import Sanic
 from sanic.response import json, stream
 
@@ -12,7 +12,7 @@ async def test(request):
 @app.route("/notifications")
 async def notification(request):
     async def _stream(res):
-        redis = aredis.StrictRedis()
+        redis = coredis.StrictRedis()
         pub = redis.pubsub()
         await pub.subscribe('test')
         end_time = app.loop.time() + 30
