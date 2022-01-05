@@ -1,17 +1,11 @@
-Welcome to coredis's documentation!
-===================================
+coredis
+=======
 
 .. container:: badges
 
    |pypi-ver| |circleci-status| |python-ver|
 
-An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
-(which is a Python interface to the Redis key-value). And the cluster part is ported from `redis-py-cluster <https://github.com/Grokzen/redis-py-cluster>`_
-coredis is the async version of these to redis clients, with effort to enable you using redis with asyncio more easily.
-
-The source code is `available on github`_.
-
-.. _available on github: https://github.com/alisaifee/coredis
+coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_, an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 
 
 Installation
@@ -23,7 +17,7 @@ To install coredis, simply:
 
 .. code-block:: bash
 
-    $ pip3 install coredis[hiredis]
+    $ pip install coredis[hiredis]
 
 
 or from source:
@@ -40,11 +34,6 @@ Getting started
 
 .. _For more example: https://github.com/alisaifee/coredis/tree/master/examples
 
-Tip: since python 3.8 you can use asyncio REPL:
-
-.. code-block:: bash
-
-    $ python -m asyncio
 
 single node client
 ^^^^^^^^^^^^^^^^^^
