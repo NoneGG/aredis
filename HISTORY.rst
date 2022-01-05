@@ -1,11 +1,13 @@
 Changelog
 =========
 
-v2.0.0b1
---------
+v2.0.0
+------
 Release Date: 2022-01-05
 
-Initial beta release
+* Initial import from `aredis <https://github.com/NoneGG/aredis>`_
+* Add support for python 3.10
+
 
 v1.1.8
 ------
@@ -124,5 +126,6 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
 
