@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v2.0.0b1
+--------
+Release Date: 2022-01-05
+
+Initial beta release
+
 v1.1.8
 ------
     * Fixbug: connection is disconnected before idel check, valueError will be raised if a connection(not exist) is removed from connection list
@@ -118,4 +124,5 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
