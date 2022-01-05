@@ -9,7 +9,6 @@ import pytest
 import coredis
 from coredis.exceptions import ConnectionError
 from coredis.utils import b
-from .conftest import skip_if_server_version_lt
 
 
 async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False):
@@ -470,7 +469,6 @@ class TestPubSubRedisDown:
 
 class TestPubSubPubSubSubcommands:
 
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pubsub_channels(self, r):
         p = r.pubsub(ignore_subscribe_messages=True)
@@ -479,7 +477,6 @@ class TestPubSubPubSubSubcommands:
         assert channels == [b('bar'), b('baz'), b('foo'), b('quux')]
         await p.unsubscribe()
 
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pubsub_numsub(self, r):
         p1 = r.pubsub(ignore_subscribe_messages=True)
@@ -495,7 +492,6 @@ class TestPubSubPubSubSubcommands:
         await p2.unsubscribe()
         await p3.unsubscribe()
 
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pubsub_numpat(self, r):
         pubsub_count = await r.pubsub_numpat()

@@ -13,10 +13,6 @@ from coredis.exceptions import (RedisError,
                                ResponseError,
                                DataError)
 
-from .conftest import (skip_if_server_version_lt,
-                       skip_python_vsersion_lt)
-
-
 async def redis_server_time(client):
     seconds, milliseconds = await client.time()
     timestamp = float('%s.%s' % (seconds, milliseconds))
@@ -52,7 +48,6 @@ class TestRedisCommands:
         assert isinstance(clients[0], dict)
         assert 'addr' in clients[0]
 
-    @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_list_after_client_setname(self, r):
         await r.client_setname('cl=i=ent')
@@ -61,18 +56,15 @@ class TestRedisCommands:
         assert 'name' in clients[0]
         assert clients[-1]['name'] == 'cl=i=ent'
 
-    @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_getname(self, r):
         assert await r.client_getname() is None
 
-    @skip_if_server_version_lt('2.6.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_setname(self, r):
         assert await r.client_setname('redis_py_test')
         assert await r.client_getname() == 'redis_py_test'
 
-    @skip_if_server_version_lt('2.9.5')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_client_pause(self, r, event_loop):
         await r.flushdb()
@@ -83,7 +75,6 @@ class TestRedisCommands:
         res = await another_client.get(key)
         assert not res
 
-    @skip_if_server_version_lt('2.8.12')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_role_master(self, event_loop, mock_resp_role):
         role = await mock_resp_role.role()
@@ -209,7 +200,6 @@ class TestRedisCommands:
         assert isinstance(await r.slowlog_len(), int)
         await self.cleanup(sl_v, length_v, loop=event_loop)
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_time(self, r):
         t = await r.time()
@@ -226,7 +216,6 @@ class TestRedisCommands:
         assert await r.append('a', 'a2') == 4
         assert await r.get('a') == b('a1a2')
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitcount(self, r):
         await r.flushdb()
@@ -247,7 +236,6 @@ class TestRedisCommands:
         assert await r.bitcount('a', -2, -1) == 2
         assert await r.bitcount('a', 1, 1) == 1
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitop_not_empty_string(self, r):
         await r.flushdb()
@@ -255,7 +243,6 @@ class TestRedisCommands:
         await r.bitop('not', 'r', 'a')
         assert await r.get('r') is None
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitop_not(self, r):
         test_str = b('\xAA\x00\xFF\x55')
@@ -264,7 +251,6 @@ class TestRedisCommands:
         await r.bitop('not', 'r', 'a')
         assert int(binascii.hexlify(await r.get('r')), 16) == correct
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitop_not_in_place(self, r):
         test_str = b('\xAA\x00\xFF\x55')
@@ -273,7 +259,6 @@ class TestRedisCommands:
         await r.bitop('not', 'a', 'a')
         assert int(binascii.hexlify(await r.get('a')), 16) == correct
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitop_single_string(self, r):
         test_str = b('\x01\x02\xFF')
@@ -285,7 +270,6 @@ class TestRedisCommands:
         assert await r.get('res2') == test_str
         assert await r.get('res3') == test_str
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitop_string_operands(self, r):
         await r.set('a', b('\x01\x02\xFF\xFF'))
@@ -297,7 +281,6 @@ class TestRedisCommands:
         assert int(binascii.hexlify(await r.get('res2')), 16) == 0x0102FFFF
         assert int(binascii.hexlify(await r.get('res3')), 16) == 0x000000FF
 
-    @skip_if_server_version_lt('2.8.7')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitpos(self, r):
         key = 'key:bitpos'
@@ -311,7 +294,6 @@ class TestRedisCommands:
         await r.set(key, b('\x00\x00\x00'))
         assert await r.bitpos(key, 1) == -1
 
-    @skip_if_server_version_lt('2.8.7')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitpos_wrong_arguments(self, r):
         key = 'key:bitpos:wrong:args'
@@ -321,21 +303,18 @@ class TestRedisCommands:
         with pytest.raises(RedisError):
             await r.bitpos(key, 7) == 12
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitfield_set(self, r):
         key = 'key:bitfield:set'
         assert [0] == await r.bitfield(key).set('i4', '#1', 100).exc()
         assert [4] == await r.bitfield(key).set('i4', '4', 101).exc()
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitfield_set(self, r):
         key = 'key:bitfield:get'
         await r.set(key, '\x00d')
         assert [100] == await r.bitfield(key).get('i8', '#1').exc()
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitfield_incrby(self, r):
         key = 'key:bitfield:incrby'
@@ -345,7 +324,6 @@ class TestRedisCommands:
         await r.delete(key)
         assert [-128] == await r.bitfield(key).incrby('i8', 0, 128).exc()
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitfield_overflow(self, r):
         key = 'key:bitfield:overflow'
@@ -382,7 +360,6 @@ class TestRedisCommands:
         assert await r.get('a') is None
         assert await r.get('b') is None
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_dump_and_restore(self, r):
         await r.flushdb()
@@ -392,7 +369,6 @@ class TestRedisCommands:
         await r.restore('a', 0, dumped)
         assert await r.get('a') == b('foo')
 
-    @skip_if_server_version_lt('3.0.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_dump_and_restore_and_replace(self, r):
         await r.flushdb()
@@ -509,7 +485,6 @@ class TestRedisCommands:
         assert await r.incrby('a', 4) == 5
         assert await r.get('a') == b('5')
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_incrbyfloat(self, r):
         await r.flushdb()
@@ -574,7 +549,6 @@ class TestRedisCommands:
             assert await r.get(k) == v
         assert await r.get('d') is None
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pexpire(self, r):
         await r.flushdb()
@@ -585,7 +559,6 @@ class TestRedisCommands:
         assert await r.persist('a')
         assert await r.pttl('a') < 0
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pexpireat_datetime(self, r):
         expire_at = await redis_server_time(r) + datetime.timedelta(minutes=1)
@@ -593,14 +566,12 @@ class TestRedisCommands:
         assert await r.pexpireat('a', expire_at)
         assert 0 < await r.pttl('a') <= 61000
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pexpireat_no_key(self, r):
         await r.flushdb()
         expire_at = await redis_server_time(r) + datetime.timedelta(minutes=1)
         assert not await r.pexpireat('a', expire_at)
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pexpireat_unixtime(self, r):
         await r.flushdb()
@@ -610,7 +581,6 @@ class TestRedisCommands:
         assert await r.pexpireat('a', expire_at_seconds)
         assert 0 < await r.pttl('a') <= 61000
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_psetex(self, r):
         await r.flushdb()
@@ -618,7 +588,6 @@ class TestRedisCommands:
         assert await r.get('a') == b('value')
         assert 0 < await r.pttl('a') <= 1000
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_psetex_timedelta(self, r):
         await r.flushdb()
@@ -652,7 +621,6 @@ class TestRedisCommands:
         assert await r.get('a') == b('1')
         assert await r.get('b') == b('2')
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_nx(self, r):
         await r.flushdb()
@@ -660,7 +628,6 @@ class TestRedisCommands:
         assert not await r.set('a', '2', nx=True)
         assert await r.get('a') == b('1')
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_xx(self, r):
         await r.flushdb()
@@ -670,7 +637,6 @@ class TestRedisCommands:
         assert await r.set('a', '2', xx=True)
         assert await r.get('a') == b('2')
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_px(self, r):
         await r.flushdb()
@@ -679,7 +645,6 @@ class TestRedisCommands:
         assert 0 < await r.pttl('a') <= 10000
         assert 0 < await r.ttl('a') <= 10
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_px_timedelta(self, r):
         await r.flushdb()
@@ -688,14 +653,12 @@ class TestRedisCommands:
         assert 0 < await r.pttl('a') <= 1000
         assert 0 < await r.ttl('a') <= 1
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_ex(self, r):
         await r.flushdb()
         assert await r.set('a', '1', ex=10)
         assert 0 < await r.ttl('a') <= 10
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_ex_timedelta(self, r):
         await r.flushdb()
@@ -703,7 +666,6 @@ class TestRedisCommands:
         assert await r.set('a', '1', ex=expire_at)
         assert 0 < await r.ttl('a') <= 60
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_multipleoptions(self, r):
         await r.flushdb()
@@ -766,7 +728,6 @@ class TestRedisCommands:
         await r.zadd('a', **{'1': 1})
         assert await r.type('a') == b('zset')
 
-    @skip_if_server_version_lt('3.2.1')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_touch(self, r):
         await r.flushdb()
@@ -775,7 +736,6 @@ class TestRedisCommands:
             await r.set(key, index)
         assert await r.touch(keys) == len(keys)
 
-    @skip_if_server_version_lt('4.0.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_unlink(self, r):
         await r.flushdb()
@@ -948,7 +908,6 @@ class TestRedisCommands:
         assert await r.lrange('a', 0, -1) == [b('1'), b('2'), b('3'), b('4')]
 
     # SCAN COMMANDS
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_scan(self, r):
         await r.flushdb()
@@ -961,8 +920,6 @@ class TestRedisCommands:
         _, keys = await r.scan(match='a')
         assert set(keys) == set([b('a')])
 
-    @skip_if_server_version_lt('2.8.0')
-    @skip_python_vsersion_lt('3.6')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_scan_iter(self, r):
         await r.flushdb()
@@ -976,7 +933,6 @@ class TestRedisCommands:
         async for key in r.scan_iter(match='a'):
             assert key == b('a')
 
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_sscan(self, r):
         await r.flushdb()
@@ -987,8 +943,6 @@ class TestRedisCommands:
         _, members = await r.sscan('a', match=b('1'))
         assert set(members) == set([b('1')])
 
-    @skip_if_server_version_lt('2.8.0')
-    @skip_python_vsersion_lt('3.6')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_sscan_iter(self, r):
         await r.flushdb()
@@ -1000,7 +954,6 @@ class TestRedisCommands:
         async for member in r.sscan_iter('a', match=b('1')):
             assert member == b('1')
 
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_hscan(self, r):
         await r.flushdb()
@@ -1011,8 +964,6 @@ class TestRedisCommands:
         _, dic = await r.hscan('a', match='a')
         assert dic == {b('a'): b('1')}
 
-    @skip_if_server_version_lt('2.8.0')
-    @skip_python_vsersion_lt('3.6')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_hscan_iter(self, r):
         await r.flushdb()
@@ -1024,7 +975,6 @@ class TestRedisCommands:
         async for data in r.hscan_iter('a', match='a'):
             assert dict([data]) == {b('a'): b('1')}
 
-    @skip_if_server_version_lt('2.8.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zscan(self, r):
         await r.flushdb()
@@ -1035,8 +985,6 @@ class TestRedisCommands:
         _, pairs = await r.zscan('a', match='a')
         assert set(pairs) == set([(b('a'), 1)])
 
-    @skip_if_server_version_lt('2.8.0')
-    @skip_python_vsersion_lt('3.6')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zscan_iter(self, r):
         await r.zadd('a', 1, 'a', 2, 'b', 3, 'c')
@@ -1129,7 +1077,6 @@ class TestRedisCommands:
         value = await r.spop('a')
         assert set(await r.smembers('a')) == set(s) - set([value])
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_spop_multi_value(self, r):
         await r.flushdb()
@@ -1145,7 +1092,6 @@ class TestRedisCommands:
         await r.sadd('a', *s)
         assert await r.srandmember('a') in s
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_srandmember_multi_value(self, r):
         await r.flushdb()
@@ -1228,7 +1174,6 @@ class TestRedisCommands:
         assert await r.zscore('a', 'a2') == 3.0
         assert await r.zscore('a', 'a3') == 8.0
 
-    @skip_if_server_version_lt('2.8.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zlexcount(self, r):
         await r.flushdb()
@@ -1293,7 +1238,6 @@ class TestRedisCommands:
         assert await r.zrange('a', 0, 1, withscores=True, score_cast_func=int) == \
             [(b('a1'), 1), (b('a2'), 2)]
 
-    @skip_if_server_version_lt('2.8.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zrangebylex(self, r):
         await r.flushdb()
@@ -1305,7 +1249,6 @@ class TestRedisCommands:
         assert await r.zrangebylex('a', '[f', '+') == [b('f'), b('g')]
         assert await r.zrangebylex('a', '-', '+', start=3, num=2) == [b('d'), b('e')]
 
-    @skip_if_server_version_lt('2.9.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zrevrangebylex(self, r):
         await r.flushdb()
@@ -1361,7 +1304,6 @@ class TestRedisCommands:
         assert await r.zrem('a', 'a1', 'a2') == 2
         assert await r.zrange('a', 0, 5) == [b('a3')]
 
-    @skip_if_server_version_lt('2.8.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zremrangebylex(self, r):
         await r.flushdb()
@@ -1483,7 +1425,6 @@ class TestRedisCommands:
             [(b('a2'), 5), (b('a4'), 12), (b('a3'), 20), (b('a1'), 23)]
 
     # HYPERLOGLOG TESTS
-    @skip_if_server_version_lt('2.8.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pfadd(self, r):
         await r.flushdb()
@@ -1492,7 +1433,6 @@ class TestRedisCommands:
         assert await r.pfadd('a', *members) == 0
         assert await r.pfcount('a') == len(members)
 
-    @skip_if_server_version_lt('2.8.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pfcount(self, r):
         await r.flushdb()
@@ -1504,7 +1444,6 @@ class TestRedisCommands:
         assert await r.pfcount('b') == len(members_b)
         assert await r.pfcount('a', 'b') == len(members_b.union(members))
 
-    @skip_if_server_version_lt('2.8.9')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pfmerge(self, r):
         await r.flushdb()
@@ -1569,7 +1508,6 @@ class TestRedisCommands:
         assert await r.hincrby('a', '1', amount=2) == 3
         assert await r.hincrby('a', '1', amount=-2) == 1
 
-    @skip_if_server_version_lt('2.6.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_hincrbyfloat(self, r):
         await r.flushdb()
@@ -1623,7 +1561,6 @@ class TestRedisCommands:
         remote_vals = await r.hvals('a')
         assert sorted(local_vals) == sorted(remote_vals)
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_hstrlen(self, r):
         await r.flushdb()
@@ -1784,7 +1721,6 @@ class TestRedisCommands:
             [b('vodka'), b('milk'), b('gin'), b('apple juice')]
 
     # GEO COMMANDS
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geoadd(self, r):
         await r.flushdb()
@@ -1794,14 +1730,12 @@ class TestRedisCommands:
         assert await r.geoadd('barcelona', *values) == 2
         assert await r.zcard('barcelona') == 2
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geoadd_invalid_params(self, r):
         await r.flushdb()
         with pytest.raises(RedisError):
             await r.geoadd('barcelona', *(1, 2))
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geodist(self, r):
         await r.flushdb()
@@ -1811,7 +1745,6 @@ class TestRedisCommands:
         assert await r.geoadd('barcelona', *values) == 2
         assert await r.geodist('barcelona', 'place1', 'place2') == 3067.4157
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geodist_units(self, r):
         await r.flushdb()
@@ -1821,14 +1754,12 @@ class TestRedisCommands:
         await r.geoadd('barcelona', *values)
         assert await r.geodist('barcelona', 'place1', 'place2', 'km') == 3.0674
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geodist_invalid_units(self, r):
         await r.flushdb()
         with pytest.raises(RedisError):
             assert await r.geodist('x', 'y', 'z', 'inches')
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geohash(self, r):
         await r.flushdb()
@@ -1839,13 +1770,11 @@ class TestRedisCommands:
         assert await r.geohash('barcelona', 'place1', 'place2') ==\
             [b'sp3e9yg3kd0', b'sp3e9cbc3t0']
 
-    @skip_if_server_version_lt('4.0.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geopos_no_value(self, r):
         await r.flushdb()
         assert await r.geopos('barcelona', 'place1', 'place2') == [None, None]
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_geopos(self, r):
         await r.flushdb()
@@ -1858,7 +1787,6 @@ class TestRedisCommands:
             [(2.19093829393386841, 41.43379028184083523),
              (2.18737632036209106, 41.40634178640635099)]
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius(self, r):
         await r.flushdb()
@@ -1868,7 +1796,6 @@ class TestRedisCommands:
         await r.geoadd('barcelona', *values)
         assert await r.georadius('barcelona', 2.191, 41.433, 1000) == ['place1']
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_no_values(self, r):
         await r.flushdb()
@@ -1878,7 +1805,6 @@ class TestRedisCommands:
         await r.geoadd('barcelona', *values)
         assert await r.georadius('barcelona', 1, 2, 1000) == []
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_units(self, r):
         await r.flushdb()
@@ -1889,7 +1815,6 @@ class TestRedisCommands:
         assert await r.georadius('barcelona', 2.191, 41.433, 1, unit='km') ==\
             ['place1']
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_with(self, r):
         await r.flushdb()
@@ -1919,7 +1844,6 @@ class TestRedisCommands:
         assert await r.georadius('barcelona', 2, 1, 1, unit='km',
                            withdist=True, withcoord=True, withhash=True) == []
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_count(self, r):
         await r.flushdb()
@@ -1930,7 +1854,6 @@ class TestRedisCommands:
         assert await r.georadius('barcelona', 2.191, 41.433, 3000, count=1) ==\
             ['place1']
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_sort(self, r):
         await r.flushdb()
@@ -1943,7 +1866,6 @@ class TestRedisCommands:
         assert await r.georadius('barcelona', 2.191, 41.433, 3000, sort='DESC') ==\
             ['place2', 'place1']
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_store(self, r):
         await r.flushdb()
@@ -1954,7 +1876,6 @@ class TestRedisCommands:
         await r.georadius('barcelona', 2.191, 41.433, 1000, store='places_barcelona')
         assert await r.zrange('places_barcelona', 0, -1) == [b'place1']
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadius_store_dist(self, r):
         await r.flushdb()
@@ -1967,7 +1888,6 @@ class TestRedisCommands:
         # instead of save the geo score, the distance is saved.
         assert await r.zscore('places_barcelona', 'place1') == 88.05060698409301
 
-    @skip_if_server_version_lt('3.2.0')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_georadiusmember(self, r):
         await r.flushdb()

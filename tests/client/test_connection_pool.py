@@ -8,7 +8,6 @@ import asyncio
 from coredis.pool import to_bool
 from coredis.exceptions import (ConnectionError, RedisError,
                                BusyLoadingError, ReadOnlyError)
-from .conftest import skip_if_server_version_lt
 
 
 class DummyConnection:
@@ -369,7 +368,6 @@ class TestConnection:
         pool = bad_connection.connection_pool
         assert len(pool._available_connections) == 0
 
-    @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_busy_loading_disconnects_socket(self, event_loop):
         """
@@ -382,7 +380,6 @@ class TestConnection:
         pool = client.connection_pool
         assert len(pool._available_connections) == 0
 
-    @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_busy_loading_from_pipeline_immediate_command(self, event_loop):
         """
@@ -397,7 +394,6 @@ class TestConnection:
         assert not pipe.connection
         assert len(pool._available_connections) == 0
 
-    @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_busy_loading_from_pipeline(self, event_loop):
         """
@@ -415,7 +411,6 @@ class TestConnection:
         assert pool._available_connections[0]._writer
         assert pool._available_connections[0]._reader
 
-    @skip_if_server_version_lt('2.8.8')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_read_only_error(self, event_loop):
         "READONLY errors get turned in ReadOnlyError exceptions"

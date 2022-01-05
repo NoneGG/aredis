@@ -5,26 +5,22 @@ import pytest
 import coredis
 from coredis.exceptions import RedisError, ResponseError
 
-from tests.client.conftest import skip_if_server_version_lt
 
 
 class TestStreams:
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_wrong_id(self, r):
         with pytest.raises(RedisError):
             await r.xadd('test_stream', {'k1': 'v1', 'k2': 1}, stream_id=0,
                          max_len=10, approximate=False)
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_without_given_id(self, r):
         await r.flushdb()
         stream_id = await r.xadd('test_stream', {'k1': 'v1', 'k2': 1})
         assert len(stream_id.decode().split('-')) == 2
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_given_id(self, r):
         await r.flushdb()
@@ -34,7 +30,6 @@ class TestStreams:
         stream_id = await r.xadd('test_stream', {'k1': 'v1', 'k2': 1}, stream_id='12321-0')
         assert stream_id == b'12321-0'
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_maxlen_accurately(self, r):
         await r.flushdb()
@@ -44,7 +39,6 @@ class TestStreams:
         length = await r.xlen('test_stream')
         assert length == 2
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_maxlen_approximately(self, r):
         await r.flushdb()
@@ -53,7 +47,6 @@ class TestStreams:
         length = await r.xlen('test_stream')
         assert length == 10
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xrange(self, r):
         await r.flushdb()
@@ -65,7 +58,6 @@ class TestStreams:
         entries = await r.xrange('test_stream', start='2', end='3', count=3)
         assert len(entries) == 2 and entries[0][0] == b'2-0'
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xrevrange(self, r):
         await r.flushdb()
@@ -79,7 +71,6 @@ class TestStreams:
         entries = await r.xrevrange('test_stream', start='3', end='2', count=3)
         assert len(entries) == 2 and entries[0][0] == b'3-0'
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xread(self, r):
         await r.flushdb()
@@ -93,7 +84,6 @@ class TestStreams:
         assert entries and len(entries[b'test_stream']) == 7
         assert entries[b'test_stream'][0] == (b'3-0', {b'k1': b'v1', b'k2': b'1'})
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xreadgroup(self, r):
         await r.flushdb()
@@ -106,7 +96,6 @@ class TestStreams:
         entries = await r.xreadgroup('test_group', 'consumer1', count=5, test_stream='>')
         assert len(entries[b'test_stream']) == 5
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_create(self, r):
         await r.flushdb()
@@ -120,7 +109,6 @@ class TestStreams:
         assert len(group_info) == 1
         assert group_info[0][b'name'] == b'test_group'
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_set_id(self, r):
         await r.flushdb()
@@ -136,7 +124,6 @@ class TestStreams:
         group_info = await r.xinfo_groups('test_stream')
         assert group_info[0][b'pending'] == 5
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_destroy(self, r):
         await r.flushdb()
@@ -149,7 +136,6 @@ class TestStreams:
         group_info = await r.xinfo_groups('test_stream')
         assert len(group_info) == 0
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_del_consumer(self, r):
         await r.flushdb()
@@ -166,7 +152,6 @@ class TestStreams:
         consumer_info = await r.xinfo_consumers('test_stream', 'test_group')
         assert len(consumer_info) == 0
 
-    @skip_if_server_version_lt('4.9.103')
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xpending(self, r):
         await r.flushdb()

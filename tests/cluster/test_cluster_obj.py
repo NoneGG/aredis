@@ -14,14 +14,11 @@ from coredis.exceptions import (
 )
 from coredis.utils import b
 from coredis.nodemanager import NodeManager
-from tests.cluster.conftest import _get_client, skip_if_server_version_lt, skip_if_not_password_protected_nodes
+from tests.cluster.conftest import _get_client, skip_if_not_password_protected_nodes
 
 # 3rd party imports
 from mock import patch, Mock, MagicMock
 import pytest
-
-pytestmark = skip_if_server_version_lt('2.9.0')
-
 
 class DummyConnectionPool(ClusterConnectionPool):
     pass

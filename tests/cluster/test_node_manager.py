@@ -6,16 +6,12 @@ import asyncio
 import uuid
 
 # rediscluster imports
-from tests.cluster.conftest import skip_if_server_version_lt
 from coredis import StrictRedis, StrictRedisCluster, RedisClusterException, ConnectionError
 from coredis.nodemanager import NodeManager
 
 # 3rd party imports
 import pytest
 from mock import patch, Mock
-
-pytestmark = skip_if_server_version_lt('2.9.0')
-
 
 def test_set_node_name(s):
     """

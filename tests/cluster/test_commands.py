@@ -12,10 +12,6 @@ from string import ascii_letters
 from coredis.exceptions import RedisClusterException, ResponseError, DataError, RedisError
 from coredis.utils import b, iteritems, iterkeys, itervalues
 from coredis.commands.server import parse_info
-from tests.cluster.conftest import skip_if_server_version_lt, skip_if_redis_py_version_lt
-
-
-pytestmark = skip_if_server_version_lt('2.9.0')
 
 
 async def redis_server_time(client):
@@ -28,7 +24,6 @@ async def redis_server_time(client):
 class TestRedisCommands:
 
     @pytest.mark.asyncio
-    @skip_if_server_version_lt('2.9.9')
     async def test_zrevrangebylex(self, r):
         await r.flushdb()
         await r.zadd('a', a=0, b=0, c=0, d=0, e=0, f=0, g=0)
@@ -159,8 +154,6 @@ class TestRedisCommands:
             await r.bitop('not', 'r', 'a')
 
     @pytest.mark.asyncio
-    @skip_if_server_version_lt('2.8.7')
-    @skip_if_redis_py_version_lt("2.10.2")
     async def test_bitpos(self, r):
         """
         Bitpos was added in redis-py in version 2.10.2
@@ -181,8 +174,6 @@ class TestRedisCommands:
         assert await r.bitpos(key, 1) == -1
 
     @pytest.mark.asyncio
-    @skip_if_server_version_lt('2.8.7')
-    @skip_if_redis_py_version_lt("2.10.2")
     async def test_bitpos_wrong_arguments(self, r):
         """
         Bitpos was added in redis-py in version 2.10.2
@@ -1273,7 +1264,6 @@ class TestRedisCommands:
 
     @pytest.mark.asyncio
     @pytest.mark.xfail(reason="New pfcount in 2.10.5 currently breaks in cluster")
-    @skip_if_server_version_lt('2.8.9')
     async def test_pfcount(self, r):
         await r.flushdb()
         members = set([b('1'), b('2'), b('3')])

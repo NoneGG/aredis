@@ -508,13 +508,11 @@ def test_pubsub_thread_publish():
 #     @see https://redis.io/commands/pubsub
 #     """
 #
-#     @skip_if_redis_py_version_lt('2.10.6')
 #     async def test_pubsub_channels(self, r):
 #         r.pubsub(ignore_subscribe_messages=True).subscribe('foo', 'bar', 'baz', 'quux')
 #         channels = sorted(r.pubsub_channels())
 #         assert channels == [b('bar'), b('baz'), b('foo'), b('quux')]
 #
-#     @skip_if_redis_py_version_lt('2.10.6')
 #     def test_pubsub_numsub(self, r):
 #         r.pubsub(ignore_subscribe_messages=True).subscribe('foo', 'bar', 'baz')
 #         r.pubsub(ignore_subscribe_messages=True).subscribe('bar', 'baz')
@@ -523,7 +521,6 @@ def test_pubsub_thread_publish():
 #         channels = [(b('bar'), 2), (b('baz'), 3), (b('foo'), 1)]
 #         assert channels == sorted(r.pubsub_numsub('foo', 'bar', 'baz'))
 #
-#     @skip_if_redis_py_version_lt('2.10.6')
 #     def test_pubsub_numpat(self, r):
 #         r.pubsub(ignore_subscribe_messages=True).psubscribe('*oo', '*ar', 'b*z')
 #         assert r.pubsub_numpat() == 3

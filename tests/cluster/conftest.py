@@ -11,7 +11,6 @@ from coredis import StrictRedisCluster, StrictRedis
 
 # 3rd party imports
 import pytest
-from distutils.version import StrictVersion
 
 # put our path in front so we can be sure we are testing locally not against the global package
 basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -59,26 +58,6 @@ def skip_if_not_password_protected_nodes():
     """
     """
     return pytest.mark.skipif('TEST_PASSWORD_PROTECTED' not in os.environ, reason="")
-
-
-def skip_if_server_version_lt(min_version):
-    """
-    """
-    versions = get_versions()
-    for version in versions.values():
-        if StrictVersion(version) < StrictVersion(min_version):
-            return pytest.mark.skipif(True, reason="")
-    return pytest.mark.skipif(False, reason="")
-
-
-def skip_if_redis_py_version_lt(min_version):
-    """
-    """
-    import coredis
-    version = coredis.__version__
-    if StrictVersion(version) < StrictVersion(min_version):
-        return pytest.mark.skipif(True, reason="")
-    return pytest.mark.skipif(False, reason="")
 
 
 @pytest.fixture()
