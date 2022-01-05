@@ -1,5 +1,6 @@
 include LICENSE
 include README.rst
+include HISTORY.rst
 exclude __pycache__
 exclude benchmarks
 recursive-include tests *
