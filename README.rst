@@ -1,15 +1,26 @@
+.. |circleci-status| image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg
+    :alt: CircleCI build status
+    :target: https://circleci.com/gh/alisaifee/coredis/tree/master
+
+.. |pypi-ver| image::  https://img.shields.io/pypi/v/coredis.svg
+    :target: https://pypi.python.org/pypi/coredis/
+    :alt: Latest Version in PyPI
+
+.. |python-ver| image:: https://img.shields.io/pypi/pyversions/coredis.svg
+    :target: https://pypi.python.org/pypi/coredis/
+    :alt: Supported Python versions
+
+.. |docs| image:: https://readthedocs.org/projects/coredis/badge/?version=latest
+   :target: https://coredis.readthedocs.org
+
 coredis
-======
-|pypi-ver| |circleci-status| |python-ver|
+=======
 
-coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_
+|docs| |pypi-ver| |circleci-status| |python-ver|
 
-An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
-(which is a Python interface to the Redis key-value)
+coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_,
+an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 
-To get more information please read `full document`_
-
-.. _full document: http://coredis.readthedocs.io/en/latest/
 
 Installation
 ------------
@@ -20,7 +31,7 @@ To install coredis, simply:
 
 .. code-block:: bash
 
-    $ pip3 install coredis[hiredis]
+    $ pip install coredis[hiredis]
 
 or from source:
 
@@ -103,20 +114,3 @@ For benchmark in my environment please see: `benchmark`_
 
 .. _benchmark: http://coredis.readthedocs.io/en/latest/benchmark.html
 
-.. |circleci-status| image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg
-    :alt: CircleCI build status
-    :target: https://circleci.com/gh/alisaifee/coredis/tree/master
-
-.. |pypi-ver| image::  https://img.shields.io/pypi/v/coredis.svg
-    :target: https://pypi.python.org/pypi/coredis/
-    :alt: Latest Version in PyPI
-
-.. |python-ver| image:: https://img.shields.io/pypi/pyversions/coredis.svg
-    :target: https://pypi.python.org/pypi/coredis/
-    :alt: Supported Python versions
-
-Contributing
-------------
-
-Enhancement, bug reports and Pull requests are welcomed, please make an issue to let me know.
-Fork me please~
