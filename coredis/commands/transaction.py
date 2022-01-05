@@ -5,6 +5,7 @@ from coredis.exceptions import (RedisClusterException,
 from coredis.utils import (string_keys_to_dict,
                           bool_ok)
 
+from coredis.utils import LOOP_DEPRECATED
 
 class TransactionCommandMixin:
 
@@ -32,10 +33,13 @@ class TransactionCommandMixin:
                     return func_value if value_from_callable else exec_value
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
-                        await asyncio.sleep(
-                            watch_delay,
-                            loop=self.connection_pool.loop
-                        )
+                        if LOOP_DEPRECATED:
+                            await asyncio.sleep(watch_delay)
+                        else:
+                            await asyncio.sleep(
+                                watch_delay,
+                                loop=self.connection_pool.loop
+                            )
                     continue
 
     async def watch(self, *names):
@@ -74,8 +78,11 @@ class ClusterTransactionCommandMixin(TransactionCommandMixin):
                     return func_value if value_from_callable else exec_value
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
-                        await asyncio.sleep(
-                            watch_delay,
-                            loop=self.connection_pool.loop
-                        )
+                        if LOOP_DEPRECATED:
+                            await asyncio.sleep(watch_delay)
+                        else:
+                            await asyncio.sleep(
+                                watch_delay,
+                                loop=self.connection_pool.loop
+                            )
                     continue
