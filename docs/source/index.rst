@@ -1,12 +1,9 @@
-.. coredis documentation master file, created by
-   sphinx-quickstart on Sun May  7 21:23:14 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to coredis's documentation!
-==================================
+===================================
 
-|pypi-ver| |circleci-status| |python-ver|
+.. container:: badges
+
+   |pypi-ver| |circleci-status| |python-ver|
 
 An efficient and user-friendly async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
 (which is a Python interface to the Redis key-value). And the cluster part is ported from `redis-py-cluster <https://github.com/Grokzen/redis-py-cluster>`_
@@ -56,21 +53,21 @@ single node client
 
     import asyncio
     from coredis import StrictRedis
-   
+
     async def example():
         client = StrictRedis(host='127.0.0.1', port=6379, db=0)
         await client.flushdb()
         await client.set('foo', 1)
         assert await client.exists('foo') is True
         await client.incr('foo', 100)
-   
+
         assert int(await client.get('foo')) == 101
         await client.expire('foo', 1)
         await asyncio.sleep(0.1)
         await client.ttl('foo')
         await asyncio.sleep(1)
         assert not await client.exists('foo')
-   
+
     loop = asyncio.get_event_loop()
     loop.run_until_complete(example())
 
@@ -139,7 +136,7 @@ Experimental:
 
 API reference
 -------------
-Most API are described in `redis command reference<https://redis.io/commands>`_ what makes difference and those should be noticed are referred in doc specially.
+Most API are described in `redis command reference <https://redis.io/commands>`_ what makes difference and those should be noticed are referred in doc specially.
 You can post a new issue / read redis command reference / read annotation of API (mainly about how to use them) if you have any problem about the API.
 Related issue are welcome.
 
