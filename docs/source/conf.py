@@ -46,8 +46,7 @@ description = "Async redis client for python"
 html_theme_options["description"] = description
 html_theme_options["github_repo"] = "coredis"
 
-version = "1.0.7"
-release = "1.0.7"
+version = release = coredis.__version__.split("+")[0]
 
 
 htmlhelp_basename = "coredisdoc"

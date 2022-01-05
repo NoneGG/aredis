@@ -2,6 +2,7 @@
 import pathlib
 import re
 import sys
+import versioneer
 
 __author__ = "Ali-Akber Saifee"
 __email__ = "ali@indydevs.org"
@@ -125,7 +126,7 @@ with open(str(_ROOT_DIR / "coredis" / "__init__.py")) as f:
 
 setup(
     name="coredis",
-    version=version,
+    version=versioneer.get_version(),
     description="Python async client for Redis key-value store",
     long_description=long_description,
     url="https://github.com/alisaifee/coredis",
@@ -139,7 +140,7 @@ setup(
     python_requires=">=3.7",
     extras_require={"hiredis": ["hiredis>=0.2.0"]},
     tests_require=["pytest", "pytest_asyncio>=0.5.0"],
-    cmdclass={"test": PyTest, "build_ext": custom_build_ext},
+    cmdclass={"test": PyTest, "build_ext": custom_build_ext, ** versioneer.get_cmdclass()},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",

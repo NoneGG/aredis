@@ -31,3 +31,6 @@ __all__ = [
     'CacheError', 'ClusterDownError', 'ClusterError', 'RedisClusterException',
     'RedisClusterError', 'ExecAbortError', 'LockError', 'NoScriptError'
 ]
+
+from . import _version
+__version__ = _version.get_versions()['version']
