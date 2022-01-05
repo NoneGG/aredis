@@ -1,9 +1,10 @@
 *.pyc
 *.so
-aredis.egg-info
+coredis.egg-info
 build/
 dist/
 .idea/
+.tool-versions
 env/
 env3.6/
 dump.rdb
