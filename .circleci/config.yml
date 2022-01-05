@@ -1,78 +1,6 @@
 version: 2
 
 jobs:
-  python-3.5-client-3:
-    docker:
-      - image: python:3.5
-      - image: redis:3
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.5-client-4:
-    docker:
-      - image: python:3.5
-      - image: redis:4
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.5-client-5:
-    docker:
-      - image: python:3.5
-      - image: redis:5.0
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.6-client-3:
-    docker:
-      - image: python:3.6
-      - image: redis:3
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.6-client-4:
-    docker:
-      - image: python:3.6
-      - image: redis:4
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.6-client-5:
-    docker:
-      - image: python:3.6
-      - image: redis:5.0
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.7-client-3:
-    docker:
-      - image: python:3.7
-      - image: redis:3
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.7-client-4:
-    docker:
-      - image: python:3.7
-      - image: redis:4
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
   python-3.7-client-5:
     docker:
       - image: python:3.7
@@ -82,19 +10,10 @@ jobs:
       - run: python -m pip install -r test_requirements.txt
       - run: pytest tests/client/
 
-  python-3.8-client-3:
+  python-3.7-client-6:
     docker:
-      - image: python:3.8
-      - image: redis:3
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: pytest tests/client/
-
-  python-3.8-client-4:
-    docker:
-      - image: python:3.8
-      - image: redis:4
+      - image: python:3.7
+      - image: redis:6.2
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
@@ -109,85 +28,32 @@ jobs:
       - run: python -m pip install -r test_requirements.txt
       - run: pytest tests/client/
 
-  python-3.5-cluster-3:
+  python-3.8-client-6:
     docker:
-      - image: python:3.5
-      - image: grokzen/redis-cluster:3.2.13
+      - image: python:3.8
+      - image: redis:6.2
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/client/
 
-  python-3.5-cluster-4:
+  python-3.9-client-5:
     docker:
-      - image: python:3.5
-      - image: grokzen/redis-cluster:4.0.14
+      - image: python:3.9
+      - image: redis:5.0
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/client/
 
-  python-3.5-cluster-5:
+  python-3.9-client-6:
     docker:
-      - image: python:3.5
-      - image: grokzen/redis-cluster:5.0.5
+      - image: python:3.9
+      - image: redis:6.2
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.6-cluster-3:
-    docker:
-      - image: python:3.6
-      - image: grokzen/redis-cluster:3.2.13
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.6-cluster-4:
-    docker:
-      - image: python:3.6
-      - image: grokzen/redis-cluster:4.0.14
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.6-cluster-5:
-    docker:
-      - image: python:3.6
-      - image: grokzen/redis-cluster:5.0.5
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.7-cluster-3:
-    docker:
-      - image: python:3.7
-      - image: grokzen/redis-cluster:3.2.13
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.7-cluster-4:
-    docker:
-      - image: python:3.7
-      - image: grokzen/redis-cluster:4.0.14
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/client/
 
   python-3.7-cluster-5:
     docker:
@@ -199,20 +65,10 @@ jobs:
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
-  python-3.8-cluster-3:
+  python-3.7-cluster-6:
     docker:
-      - image: python:3.8
-      - image: grokzen/redis-cluster:3.2.13
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.8-cluster-4:
-    docker:
-      - image: python:3.8
-      - image: grokzen/redis-cluster:4.0.14
+      - image: python:3.7
+      - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
@@ -229,85 +85,35 @@ jobs:
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
-  python-3.5-client-3-hiredis:
+  python-3.8-cluster-6:
     docker:
-      - image: python:3.5
-      - image: redis:3
+      - image: python:3.8
+      - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: sleep 10  # give the cluster some init time
+      - run: pytest tests/cluster/
 
-  python-3.5-client-4-hiredis:
+  python-3.9-cluster-5:
     docker:
-      - image: python:3.5
-      - image: redis:4
+      - image: python:3.9
+      - image: grokzen/redis-cluster:5.0.5
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: sleep 10  # give the cluster some init time
+      - run: pytest tests/cluster/
 
-  python-3.5-client-5-hiredis:
+  python-3.9-cluster-6:
     docker:
-      - image: python:3.5
-      - image: redis:5.0
+      - image: python:3.9
+      - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
-
-  python-3.6-client-3-hiredis:
-    docker:
-      - image: python:3.6
-      - image: redis:3
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
-
-  python-3.6-client-4-hiredis:
-    docker:
-      - image: python:3.6
-      - image: redis:4
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
-
-  python-3.6-client-5-hiredis:
-    docker:
-      - image: python:3.6
-      - image: redis:5.0
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
-
-  python-3.7-client-3-hiredis:
-    docker:
-      - image: python:3.7
-      - image: redis:3
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
-
-  python-3.7-client-4-hiredis:
-    docker:
-      - image: python:3.7
-      - image: redis:4
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
+      - run: sleep 10  # give the cluster some init time
+      - run: pytest tests/cluster/
 
   python-3.7-client-5-hiredis:
     docker:
@@ -319,25 +125,16 @@ jobs:
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
-  python-3.8-client-3-hiredis:
+  python-3.7-client-6-hiredis:
     docker:
-      - image: python:3.8
-      - image: redis:3
+      - image: python:3.7
+      - image: redis:6.2
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
-  python-3.8-client-4-hiredis:
-    docker:
-      - image: python:3.8
-      - image: redis:4
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: pytest tests/client/
 
   python-3.8-client-5-hiredis:
     docker:
@@ -349,93 +146,35 @@ jobs:
       - run: python -m pip install hiredis
       - run: pytest tests/client/
 
-  python-3.5-cluster-3-hiredis:
+  python-3.8-client-6-hiredis:
     docker:
-      - image: python:3.5
-      - image: grokzen/redis-cluster:3.2.13
+      - image: python:3.8
+      - image: redis:6.2
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
       - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/client/
 
-  python-3.5-cluster-4-hiredis:
+  python-3.9-client-5-hiredis:
     docker:
-      - image: python:3.5
-      - image: grokzen/redis-cluster:4.0.14
+      - image: python:3.9
+      - image: redis:5.0
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
       - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/client/
 
-  python-3.5-cluster-5-hiredis:
+  python-3.9-client-6-hiredis:
     docker:
-      - image: python:3.5
-      - image: grokzen/redis-cluster:5.0.5
+      - image: python:3.9
+      - image: redis:6.2
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
       - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.6-cluster-3-hiredis:
-    docker:
-      - image: python:3.6
-      - image: grokzen/redis-cluster:3.2.13
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.6-cluster-4-hiredis:
-    docker:
-      - image: python:3.6
-      - image: grokzen/redis-cluster:4.0.14
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.6-cluster-5-hiredis:
-    docker:
-      - image: python:3.6
-      - image: grokzen/redis-cluster:5.0.5
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.7-cluster-3-hiredis:
-    docker:
-      - image: python:3.7
-      - image: grokzen/redis-cluster:3.2.13
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.7-cluster-4-hiredis:
-    docker:
-      - image: python:3.7
-      - image: grokzen/redis-cluster:4.0.14
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
+      - run: pytest tests/client/
 
   python-3.7-cluster-5-hiredis:
     docker:
@@ -448,21 +187,10 @@ jobs:
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
-  python-3.8-cluster-3-hiredis:
+  python-3.7-cluster-6-hiredis:
     docker:
-      - image: python:3.8
-      - image: grokzen/redis-cluster:3.2.13
-    steps:
-      - checkout
-      - run: python -m pip install -r test_requirements.txt
-      - run: python -m pip install hiredis
-      - run: sleep 10  # give the cluster some init time
-      - run: pytest tests/cluster/
-
-  python-3.8-cluster-4-hiredis:
-    docker:
-      - image: python:3.8
-      - image: grokzen/redis-cluster:4.0.14
+      - image: python:3.7
+      - image: grokzen/redis-cluster:6.2.1
     steps:
       - checkout
       - run: python -m pip install -r test_requirements.txt
@@ -481,70 +209,75 @@ jobs:
       - run: sleep 10  # give the cluster some init time
       - run: pytest tests/cluster/
 
+  python-3.8-cluster-6-hiredis:
+    docker:
+      - image: python:3.8
+      - image: grokzen/redis-cluster:6.2.1
+    steps:
+      - checkout
+      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install hiredis
+      - run: sleep 10  # give the cluster some init time
+      - run: pytest tests/cluster/
+
+  python-3.9-cluster-5-hiredis:
+    docker:
+      - image: python:3.9
+      - image: grokzen/redis-cluster:5.0.5
+    steps:
+      - checkout
+      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install hiredis
+      - run: sleep 10  # give the cluster some init time
+      - run: pytest tests/cluster/
+
+  python-3.9-cluster-6-hiredis:
+    docker:
+      - image: python:3.9
+      - image: grokzen/redis-cluster:6.2.1
+    steps:
+      - checkout
+      - run: python -m pip install -r test_requirements.txt
+      - run: python -m pip install hiredis
+      - run: sleep 10  # give the cluster some init time
+      - run: pytest tests/cluster/
+
 workflows:
   version: 2
   run-jobs:
     jobs:
-      - python-3.5-client-3
-      - python-3.5-client-4
-      - python-3.5-client-5
-
-      - python-3.6-client-3
-      - python-3.6-client-4
-      - python-3.6-client-5
-
-      - python-3.7-client-3
-      - python-3.7-client-4
       - python-3.7-client-5
+      - python-3.7-client-6
 
-      - python-3.8-client-3
-      - python-3.8-client-4
       - python-3.8-client-5
+      - python-3.8-client-6
 
-      - python-3.5-cluster-3
-      - python-3.5-cluster-4
-      - python-3.5-cluster-5
+      - python-3.9-client-5
+      - python-3.9-client-6
 
-      - python-3.6-cluster-3
-      - python-3.6-cluster-4
-      - python-3.6-cluster-5
-
-      - python-3.7-cluster-3
-      - python-3.7-cluster-4
       - python-3.7-cluster-5
+      - python-3.7-cluster-6
 
-      - python-3.8-cluster-3
-      - python-3.8-cluster-4
       - python-3.8-cluster-5
+      - python-3.8-cluster-6
 
-      - python-3.5-client-3-hiredis
-      - python-3.5-client-4-hiredis
-      - python-3.5-client-5-hiredis
+      - python-3.9-cluster-5
+      - python-3.9-cluster-6
 
-      - python-3.6-client-3-hiredis
-      - python-3.6-client-4-hiredis
-      - python-3.6-client-5-hiredis
-
-      - python-3.7-client-3-hiredis
-      - python-3.7-client-4-hiredis
       - python-3.7-client-5-hiredis
+      - python-3.7-client-6-hiredis
 
-      - python-3.8-client-3-hiredis
-      - python-3.8-client-4-hiredis
       - python-3.8-client-5-hiredis
+      - python-3.8-client-6-hiredis
 
-      - python-3.5-cluster-3-hiredis
-      - python-3.5-cluster-4-hiredis
-      - python-3.5-cluster-5-hiredis
+      - python-3.9-client-5-hiredis
+      - python-3.9-client-6-hiredis
 
-      - python-3.6-cluster-3-hiredis
-      - python-3.6-cluster-4-hiredis
-      - python-3.6-cluster-5-hiredis
-
-      - python-3.7-cluster-3-hiredis
-      - python-3.7-cluster-4-hiredis
       - python-3.7-cluster-5-hiredis
+      - python-3.7-cluster-6-hiredis
 
-      - python-3.8-cluster-3-hiredis
-      - python-3.8-cluster-4-hiredis
       - python-3.8-cluster-5-hiredis
+      - python-3.8-cluster-6-hiredis
+
+      - python-3.9-cluster-5-hiredis
+      - python-3.9-cluster-6-hiredis
