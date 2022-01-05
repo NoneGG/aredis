@@ -12,7 +12,7 @@ Changelog
 
 1.1.7
 -----
-    * Fixbug: ModuleNotFoundError raised when install coredis 1.1.6 with Python3.6
+    * Fixbug: ModuleNotFoundError raised when install aredis 1.1.6 with Python3.6
 
 1.1.6
 -----
@@ -42,7 +42,7 @@ Changelog
     * allow use of zadd options for zadd in sorted sets
     * fix bug: use inspect.isawaitable instead of typing.Awaitable to judge if an object is awaitable
     * fix bug: implicitly disconnection on cancelled error (#84)
-    * new: add support for `streams`(including commands not officially released, see `streams <http://coredis.readthedocs.io/en/latest/streams.html>`_ )
+    * new: add support for `streams`(including commands not officially released, see `streams <http://aredis.readthedocs.io/en/latest/streams.html>`_ )
 
 1.1.2
 -----
@@ -55,8 +55,8 @@ Changelog
 
 1.1.1
 -----
-    * fix bug: connection with unread response being released to connection pool will lead to parse error, now this kind of connection will be destructed directly. `related issue <https://github.com/alisaifee/coredis/issues/52>`_
-    * fix bug: remove Connection.can_read check which may lead to block in awaiting pubsub message. Connection.can_read api will be deprecated in next release. `related issue <https://github.com/alisaifee/coredis/issues/56>`_
+    * fix bug: connection with unread response being released to connection pool will lead to parse error, now this kind of connection will be destructed directly. `#52 <https://github.com/NoneGG/aredis/issues/52>`_
+    * fix bug: remove Connection.can_read check which may lead to block in awaiting pubsub message. Connection.can_read api will be deprecated in next release. `#56 <https://github.com/NoneGG/aredis/issues/56>`_
     * add c extension to speedup crc16, which will speedup cluster slot hashing
     * add error handling for asyncio.futures.Cancelled error, which may cause error in response parsing.
     * sync optimization of client list made by swilly22 from redis-py
@@ -64,8 +64,8 @@ Changelog
 
 1.1.0
 -----
-    * sync optimization of scripting from redis-py made by `bgreenberg <https://github.com/bgreenberg-eb>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/867>`_
-    * sync bug fixed of `geopos` from redis-py made by `categulario <https://github.com/categulario>`_ `related pull request <https://github.com/andymccurdy/redis-py/pull/888>`_
+    * sync optimization of scripting from redis-py made by `bgreenberg <https://github.com/bgreenberg-eb>`_ `redis-py#867 <https://github.com/andymccurdy/redis-py/pull/867>`_
+    * sync bug fixed of `geopos` from redis-py made by `categulario <https://github.com/categulario>`_ `redis-py#888 <https://github.com/andymccurdy/redis-py/pull/888>`_
     * fix bug which makes pipeline callback function not executed
     * fix error caused by byte decode issues in sentinel
     * add basic transaction support for single node in cluster
@@ -85,7 +85,7 @@ Changelog
 
 1.0.7
 -----
-    * introduce loop argument to coredis
+    * introduce loop argument to aredis
     * add support for command `cluster slots`
     * add support for redis cluster
 
@@ -98,7 +98,7 @@ Changelog
 
 1.0.5
 -----
-    * fix bug in setup.py when using pip to install coredis
+    * fix bug in setup.py when using pip to install aredis
 
 1.0.4
 -----
