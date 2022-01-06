@@ -121,24 +121,10 @@ hiredis and uvloop can make coredis faster, but it is up to you whether to insta
 Supported python versions
 -------------------------
 
-- 3.5
-- 3.6
-
-Experimental:
-
-- 3.7-dev
-
-
-.. note:: Python < 3.5
-
-    I tried to change my code to make coredis compatible for Python under 3.5, but it failed because of some api of asyncio.
-    Since asyncio is stabilize from Python 3.5, i think it may be better to use the new release of asyncio.
-
-
-.. note:: pypy
-
-    For now, uvloop is not supported by pypy, and you can only use it with cpython & hiredis to accelerate your code.
-    pypy 3.5-v5.8.0 is tesed and with it code can run twice faster than before.
+- 3.7
+- 3.8
+- 3.9
+- 3.10
 
 
 API reference
