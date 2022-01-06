@@ -1,0 +1,11 @@
+[run]
+omit =
+    /*/coredis/_version*
+    /*/coredis/*
+    setup.py
+    versioneer.py
+[report]
+exclude_lines =
+    pragma: no cover
+    noqa
+    raise NotImplementedError

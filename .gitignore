@@ -16,3 +16,4 @@ vagrant/.vagrant
 .vscode/
 *.iml
 .pytest_cache/
+.coverage*
