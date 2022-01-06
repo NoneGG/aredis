@@ -1,5 +1,7 @@
-import pytest
 import time
+
+import pytest
+
 from coredis.exceptions import LockError
 from coredis.lock import ClusterLock
 

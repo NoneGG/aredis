@@ -1,14 +1,8 @@
 import datetime
+
 from coredis.exceptions import RedisError
-from coredis.utils import (
-    NodeFlag,
-    nativestr,
-    iteritems,
-    list_or_args,
-    dict_merge,
-    bool_ok,
-    string_keys_to_dict,
-)
+from coredis.utils import (NodeFlag, bool_ok, dict_merge, iteritems,
+                           list_or_args, nativestr, string_keys_to_dict)
 
 
 class BitField:

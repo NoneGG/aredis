@@ -2,22 +2,19 @@
 
 # python std lib
 from __future__ import with_statement
-import re
 
-# rediscluster imports
-from coredis import StrictRedisCluster, ClusterConnectionPool
-from coredis.utils import b
-from coredis.exceptions import (
-    RedisClusterException,
-    WatchError,
-    ResponseError,
-    ConnectionError,
-)
-from tests.cluster.conftest import _get_client
+import re
 
 # 3rd party imports
 import pytest
 from mock import patch
+
+# rediscluster imports
+from coredis import ClusterConnectionPool, StrictRedisCluster
+from coredis.exceptions import (ConnectionError, RedisClusterException,
+                                ResponseError, WatchError)
+from coredis.utils import b
+from tests.cluster.conftest import _get_client
 
 
 class TestPipeline:

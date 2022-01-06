@@ -1,15 +1,12 @@
 import asyncio
+import contextvars
 import time as mod_time
 import uuid
 import warnings
 
-import contextvars
-
 from coredis.connection import ClusterConnection
 from coredis.exceptions import LockError, WatchError
-from coredis.utils import b, dummy
-
-from coredis.utils import LOOP_DEPRECATED
+from coredis.utils import LOOP_DEPRECATED, b, dummy
 
 
 class Lock:

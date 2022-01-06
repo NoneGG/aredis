@@ -7,6 +7,17 @@ from __future__ import with_statement
 import asyncio
 import os
 
+# 3rd party imports
+import pytest
+from mock import Mock, patch
+
+# rediscluster imports
+from coredis import StrictRedis, StrictRedisCluster
+from coredis.connection import (ClusterConnection, Connection,
+                                UnixDomainSocketConnection)
+from coredis.exceptions import RedisClusterException
+from coredis.pool import ClusterConnectionPool, ConnectionPool
+
 try:
     import ssl
 
@@ -14,15 +25,7 @@ try:
 except ImportError:
     ssl_available = False
 
-# rediscluster imports
-from coredis import StrictRedis, StrictRedisCluster
-from coredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
-from coredis.pool import ClusterConnectionPool, ConnectionPool
-from coredis.exceptions import RedisClusterException
 
-# 3rd party imports
-import pytest
-from mock import patch, Mock
 
 
 class DummyConnection:

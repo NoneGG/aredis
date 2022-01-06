@@ -6,27 +6,16 @@ import ssl
 import sys
 import time
 import warnings
-
 from io import BytesIO
 
 import coredis.compat
-from coredis.exceptions import (
-    ConnectionError,
-    TimeoutError,
-    RedisError,
-    ExecAbortError,
-    BusyLoadingError,
-    NoScriptError,
-    ReadOnlyError,
-    ResponseError,
-    InvalidResponse,
-    AskError,
-    MovedError,
-    TryAgainError,
-    ClusterDownError,
-    ClusterCrossSlotError,
-)
-from coredis.utils import b, nativestr, LOOP_DEPRECATED
+from coredis.exceptions import (AskError, BusyLoadingError,
+                                ClusterCrossSlotError, ClusterDownError,
+                                ConnectionError, ExecAbortError,
+                                InvalidResponse, MovedError, NoScriptError,
+                                ReadOnlyError, RedisError, ResponseError,
+                                TimeoutError, TryAgainError)
+from coredis.utils import LOOP_DEPRECATED, b, nativestr
 
 try:
     import hiredis

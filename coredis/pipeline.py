@@ -4,19 +4,11 @@ from itertools import chain
 
 import coredis
 from coredis.client import StrictRedis, StrictRedisCluster
-from coredis.exceptions import (
-    AskError,
-    ClusterTransactionError,
-    ConnectionError,
-    ExecAbortError,
-    MovedError,
-    RedisClusterException,
-    RedisError,
-    ResponseError,
-    TimeoutError,
-    TryAgainError,
-    WatchError,
-)
+from coredis.exceptions import (AskError, ClusterTransactionError,
+                                ConnectionError, ExecAbortError, MovedError,
+                                RedisClusterException, RedisError,
+                                ResponseError, TimeoutError, TryAgainError,
+                                WatchError)
 from coredis.utils import clusterdown_wrapper, dict_merge
 
 ERRORS_ALLOW_RETRY = (

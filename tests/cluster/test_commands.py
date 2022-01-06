@@ -2,21 +2,19 @@
 
 # python std lib
 from __future__ import with_statement
+
 import datetime
 import re
 import time
-import pytest
 from string import ascii_letters
 
-# rediscluster imports
-from coredis.exceptions import (
-    RedisClusterException,
-    ResponseError,
-    DataError,
-    RedisError,
-)
-from coredis.utils import b, iteritems, iterkeys, itervalues
+import pytest
+
 from coredis.commands.server import parse_info
+# rediscluster imports
+from coredis.exceptions import (DataError, RedisClusterException, RedisError,
+                                ResponseError)
+from coredis.utils import b, iteritems, iterkeys, itervalues
 
 
 async def redis_server_time(client):

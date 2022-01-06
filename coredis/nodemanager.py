@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import random
-from coredis.utils import b, hash_slot
+
 from coredis.exceptions import ConnectionError, RedisClusterException
+from coredis.utils import b, hash_slot
 
 
 class NodeManager:

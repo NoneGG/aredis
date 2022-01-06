@@ -3,20 +3,17 @@
 
 import asyncio
 import os
-import warnings
-import time
 import random
 import threading
+import time
+import warnings
 from itertools import chain
 from urllib.parse import parse_qs, unquote, urlparse
-from coredis.connection import (
-    RedisSSLContext,
-    Connection,
-    UnixDomainSocketConnection,
-    ClusterConnection,
-)
-from coredis.nodemanager import NodeManager
+
+from coredis.connection import (ClusterConnection, Connection, RedisSSLContext,
+                                UnixDomainSocketConnection)
 from coredis.exceptions import ConnectionError, RedisClusterException
+from coredis.nodemanager import NodeManager
 
 FALSE_STRINGS = ("0", "F", "FALSE", "N", "NO")
 

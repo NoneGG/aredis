@@ -1,15 +1,8 @@
 import re
+
 from coredis.exceptions import RedisError
-from coredis.utils import (
-    b,
-    iteritems,
-    first_key,
-    iterkeys,
-    itervalues,
-    dict_merge,
-    string_keys_to_dict,
-    int_or_none,
-)
+from coredis.utils import (b, dict_merge, first_key, int_or_none, iteritems,
+                           iterkeys, itervalues, string_keys_to_dict)
 
 VALID_ZADD_OPTIONS = {"NX", "XX", "CH", "INCR"}
 

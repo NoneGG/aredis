@@ -4,13 +4,9 @@ import weakref
 
 from coredis import StrictRedis
 from coredis.connection import Connection
+from coredis.exceptions import (ConnectionError, ReadOnlyError, ResponseError,
+                                TimeoutError)
 from coredis.pool import ConnectionPool
-from coredis.exceptions import (
-    ConnectionError,
-    ResponseError,
-    ReadOnlyError,
-    TimeoutError,
-)
 from coredis.utils import iteritems, nativestr
 
 

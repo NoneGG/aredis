@@ -1,14 +1,11 @@
 from __future__ import with_statement
-import pytest
-import coredis
 
+import pytest
+
+import coredis
 from coredis.exceptions import ConnectionError, TimeoutError
-from coredis.sentinel import (
-    Sentinel,
-    SentinelConnectionPool,
-    MasterNotFoundError,
-    SlaveNotFoundError,
-)
+from coredis.sentinel import (MasterNotFoundError, Sentinel,
+                              SentinelConnectionPool, SlaveNotFoundError)
 
 
 class SentinelTestClient:

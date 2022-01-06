@@ -5,12 +5,13 @@ from __future__ import with_statement
 
 # rediscluster imports
 import asyncio
-from coredis.exceptions import RedisClusterException, NoScriptError, ResponseError
-from coredis.utils import b
 
 # 3rd party imports
 import pytest
 
+from coredis.exceptions import (NoScriptError, RedisClusterException,
+                                ResponseError)
+from coredis.utils import b
 
 multiply_script = """
 local value = redis.call('GET', KEYS[1])

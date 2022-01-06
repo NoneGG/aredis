@@ -1,6 +1,7 @@
 import warnings
 
-from coredis.utils import dict_merge, nativestr, list_keys_to_dict, NodeFlag, bool_ok
+from coredis.utils import (NodeFlag, bool_ok, dict_merge, list_keys_to_dict,
+                           nativestr)
 
 SENTINEL_STATE_TYPES = {
     "can-failover-its-master": int,

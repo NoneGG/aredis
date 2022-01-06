@@ -1,6 +1,9 @@
 from __future__ import with_statement
-import pytest
+
 import pickle
+
+import pytest
+
 import coredis
 
 

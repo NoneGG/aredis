@@ -2,26 +2,24 @@
 
 # python std lib
 from __future__ import with_statement
+
 import asyncio
 import re
 import time
 
-# rediscluster imports
-from coredis import StrictRedisCluster, StrictRedis
-from coredis.pool import ClusterConnectionPool
-from coredis.exceptions import (
-    RedisClusterException,
-    MovedError,
-    AskError,
-    ClusterDownError,
-)
-from coredis.utils import b
-from coredis.nodemanager import NodeManager
-from tests.cluster.conftest import _get_client, skip_if_not_password_protected_nodes
-
-# 3rd party imports
-from mock import patch, Mock, MagicMock
 import pytest
+# 3rd party imports
+from mock import MagicMock, Mock, patch
+
+# rediscluster imports
+from coredis import StrictRedis, StrictRedisCluster
+from coredis.exceptions import (AskError, ClusterDownError, MovedError,
+                                RedisClusterException)
+from coredis.nodemanager import NodeManager
+from coredis.pool import ClusterConnectionPool
+from coredis.utils import b
+from tests.cluster.conftest import (_get_client,
+                                    skip_if_not_password_protected_nodes)
 
 
 class DummyConnectionPool(ClusterConnectionPool):

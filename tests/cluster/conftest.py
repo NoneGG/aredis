@@ -2,15 +2,15 @@
 
 # python std lib
 import asyncio
+import json
 import os
 import sys
-import json
-
-# rediscluster imports
-from coredis import StrictRedisCluster, StrictRedis
 
 # 3rd party imports
 import pytest
+
+# rediscluster imports
+from coredis import StrictRedis, StrictRedisCluster
 
 # put our path in front so we can be sure we are testing locally not against the global package
 basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

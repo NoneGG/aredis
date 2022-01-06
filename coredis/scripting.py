@@ -1,6 +1,7 @@
 import hashlib
-from coredis.pipeline import BasePipeline
+
 from coredis.exceptions import NoScriptError
+from coredis.pipeline import BasePipeline
 from coredis.utils import b
 
 

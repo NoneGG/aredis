@@ -1,6 +1,6 @@
-from coredis.lock import Lock, LuaLock
-from coredis.cache import Cache, IdentityGenerator, Serializer, Compressor
+from coredis.cache import Cache, Compressor, IdentityGenerator, Serializer
 from coredis.exceptions import ResponseError
+from coredis.lock import Lock, LuaLock
 
 
 class ExtraCommandMixin:

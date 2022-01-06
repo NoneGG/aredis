@@ -2,13 +2,14 @@ import hashlib
 import time
 import zlib
 
+from coredis.exceptions import CompressError, SerializeError
+from coredis.utils import b
+
 try:
     import ujson as json
 except ImportError:
     import json
 
-from coredis.utils import b
-from coredis.exceptions import SerializeError, CompressError
 
 
 class IdentityGenerator:

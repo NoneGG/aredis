@@ -1,9 +1,9 @@
 from __future__ import with_statement
+
 import pytest
 
 from coredis.exceptions import NoScriptError, ResponseError
 from coredis.utils import b
-
 
 multiply_script = """
 local value = redis.call('GET', KEYS[1])

@@ -1,13 +1,6 @@
 from coredis.exceptions import DataError
-from coredis.utils import (
-    b,
-    dict_merge,
-    iteritems,
-    first_key,
-    string_keys_to_dict,
-    list_or_args,
-    pairs_to_dict,
-)
+from coredis.utils import (b, dict_merge, first_key, iteritems, list_or_args,
+                           pairs_to_dict, string_keys_to_dict)
 
 
 def parse_hscan(response, **options):

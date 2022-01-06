@@ -1,17 +1,10 @@
 import datetime
 import time as mod_time
-from coredis.exceptions import ResponseError, RedisError, DataError
-from coredis.utils import (
-    merge_result,
-    NodeFlag,
-    first_key,
-    b,
-    dict_merge,
-    int_or_none,
-    bool_ok,
-    string_keys_to_dict,
-    list_keys_to_dict,
-)
+
+from coredis.exceptions import DataError, RedisError, ResponseError
+from coredis.utils import (NodeFlag, b, bool_ok, dict_merge, first_key,
+                           int_or_none, list_keys_to_dict, merge_result,
+                           string_keys_to_dict)
 
 
 def sort_return_tuples(response, **options):

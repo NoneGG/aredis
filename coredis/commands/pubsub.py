@@ -1,5 +1,5 @@
-from coredis.pubsub import PubSub, ClusterPubSub
-from coredis.utils import dict_merge, merge_result, list_keys_to_dict, NodeFlag
+from coredis.pubsub import ClusterPubSub, PubSub
+from coredis.utils import NodeFlag, dict_merge, list_keys_to_dict, merge_result
 
 
 def parse_pubsub_numsub(response, **options):

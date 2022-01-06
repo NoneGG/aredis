@@ -1,5 +1,6 @@
-from coredis.utils import b, dict_merge, bool_ok, nativestr, string_keys_to_dict
 from coredis.exceptions import DataError, RedisClusterException, RedisError
+from coredis.utils import (b, bool_ok, dict_merge, nativestr,
+                           string_keys_to_dict)
 
 
 class ListsCommandMixin:

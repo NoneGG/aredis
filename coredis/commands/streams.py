@@ -1,5 +1,6 @@
 from coredis.exceptions import RedisError
-from coredis.utils import dict_merge, pairs_to_dict, string_keys_to_dict, bool_ok
+from coredis.utils import (bool_ok, dict_merge, pairs_to_dict,
+                           string_keys_to_dict)
 
 
 def stream_list(response):

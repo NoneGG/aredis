@@ -1,8 +1,9 @@
 from __future__ import with_statement
+
 import pytest
 
+from coredis.exceptions import ResponseError, WatchError
 from coredis.utils import b
-from coredis.exceptions import WatchError, ResponseError
 
 
 class TestPipeline:

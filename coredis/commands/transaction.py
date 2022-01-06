@@ -1,9 +1,8 @@
 import asyncio
 import warnings
-from coredis.exceptions import RedisClusterException, WatchError
-from coredis.utils import string_keys_to_dict, bool_ok
 
-from coredis.utils import LOOP_DEPRECATED
+from coredis.exceptions import RedisClusterException, WatchError
+from coredis.utils import LOOP_DEPRECATED, bool_ok, string_keys_to_dict
 
 
 class TransactionCommandMixin:

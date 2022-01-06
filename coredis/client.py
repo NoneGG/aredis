@@ -2,55 +2,40 @@ import asyncio
 import sys
 
 from coredis.commands.cluster import ClusterCommandMixin
-from coredis.commands.connection import (
-    ClusterConnectionCommandMixin,
-    ConnectionCommandMixin,
-)
+from coredis.commands.connection import (ClusterConnectionCommandMixin,
+                                         ConnectionCommandMixin)
 from coredis.commands.extra import ExtraCommandMixin
 from coredis.commands.geo import GeoCommandMixin
 from coredis.commands.hash import ClusterHashCommandMixin, HashCommandMixin
-from coredis.commands.hyperlog import ClusterHyperLogCommandMixin, HyperLogCommandMixin
+from coredis.commands.hyperlog import (ClusterHyperLogCommandMixin,
+                                       HyperLogCommandMixin)
 from coredis.commands.keys import ClusterKeysCommandMixin, KeysCommandMixin
 from coredis.commands.lists import ClusterListsCommandMixin, ListsCommandMixin
-from coredis.commands.pubsub import CLusterPubSubCommandMixin, PubSubCommandMixin
-from coredis.commands.scripting import (
-    ClusterScriptingCommandMixin,
-    ScriptingCommandMixin,
-)
-from coredis.commands.sentinel import ClusterSentinelCommands, SentinelCommandMixin
-from coredis.commands.server import ClusterServerCommandMixin, ServerCommandMixin
+from coredis.commands.pubsub import (CLusterPubSubCommandMixin,
+                                     PubSubCommandMixin)
+from coredis.commands.scripting import (ClusterScriptingCommandMixin,
+                                        ScriptingCommandMixin)
+from coredis.commands.sentinel import (ClusterSentinelCommands,
+                                       SentinelCommandMixin)
+from coredis.commands.server import (ClusterServerCommandMixin,
+                                     ServerCommandMixin)
 from coredis.commands.sets import ClusterSetsCommandMixin, SetsCommandMixin
-from coredis.commands.sorted_set import (
-    ClusterSortedSetCommandMixin,
-    SortedSetCommandMixin,
-)
+from coredis.commands.sorted_set import (ClusterSortedSetCommandMixin,
+                                         SortedSetCommandMixin)
 from coredis.commands.streams import StreamsCommandMixin
-from coredis.commands.strings import ClusterStringsCommandMixin, StringsCommandMixin
-from coredis.commands.transaction import (
-    ClusterTransactionCommandMixin,
-    TransactionCommandMixin,
-)
+from coredis.commands.strings import (ClusterStringsCommandMixin,
+                                      StringsCommandMixin)
+from coredis.commands.transaction import (ClusterTransactionCommandMixin,
+                                          TransactionCommandMixin)
 from coredis.compat import CancelledError
 from coredis.connection import RedisSSLContext, UnixDomainSocketConnection
-from coredis.exceptions import (
-    AskError,
-    BusyLoadingError,
-    ClusterDownError,
-    ClusterError,
-    ConnectionError,
-    MovedError,
-    RedisClusterException,
-    TimeoutError,
-    TryAgainError,
-)
+from coredis.exceptions import (AskError, BusyLoadingError, ClusterDownError,
+                                ClusterError, ConnectionError, MovedError,
+                                RedisClusterException, TimeoutError,
+                                TryAgainError)
 from coredis.pool import ClusterConnectionPool, ConnectionPool
-from coredis.utils import (
-    NodeFlag,
-    blocked_command,
-    clusterdown_wrapper,
-    dict_merge,
-    first_key,
-)
+from coredis.utils import (NodeFlag, blocked_command, clusterdown_wrapper,
+                           dict_merge, first_key)
 
 mixins = [
     ClusterCommandMixin,

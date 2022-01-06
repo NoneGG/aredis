@@ -3,21 +3,14 @@
 # python std lib
 from __future__ import with_statement
 
-# rediscluster imports
-from coredis.commands.cluster import parse_cluster_slots
-from coredis.exceptions import RedisClusterException, ClusterDownError
-from coredis.utils import (
-    list_keys_to_dict,
-    b,
-    dict_merge,
-    blocked_command,
-    merge_result,
-    first_key,
-    clusterdown_wrapper,
-)
-
 # 3rd party imports
 import pytest
+
+# rediscluster imports
+from coredis.commands.cluster import parse_cluster_slots
+from coredis.exceptions import ClusterDownError, RedisClusterException
+from coredis.utils import (b, blocked_command, clusterdown_wrapper, dict_merge,
+                           first_key, list_keys_to_dict, merge_result)
 
 
 def test_parse_cluster_slots():

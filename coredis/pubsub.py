@@ -2,8 +2,8 @@ import asyncio
 import threading
 
 from coredis.compat import CancelledError
-from coredis.exceptions import PubSubError, ConnectionError, TimeoutError
-from coredis.utils import list_or_args, iteritems, iterkeys, nativestr
+from coredis.exceptions import ConnectionError, PubSubError, TimeoutError
+from coredis.utils import iteritems, iterkeys, list_or_args, nativestr
 
 
 class PubSub:

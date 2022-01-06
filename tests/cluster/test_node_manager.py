@@ -2,21 +2,18 @@
 
 # python std lib
 from __future__ import with_statement
+
 import asyncio
 import uuid
 
-# rediscluster imports
-from coredis import (
-    StrictRedis,
-    StrictRedisCluster,
-    RedisClusterException,
-    ConnectionError,
-)
-from coredis.nodemanager import NodeManager
-
 # 3rd party imports
 import pytest
-from mock import patch, Mock
+from mock import Mock, patch
+
+# rediscluster imports
+from coredis import (ConnectionError, RedisClusterException, StrictRedis,
+                     StrictRedisCluster)
+from coredis.nodemanager import NodeManager
 
 
 def test_set_node_name(s):

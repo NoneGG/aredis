@@ -1,17 +1,15 @@
 from __future__ import with_statement
-import os
-import pytest
-import coredis
-import re
-import asyncio
 
+import asyncio
+import os
+import re
+
+import pytest
+
+import coredis
+from coredis.exceptions import (BusyLoadingError, ConnectionError,
+                                ReadOnlyError, RedisError)
 from coredis.pool import to_bool
-from coredis.exceptions import (
-    ConnectionError,
-    RedisError,
-    BusyLoadingError,
-    ReadOnlyError,
-)
 
 
 class DummyConnection:

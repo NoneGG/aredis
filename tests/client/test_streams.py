@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+
 import coredis
 from coredis.exceptions import RedisError, ResponseError
 

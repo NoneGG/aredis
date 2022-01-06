@@ -1,14 +1,16 @@
 from __future__ import with_statement
+
 import binascii
 import datetime
-import pytest
-import coredis
 import time
 from string import ascii_letters
 
-from coredis.utils import b, iteritems, iterkeys, itervalues
+import pytest
+
+import coredis
 from coredis.commands.server import parse_info
-from coredis.exceptions import RedisError, ResponseError, DataError
+from coredis.exceptions import DataError, RedisError, ResponseError
+from coredis.utils import b, iteritems, iterkeys, itervalues
 
 
 async def redis_server_time(client):

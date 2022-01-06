@@ -1,5 +1,6 @@
-from coredis.utils import bool_ok, nativestr, NodeFlag, list_keys_to_dict, dict_merge
-from coredis.exceptions import RedisError, ClusterError
+from coredis.exceptions import ClusterError, RedisError
+from coredis.utils import (NodeFlag, bool_ok, dict_merge, list_keys_to_dict,
+                           nativestr)
 
 
 def parse_cluster_info(response, **options):

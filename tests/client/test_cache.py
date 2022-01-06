@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-import pytest
 import time
+
+import pytest
 
 from coredis.cache import Cache, HerdCache
 

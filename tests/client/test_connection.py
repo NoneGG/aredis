@@ -3,6 +3,7 @@
 import socket
 
 import pytest
+
 from coredis import Connection, UnixDomainSocketConnection
 
 

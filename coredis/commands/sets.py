@@ -1,4 +1,5 @@
-from coredis.utils import b, dict_merge, list_or_args, first_key, string_keys_to_dict
+from coredis.utils import (b, dict_merge, first_key, list_or_args,
+                           string_keys_to_dict)
 
 
 def parse_sscan(response, **options):

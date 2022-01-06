@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import coredis
 import asyncio
-import pytest
 import sys
 from unittest.mock import Mock
+
+import pytest
+
+import coredis
 
 _REDIS_VERSIONS = {}
 

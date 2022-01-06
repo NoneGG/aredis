@@ -1,6 +1,7 @@
-import string
 import random
-from coredis.utils import string_keys_to_dict, dict_merge, bool_ok
+import string
+
+from coredis.utils import bool_ok, dict_merge, string_keys_to_dict
 
 
 class HyperLogCommandMixin:
