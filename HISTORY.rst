@@ -8,7 +8,15 @@ Release Date: 2022-01-05
 * Initial import from `aredis <https://github.com/NoneGG/aredis>`_
 * Add support for python 3.10
 
+------
 
+Imported from fork
+------------------
+
+The changelog below is imported from `aredis <https://github.com/NongGG/aredis>`_
+
+
+------
 v1.1.8
 ------
     * Fixbug: connection is disconnected before idel check, valueError will be raised if a connection(not exist) is removed from connection list
@@ -18,10 +26,12 @@ v1.1.8
     * Fixbug: In redis cluster mode, XREAD command does not function properly
     * Fixbug: slave connection params when there are no slaves
 
+------
 v1.1.7
 ------
     * Fixbug: ModuleNotFoundError raised when install aredis 1.1.6 with Python3.6
 
+------
 v1.1.6
 ------
     * Fixbug: parsing stream messgae with empty payload will cause error(#116)
@@ -29,12 +39,14 @@ v1.1.6
     * New: threading local issue in coroutine, use contextvars instead of threading local in case of the safety of thread local mechanism being broken by coroutine (#120)
     * New: support Python 3.8
 
+------
 v1.1.5
 ------
     * new: Dev conn pool max idle time (#111) release connection if max-idle-time exceeded
     * update: discard travis-CI
     * Fix bug: new stream id used for test_streams
 
+------
 v1.1.4
 ------
     * fix bug: fix cluster port parsing for redis 4+(node info)
@@ -45,6 +57,7 @@ v1.1.4
     * new: add ssl param in get_redis_link to support ssl mode
     * new: add ssl_context to StrictRedis constructor and make it higher priority than ssl parameter
 
+------
 v1.1.3
 ------
     * allow use of zadd options for zadd in sorted sets
@@ -52,6 +65,7 @@ v1.1.3
     * fix bug: implicitly disconnection on cancelled error (#84)
     * new: add support for `streams`(including commands not officially released, see `streams <http://aredis.readthedocs.io/en/latest/streams.html>`_ )
 
+------
 v1.1.2
 ------
     * fix bug: redis command encoding bug
@@ -61,6 +75,7 @@ v1.1.2
     * fix bug: initiation error of aws cluster client caused by not appropiate function list used
     * fix bug: use `ssl_context` instead of ssl_keyfile,ssl_certfile,ssl_cert_reqs,ssl_ca_certs in intialization of connection_pool
 
+------
 v1.1.1
 ------
     * fix bug: connection with unread response being released to connection pool will lead to parse error, now this kind of connection will be destructed directly. `#52 <https://github.com/NoneGG/aredis/issues/52>`_
@@ -70,6 +85,7 @@ v1.1.1
     * sync optimization of client list made by swilly22 from redis-py
     * add support for distributed lock using redis cluster
 
+------
 v1.1.0
 ------
     * sync optimization of scripting from redis-py made by `bgreenberg <https://github.com/bgreenberg-eb>`_ `redis-py#867 <https://github.com/andymccurdy/redis-py/pull/867>`_
@@ -79,6 +95,7 @@ v1.1.0
     * add basic transaction support for single node in cluster
     * fix bug of get_random_connection reported by myrfy001
 
+------
 v1.0.9
 ------
     * fix bug of pubsub, in some env AssertionError is raised because connection is used again after reader stream being fed eof
@@ -86,17 +103,20 @@ v1.0.9
     * add support for command `cluster forget`
     * add support for command option `spop count`
 
+------
 v1.0.8
 ------
     * fix initialization bug of redis cluster client
     * add example to explain how to use `client reply on | off | skip`
 
+------
 v1.0.7
 ------
     * introduce loop argument to aredis
     * add support for command `cluster slots`
     * add support for redis cluster
 
+------
 v1.0.6
 ------
     * bitfield set/get/incrby/overflow supported
@@ -104,21 +124,25 @@ v1.0.6
     * new command `unlink` supported
     * new command `touch` supported
 
+------
 v1.0.5
 ------
     * fix bug in setup.py when using pip to install aredis
 
+------
 v1.0.4
 ------
     * add support for command `pubsub channel`, `pubsub numpat` and `pubsub numsub`
     * add support for command `client pause`
     * reconsitution of commands to make develop easier(which is transparent to user)
 
+------
 v1.0.2
 ------
     * add support for cache (Cache and HerdCache class)
     * fix bug of `PubSub.run_in_thread`
 
+------
 v1.0.1
 ------
 
@@ -126,6 +150,3 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
-
-
-
