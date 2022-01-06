@@ -108,12 +108,3 @@ cluster client
    # (0, 5460): [{'host': b'172.17.0.2', 'node_id': b'0932215036dc0d908cf662fdfca4d3614f221b01', 'server_type': 'master', 'port': 7000},
    # {'host': b'172.17.0.2', 'node_id': b'f6603ab4cb77e672de23a6361ec165f3a1a2bb42', 'server_type': 'slave', 'port': 7003}]}
 
-Benchmark
----------
-
-Please run test script in benchmarks dir to confirm the benchmark.
-
-For benchmark in my environment please see: `benchmark`_
-
-.. _benchmark: http://coredis.readthedocs.io/en/latest/benchmark.html
-
