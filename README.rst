@@ -50,13 +50,8 @@ Getting started
 
 .. _More examples: https://github.com/alisaifee/coredis/tree/master/examples
 
-Tip: since python 3.8 you can use asyncio REPL:
 
-.. code-block:: bash
-
-    $ python -m asyncio
-
-single node client
+Single Node client
 ^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -81,7 +76,7 @@ single node client
     loop = asyncio.get_event_loop()
     loop.run_until_complete(example())
 
-cluster client
+Cluster client
 ^^^^^^^^^^^^^^
 
 .. code-block:: python

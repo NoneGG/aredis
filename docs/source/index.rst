@@ -53,7 +53,7 @@ Getting started
 .. _For more example: https://github.com/alisaifee/coredis/tree/master/examples
 
 
-single node client
+Single Node client
 ^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
@@ -78,7 +78,7 @@ single node client
     loop = asyncio.get_event_loop()
     loop.run_until_complete(example())
 
-cluster client
+Cluster client
 ^^^^^^^^^^^^^^
 
 .. code-block:: python
