@@ -115,15 +115,6 @@ _ROOT_DIR = pathlib.Path(__file__).parent
 with open(str(_ROOT_DIR / "README.rst")) as f:
     long_description = f.read()
 
-with open(str(_ROOT_DIR / "coredis" / "__init__.py")) as f:
-    str_regex = r"['\"]([^'\"]*)['\"]"
-    try:
-        version = re.findall(
-            r"^__version__ = {}$".format(str_regex), f.read(), re.MULTILINE
-        )[0]
-    except IndexError:
-        raise RuntimeError("Unable to find version in __init__.py")
-
 setup(
     name="coredis",
     version=versioneer.get_version(),
