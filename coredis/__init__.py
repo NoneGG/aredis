@@ -14,11 +14,6 @@ from coredis.pool import ClusterConnectionPool, ConnectionPool
 
 from . import _version
 
-__version__ = "1.1.8"
-
-VERSION = tuple(map(int, __version__.split(".")))
-
-
 __all__ = [
     "StrictRedis",
     "StrictRedisCluster",
