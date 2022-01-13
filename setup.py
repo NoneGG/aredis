@@ -131,7 +131,7 @@ setup(
     python_requires=">=3.7",
     extras_require={"hiredis": ["hiredis>=0.2.0"]},
     tests_require=["pytest", "pytest_asyncio>=0.5.0"],
-    cmdclass={"test": PyTest, "build_ext": custom_build_ext, ** versioneer.get_cmdclass()},
+    cmdclass=versioneer.get_cmdclass({"test": PyTest, "build_ext": custom_build_ext}),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
