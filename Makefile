@@ -5,7 +5,7 @@ lint:
 
 lint-fix:
 	black tests coredis
-	mypy coredis
+	#mypy coredis
 	isort -r --profile=black tests coredis
 	autoflake8 -i -r tests coredis
 
