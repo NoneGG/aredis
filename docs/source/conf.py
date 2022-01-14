@@ -12,6 +12,12 @@ import coredis.sentinel
 
 from theme_config import *
 
+master_doc = "index"
+project = "coredis"
+copyright = "2107, NoneGG | 2022, Ali-Akber Saifee"
+author = "alisaifee"
+description = "Async redis client for python"
+
 html_static_path = ["./_static"]
 html_css_files = [
     "custom.css",
@@ -27,6 +33,9 @@ html_sidebars = {
     ]
 }
 
+html_theme_options["description"] = description
+html_theme_options["github_repo"] = "coredis"
+
 extensions = [
     "alabaster",
     "sphinx.ext.autodoc",
@@ -35,8 +44,9 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
-    "sphinx_autodoc_typehints",
     "sphinx.ext.viewcode",
+    "sphinx_autodoc_typehints",
+    "sphinx_paramlinks",
 ]
 
 autodoc_default_options = {
@@ -46,20 +56,14 @@ autodoc_default_options = {
     "member-order": "bysource",
 }
 
-master_doc = "index"
-project = "coredis"
-copyright = "2107, NoneGG | 2022, Ali-Akber Saifee"
-author = "alisaifee"
-description = "Async redis client for python"
-
-html_theme_options["description"] = description
-html_theme_options["github_repo"] = "coredis"
 
 version = release = coredis.__version__.split("+")[0]
 
 add_module_names = False
 
-autosectionlabel_maxdepth = 3
+autoclass_content = "both"
+
+autosectionlabel_maxdepth = 2
 autosectionlabel_prefix_document = True
 
 extlinks = {"pypi": ("https://pypi.org/project/%s", "%s")}
