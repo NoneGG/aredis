@@ -22,15 +22,13 @@ coredis
 |docs| |codecov| |pypi-ver| |circleci-status| |python-ver|
 
 coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_,
-an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
+an async redis client ported from `redis-py <https://github.com/redis/redis-py>`_
 
 
 Installation
 ------------
 
-coredis requires a running Redis server.
-
-To install coredis, simply:
+To install coredis:
 
 .. code-block:: bash
 
