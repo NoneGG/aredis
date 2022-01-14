@@ -1,3 +1,5 @@
+`aredis <https://github.com/NoneGG/aredis>`_
+
 Changelog
 =========
 
@@ -5,7 +7,7 @@ v2.0.0
 ------
 Release Date: 2022-01-05
 
-* Initial import from `aredis <https://github.com/NoneGG/aredis>`_
+* Initial import from `aredis`_
 * Add support for python 3.10
 
 ------
@@ -13,7 +15,7 @@ Release Date: 2022-01-05
 Imported from fork
 ------------------
 
-The changelog below is imported from `aredis <https://github.com/NongGG/aredis>`_
+The changelog below is imported from `aredis`_
 
 
 ------
