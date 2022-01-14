@@ -135,3 +135,7 @@ dl.field-list {
 em.sig-param span.default_value {
   color: var(--red2);
 }
+
+table.command-table {
+  margin-left: 0 !important;
+}

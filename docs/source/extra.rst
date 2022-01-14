@@ -1,5 +1,5 @@
-Extra
-=====
+Extras
+======
 
 Lock
 ----
@@ -161,10 +161,10 @@ and if you don't need it, just set them to None when intialize a cache:
     class CustomIdentityGenerator(IdentityGenerator):
         def generate(self, key, content):
             return key
-    
+
     def cpu_intensive_function(data):
         return data
-    
+
     async def example():
         client = coredis.StrictRedis()
         await client.flushall()

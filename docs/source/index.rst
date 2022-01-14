@@ -23,35 +23,26 @@ coredis
       :alt: Code coverage
       :class: header-badge
 
-coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_, an async redis client ported from `redis-py <https://github.com/andymccurdy/redis-py>`_
-
+coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_,
+an async redis client ported from `redis-py <https://github.com/redis/redis-py>`_
 
 Installation
 ------------
 
-coredis requires a running Redis server.
+.. code-block:: bash
 
-To install coredis, simply:
+    $ pip install coredis
+
+or
 
 .. code-block:: bash
 
-    $ pip install coredis[hiredis]
+   $ pip install coredis[hiredis]
 
-
-or from source:
-
-.. code-block:: bash
-
-    $ python setup.py install
 
 
 Getting started
 ---------------
-
-`For more example`_
-
-.. _For more example: https://github.com/alisaifee/coredis/tree/master/examples
-
 
 Single Node client
 ^^^^^^^^^^^^^^^^^^
@@ -112,14 +103,13 @@ Dependencies & supported python versions
 
 hiredis and uvloop can make coredis faster, but it is up to you whether to install them or not.
 
-- Optional Python: hiredis >= `0.2.0`. Older versions might work but is not tested.
-- Optional event loop policy: uvloop >= `0.8.0`. Older versions might work but is not tested.
-- A working Redis cluster based on version >= `3.0.0` is required. Only `3.0.x` releases is supported.
+- :pypi:`hiredis` >= `0.2.0`. Older versions might work but is not tested.
+- :pypi:`uvloop` >= `0.8.0`. Older versions might work but is not tested.
 
 
 
 Supported python versions
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - 3.7
 - 3.8
@@ -127,27 +117,22 @@ Supported python versions
 - 3.10
 
 
-API reference
--------------
-Most API are described in `redis command reference <https://redis.io/commands>`_ what makes difference and those should be noticed are referred in doc specially.
-You can post a new issue / read redis command reference / read annotation of API (mainly about how to use them) if you have any problem about the API.
-Related issue are welcome.
+The API (mostly) follows :doc:`Redis-py <redis-py:index>`. For a full mapping
+of redis commands to API methods refer to the :ref:`compatibility:command compatibilty`
+section.
 
 
-The Usage Guide
----------------
+Usage Guide
+-----------
 
 .. toctree::
     :maxdepth: 2
-    :glob:
 
-    notice
-    benchmark
+    api_reference
     pubsub
     sentinel
     scripting
     pipelines
-    streams
     extra
 
 The Community Guide
@@ -155,11 +140,9 @@ The Community Guide
 
 .. toctree::
     :maxdepth: 2
-    :glob:
 
-    testing
+    compatibility
+    api
     release_notes
+    testing
     authors
-    license
-    todo
-
