@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import asyncio
-import sys
 from unittest.mock import Mock
 
 import pytest

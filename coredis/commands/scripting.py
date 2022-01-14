@@ -1,5 +1,4 @@
-from coredis.utils import (NodeFlag, bool_ok, dict_merge, list_keys_to_dict,
-                           nativestr)
+from coredis.utils import NodeFlag, bool_ok, dict_merge, list_keys_to_dict, nativestr
 
 
 class ScriptingCommandMixin:
@@ -71,7 +70,7 @@ class ClusterScriptingCommandMixin(ScriptingCommandMixin):
     NODES_FLAGS = dict_merge(
         {"SCRIPT KILL": NodeFlag.BLOCKED},
         list_keys_to_dict(
-            ["SCRIPT LOAD", "SCRIPT FLUSH", "SCRIPT EXISTS",], NodeFlag.ALL_MASTERS
+            ["SCRIPT LOAD", "SCRIPT FLUSH", "SCRIPT EXISTS"], NodeFlag.ALL_MASTERS
         ),
     )
 

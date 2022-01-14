@@ -7,8 +7,12 @@ import re
 import pytest
 
 import coredis
-from coredis.exceptions import (BusyLoadingError, ConnectionError,
-                                ReadOnlyError, RedisError)
+from coredis.exceptions import (
+    BusyLoadingError,
+    ConnectionError,
+    ReadOnlyError,
+    RedisError,
+)
 from coredis.pool import to_bool
 
 

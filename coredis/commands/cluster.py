@@ -1,6 +1,5 @@
 from coredis.exceptions import ClusterError, RedisError
-from coredis.utils import (NodeFlag, bool_ok, dict_merge, list_keys_to_dict,
-                           nativestr)
+from coredis.utils import NodeFlag, bool_ok, dict_merge, list_keys_to_dict, nativestr
 
 
 def parse_cluster_info(response, **options):
@@ -81,17 +80,20 @@ def parse_cluster_nodes(resp, **options):
     return nodes
 
 
+def parse_node(node):
+    return {
+        "host": node[0],
+        "port": node[1],
+        "node_id": node[2] if len(node) > 2 else "",
+        "server_type": "slave",
+    }
+
+
 def parse_cluster_slots(response):
     res = dict()
     for slot_info in response:
         min_slot, max_slot = slot_info[:2]
         nodes = slot_info[2:]
-        parse_node = lambda node: {
-            "host": node[0],
-            "port": node[1],
-            "node_id": node[2] if len(node) > 2 else "",
-            "server_type": "slave",
-        }
         res[(min_slot, max_slot)] = [parse_node(node) for node in nodes]
         res[(min_slot, max_slot)][0]["server_type"] = "master"
     return res

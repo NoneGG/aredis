@@ -4,8 +4,12 @@ import weakref
 
 from coredis import StrictRedis
 from coredis.connection import Connection
-from coredis.exceptions import (ConnectionError, ReadOnlyError, ResponseError,
-                                TimeoutError)
+from coredis.exceptions import (
+    ConnectionError,
+    ReadOnlyError,
+    ResponseError,
+    TimeoutError,
+)
 from coredis.pool import ConnectionPool
 from coredis.utils import iteritems, nativestr
 
@@ -144,31 +148,18 @@ class SentinelConnectionPool(ConnectionPool):
 
 class Sentinel:
     """
-    Redis Sentinel cluster client
+    Redis Sentinel client
 
-    from coredis.sentinel import Sentinel
-    sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
-    async def test():
-        master = await sentinel.master_for('mymaster', stream_timeout=0.1)
-        await master.set('foo', 'bar')
-        slave = await sentinel.slave_for('mymaster', stream_timeout=0.1)
-        await slave.get('foo')
+    Example use::
 
-    ``sentinels`` is a list of sentinel nodes. Each node is represented by
-    a pair (hostname, port).
+        from coredis.sentinel import Sentinel
+        sentinel = Sentinel([('localhost', 26379)], stream_timeout=0.1)
+        async def test():
+            master = await sentinel.master_for('mymaster', stream_timeout=0.1)
+            await master.set('foo', 'bar')
+            slave = await sentinel.slave_for('mymaster', stream_timeout=0.1)
+            await slave.get('foo')
 
-    ``min_other_sentinels`` defined a minimum number of peers for a sentinel.
-    When querying a sentinel, if it doesn't meet this threshold, responses
-    from that sentinel won't be considered valid.
-
-    ``sentinel_kwargs`` is a dictionary of connection arguments used when
-    connecting to sentinel instances. Any argument that can be passed to
-    a normal Redis connection can be specified here. If ``sentinel_kwargs`` is
-    not specified, any stream_timeout and socket_keepalive options specified
-    in ``connection_kwargs`` will be used.
-
-    ``connection_kwargs`` are keyword arguments that will be used when
-    establishing a connection to a Redis server.
     """
 
     def __init__(
@@ -178,6 +169,20 @@ class Sentinel:
         sentinel_kwargs=None,
         **connection_kwargs
     ):
+        """
+        :param sentinels: is a list of sentinel nodes. Each node is represented by
+         a pair (hostname, port).
+        :param min_other_sentinels: defined a minimum number of peers for a sentinel.
+         When querying a sentinel, if it doesn't meet this threshold, responses
+         from that sentinel won't be considered valid.
+        :param sentinel_kwargs: is a dictionary of connection arguments used when
+         connecting to sentinel instances. Any argument that can be passed to
+         a normal Redis connection can be specified here. If :paramref:`sentinel_kwargs` is
+         not specified, any stream_timeout and socket_keepalive options specified
+         in :paramref:`connection_kwargs` will be used.
+        :param connection_kwargs: are keyword arguments that will be used when
+         establishing a connection to a Redis server.
+        """
         # if sentinel_kwargs isn't defined, use the socket_* options from
         # connection_kwargs
         if sentinel_kwargs is None:
@@ -223,8 +228,8 @@ class Sentinel:
         Asks sentinel servers for the Redis master's address corresponding
         to the service labeled ``service_name``.
 
-        Returns a pair (address, port) or raises MasterNotFoundError if no
-        master is found.
+        :return: A pair (address, port) or raises MasterNotFoundError if no
+         master is found.
         """
         for sentinel_no, sentinel in enumerate(self.sentinels):
             try:

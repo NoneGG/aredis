@@ -8,13 +8,22 @@ import time
 import warnings
 from io import BytesIO
 
-import coredis.compat
-from coredis.exceptions import (AskError, BusyLoadingError,
-                                ClusterCrossSlotError, ClusterDownError,
-                                ConnectionError, ExecAbortError,
-                                InvalidResponse, MovedError, NoScriptError,
-                                ReadOnlyError, RedisError, ResponseError,
-                                TimeoutError, TryAgainError)
+from coredis.exceptions import (
+    AskError,
+    BusyLoadingError,
+    ClusterCrossSlotError,
+    ClusterDownError,
+    ConnectionError,
+    ExecAbortError,
+    InvalidResponse,
+    MovedError,
+    NoScriptError,
+    ReadOnlyError,
+    RedisError,
+    ResponseError,
+    TimeoutError,
+    TryAgainError,
+)
 from coredis.utils import LOOP_DEPRECATED, b, nativestr
 
 try:
@@ -124,8 +133,8 @@ class SocketBuffer:
         try:
             self.purge()
             self._buffer.close()
-        except:
-            # issue #633 suggests the purge/close somehow raised a
+        except Exception:
+            # redis-py issue #633 suggests the purge/close somehow raised a
             # BadFileDescriptor error. Perhaps the client ran out of
             # memory or something else? It's probably OK to ignore
             # any error being raised from purge/close since we're
@@ -155,7 +164,7 @@ class BaseParser:
         """Parse an error response"""
         error_code = response.split(" ")[0]
         if error_code in self.EXCEPTION_CLASSES:
-            response = response[len(error_code) + 1 :]
+            response = response[len(error_code) + 1:]
             exception_class = self.EXCEPTION_CLASSES[error_code]
             if isinstance(exception_class, dict):
                 exception_class = exception_class.get(response, ResponseError)
@@ -302,7 +311,7 @@ class HiredisParser(BaseParser):
                 buffer = await self._stream.read(self._read_size)
             # CancelledError will be caught by client so that command won't be retried again
             # For more detailed discussion please see https://github.com/alisaifee/coredis/issues/56
-            except coredis.compat.CancelledError:
+            except asyncio.CancelledError:
                 raise
             except Exception:
                 e = sys.exc_info()[1]
@@ -414,9 +423,9 @@ class BaseConnection:
     async def connect(self):
         try:
             await self._connect()
-        except coredis.compat.CancelledError:
+        except asyncio.CancelledError:
             raise
-        except Exception as exc:
+        except Exception:
             raise ConnectionError()
         # run any user callbacks. right now the only internal callback
         # is for pubsub channel/pattern resubscription
@@ -469,7 +478,7 @@ class BaseConnection:
             if isinstance(command, str):
                 command = [command]
             self._writer.writelines(command)
-        except coredis.compat.TimeoutError:
+        except TimeoutError:
             self.disconnect()
             raise TimeoutError("Timeout writing to socket")
         except Exception:
@@ -483,7 +492,7 @@ class BaseConnection:
             raise ConnectionError(
                 "Error %s while writing to socket. %s." % (errno, errmsg)
             )
-        except:
+        except Exception:
             self.disconnect()
             raise
 

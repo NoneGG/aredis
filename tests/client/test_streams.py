@@ -3,7 +3,6 @@
 
 import pytest
 
-import coredis
 from coredis.exceptions import RedisError, ResponseError
 
 
@@ -120,7 +119,7 @@ class TestStreams:
         for idx in range(1, 10):
             await r.xadd("test_stream", {"k1": "v1", "k2": 1}, stream_id=idx)
         # read from group does not exist
-        with pytest.raises(ResponseError) as exc:
+        with pytest.raises(ResponseError):
             await r.xreadgroup(
                 "wrong_group", "lalala", count=10, block=10, test_stream="1"
             )

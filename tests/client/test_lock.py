@@ -1,6 +1,5 @@
 from __future__ import with_statement
 
-import asyncio
 import time
 
 import pytest

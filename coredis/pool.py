@@ -10,8 +10,12 @@ import warnings
 from itertools import chain
 from urllib.parse import parse_qs, unquote, urlparse
 
-from coredis.connection import (ClusterConnection, Connection, RedisSSLContext,
-                                UnixDomainSocketConnection)
+from coredis.connection import (
+    ClusterConnection,
+    Connection,
+    RedisSSLContext,
+    UnixDomainSocketConnection,
+)
 from coredis.exceptions import ConnectionError, RedisClusterException
 from coredis.nodemanager import NodeManager
 
@@ -121,7 +125,7 @@ class ConnectionPool:
 
         else:
             url_options.update(
-                {"host": hostname, "port": int(url.port or 6379), "password": password,}
+                {"host": hostname, "port": int(url.port or 6379), "password": password}
             )
 
             # If there's a path argument, use it as the db argument if a
@@ -440,9 +444,9 @@ class ClusterConnectionPool(ConnectionPool):
         if connection.pid != self.pid:
             return
 
-        # Remove the current connection from _in_use_connection and add it back to the available pool
-        # There is cases where the connection is to be removed but it will not exist and there
-        # must be a safe way to remove
+        # Remove the current connection from _in_use_connection and add it back to the available
+        # pool. There is cases where the connection is to be removed but it will not exist and
+        # there must be a safe way to remove
         i_c = self._in_use_connections.get(connection.node["name"], set())
         if connection in i_c:
             i_c.remove(connection)

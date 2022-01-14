@@ -11,8 +11,12 @@ import pytest
 from mock import Mock, patch
 
 # rediscluster imports
-from coredis import (ConnectionError, RedisClusterException, StrictRedis,
-                     StrictRedisCluster)
+from coredis import (
+    ConnectionError,
+    RedisClusterException,
+    StrictRedis,
+    StrictRedisCluster,
+)
 from coredis.nodemanager import NodeManager
 
 

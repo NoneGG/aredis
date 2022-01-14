@@ -11,7 +11,6 @@ except ImportError:
     import json
 
 
-
 class IdentityGenerator:
     """
     Generator of identity for unique key,
@@ -70,7 +69,7 @@ class Compressor:
         if len(content) > self.min_length:
             try:
                 return zlib.compress(content, self.preset)
-            except zlib.error as exc:
+            except zlib.error:
                 raise CompressError("Content can not be compressed.")
         return content
 
@@ -78,7 +77,7 @@ class Compressor:
         content = self._trans_type(content)
         try:
             return zlib.decompress(content)
-        except zlib.error as exc:
+        except zlib.error:
             raise CompressError("Content can not be decompressed.")
 
 
@@ -101,14 +100,14 @@ class Serializer:
     def serialize(self, content):
         try:
             return json.dumps(content)
-        except Exception as exc:
+        except Exception:
             raise SerializeError("Content can not be serialized.")
 
     def deserialize(self, content):
         content = self._trans_type(content)
         try:
             return json.loads(content)
-        except Exception as exc:
+        except Exception:
             raise SerializeError("Content can not be deserialized.")
 
 

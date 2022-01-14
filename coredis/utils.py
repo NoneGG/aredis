@@ -169,7 +169,8 @@ def clusterdown_wrapper(func):
      - connection_pool was reseted
      - refereh_table_asap set to True
 
-    It will try 3 times to rerun the command and raises ClusterDownException if it continues to fail.
+    It will try 3 times to rerun the command and raises ClusterDownException if it continues to
+    fail.
     """
 
     @wraps(func)
@@ -456,17 +457,17 @@ if not _C_EXTENSION_SPEEDUP:
             ]
         return crc & 0xFFFF
 
-    crc16 = _crc16
+    crc16 = _crc16  # noqa: F811
 
     def _hash_slot(key):
         start = key.find(b"{")
         if start > -1:
             end = key.find(b"}", start + 1)
             if end > -1 and end != start + 1:
-                key = key[start + 1 : end]
+                key = key[start + 1:end]
         return crc16(key) % 16384
 
-    hash_slot = _hash_slot
+    hash_slot = _hash_slot  # noqa: F811
 
 
 class NodeFlag:

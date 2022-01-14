@@ -105,9 +105,9 @@ class CLusterPubSubCommandMixin(PubSubCommandMixin):
     )
 
     RESULT_CALLBACKS = dict_merge(
-        list_keys_to_dict(["PUBSUB CHANNELS",], parse_cluster_pubsub_channels),
-        list_keys_to_dict(["PUBSUB NUMSUB",], parse_cluster_pubsub_numsub),
-        list_keys_to_dict(["PUBSUB NUMPAT",], parse_cluster_pubsub_numpat),
+        list_keys_to_dict(["PUBSUB CHANNELS"], parse_cluster_pubsub_channels),
+        list_keys_to_dict(["PUBSUB NUMSUB"], parse_cluster_pubsub_numsub),
+        list_keys_to_dict(["PUBSUB NUMPAT"], parse_cluster_pubsub_numpat),
     )
 
     def pubsub(self, **kwargs):

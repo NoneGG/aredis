@@ -7,7 +7,7 @@ from coredis.utils import bool_ok, dict_merge, string_keys_to_dict
 class HyperLogCommandMixin:
 
     RESPONSE_CALLBACKS = dict_merge(
-        string_keys_to_dict("PFADD PFCOUNT", int), {"PFMERGE": bool_ok,}
+        string_keys_to_dict("PFADD PFCOUNT", int), {"PFMERGE": bool_ok}
     )
 
     async def pfadd(self, name, *values):
@@ -31,16 +31,14 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
         """
         Merge N different HyperLogLogs into a single one.
 
-        Cluster impl:
-            Very special implementation is required to make pfmerge() work
-            But it works :]
-            It works by first fetching all HLL objects that should be merged and
-            move them to one hashslot so that pfmerge operation can be performed without
-            any 'CROSSSLOT' error.
-            After the PFMERGE operation is done then it will be moved to the correct location
-            within the cluster and cleanup is done.
+        In cluster mode this works by first fetching all HLL objects that should be merged and
+        move them to one hashslot so that pfmerge operation can be performed without
+        any 'CROSSSLOT' error.
 
-            This operation is no longer atomic because of all the operations that has to be done.
+        After the PFMERGE operation is done then it will be moved to the correct location
+        within the cluster and cleanup is done.
+
+        This operation is no longer atomic because of all the operations that has to be done.
         """
         all_k = []
 
@@ -52,8 +50,8 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
         # Randomize a keyslot hash that should be used inside {} when doing SET
         random_hash_slot = self._random_id()
 
-        # Special handling of dest variable if it allready exists, then it shold be included in the HLL merge
-        # dest can exists anywhere in the cluster.
+        # Special handling of dest variable if it already exists, then it shold be included
+        # in the HLL merge dest can exists anywhere in the cluster.
         dest_data = await self.get(dest)
 
         if dest_data:
@@ -69,7 +67,8 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
         tmp_dest = self._random_good_hashslot_key(random_hash_slot)
         await self.execute_command("PFMERGE", tmp_dest, *all_k)
 
-        # Do GET and SET so that result will be stored in the destination object any where in the cluster
+        # Do GET and SET so that result will be stored in the destination object any where in the
+        # cluster
         parsed_dest = await self.get(tmp_dest)
         await self.set(dest, parsed_dest)
 
@@ -85,7 +84,7 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
         """
         Generate a good random key with a low probability of collision between any other key.
         """
-        random_id = "{{0}}{1}".format(hashslot, self._random_id())
+        random_id = f"{{hashslot}}{self._random_id()}"
         return random_id
 
     def _random_id(self, size=16, chars=string.ascii_uppercase + string.digits):

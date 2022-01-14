@@ -4,8 +4,12 @@ import pytest
 
 import coredis
 from coredis.exceptions import ConnectionError, TimeoutError
-from coredis.sentinel import (MasterNotFoundError, Sentinel,
-                              SentinelConnectionPool, SlaveNotFoundError)
+from coredis.sentinel import (
+    MasterNotFoundError,
+    Sentinel,
+    SentinelConnectionPool,
+    SlaveNotFoundError,
+)
 
 
 class SentinelTestClient:

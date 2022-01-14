@@ -1,6 +1,5 @@
 from coredis.exceptions import RedisError
-from coredis.utils import (bool_ok, dict_merge, pairs_to_dict,
-                           string_keys_to_dict)
+from coredis.utils import bool_ok, dict_merge, pairs_to_dict, string_keys_to_dict
 
 
 def stream_list(response):
@@ -56,28 +55,24 @@ class StreamsCommandMixin:
         Appends the specified stream entry to the stream at the specified key.
         If the key does not exist, as a side effect of running
         this command the key is created with a stream value.
-        Available since 5.0.0.
-        Time complexity: O(log(N)) with N being the number of items already into the stream.
 
         :param name: name of the stream
         :param entry: key-values to be appended to the stream
         :param max_len: max length of the stream
-        length will not be limited max_len is set to None
-        notice: max_len should be int greater than 0,
-        if set to 0 or negative, the stream length will not be limited
-
+         length will not be limited max_len is set to None
+         notice: max_len should be int greater than 0,
+         if set to 0 or negative, the stream length will not be limited
         :param stream_id: id of the options appended to the stream.
-        The XADD command will auto-generate a unique id for you
-        if the id argument specified is the * character.
-        ID are specified by two numbers separated by a "-" character
-
+         The XADD command will auto-generate a unique id for you
+         if the id argument specified is the * character.
+         ID are specified by two numbers separated by a "-" character
         :param approximate: whether redis will limit
-        the stream with given max length exactly, if set to True,
-        there will be a few tens of entries more,
-        but never less than 1000 items
-
+         the stream with given max length exactly, if set to True,
+         there will be a few tens of entries more,
+         but never less than 1000 items
         :return: id auto generated or the specified id given.
-        notice: specified id without "-" character will be completed like "id-0"
+
+        .. note:: specified id without "-" character will be completed like "id-0"
         """
         pieces = []
         if max_len is not None:
@@ -102,19 +97,14 @@ class StreamsCommandMixin:
         """
         Read stream values within an interval.
 
-        Available since 5.0.0.
-        Time complexity: O(log(N)+M) with N being the number of elements in the stream and M the number
-        of elements being returned. If M is constant (e.g. always asking for the first 10 elements with COUNT),
-        you can consider it O(log(N)).
-
         :param name: name of the stream.
         :param start: first stream ID. defaults to '-',
-               meaning the earliest available.
+         meaning the earliest available.
         :param end: last stream ID. defaults to '+',
-                meaning the latest available.
+         meaning the latest available.
         :param count: if set, only return this many items, beginning with the
-               earliest available.
-        :return list of (stream_id, entry(k-v pair))
+         earliest available.
+        :return: list of (stream_id, entry(k-v pair))
         """
 
         pieces = [start, end]
@@ -128,11 +118,6 @@ class StreamsCommandMixin:
     async def xrevrange(self, name: str, start="+", end="-", count=None) -> list:
         """
         Read stream values within an interval, in reverse order.
-
-        Available since 5.0.0.
-        Time complexity: O(log(N)+M) with N being the number of elements in the stream and M the number
-        of elements being returned. If M is constant (e.g. always asking for the first 10 elements with COUNT),
-        you can consider it O(log(N)).
 
         :param name: name of the stream
         :param start: first stream ID. defaults to '+',
@@ -153,15 +138,6 @@ class StreamsCommandMixin:
 
     async def xread(self, count=None, block=None, **streams) -> dict:
         """
-        Available since 5.0.0.
-
-        Time complexity:
-        For each stream mentioned: O(log(N)+M) with N being the number
-        of elements in the stream and M the number of elements being returned.
-        If M is constant (e.g. always asking for the first 10 elements with COUNT),
-        you can consider it O(log(N)). On the other side, XADD will pay the O(N)
-        time in order to serve the N clients blocked on the stream getting new data.
-
         Read data from one or multiple streams,
         only returning entries with an ID greater
         than the last received ID reported by the caller.
@@ -196,16 +172,6 @@ class StreamsCommandMixin:
         self, group: str, consumer_id: str, count=None, block=None, **streams
     ):
         """
-        Available since 5.0.0.
-
-        Time complexity:
-        For each stream mentioned: O(log(N)+M) with N being the number of elements
-        in the stream and M the number of elements being returned.
-        If M is constant (e.g. always asking for the first 10 elements with COUNT),
-        you can consider it O(log(N)). On the other side,
-        XADD will pay the O(N) time in order to serve
-        the N clients blocked on the stream getting new data.
-
         Read data from one or multiple streams via the consumer group,
         only returning entries with an ID greater
         than the last received ID reported by the caller.
@@ -242,15 +208,6 @@ class StreamsCommandMixin:
         self, name: str, group: str, start="-", end="+", count=None, consumer=None
     ) -> list:
         """
-        Available since 5.0.0.
-
-        Time complexity:
-        O(log(N)+M) with N being the number of elements in the consumer
-        group pending entries list, and M the number of elements being returned.
-        When the command returns just the summary it runs in O(1)
-        time assuming the list of consumers is small,
-        otherwise there is additional O(N) time needed to iterate every consumer.
-
         Fetching data from a stream via a consumer group,
         and not acknowledging such data,
         has the effect of creating pending entries.
@@ -281,17 +238,15 @@ class StreamsCommandMixin:
 
     async def xtrim(self, name: str, max_len: int, approximate=True) -> int:
         """
-        [NOTICE] Not officially released yet
-
         XTRIM is designed to accept different trimming strategies,
         even if currently only MAXLEN is implemented.
 
         :param name: name of the stream
         :param max_len: max length of the stream after being trimmed
         :param approximate: whether redis will limit
-        the stream with given max length exactly, if set to True,
-        there will be a few tens of entries more,
-        but never less than 1000 items:
+         the stream with given max length exactly, if set to True,
+         there will be a few tens of entries more,
+         but never less than 1000 items:
 
         :return: number of entries trimmed
         """
@@ -303,7 +258,6 @@ class StreamsCommandMixin:
 
     async def xdel(self, name: str, stream_id: str) -> int:
         """
-        [NOTICE] Not officially released yet
         [NOTICE] In the current implementation, memory is not
         really reclaimed until a macro node is completely empty,
         so you should not abuse this feature.
@@ -317,8 +271,6 @@ class StreamsCommandMixin:
 
     async def xinfo_consumers(self, name: str, group: str) -> list:
         """
-        [NOTICE] Not officially released yet
-
         XINFO command is an observability interface that can be used
         with sub-commands in order to get information
         about streams or consumer groups.
@@ -330,8 +282,6 @@ class StreamsCommandMixin:
 
     async def xinfo_groups(self, name: str) -> list:
         """
-        [NOTICE] Not officially released yet
-
         XINFO command is an observability interface that can be used
         with sub-commands in order to get information
         about streams or consumer groups.
@@ -342,8 +292,6 @@ class StreamsCommandMixin:
 
     async def xinfo_stream(self, name: str) -> dict:
         """
-        [NOTICE] Not officially released yet
-
         XINFO command is an observability interface that can be used
         with sub-commands in order to get information
         about streams or consumer groups.
@@ -354,8 +302,6 @@ class StreamsCommandMixin:
 
     async def xack(self, name: str, group: str, stream_id: str) -> int:
         """
-        [NOTICE] Not officially released yet
-
         XACK is the command that allows a consumer to mark a pending message as correctly processed.
 
         :param name: name of the stream
@@ -369,9 +315,8 @@ class StreamsCommandMixin:
         self, name: str, group: str, consumer: str, min_idle_time: int, *stream_ids
     ):
         """
-        [NOTICE] Not officially released yet
-
-        Gets ownership of one or multiple messages in the Pending Entries List of a given stream consumer group.
+        Gets ownership of one or multiple messages in the Pending Entries List of a given stream
+        consumer group.
 
         :param name: name of the stream
         :param group: name of the consumer group
@@ -389,8 +334,8 @@ class StreamsCommandMixin:
 
     async def xgroup_create(self, name: str, group: str, stream_id="$") -> bool:
         """
-        [NOTICE] Not officially released yet
         XGROUP is used in order to create, destroy and manage consumer groups.
+
         :param name: name of the stream
         :param group: name of the consumer group
         :param stream_id:
@@ -404,7 +349,6 @@ class StreamsCommandMixin:
 
     async def xgroup_set_id(self, name: str, group: str, stream_id: str) -> bool:
         """
-        [NOTICE] Not officially released yet
         :param name: name of the stream
         :param group: name of the consumer group
         :param stream_id:
@@ -418,8 +362,8 @@ class StreamsCommandMixin:
 
     async def xgroup_destroy(self, name: str, group: str) -> int:
         """
-        [NOTICE] Not officially released yet
         XGROUP is used in order to create, destroy and manage consumer groups.
+
         :param name: name of the stream
         :param group: name of the consumer group
         """
@@ -427,8 +371,8 @@ class StreamsCommandMixin:
 
     async def xgroup_del_consumer(self, name: str, group: str, consumer: str) -> int:
         """
-        [NOTICE] Not officially released yet
         XGROUP is used in order to create, destroy and manage consumer groups.
+
         :param name: name of the stream
         :param group: name of the consumer group
         :param consumer: name of the consumer

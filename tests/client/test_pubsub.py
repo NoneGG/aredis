@@ -42,7 +42,7 @@ def make_subscribe_test_data(pubsub, type):
             "unsub_type": "unsubscribe",
             "sub_func": pubsub.subscribe,
             "unsub_func": pubsub.unsubscribe,
-            "keys": ["foo", "bar", "uni" + chr(56) + "code",],
+            "keys": ["foo", "bar", "uni" + chr(56) + "code"],
         }
     elif type == "pattern":
         return {

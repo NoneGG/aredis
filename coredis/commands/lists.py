@@ -1,6 +1,5 @@
 from coredis.exceptions import DataError, RedisClusterException, RedisError
-from coredis.utils import (b, bool_ok, dict_merge, nativestr,
-                           string_keys_to_dict)
+from coredis.utils import b, bool_ok, dict_merge, nativestr, string_keys_to_dict
 
 
 class ListsCommandMixin:
@@ -273,7 +272,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             if desc:
                 data = data[::-1]
             if not (start is None and num is None):
-                data = data[start : start + num]
+                data = data[start:start + num]
 
             if get:
                 data = await self._retrive_data_from_sort(data, get)

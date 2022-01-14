@@ -1,14 +1,22 @@
+from asyncio import CancelledError
 import inspect
 import sys
 from itertools import chain
 
-import coredis
 from coredis.client import StrictRedis, StrictRedisCluster
-from coredis.exceptions import (AskError, ClusterTransactionError,
-                                ConnectionError, ExecAbortError, MovedError,
-                                RedisClusterException, RedisError,
-                                ResponseError, TimeoutError, TryAgainError,
-                                WatchError)
+from coredis.exceptions import (
+    AskError,
+    ClusterTransactionError,
+    ConnectionError,
+    ExecAbortError,
+    MovedError,
+    RedisClusterException,
+    RedisError,
+    ResponseError,
+    TimeoutError,
+    TryAgainError,
+    WatchError,
+)
 from coredis.utils import clusterdown_wrapper, dict_merge
 
 ERRORS_ALLOW_RETRY = (
@@ -296,7 +304,7 @@ class BasePipeline:
 
         try:
             return await exec(conn, stack, raise_on_error)
-        except (ConnectionError, TimeoutError, coredis.compat.CancelledError) as e:
+        except (ConnectionError, TimeoutError, CancelledError) as e:
             conn.disconnect()
             if not conn.retry_on_timeout and isinstance(e, TimeoutError):
                 raise
@@ -328,8 +336,6 @@ class BasePipeline:
 
 class StrictPipeline(BasePipeline, StrictRedis):
     """Pipeline for the StrictRedis class"""
-
-    pass
 
 
 class StrictClusterPipeline(StrictRedisCluster):
@@ -383,7 +389,7 @@ class StrictClusterPipeline(StrictRedisCluster):
 
         if command in ["EVAL", "EVALSHA"]:
             numkeys = args[2]
-            keys = args[3 : 3 + numkeys]
+            keys = args[3:3 + numkeys]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
             if len(slots) != 1:
                 raise RedisClusterException(
@@ -538,7 +544,8 @@ class StrictClusterPipeline(StrictRedisCluster):
         # we  write to all the open sockets for each node first, before reading anything
         # this allows us to flush all the requests out across the network essentially in parallel
         # so that we can read them all in parallel as they come back.
-        # we dont' multiplex on the sockets as they come available, but that shouldn't make too much difference.
+        # we dont' multiplex on the sockets as they come available, but that shouldn't make
+        # too much difference.
         node_commands = nodes.values()
         for n in node_commands:
             await n.write()
@@ -548,9 +555,9 @@ class StrictClusterPipeline(StrictRedisCluster):
 
         # release all of the redis connections we allocated earlier back into the connection pool.
         # we used to do this step as part of a try/finally block, but it is really dangerous to
-        # release connections back into the pool if for some reason the socket has data still left in it
-        # from a previous operation. The write and read operations already have try/catch around them for
-        # all known types of errors including connection and socket level errors.
+        # release connections back into the pool if for some reason the socket has data still left
+        # in it from a previous operation. The write and read operations already have try/catch
+        # around them for all known types of errors including connection and socket level errors.
         # So if we hit an exception, something really bad happened and putting any of
         # these connections back into the pool is a very bad idea.
         # the socket might have unread buffer still sitting in it, and then the
@@ -668,8 +675,9 @@ def block_pipeline_command(func):
 
     def inner(*args, **kwargs):
         raise RedisClusterException(
-            "ERROR: Calling pipelined function {0} is blocked when running redis in cluster mode...".format(
-                func.__name__
+            (
+                f"ERROR: Calling pipelined function {func.__name__}"
+                " is blocked when running redis in cluster mode..."
             )
         )
 

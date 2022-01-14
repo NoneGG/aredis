@@ -309,7 +309,7 @@ class TestRedisCommands:
         assert [4] == await r.bitfield(key).set("i4", "4", 101).exc()
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_bitfield_set(self, r):
+    async def test_bitfield_get(self, r):
         key = "key:bitfield:get"
         await r.set(key, "\x00d")
         assert [100] == await r.bitfield(key).get("i8", "#1").exc()

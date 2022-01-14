@@ -4,7 +4,6 @@
 from __future__ import with_statement
 
 import asyncio
-import concurrent.futures
 import time
 
 # 3rd party imports
@@ -12,8 +11,7 @@ import pytest
 
 # rediscluster imports
 from coredis import StrictRedis, StrictRedisCluster
-from coredis.exceptions import ConnectionError, TimeoutError
-from coredis.utils import b
+from coredis.exceptions import ConnectionError
 
 
 async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False):

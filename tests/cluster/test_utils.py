@@ -9,8 +9,15 @@ import pytest
 # rediscluster imports
 from coredis.commands.cluster import parse_cluster_slots
 from coredis.exceptions import ClusterDownError, RedisClusterException
-from coredis.utils import (b, blocked_command, clusterdown_wrapper, dict_merge,
-                           first_key, list_keys_to_dict, merge_result)
+from coredis.utils import (
+    b,
+    blocked_command,
+    clusterdown_wrapper,
+    dict_merge,
+    first_key,
+    list_keys_to_dict,
+    merge_result,
+)
 
 
 def test_parse_cluster_slots():

@@ -1,5 +1,4 @@
-from coredis.utils import (b, dict_merge, first_key, list_or_args,
-                           string_keys_to_dict)
+from coredis.utils import b, dict_merge, first_key, list_or_args, string_keys_to_dict
 
 
 def parse_sscan(response, **options):
@@ -17,7 +16,7 @@ class SetsCommandMixin:
         string_keys_to_dict(
             "SDIFF SINTER SMEMBERS SUNION", lambda r: r and set(r) or set()
         ),
-        {"SSCAN": parse_sscan,},
+        {"SSCAN": parse_sscan},
     )
 
     async def sadd(self, name, *values):

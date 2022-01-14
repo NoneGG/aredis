@@ -1,7 +1,7 @@
 import asyncio
 import warnings
 
-from coredis.exceptions import RedisClusterException, WatchError
+from coredis.exceptions import WatchError
 from coredis.utils import LOOP_DEPRECATED, bool_ok, string_keys_to_dict
 
 

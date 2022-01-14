@@ -1,41 +1,55 @@
 import asyncio
-import sys
 
 from coredis.commands.cluster import ClusterCommandMixin
-from coredis.commands.connection import (ClusterConnectionCommandMixin,
-                                         ConnectionCommandMixin)
+from coredis.commands.connection import (
+    ClusterConnectionCommandMixin,
+    ConnectionCommandMixin,
+)
 from coredis.commands.extra import ExtraCommandMixin
 from coredis.commands.geo import GeoCommandMixin
 from coredis.commands.hash import ClusterHashCommandMixin, HashCommandMixin
-from coredis.commands.hyperlog import (ClusterHyperLogCommandMixin,
-                                       HyperLogCommandMixin)
+from coredis.commands.hyperlog import ClusterHyperLogCommandMixin, HyperLogCommandMixin
+from coredis.commands.iter import ClusterIterCommandMixin, IterCommandMixin
 from coredis.commands.keys import ClusterKeysCommandMixin, KeysCommandMixin
 from coredis.commands.lists import ClusterListsCommandMixin, ListsCommandMixin
-from coredis.commands.pubsub import (CLusterPubSubCommandMixin,
-                                     PubSubCommandMixin)
-from coredis.commands.scripting import (ClusterScriptingCommandMixin,
-                                        ScriptingCommandMixin)
-from coredis.commands.sentinel import (ClusterSentinelCommands,
-                                       SentinelCommandMixin)
-from coredis.commands.server import (ClusterServerCommandMixin,
-                                     ServerCommandMixin)
+from coredis.commands.pubsub import CLusterPubSubCommandMixin, PubSubCommandMixin
+from coredis.commands.scripting import (
+    ClusterScriptingCommandMixin,
+    ScriptingCommandMixin,
+)
+from coredis.commands.sentinel import ClusterSentinelCommands, SentinelCommandMixin
+from coredis.commands.server import ClusterServerCommandMixin, ServerCommandMixin
 from coredis.commands.sets import ClusterSetsCommandMixin, SetsCommandMixin
-from coredis.commands.sorted_set import (ClusterSortedSetCommandMixin,
-                                         SortedSetCommandMixin)
+from coredis.commands.sorted_set import (
+    ClusterSortedSetCommandMixin,
+    SortedSetCommandMixin,
+)
 from coredis.commands.streams import StreamsCommandMixin
-from coredis.commands.strings import (ClusterStringsCommandMixin,
-                                      StringsCommandMixin)
-from coredis.commands.transaction import (ClusterTransactionCommandMixin,
-                                          TransactionCommandMixin)
-from coredis.compat import CancelledError
+from coredis.commands.strings import ClusterStringsCommandMixin, StringsCommandMixin
+from coredis.commands.transaction import (
+    ClusterTransactionCommandMixin,
+    TransactionCommandMixin,
+)
 from coredis.connection import RedisSSLContext, UnixDomainSocketConnection
-from coredis.exceptions import (AskError, BusyLoadingError, ClusterDownError,
-                                ClusterError, ConnectionError, MovedError,
-                                RedisClusterException, TimeoutError,
-                                TryAgainError)
+from coredis.exceptions import (
+    AskError,
+    BusyLoadingError,
+    ClusterDownError,
+    ClusterError,
+    ConnectionError,
+    MovedError,
+    RedisClusterException,
+    TimeoutError,
+    TryAgainError,
+)
 from coredis.pool import ClusterConnectionPool, ConnectionPool
-from coredis.utils import (NodeFlag, blocked_command, clusterdown_wrapper,
-                           dict_merge, first_key)
+from coredis.utils import (
+    NodeFlag,
+    blocked_command,
+    clusterdown_wrapper,
+    dict_merge,
+    first_key,
+)
 
 mixins = [
     ClusterCommandMixin,
@@ -45,6 +59,7 @@ mixins = [
     HashCommandMixin,
     HyperLogCommandMixin,
     KeysCommandMixin,
+    IterCommandMixin,
     ListsCommandMixin,
     PubSubCommandMixin,
     ScriptingCommandMixin,
@@ -67,18 +82,13 @@ cluster_mixins = [
     ClusterKeysCommandMixin,
     ClusterScriptingCommandMixin,
     ClusterHashCommandMixin,
+    ClusterIterCommandMixin,
     ClusterSetsCommandMixin,
     ClusterSortedSetCommandMixin,
     ClusterTransactionCommandMixin,
     ClusterListsCommandMixin,
     ClusterHyperLogCommandMixin,
 ]
-
-if sys.version_info[:2] >= (3, 6):
-    from coredis.commands.iter import IterCommandMixin, ClusterIterCommandMixin
-
-    mixins.append(IterCommandMixin)
-    cluster_mixins.append(ClusterIterCommandMixin)
 
 
 class StrictRedis(*mixins):
@@ -116,11 +126,13 @@ class StrictRedis(*mixins):
 
         If none of these options are specified, db=0 is used.
 
+
         Any additional querystring arguments and keyword arguments will be
         passed along to the ConnectionPool class's initializer. In the case
         of conflicting arguments, querystring arguments always win.
         """
         connection_pool = ConnectionPool.from_url(url, db=db, **kwargs)
+
         return cls(connection_pool=connection_pool)
 
     def __init__(
@@ -163,6 +175,7 @@ class StrictRedis(*mixins):
                 "loop": loop,
             }
             # based on input, setup appropriate connection args
+
             if unix_socket_path is not None:
                 kwargs.update(
                     {
@@ -173,6 +186,7 @@ class StrictRedis(*mixins):
             else:
                 # TCP specific options
                 kwargs.update({"host": host, "port": port})
+
                 if ssl_context is not None:
                     kwargs["ssl_context"] = ssl_context
                 elif ssl:
@@ -201,16 +215,19 @@ class StrictRedis(*mixins):
         connection = pool.get_connection()
         try:
             await connection.send_command(*args)
+
             return await self.parse_response(connection, command_name, **options)
-        except CancelledError:
+        except asyncio.CancelledError:
             # do not retry when coroutine is cancelled
             connection.disconnect()
             raise
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
+
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
                 raise
             await connection.send_command(*args)
+
             return await self.parse_response(connection, command_name, **options)
         finally:
             pool.release(connection)
@@ -218,9 +235,12 @@ class StrictRedis(*mixins):
     async def parse_response(self, connection, command_name, **options):
         """Parses a response from the Redis server"""
         response = await connection.read_response()
+
         if command_name in self.response_callbacks:
             callback = self.response_callbacks[command_name]
+
             return callback(response, **options)
+
         return response
 
     async def pipeline(self, transaction=True, shard_hint=None):
@@ -237,13 +257,13 @@ class StrictRedis(*mixins):
             self.connection_pool, self.response_callbacks, transaction, shard_hint
         )
         await pipeline.reset()
+
         return pipeline
 
 
 class StrictRedisCluster(StrictRedis, *cluster_mixins):
     """
-    If a command is implemented over the one in StrictRedis then it requires some changes compared to
-    the regular implementation of the method.
+    Redis cluster client
     """
 
     RedisClusterRequestTTL = 16
@@ -276,41 +296,32 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         **kwargs
     ):
         """
-        :startup_nodes:
-        List of nodes that initial bootstrapping can be done from
-        :host:
-        Can be used to point to a startup node
-        :port:
-        Can be used to point to a startup node
-        :max_connections:
-        Maximum number of connections that should be kept open at one time
-        :readonly:
-        enable READONLY mode. You can read possibly stale data from slave.
-        :skip_full_coverage_check:
-        Skips the check of cluster-require-full-coverage config, useful for clusters
-        without the CONFIG command (like aws)
-        :nodemanager_follow_cluster:
-        The node manager will during initialization try the last set of nodes that
-        it was operating on. This will allow the client to drift along side the cluster
-        if the cluster nodes move around alot.
-        :**kwargs:
-        Extra arguments that will be sent into StrictRedis instance when created
-        (See Official redis-py doc for supported kwargs
-        [https://github.com/andymccurdy/redis-py/blob/master/redis/client.py])
-        Some kwargs is not supported and will raise RedisClusterException
-        - db (Redis do not support database SELECT in cluster mode)
+        :param host: Can be used to point to a startup node
+        :param port: Can be used to point to a startup node
+        :param startup_nodes: List of nodes that initial bootstrapping can be done
+         from
+        :param max_connections: Maximum number of connections that should be kept open at one time
+        :param readonly: enable READONLY mode. You can read possibly stale data from slave.
+        :param skip_full_coverage_check: Skips the check of cluster-require-full-coverage config,
+         useful for clusters without the CONFIG command (like aws)
+        :param nodemanager_follow_cluster: The node manager will during initialization try the
+         last set of nodes that it was operating on. This will allow the client to drift along
+         side the cluster if the cluster nodes move around alot.
         """
         # Tweaks to StrictRedis client arguments when running in cluster mode
+
         if "db" in kwargs:
             raise RedisClusterException(
                 "Argument 'db' is not possible to use in cluster mode"
             )
+
         if "connection_pool" in kwargs:
             pool = kwargs.pop("connection_pool")
         else:
             startup_nodes = [] if startup_nodes is None else startup_nodes
 
             # Support host/port as argument
+
             if host:
                 startup_nodes.append({"host": host, "port": port if port else 7000})
             pool = ClusterConnectionPool(
@@ -335,19 +346,24 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
     def from_url(cls, url, db=None, skip_full_coverage_check=False, **kwargs):
         """
         Return a Redis client object configured from the given URL, which must
-        use either `the ``redis://`` scheme
-        <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ for RESP
+        use either the ``redis://`` scheme
+        `<http://www.iana.org/assignments/uri-schemes/prov/redis>`_ for RESP
         connections or the ``unix://`` scheme for Unix domain sockets.
-        For example::
-        redis://[:password]@localhost:6379/0
-        unix://[:password]@/path/to/socket.sock?db=0
+        For example:
+
+            - ``redis://[:password]@localhost:6379/0``
+            - ``unix://[:password]@/path/to/socket.sock?db=0``
+
         There are several ways to specify a database number. The parse function
         will return the first specified option:
-        1. A ``db`` querystring option, e.g. redis://localhost?db=0
-        2. If using the redis:// scheme, the path argument of the url, e.g.
-        redis://localhost/0
-        3. The ``db`` argument to this function.
+
+            #. A ``db`` querystring option, e.g. ``redis://localhost?db=0``
+            #. If using the ``redis://`` scheme, the path argument of the url, e.g.
+               ``redis://localhost/0``
+            #. The ``db`` argument to this function.
+
         If none of these options are specified, db=0 is used.
+
         Any additional querystring arguments and keyword arguments will be
         passed along to the ConnectionPool class's initializer. In the case
         of conflicting arguments, querystring arguments always win.
@@ -355,6 +371,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         connection_pool = ClusterConnectionPool.from_url(
             url, db=db, skip_full_coverage_check=skip_full_coverage_check, **kwargs
         )
+
         return cls(connection_pool=connection_pool)
 
     def __repr__(self):
@@ -365,6 +382,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             }
         )
         servers.sort()
+
         return "{0}<{1}>".format(type(self).__name__, ", ".join(servers))
 
     def set_result_callback(self, command, callback):
@@ -373,6 +391,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
     def _determine_slot(self, *args):
         """Figures out what slot based on command and args"""
+
         if len(args) <= 1:
             raise RedisClusterException(
                 "No way to dispatch this command to Redis Cluster. Missing key."
@@ -381,12 +400,14 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
         if command in ["EVAL", "EVALSHA"]:
             numkeys = args[2]
-            keys = args[3 : 3 + numkeys]
+            keys = args[3:3 + numkeys]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
+
             if len(slots) != 1:
                 raise RedisClusterException(
                     "{0} - all keys must map to the same key slot".format(command)
                 )
+
             return slots.pop()
         elif command in ("XREAD", "XREADGROUP"):
             try:
@@ -407,10 +428,12 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         """
         `res` is a dict with the following structure Dict(NodeName, CommandResult)
         """
+
         if command in self.result_callbacks:
             return self.result_callbacks[command](res, **kwargs)
 
         # Default way to handle result
+
         return first_key(res)
 
     def determine_node(self, *args, **kwargs):
@@ -432,10 +455,12 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
             # if node flag of command is SLOT_ID
             # `slot_id` should is assumed in kwargs
             slot = kwargs.get("slot_id")
+
             if not slot:
                 raise RedisClusterException(
                     "slot_id is needed to execute command {}".format(command)
                 )
+
             return [self.connection_pool.nodes.node_from_slot(slot)]
         else:
             return None
@@ -445,18 +470,22 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         """
         Sends a command to a node in the cluster
         """
+
         if not self.connection_pool.initialized:
             await self.connection_pool.initialize()
+
         if not args:
             raise RedisClusterException("Unable to determine command to use")
 
         command = args[0]
 
         node = self.determine_node(*args, **kwargs)
+
         if node:
             return await self.execute_command_on_nodes(node, *args, **kwargs)
 
         # If set externally we must update it before calling any commands
+
         if self.refresh_table_asap:
             await self.connection_pool.nodes.initialize()
             self.refresh_table_asap = False
@@ -492,8 +521,9 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                     asking = False
 
                 await r.send_command(*args)
+
                 return await self.parse_response(r, command, **kwargs)
-            except (RedisClusterException, BusyLoadingError, CancelledError):
+            except (RedisClusterException, BusyLoadingError, asyncio.CancelledError):
                 raise
             except (ConnectionError, TimeoutError):
                 try_random_node = True
@@ -518,7 +548,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                     e.host, e.port, server_type="master"
                 )
                 self.connection_pool.nodes.slots[e.slot_id][0] = node
-            except TryAgainError as e:
+            except TryAgainError:
                 if ttl < self.RedisClusterRequestTTL / 2:
                     await asyncio.sleep(0.05)
             except AskError as e:
@@ -541,7 +571,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 res[node["name"]] = await self.parse_response(
                     connection, command, **kwargs
                 )
-            except CancelledError:
+            except asyncio.CancelledError:
                 # do not retry when coroutine is cancelled
                 connection.disconnect()
                 raise
@@ -557,17 +587,20 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
                 )
             finally:
                 self.connection_pool.release(connection)
+
         return self._merge_result(command, res, **kwargs)
 
     async def pipeline(self, transaction=None, shard_hint=None, watches=None):
         """
-        Cluster impl:
-            Pipelines do not work in cluster mode the same way they do in normal mode.
-            Create a clone of this object so that simulating pipelines will work correctly.
-            Each command will be called directly when used and when calling execute() will only return the result stack.
-        cluster transaction can only be run with commands in the same node, otherwise error will be raised.
+        Pipelines do not work in cluster mode the same way they do in normal mode.
+        Create a clone of this object so that simulating pipelines will work correctly.
+
+        Each command will be called directly when used and when calling execute() will only
+        return the result stack. Cluster transaction can only be run with commands in the same
+        node, otherwise error will be raised.
         """
         await self.connection_pool.initialize()
+
         if shard_hint:
             raise RedisClusterException("shard_hint is deprecated in cluster mode")
 

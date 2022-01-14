@@ -1,8 +1,16 @@
 import datetime
 
 from coredis.exceptions import RedisError
-from coredis.utils import (NodeFlag, b, bool_ok, dict_merge, list_keys_to_dict,
-                           nativestr, pairs_to_dict, string_keys_to_dict)
+from coredis.utils import (
+    NodeFlag,
+    b,
+    bool_ok,
+    dict_merge,
+    list_keys_to_dict,
+    nativestr,
+    pairs_to_dict,
+    string_keys_to_dict,
+)
 
 
 def parse_slowlog_get(response, **options):

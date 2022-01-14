@@ -4,7 +4,7 @@ import socket
 
 import pytest
 
-from coredis import Connection, UnixDomainSocketConnection
+from coredis import Connection
 
 
 @pytest.mark.asyncio(forbid_global_loop=True)
@@ -48,7 +48,7 @@ async def test_connect_tcp_keepalive_options(event_loop):
 @pytest.mark.asyncio(forbid_global_loop=True)
 async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option):
     conn = Connection(
-        loop=event_loop, socket_keepalive=True, socket_keepalive_options={option: 1,},
+        loop=event_loop, socket_keepalive=True, socket_keepalive_options={option: 1}
     )
     with pytest.raises((socket.error, TypeError)):
         await conn._connect()

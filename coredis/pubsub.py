@@ -1,7 +1,6 @@
 import asyncio
 import threading
 
-from coredis.compat import CancelledError
 from coredis.exceptions import ConnectionError, PubSubError, TimeoutError
 from coredis.utils import iteritems, iterkeys, list_or_args, nativestr
 
@@ -55,18 +54,18 @@ class PubSub:
 
     async def on_connect(self, connection):
         """Re-subscribe to any channels and patterns previously subscribed to"""
-        # NOTE: for python3, we can't pass bytestrings as keyword arguments
-        # so we need to decode channel/pattern names back to str strings
-        # before passing them to [p]subscribe.
         if self.channels:
             channels = {}
+
             for k, v in iteritems(self.channels):
                 if not self.decode_responses:
                     k = k.decode(self.encoding)
                 channels[k] = v
             await self.subscribe(**channels)
+
         if self.patterns:
             patterns = {}
+
             for k, v in iteritems(self.patterns):
                 if not self.decode_responses:
                     k = k.decode(self.encoding)
@@ -78,15 +77,18 @@ class PubSub:
         Encodes the value so that it's identical to what we'll read off the
         connection
         """
+
         if self.decode_responses and isinstance(value, bytes):
             value = value.decode(self.encoding)
         elif not self.decode_responses and isinstance(value, str):
             value = value.encode(self.encoding)
+
         return value
 
     @property
     def subscribed(self):
         """Indicates if there are subscriptions to any channels or patterns"""
+
         return bool(self.channels or self.patterns)
 
     async def execute_command(self, *args, **kwargs):
@@ -107,15 +109,18 @@ class PubSub:
     async def _execute(self, connection, command, *args):
         try:
             return await command(*args)
-        except CancelledError:
+        except asyncio.CancelledError:
             # do not retry if coroutine is cancelled
+
             if await connection.can_read():
                 # disconnect if buffer is not empty in case of error
                 # when connection is reused
                 connection.disconnect()
+
             return None
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
+
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
                 raise
             # Connect manually here. If the Redis server is down, this will
@@ -124,22 +129,26 @@ class PubSub:
             # the ``on_connect`` callback should haven been called by the
             # connection to resubscribe us to any channels and patterns we were
             # previously listening to
+
             return await command(*args)
 
     async def parse_response(self, block=True, timeout=0):
         """Parses the response from a publish/subscribe command"""
         connection = self.connection
+
         if connection is None:
             raise RuntimeError(
                 "pubsub connection not set: "
                 "did you forget to call subscribe() or psubscribe()?"
             )
         coro = self._execute(connection, connection.read_response)
+
         if not block and timeout > 0:
             try:
                 return await asyncio.wait_for(coro, timeout)
             except Exception:
                 return None
+
         return await coro
 
     async def psubscribe(self, *args, **kwargs):
@@ -150,10 +159,12 @@ class PubSub:
         received on that pattern rather than producing a message via
         ``listen()``.
         """
+
         if args:
             args = list_or_args(args[0], args[1:])
         new_patterns = {}
         new_patterns.update(dict.fromkeys(map(self.encode, args)))
+
         for pattern, handler in iteritems(kwargs):
             new_patterns[self.encode(pattern)] = handler
         ret_val = await self.execute_command("PSUBSCRIBE", *iterkeys(new_patterns))
@@ -161,6 +172,7 @@ class PubSub:
         # subscribe twice to these patterns, once for the command and again
         # for the reconnection.
         self.patterns.update(new_patterns)
+
         return ret_val
 
     async def punsubscribe(self, *args):
@@ -168,8 +180,10 @@ class PubSub:
         Unsubscribes from the supplied patterns. If empy, unsubscribe from
         all patterns.
         """
+
         if args:
             args = list_or_args(args[0], args[1:])
+
         return await self.execute_command("PUNSUBSCRIBE", *args)
 
     async def subscribe(self, *args, **kwargs):
@@ -180,10 +194,12 @@ class PubSub:
         that channel rather than producing a message via ``listen()`` or
         ``get_message()``.
         """
+
         if args:
             args = list_or_args(args[0], args[1:])
         new_channels = {}
         new_channels.update(dict.fromkeys(map(self.encode, args)))
+
         for channel, handler in iteritems(kwargs):
             new_channels[self.encode(channel)] = handler
         ret_val = await self.execute_command("SUBSCRIBE", *iterkeys(new_channels))
@@ -191,6 +207,7 @@ class PubSub:
         # subscribe twice to these channels, once for the command and again
         # for the reconnection.
         self.channels.update(new_channels)
+
         return ret_val
 
     async def unsubscribe(self, *args):
@@ -198,14 +215,17 @@ class PubSub:
         Unsubscribes from the supplied channels. If empty, unsubscribe from
         all channels
         """
+
         if args:
             args = list_or_args(args[0], args[1:])
+
         return await self.execute_command("UNSUBSCRIBE", *args)
 
     async def listen(self):
         """
         Listens for messages on channels this client has been subscribed to
         """
+
         if self.subscribed:
             return self.handle_message(await self.parse_response(block=True))
 
@@ -218,8 +238,10 @@ class PubSub:
         number.
         """
         response = await self.parse_response(block=False, timeout=timeout)
+
         if response:
             return self.handle_message(response, ignore_subscribe_messages)
+
         return None
 
     def handle_message(self, response, ignore_subscribe_messages=False):
@@ -229,6 +251,7 @@ class PubSub:
         message being returned.
         """
         message_type = nativestr(response[0])
+
         if message_type == "pmessage":
             message = {
                 "type": message_type,
@@ -245,8 +268,10 @@ class PubSub:
             }
 
         # if this is an unsubscribe message, remove it from memory
+
         if message_type in self.UNSUBSCRIBE_MESSAGE_TYPES:
             subscribed_dict = None
+
             if message_type == "punsubscribe":
                 subscribed_dict = self.patterns
             else:
@@ -259,16 +284,20 @@ class PubSub:
         if message_type in self.PUBLISH_MESSAGE_TYPES:
             # if there's a message handler, invoke it
             handler = None
+
             if message_type == "pmessage":
                 handler = self.patterns.get(message["pattern"], None)
             else:
                 handler = self.channels.get(message["channel"], None)
+
             if handler:
                 handler(message)
+
                 return None
         else:
             # this is a subscribe/unsubscribe message. ignore if we don't
             # want them
+
             if ignore_subscribe_messages or self.ignore_subscribe_messages:
                 return None
 
@@ -280,6 +309,7 @@ class PubSub:
                 raise PubSubError(
                     "Channel: '{}' has no handler registered".format(channel)
                 )
+
         for pattern, handler in iteritems(self.patterns):
             if handler is None:
                 raise PubSubError(
@@ -287,6 +317,7 @@ class PubSub:
                 )
         thread = PubSubWorkerThread(self, daemon=daemon, poll_timeout=poll_timeout)
         thread.start()
+
         return thread
 
 
@@ -304,6 +335,7 @@ class PubSubWorkerThread(threading.Thread):
 
     async def _run(self):
         pubsub = self.pubsub
+
         while pubsub.subscribed:
             await pubsub.get_message(
                 ignore_subscribe_messages=True, timeout=self.poll_timeout
@@ -316,12 +348,14 @@ class PubSubWorkerThread(threading.Thread):
             return
         self._running = True
         future = asyncio.run_coroutine_threadsafe(self._run(), self.loop)
+
         return future.result()
 
     def stop(self):
         # stopping simply unsubscribes from all channels and patterns.
         # the unsubscribe responses that are generated will short circuit
         # the loop in run(), calling pubsub.close() to clean up the connection
+
         if self.loop:
             unsubscribed = asyncio.run_coroutine_threadsafe(
                 self.pubsub.unsubscribe(), self.loop
@@ -342,7 +376,8 @@ class ClusterPubSub(PubSub):
         """
         Executes a publish/subscribe command.
 
-        NOTE: The code was initially taken from redis-py and tweaked to make it work within a cluster.
+        NOTE: The code was initially taken from redis-py and tweaked to make it work within a
+        cluster.
         """
         # NOTE: don't parse the response in this function -- it could pull a
         # legitimate message off the stack if the connection is already

@@ -134,7 +134,7 @@ class TestPipeline:
             await pipe.set("b", 2)
             await pipe.lpush("c", 3)
             await pipe.set("d", 4)
-            with pytest.raises(ResponseError) as ex:
+            with pytest.raises(ResponseError):
                 await pipe.execute()
 
             # make sure the pipe was restored to a working state
@@ -150,7 +150,7 @@ class TestPipeline:
             await pipe.set("a", 1)
             await pipe.zrem("b")
             await pipe.set("b", 2)
-            with pytest.raises(ResponseError) as ex:
+            with pytest.raises(ResponseError):
                 await pipe.execute()
 
             # make sure the pipe was restored to a working state
@@ -241,7 +241,7 @@ class TestPipeline:
             await pipe.llen("a")
             await pipe.expire("a", 100)
 
-            with pytest.raises(ResponseError) as ex:
+            with pytest.raises(ResponseError):
                 await pipe.execute()
 
         assert await r.get("a") == b("1")
@@ -254,7 +254,7 @@ class TestPipeline:
             await pipe.llen(key)
             await pipe.expire(key, 100)
 
-            with pytest.raises(ResponseError) as ex:
+            with pytest.raises(ResponseError):
                 await pipe.execute()
 
         assert await r.get(key) == b("1")

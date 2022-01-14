@@ -1,7 +1,6 @@
 import warnings
 
-from coredis.utils import (NodeFlag, bool_ok, dict_merge, list_keys_to_dict,
-                           nativestr)
+from coredis.utils import NodeFlag, bool_ok, dict_merge, list_keys_to_dict, nativestr
 
 SENTINEL_STATE_TYPES = {
     "can-failover-its-master": int,
@@ -37,7 +36,7 @@ def pairs_to_dict_typed(response, type_info):
         if key in type_info:
             try:
                 value = type_info[key](value)
-            except:
+            except Exception:
                 # if for some reason the value can't be coerced, just use
                 # the string value
                 pass

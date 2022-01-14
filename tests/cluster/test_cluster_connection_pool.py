@@ -12,20 +12,17 @@ import pytest
 from mock import Mock, patch
 
 # rediscluster imports
-from coredis import StrictRedis, StrictRedisCluster
-from coredis.connection import (ClusterConnection, Connection,
-                                UnixDomainSocketConnection)
+from coredis import StrictRedis
+from coredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
 from coredis.exceptions import RedisClusterException
 from coredis.pool import ClusterConnectionPool, ConnectionPool
 
 try:
-    import ssl
+    pass
 
     ssl_available = True
 except ImportError:
     ssl_available = False
-
-
 
 
 class DummyConnection:
@@ -136,7 +133,8 @@ class TestConnectionPool:
         """
         pool = await self.get_pool(connection_kwargs={})
 
-        # Patch the call that is made inside the method to allow control of the returned connection object
+        # Patch the call that is made inside the method to allow control of the returned
+        # connection object
         with patch.object(
             ClusterConnectionPool, "get_connection_by_slot", autospec=True
         ) as pool_mock:
@@ -162,7 +160,8 @@ class TestConnectionPool:
         """
         pool = await self.get_pool(connection_kwargs={})
 
-        # Patch the call that is made inside the method to allow control of the returned connection object
+        # Patch the call that is made inside the method to allow control of the returned
+        # connection object
         with patch.object(
             ClusterConnectionPool, "get_connection_by_node", autospec=True
         ) as pool_mock:

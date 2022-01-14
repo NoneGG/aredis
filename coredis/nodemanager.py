@@ -113,8 +113,8 @@ class NodeManager:
         current cluster configuration is.
 
         TODO: Currently the last node will have the last say about how the configuration is setup.
-        Maybe it should stop to try after it have correctly covered all slots or when one node is reached
-        and it could execute CLUSTER SLOTS command.
+        Maybe it should stop to try after it have correctly covered all slots or when one node is
+        reached and it could execute CLUSTER SLOTS command.
         """
         nodes_cache = {}
         tmp_slots = {}
@@ -125,7 +125,8 @@ class NodeManager:
 
         nodes = self.orig_startup_nodes
 
-        # With this option the client will attempt to connect to any of the previous set of nodes instead of the original set of nodes
+        # With this option the client will attempt to connect to any of the previous set of nodes
+        # instead of the original set of nodes
         if self.nodemanager_follow_cluster:
             nodes = self.startup_nodes
 
@@ -138,9 +139,7 @@ class NodeManager:
                 continue
             except Exception:
                 raise RedisClusterException(
-                    'ERROR sending "cluster slots" command to redis server: {0}'.format(
-                        node
-                    )
+                    f'ERROR sending "cluster slots" command to redis server: {node}'
                 )
 
             all_slots_covered = True
@@ -184,8 +183,9 @@ class NodeManager:
 
                             if len(disagreements) > 5:
                                 raise RedisClusterException(
-                                    "startup_nodes could not agree on a valid slots cache. {0}".format(
-                                        ", ".join(disagreements)
+                                    (
+                                        "startup_nodes could not agree on a valid slots cache."
+                                        f" {', '.join(disagreements)}"
                                     )
                                 )
 
@@ -256,7 +256,8 @@ class NodeManager:
         """
         Formats the name for the given node object
 
-        # TODO: This shold not be constructed this way. It should update the name of the node in the node cache dict
+        # TODO: This shold not be constructed this way. It should update the name of the node in
+        the node cache dict
         """
         if "name" not in n:
             n["name"] = "{0}:{1}".format(n["host"], n["port"])

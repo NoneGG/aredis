@@ -11,9 +11,14 @@ from string import ascii_letters
 import pytest
 
 from coredis.commands.server import parse_info
+
 # rediscluster imports
-from coredis.exceptions import (DataError, RedisClusterException, RedisError,
-                                ResponseError)
+from coredis.exceptions import (
+    DataError,
+    RedisClusterException,
+    RedisError,
+    ResponseError,
+)
 from coredis.utils import b, iteritems, iterkeys, itervalues
 
 

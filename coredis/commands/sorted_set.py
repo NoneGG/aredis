@@ -1,8 +1,14 @@
-import re
-
 from coredis.exceptions import RedisError
-from coredis.utils import (b, dict_merge, first_key, int_or_none, iteritems,
-                           iterkeys, itervalues, string_keys_to_dict)
+from coredis.utils import (
+    b,
+    dict_merge,
+    first_key,
+    int_or_none,
+    iteritems,
+    iterkeys,
+    itervalues,
+    string_keys_to_dict,
+)
 
 VALID_ZADD_OPTIONS = {"NX", "XX", "CH", "INCR"}
 
@@ -47,7 +53,7 @@ class SortedSetCommandMixin:
             "ZRANGE ZRANGEBYSCORE ZREVRANGE ZREVRANGEBYSCORE", zset_score_pairs
         ),
         string_keys_to_dict("ZRANK ZREVRANK", int_or_none),
-        {"ZSCAN": parse_zscan,},
+        {"ZSCAN": parse_zscan},
     )
 
     async def zadd(self, name, *args, **kwargs):
@@ -55,8 +61,8 @@ class SortedSetCommandMixin:
         Set any number of score, element-name pairs to the key ``name``. Pairs
         can be specified in two ways:
 
-        As *args, in the form of: score1, name1, score2, name2, ...
-        or as **kwargs, in the form of: name1=score1, name2=score2, ...
+        As ``*args``, in the form of: score1, name1, score2, name2, ...
+        or as ``**kwargs``, in the form of: name1=score1, name2=score2, ...
 
         The following example would add four values to the 'my-key' key:
         redis.zadd('my-key', 1.1, 'name1', 2.2, 'name2', name3=3.3, name4=4.4)
