@@ -3,6 +3,16 @@ orbs:
   codecov: codecov/codecov@3.1.1
 
 jobs:
+  lint:
+    docker:
+      - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
+    steps:
+      - checkout
+      - run: python -m pip install -r requirements/dev.txt
+      - run: make lint
   python_37_client_5:
     docker:
       - image: python:3.7
@@ -584,6 +594,7 @@ workflows:
   version: 2
   run-jobs:
     jobs:
+      - lint
       - python_37_client_5
       - python_37_client_6
 
