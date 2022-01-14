@@ -1,4 +1,12 @@
 -r test.txt
-hiredis
-uvloop
+autoflake8
+black
 contextvars
+flake8
+hiredis
+isort
+redis
+requests
+twine
+uvloop
+wheel
