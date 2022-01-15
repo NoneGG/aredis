@@ -21,8 +21,7 @@ coredis
 
 |docs| |codecov| |pypi-ver| |circleci-status| |python-ver|
 
-coredis is a fork of `aredis <https://github.com/NoneGG/aredis>`_,
-an async redis client ported from `redis-py <https://github.com/redis/redis-py>`_
+coredis is an async redis client with support for redis server, cluster & sentinel.
 
 
 Installation
@@ -104,5 +103,6 @@ Links
 * `Documentation (Stable) <http://coredis.readthedocs.org/en/stable>`_
 * `Documentation (Latest) <http://coredis.readthedocs.org/en/latest>`_
 * `Changelog <http://coredis.readthedocs.org/en/stable/release_notes.html>`_
+* `aredis <https://github.com/NoneGG/aredis>`_
 
 .. _Command compatibility: https://coredis.readthedocs.org/en/stable/compatibility
