@@ -317,9 +317,9 @@ Geo
     * - `GEORADIUSBYMEMBER <https://redis.io/commands/georadiusbymember>`_
       - :meth:`~coredis.StrictRedis.georadiusbymember`
     * - `GEOSEARCH <https://redis.io/commands/geosearch>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.geosearch`)
+      - :meth:`~coredis.StrictRedis.geosearch`
     * - `GEOSEARCHSTORE <https://redis.io/commands/geosearchstore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.geosearchstore`)
+      - :meth:`~coredis.StrictRedis.geosearchstore`
     * - `GEORADIUSBYMEMBER_RO <https://redis.io/commands/georadiusbymember_ro>`_
       - Not Implemented. (Introduced in redis version 3.2.10)
     * - `GEORADIUS_RO <https://redis.io/commands/georadius_ro>`_
@@ -972,9 +972,9 @@ Geo
     * - `GEORADIUSBYMEMBER <https://redis.io/commands/georadiusbymember>`_
       - :meth:`~coredis.StrictRedisCluster.georadiusbymember`
     * - `GEOSEARCH <https://redis.io/commands/geosearch>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.geosearch`)
+      - :meth:`~coredis.StrictRedisCluster.geosearch`
     * - `GEOSEARCHSTORE <https://redis.io/commands/geosearchstore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.geosearchstore`)
+      - :meth:`~coredis.StrictRedisCluster.geosearchstore`
     * - `GEORADIUSBYMEMBER_RO <https://redis.io/commands/georadiusbymember_ro>`_
       - Not Implemented. (Introduced in redis version 3.2.10)
     * - `GEORADIUS_RO <https://redis.io/commands/georadius_ro>`_
