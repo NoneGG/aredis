@@ -423,6 +423,8 @@ Set
       - :meth:`~coredis.StrictRedis.sismember`
     * - `SMEMBERS <https://redis.io/commands/smembers>`_
       - :meth:`~coredis.StrictRedis.smembers`
+    * - `SMISMEMBER <https://redis.io/commands/smismember>`_
+      - :meth:`~coredis.StrictRedis.smismember`
     * - `SMOVE <https://redis.io/commands/smove>`_
       - :meth:`~coredis.StrictRedis.smove`
     * - `SPOP <https://redis.io/commands/spop>`_
@@ -437,8 +439,6 @@ Set
       - :meth:`~coredis.StrictRedis.sunion`
     * - `SUNIONSTORE <https://redis.io/commands/sunionstore>`_
       - :meth:`~coredis.StrictRedis.sunionstore`
-    * - `SMISMEMBER <https://redis.io/commands/smismember>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.smismember`)
 
 Stream
 ------
@@ -1078,6 +1078,8 @@ Set
       - :meth:`~coredis.StrictRedisCluster.sismember`
     * - `SMEMBERS <https://redis.io/commands/smembers>`_
       - :meth:`~coredis.StrictRedisCluster.smembers`
+    * - `SMISMEMBER <https://redis.io/commands/smismember>`_
+      - :meth:`~coredis.StrictRedisCluster.smismember`
     * - `SMOVE <https://redis.io/commands/smove>`_
       - :meth:`~coredis.StrictRedisCluster.smove`
     * - `SPOP <https://redis.io/commands/spop>`_
@@ -1092,8 +1094,6 @@ Set
       - :meth:`~coredis.StrictRedisCluster.sunion`
     * - `SUNIONSTORE <https://redis.io/commands/sunionstore>`_
       - :meth:`~coredis.StrictRedisCluster.sunionstore`
-    * - `SMISMEMBER <https://redis.io/commands/smismember>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.smismember`)
 
 Stream
 ------

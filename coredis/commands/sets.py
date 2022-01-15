@@ -3,6 +3,7 @@ from coredis.utils import b, dict_merge, first_key, list_or_args, string_keys_to
 
 def parse_sscan(response, **options):
     cursor, r = response
+
     return int(cursor), r
 
 
@@ -21,15 +22,18 @@ class SetsCommandMixin:
 
     async def sadd(self, name, *values):
         """Adds ``value(s)`` to set ``name``"""
+
         return await self.execute_command("SADD", name, *values)
 
     async def scard(self, name):
         """Returns the number of elements in set ``name``"""
+
         return await self.execute_command("SCARD", name)
 
     async def sdiff(self, keys, *args):
         """Returns the difference of sets specified by ``keys``"""
         args = list_or_args(keys, args)
+
         return await self.execute_command("SDIFF", *args)
 
     async def sdiffstore(self, dest, keys, *args):
@@ -38,11 +42,13 @@ class SetsCommandMixin:
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
+
         return await self.execute_command("SDIFFSTORE", dest, *args)
 
     async def sinter(self, keys, *args):
         """Returns the intersection of sets specified by ``keys``"""
         args = list_or_args(keys, args)
+
         return await self.execute_command("SINTER", *args)
 
     async def sinterstore(self, dest, keys, *args):
@@ -51,20 +57,33 @@ class SetsCommandMixin:
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
+
         return await self.execute_command("SINTERSTORE", dest, *args)
 
     async def sismember(self, name, value):
         """
         Returns a boolean indicating if ``value`` is a member of set ``name``
         """
+
         return await self.execute_command("SISMEMBER", name, value)
 
     async def smembers(self, name):
         """Returns all members of the set ``name``"""
+
         return await self.execute_command("SMEMBERS", name)
+
+    async def smismember(self, name, values, *args):
+        """
+        Return whether each value in ``values`` is a member of the set ``name``
+        as a list of ``bool`` in the order of ``values``
+        """
+        args = list_or_args(values, args)
+
+        return await self.execute_command("SMISMEMBER", name, *args)
 
     async def smove(self, src, dst, value):
         """Moves ``value`` from set ``src`` to set ``dst`` atomically"""
+
         return await self.execute_command("SMOVE", src, dst, value)
 
     async def spop(self, name, count=None):
@@ -74,6 +93,7 @@ class SetsCommandMixin:
         If ``count`` is supplied, pops a list of ``count`` random
         members of set ``name``
         """
+
         if count and isinstance(count, int):
             return await self.execute_command("SPOP", name, count)
         else:
@@ -88,15 +108,18 @@ class SetsCommandMixin:
         Redis 2.6+.
         """
         args = number and [number] or []
+
         return await self.execute_command("SRANDMEMBER", name, *args)
 
     async def srem(self, name, *values):
         """Removes ``values`` from set ``name``"""
+
         return await self.execute_command("SREM", name, *values)
 
     async def sunion(self, keys, *args):
         """Returns the union of sets specified by ``keys``"""
         args = list_or_args(keys, args)
+
         return await self.execute_command("SUNION", *args)
 
     async def sunionstore(self, dest, keys, *args):
@@ -105,6 +128,7 @@ class SetsCommandMixin:
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
+
         return await self.execute_command("SUNIONSTORE", dest, *args)
 
     async def sscan(self, name, cursor=0, match=None, count=None):
@@ -117,10 +141,13 @@ class SetsCommandMixin:
         ``count`` is for hint the minimum number of returns
         """
         pieces = [name, cursor]
+
         if match is not None:
             pieces.extend([b("MATCH"), match])
+
         if count is not None:
             pieces.extend([b("COUNT"), count])
+
         return await self.execute_command("SSCAN", *pieces)
 
 
@@ -160,6 +187,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
         if not res:
             return 0
+
         return await self.sadd(dest, *res)
 
     async def sinter(self, keys, *args):
@@ -190,6 +218,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
 
         if res:
             await self.sadd(dest, *res)
+
             return len(res)
         else:
             return 0
@@ -204,6 +233,7 @@ class ClusterSetsCommandMixin(SetsCommandMixin):
         res = await self.srem(src, value)
 
         # Only add the element if existed in src set
+
         if res == 1:
             await self.sadd(dst, value)
 

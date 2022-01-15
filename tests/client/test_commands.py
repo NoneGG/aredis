@@ -1163,6 +1163,15 @@ class TestRedisCommands:
         await r.sadd("a", "1", "2", "3")
         assert await r.smembers("a") == set([b("1"), b("2"), b("3")])
 
+    @skip_if_server_version_lt("6.2.0")
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_smismember(self, r):
+        await r.flushdb()
+        await r.sadd("a", "1", "2", "3")
+        result_list = [True, False, True, True]
+        assert (await r.smismember("a", "1", "4", "2", "3")) == result_list
+        assert (await r.smismember("a", ["1", "4", "2", "3"])) == result_list
+
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_smove(self, r):
         await r.flushdb()
