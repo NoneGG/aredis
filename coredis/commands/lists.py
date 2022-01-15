@@ -26,13 +26,16 @@ class ListsCommandMixin:
 
         If timeout is 0, then block indefinitely.
         """
+
         if timeout is None:
             timeout = 0
+
         if isinstance(keys, str):
             keys = [keys]
         else:
             keys = list(keys)
         keys.append(timeout)
+
         return await self.execute_command("BLPOP", *keys)
 
     async def brpop(self, keys, timeout=0):
@@ -46,13 +49,16 @@ class ListsCommandMixin:
 
         If timeout is 0, then block indefinitely.
         """
+
         if timeout is None:
             timeout = 0
+
         if isinstance(keys, str):
             keys = [keys]
         else:
             keys = list(keys)
         keys.append(timeout)
+
         return await self.execute_command("BRPOP", *keys)
 
     async def brpoplpush(self, src, dst, timeout=0):
@@ -64,8 +70,10 @@ class ListsCommandMixin:
         seconds elapse, whichever is first. A ``timeout`` value of 0 blocks
         forever.
         """
+
         if timeout is None:
             timeout = 0
+
         return await self.execute_command("BRPOPLPUSH", src, dst, timeout)
 
     async def lindex(self, name, index):
@@ -75,6 +83,7 @@ class ListsCommandMixin:
         Negative indexes are supported and will return an item at the
         end of the list
         """
+
         return await self.execute_command("LINDEX", name, index)
 
     async def linsert(self, name, where, refvalue, value):
@@ -85,24 +94,29 @@ class ListsCommandMixin:
         Returns the new length of the list on success or -1 if ``refvalue``
         is not in the list.
         """
+
         return await self.execute_command("LINSERT", name, where, refvalue, value)
 
     async def llen(self, name):
         """Returns the length of the list ``name``"""
+
         return await self.execute_command("LLEN", name)
 
     async def lpop(self, name):
         """RemoveS and returns the first item of the list ``name``"""
+
         return await self.execute_command("LPOP", name)
 
     async def lpush(self, name, *values):
         """Pushes ``values`` onto the head of the list ``name``"""
+
         return await self.execute_command("LPUSH", name, *values)
 
     async def lpushx(self, name, value):
         """
         Pushes ``value`` onto the head of the list ``name`` if ``name`` exists
         """
+
         return await self.execute_command("LPUSHX", name, value)
 
     async def lrange(self, name, start, end):
@@ -113,6 +127,7 @@ class ListsCommandMixin:
         ``start`` and ``end`` can be negative numbers just like
         Python slicing notation
         """
+
         return await self.execute_command("LRANGE", name, start, end)
 
     async def lrem(self, name, count, value):
@@ -125,10 +140,12 @@ class ListsCommandMixin:
             count < 0: Remove elements equal to value moving from tail to head.
             count = 0: Remove all elements equal to value.
         """
+
         return await self.execute_command("LREM", name, count, value)
 
     async def lset(self, name, index, value):
         """Sets ``position`` of list ``name`` to ``value``"""
+
         return await self.execute_command("LSET", name, index, value)
 
     async def ltrim(self, name, start, end):
@@ -139,10 +156,12 @@ class ListsCommandMixin:
         ``start`` and ``end`` can be negative numbers just like
         Python slicing notation
         """
+
         return await self.execute_command("LTRIM", name, start, end)
 
     async def rpop(self, name):
         """Removes and return the last item of the list ``name``"""
+
         return await self.execute_command("RPOP", name)
 
     async def rpoplpush(self, src, dst):
@@ -150,17 +169,72 @@ class ListsCommandMixin:
         RPOP a value off of the ``src`` list and atomically LPUSH it
         on to the ``dst`` list.  Returns the value.
         """
+
         return await self.execute_command("RPOPLPUSH", src, dst)
 
     async def rpush(self, name, *values):
         """Pushes ``values`` onto the tail of the list ``name``"""
+
         return await self.execute_command("RPUSH", name, *values)
 
     async def rpushx(self, name, value):
         """
         Pushes ``value`` onto the tail of the list ``name`` if ``name`` exists
         """
+
         return await self.execute_command("RPUSHX", name, value)
+
+    async def lmove(self, first_list, second_list, src="LEFT", dest="RIGHT"):
+        """
+        Atomically returns and removes the first/last element of a list,
+        pushing it as the first/last element on the destination list.
+        Returns the element being popped and pushed.
+        """
+        params = [first_list, second_list, src, dest]
+
+        return await self.execute_command("LMOVE", *params)
+
+    async def blmove(self, first_list, second_list, timeout, src="LEFT", dest="RIGHT"):
+        """
+        Blocking version of lmove.
+        """
+        params = [first_list, second_list, src, dest, timeout]
+
+        return await self.execute_command("BLMOVE", *params)
+
+    async def lpos(self, name, value, rank=None, count=None, maxlen=None):
+        """
+        Get position of ``value`` within the list ``name``
+         If specified, ``rank`` indicates the "rank" of the first element to
+         return in case there are multiple copies of ``value`` in the list.
+         By default, LPOS returns the position of the first occurrence of
+         ``value`` in the list. When ``rank`` 2, LPOS returns the position of
+         the second ``value`` in the list. If ``rank`` is negative, LPOS
+         searches the list in reverse. For example, -1 would return the
+         position of the last occurrence of ``value`` and -2 would return the
+         position of the next to last occurrence of ``value``.
+         If specified, ``count`` indicates that LPOS should return a list of
+         up to ``count`` positions. A ``count`` of 2 would return a list of
+         up to 2 positions. A ``count`` of 0 returns a list of all positions
+         matching ``value``. When ``count`` is specified and but ``value``
+         does not exist in the list, an empty list is returned.
+         If specified, ``maxlen`` indicates the maximum number of list
+         elements to scan. A ``maxlen`` of 1000 will only return the
+         position(s) of items within the first 1000 entries in the list.
+         A ``maxlen`` of 0 (the default) will scan the entire list.
+        """
+        pieces = [name, value]
+
+        if rank is not None:
+            pieces.extend(["RANK", rank])
+
+        if count is not None:
+            pieces.extend(["COUNT", count])
+
+        if maxlen is not None:
+            pieces.extend(["MAXLEN", maxlen])
+
+        return await self.execute_command("LPOS", *pieces)
 
 
 class ClusterListsCommandMixin(ListsCommandMixin):
@@ -180,13 +254,16 @@ class ClusterListsCommandMixin(ListsCommandMixin):
         """
         try:
             value = await self.brpop(src, timeout=timeout)
+
             if value is None:
                 return None
         except TimeoutError:
             # Timeout was reached
+
             return None
 
         await self.lpush(dst, value[1])
+
         return value[1]
 
     async def rpoplpush(self, src, dst):
@@ -203,6 +280,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
 
         if value:
             await self.lpush(dst, value)
+
             return value
 
         return None
@@ -246,6 +324,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             A full implementation of the server side sort mechanics because many of the
             options work on multiple keys that can exist on multiple servers.
         """
+
         if (start is None and num is not None) or (start is not None and num is None):
             raise RedisError("RedisError: ``start`` and ``num`` must both be specified")
         try:
@@ -261,6 +340,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                 raise RedisClusterException(
                     "Unable to sort data type : {0}".format(data_type)
                 )
+
             if by is not None:
                 # _sort_using_by_arg mutates data so we don't
                 # need need a return value.
@@ -269,8 +349,10 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                 data.sort(key=self._strtod_key_func)
             else:
                 data.sort()
+
             if desc:
                 data = data[::-1]
+
             if not (start is None and num is None):
                 data = data[start : start + num]
 
@@ -301,6 +383,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                         "two keys"
                     )
                 n = len(get)
+
                 return list(zip(*[data[i::n] for i in range(n)]))
             else:
                 return data
@@ -311,26 +394,31 @@ class ClusterListsCommandMixin(ListsCommandMixin):
         """
         Used by sort()
         """
+
         if get is not None:
             if isinstance(get, str):
                 get = [get]
             new_data = []
+
             for k in data:
                 for g in get:
                     single_item = await self._get_single_item(k, g)
                     new_data.append(single_item)
             data = new_data
+
         return data
 
     async def _get_single_item(self, k, g):
         """
         Used by sort()
         """
+
         if getattr(k, "decode", None):
             k = k.decode("utf-8")
 
         if "*" in g:
             g = g.replace("*", k)
+
             if "->" in g:
                 key, hash_key = g.split("->")
                 single_item = await self.get(key, {}).get(hash_key)
@@ -340,18 +428,21 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             single_item = k
         else:
             single_item = None
+
         return b(single_item)
 
     def _strtod_key_func(self, arg):
         """
         Used by sort()
         """
+
         return float(arg)
 
     async def _sort_using_by_arg(self, data, by, alpha):
         """
         Used by sort()
         """
+
         if getattr(by, "decode", None):
             by = by.decode("utf-8")
 
@@ -360,9 +451,11 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                 arg = arg.decode("utf-8")
 
             key = by.replace("*", arg)
+
             if "->" in by:
                 key, hash_key = key.split("->")
                 v = await self.hget(key, hash_key)
+
                 if alpha:
                     return v
                 else:
@@ -371,6 +464,8 @@ class ClusterListsCommandMixin(ListsCommandMixin):
                 return await self.get(key)
 
         sorted_data = []
+
         for d in data:
             sorted_data.append((d, await _by_key(d)))
+
         return [x[0] for x in sorted(sorted_data, key=lambda x: x[1])]

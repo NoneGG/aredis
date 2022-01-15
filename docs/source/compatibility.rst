@@ -82,6 +82,8 @@ List
 .. list-table::
     :class: command-table
 
+    * - `BLMOVE <https://redis.io/commands/blmove>`_
+      - :meth:`~coredis.StrictRedis.blmove`
     * - `BLPOP <https://redis.io/commands/blpop>`_
       - :meth:`~coredis.StrictRedis.blpop`
     * - `BRPOP <https://redis.io/commands/brpop>`_
@@ -94,8 +96,12 @@ List
       - :meth:`~coredis.StrictRedis.linsert`
     * - `LLEN <https://redis.io/commands/llen>`_
       - :meth:`~coredis.StrictRedis.llen`
+    * - `LMOVE <https://redis.io/commands/lmove>`_
+      - :meth:`~coredis.StrictRedis.lmove`
     * - `LPOP <https://redis.io/commands/lpop>`_
       - :meth:`~coredis.StrictRedis.lpop`
+    * - `LPOS <https://redis.io/commands/lpos>`_
+      - :meth:`~coredis.StrictRedis.lpos`
     * - `LPUSH <https://redis.io/commands/lpush>`_
       - :meth:`~coredis.StrictRedis.lpush`
     * - `LPUSHX <https://redis.io/commands/lpushx>`_
@@ -116,12 +122,6 @@ List
       - :meth:`~coredis.StrictRedis.rpush`
     * - `RPUSHX <https://redis.io/commands/rpushx>`_
       - :meth:`~coredis.StrictRedis.rpushx`
-    * - `BLMOVE <https://redis.io/commands/blmove>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.blmove`)
-    * - `LMOVE <https://redis.io/commands/lmove>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.lmove`)
-    * - `LPOS <https://redis.io/commands/lpos>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.lpos`)
 
 Sorted-Set
 ----------
@@ -789,6 +789,8 @@ List
 .. list-table::
     :class: command-table
 
+    * - `BLMOVE <https://redis.io/commands/blmove>`_
+      - :meth:`~coredis.StrictRedisCluster.blmove`
     * - `BLPOP <https://redis.io/commands/blpop>`_
       - :meth:`~coredis.StrictRedisCluster.blpop`
     * - `BRPOP <https://redis.io/commands/brpop>`_
@@ -801,8 +803,12 @@ List
       - :meth:`~coredis.StrictRedisCluster.linsert`
     * - `LLEN <https://redis.io/commands/llen>`_
       - :meth:`~coredis.StrictRedisCluster.llen`
+    * - `LMOVE <https://redis.io/commands/lmove>`_
+      - :meth:`~coredis.StrictRedisCluster.lmove`
     * - `LPOP <https://redis.io/commands/lpop>`_
       - :meth:`~coredis.StrictRedisCluster.lpop`
+    * - `LPOS <https://redis.io/commands/lpos>`_
+      - :meth:`~coredis.StrictRedisCluster.lpos`
     * - `LPUSH <https://redis.io/commands/lpush>`_
       - :meth:`~coredis.StrictRedisCluster.lpush`
     * - `LPUSHX <https://redis.io/commands/lpushx>`_
@@ -823,12 +829,6 @@ List
       - :meth:`~coredis.StrictRedisCluster.rpush`
     * - `RPUSHX <https://redis.io/commands/rpushx>`_
       - :meth:`~coredis.StrictRedisCluster.rpushx`
-    * - `BLMOVE <https://redis.io/commands/blmove>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.blmove`)
-    * - `LMOVE <https://redis.io/commands/lmove>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.lmove`)
-    * - `LPOS <https://redis.io/commands/lpos>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.lpos`)
 
 Sorted-Set
 ----------

@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import asyncio
-from packaging import version
 from unittest.mock import Mock
 
 import pytest
+from packaging import version
 
 import coredis
 

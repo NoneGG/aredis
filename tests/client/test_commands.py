@@ -18,6 +18,7 @@ from .conftest import skip_if_server_version_lt
 async def redis_server_time(client):
     seconds, milliseconds = await client.time()
     timestamp = float("%s.%s" % (seconds, milliseconds))
+
     return datetime.datetime.fromtimestamp(timestamp)
 
 
@@ -150,6 +151,7 @@ class TestRedisCommands:
         old_max_length_value = current_config["slowlog-max-len"]
         await client.config_set("slowlog-log-slower-than", 0)
         await client.config_set("slowlog-max-len", 128)
+
         return old_slower_than_value, old_max_length_value
 
     async def cleanup(self, old_slower_than_value, old_max_legnth_value, *, loop):
@@ -536,6 +538,7 @@ class TestRedisCommands:
         assert await r.keys() == []
         keys_with_underscores = {b("test_a"), b("test_b")}
         keys = keys_with_underscores.union({b("testc")})
+
         for key in keys:
             await r.set(key, 1)
         assert set(await r.keys(pattern="test_*")) == keys_with_underscores
@@ -551,9 +554,26 @@ class TestRedisCommands:
         assert await r.mget("a", "other", "b", "c") == [b("1"), None, b("2"), b("3")]
 
     @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_lmove(self, r):
+        await r.flushdb()
+        await r.rpush("a", "one", "two", "three", "four")
+        assert await r.lmove("a", "b")
+        assert await r.lmove("a", "b", "right", "left")
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_blmove(self, r):
+        await r.flushdb()
+        await r.rpush("a", "one", "two", "three", "four")
+        assert await r.blmove("a", "b", 5)
+        assert await r.blmove("a", "b", 1, "RIGHT", "LEFT")
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_mset(self, r):
         d = {"a": b("1"), "b": b("2"), "c": b("3")}
         assert await r.mset(d)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
 
@@ -561,6 +581,7 @@ class TestRedisCommands:
     async def test_mset_kwargs(self, r):
         d = {"a": b("1"), "b": b("2"), "c": b("3")}
         assert await r.mset(**d)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
 
@@ -571,6 +592,7 @@ class TestRedisCommands:
         assert await r.msetnx(d)
         d2 = {"a": b("x"), "d": b("4")}
         assert not await r.msetnx(d2)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
         assert await r.get("d") is None
@@ -582,6 +604,7 @@ class TestRedisCommands:
         assert await r.msetnx(**d)
         d2 = {"a": b("x"), "d": b("4")}
         assert not await r.msetnx(**d2)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
         assert await r.get("d") is None
@@ -637,6 +660,7 @@ class TestRedisCommands:
     async def test_randomkey(self, r):
         await r.flushdb()
         assert await r.randomkey() is None
+
         for key in ("a", "b", "c"):
             await r.set(key, 1)
         assert await r.randomkey() in (b("a"), b("b"), b("c"))
@@ -769,6 +793,7 @@ class TestRedisCommands:
     async def test_touch(self, r):
         await r.flushdb()
         keys = ["a", "b", "c", "d"]
+
         for index, key in enumerate(keys):
             await r.set(key, index)
         assert await r.touch(keys) == len(keys)
@@ -777,9 +802,11 @@ class TestRedisCommands:
     async def test_unlink(self, r):
         await r.flushdb()
         keys = ["a", "b", "c", "d"]
+
         for index, key in enumerate(keys):
             await r.set(key, index)
         await r.unlink(*keys)
+
         for key in keys:
             assert await r.get(key) is None
 
@@ -948,6 +975,40 @@ class TestRedisCommands:
         await r.rpush("a", "1", "2", "3")
         assert await r.rpushx("a", "4") == 4
         assert await r.lrange("a", 0, -1) == [b("1"), b("2"), b("3"), b("4")]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.0.6")
+    async def test_lpos(self, r):
+        await r.flushdb()
+        assert await r.rpush("a", "a", "b", "c", "1", "2", "3", "c", "c") == 8
+        assert await r.lpos("a", "a") == 0
+        assert await r.lpos("a", "c") == 2
+
+        assert await r.lpos("a", "c", rank=1) == 2
+        assert await r.lpos("a", "c", rank=2) == 6
+        assert await r.lpos("a", "c", rank=4) is None
+        assert await r.lpos("a", "c", rank=-1) == 7
+        assert await r.lpos("a", "c", rank=-2) == 6
+
+        assert await r.lpos("a", "c", count=0) == [2, 6, 7]
+        assert await r.lpos("a", "c", count=1) == [2]
+        assert await r.lpos("a", "c", count=2) == [2, 6]
+        assert await r.lpos("a", "c", count=100) == [2, 6, 7]
+
+        assert await r.lpos("a", "c", count=0, rank=2) == [6, 7]
+        assert await r.lpos("a", "c", count=2, rank=-1) == [7, 6]
+
+        assert await r.lpos("axxx", "c", count=0, rank=2) == []
+        assert await r.lpos("axxx", "c") is None
+
+        assert await r.lpos("a", "x", count=2) == []
+        assert await r.lpos("a", "x") is None
+
+        assert await r.lpos("a", "a", count=0, maxlen=1) == [0]
+        assert await r.lpos("a", "c", count=0, maxlen=1) == []
+        assert await r.lpos("a", "c", count=0, maxlen=3) == [2]
+        assert await r.lpos("a", "c", count=0, maxlen=3, rank=-1) == [7, 6]
+        assert await r.lpos("a", "c", count=0, maxlen=7, rank=2) == [6]
 
     # SCAN COMMANDS
     @pytest.mark.asyncio(forbid_global_loop=True)
@@ -2126,6 +2187,7 @@ class TestBinarySave:
             b("foo\tbar\x07"): [b("7"), b("8"), b("9")],
         }
         # fill in lists
+
         for key, value in iteritems(mapping):
             await r.rpush(key, *value)
 
@@ -2133,6 +2195,7 @@ class TestBinarySave:
         assert sorted(await r.keys("*")) == sorted(list(iterkeys(mapping)))
 
         # check that it is possible to get list content by key name
+
         for key, value in iteritems(mapping):
             assert await r.lrange(key, 0, -1) == value
 
