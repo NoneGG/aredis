@@ -12,8 +12,7 @@ from coredis.utils import b
 
 
 class TestPipeline:
-    """
-    """
+    """ """
 
     @pytest.mark.asyncio()
     async def test_pipeline(self, r):

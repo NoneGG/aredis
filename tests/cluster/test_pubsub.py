@@ -473,7 +473,9 @@ def test_pubsub_thread_publish():
     startup_nodes = [{"host": "127.0.0.1", "port": "7000"}]
 
     r = StrictRedisCluster(
-        startup_nodes=startup_nodes, max_connections=16, max_connections_per_node=16,
+        startup_nodes=startup_nodes,
+        max_connections=16,
+        max_connections_per_node=16,
     )
 
     async def t_run(rc):

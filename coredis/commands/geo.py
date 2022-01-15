@@ -185,7 +185,9 @@ class GeoCommandMixin:
         elif kwargs["unit"]:
             pieces.append(kwargs["unit"])
         else:
-            pieces.append("m",)
+            pieces.append(
+                "m",
+            )
 
         for token in ("withdist", "withcoord", "withhash"):
             if kwargs[token]:

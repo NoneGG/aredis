@@ -386,7 +386,8 @@ class ClusterPubSub(PubSub):
 
         if self.connection is None:
             self.connection = self.connection_pool.get_connection(
-                "pubsub", channel=args[1],
+                "pubsub",
+                channel=args[1],
             )
             # register a callback that re-subscribes to any channels we
             # were listening to when we were disconnected

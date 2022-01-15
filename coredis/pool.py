@@ -469,7 +469,8 @@ class ClusterConnectionPool(ConnectionPool):
     def disconnect(self):
         """Closes all connectins in the pool"""
         all_conns = chain(
-            self._available_connections.values(), self._in_use_connections.values(),
+            self._available_connections.values(),
+            self._in_use_connections.values(),
         )
 
         for node_connections in all_conns:

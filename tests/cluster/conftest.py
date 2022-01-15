@@ -44,8 +44,7 @@ def _get_client(cls=None, **kwargs):
 
 
 def _init_mgt_client(request, cls=None, **kwargs):
-    """
-    """
+    """ """
     client = _get_client(cls=cls, **kwargs)
     if request:
 
@@ -57,8 +56,7 @@ def _init_mgt_client(request, cls=None, **kwargs):
 
 
 def skip_if_not_password_protected_nodes():
-    """
-    """
+    """ """
     return pytest.mark.skipif("TEST_PASSWORD_PROTECTED" not in os.environ, reason="")
 
 

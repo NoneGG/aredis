@@ -1,11 +1,12 @@
 -r test.txt
 autoflake8
-black
+black==21.12b0
 contextvars
 flake8
 hiredis
 isort
-redis
+mypy==0.931
+redis>4
 requests
 twine
 uvloop

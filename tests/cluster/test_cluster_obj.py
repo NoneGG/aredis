@@ -105,8 +105,7 @@ async def test_moved_redirection_pipeline(monkeypatch):
 
 
 async def assert_moved_redirection_on_slave(sr, connection_pool_cls, cluster_obj):
-    """
-    """
+    """ """
     # we assume this key is set on 127.0.0.1:7000(7003)
     await sr.set("foo16706", "foo")
     await asyncio.sleep(1)
