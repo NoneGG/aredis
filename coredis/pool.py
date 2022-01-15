@@ -45,20 +45,18 @@ class ConnectionPool:
         """
         Returns a connection pool configured from the given URL.
 
-        For example::
+        For example:
 
-        redis://[:password]@localhost:6379/0
-        rediss://[:password]@localhost:6379/0
-        unix://[:password]@/path/to/socket.sock?db=0
+        - ``redis://[:password]@localhost:6379/0``
+        - ``rediss://[:password]@localhost:6379/0``
+        - ``unix://[:password]@/path/to/socket.sock?db=0``
 
         Three URL schemes are supported:
 
-        - ```redis://``
-        <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ creates a
-        normal TCP socket connection
-        - ```rediss://``
-        <http://www.iana.org/assignments/uri-schemes/prov/rediss>`_ creates a
-        SSL wrapped TCP socket connection
+        - ``redis://`` <http://www.iana.org/assignments/uri-schemes/prov/redis>`_ creates a
+          normal TCP socket connection
+        - ``rediss://`` <http://www.iana.org/assignments/uri-schemes/prov/rediss>`_ creates a
+          SSL wrapped TCP socket connection
         - ``unix://`` creates a Unix Domain Socket connection
 
         There are several ways to specify a database number. The parse function
