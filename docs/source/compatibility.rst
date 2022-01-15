@@ -254,8 +254,6 @@ Generic
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
       - Not Implemented. (Introduced in redis version 4.0.0)
-    * - `OBJECT HELP <https://redis.io/commands/object-help>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
     * - `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
@@ -300,8 +298,6 @@ Scripting
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.script_debug`)
     * - `SCRIPT <https://redis.io/commands/script>`_
       - Not Implemented. (Introduced in redis version 2.6.0)
-    * - `SCRIPT HELP <https://redis.io/commands/script-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
 
 Geo
 ---
@@ -404,8 +400,6 @@ Pubsub
       - :meth:`~coredis.StrictRedis.pubsub_numsub`
     * - `PSUBSCRIBE <https://redis.io/commands/psubscribe>`_
       - Not Implemented. (Introduced in redis version 2.0.0)
-    * - `PUBSUB HELP <https://redis.io/commands/pubsub-help>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
     * - `PUNSUBSCRIBE <https://redis.io/commands/punsubscribe>`_
       - Not Implemented. (Introduced in redis version 2.0.0)
     * - `SUBSCRIBE <https://redis.io/commands/subscribe>`_
@@ -500,11 +494,7 @@ Stream
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.xgroup_setid`)
     * - `XGROUP <https://redis.io/commands/xgroup>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `XGROUP HELP <https://redis.io/commands/xgroup-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `XINFO <https://redis.io/commands/xinfo>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `XINFO HELP <https://redis.io/commands/xinfo-help>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
     * - `XSETID <https://redis.io/commands/xsetid>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
@@ -561,8 +551,6 @@ Server
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.acl_genpass`)
     * - `ACL GETUSER <https://redis.io/commands/acl-getuser>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.acl_getuser`)
-    * - `ACL HELP <https://redis.io/commands/acl-help>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.acl_help`)
     * - `ACL LIST <https://redis.io/commands/acl-list>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.acl_list`)
     * - `ACL LOAD <https://redis.io/commands/acl-load>`_
@@ -589,8 +577,6 @@ Server
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.lolwut`)
     * - `MEMORY DOCTOR <https://redis.io/commands/memory-doctor>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.memory_doctor`)
-    * - `MEMORY HELP <https://redis.io/commands/memory-help>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.memory_help`)
     * - `MEMORY PURGE <https://redis.io/commands/memory-purge>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.memory_purge`)
     * - `MEMORY STATS <https://redis.io/commands/memory-stats>`_
@@ -615,12 +601,8 @@ Server
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.sync`)
     * - `ACL <https://redis.io/commands/acl>`_
       - Not Implemented. (Introduced in redis version 6.0.0)
-    * - `COMMAND HELP <https://redis.io/commands/command-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `CONFIG <https://redis.io/commands/config>`_
       - Not Implemented. (Introduced in redis version 2.0.0)
-    * - `CONFIG HELP <https://redis.io/commands/config-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `DEBUG <https://redis.io/commands/debug>`_
       - Not Implemented. (Introduced in redis version 1.0.0)
     * - `FAILOVER <https://redis.io/commands/failover>`_
@@ -630,8 +612,6 @@ Server
     * - `LATENCY DOCTOR <https://redis.io/commands/latency-doctor>`_
       - Not Implemented. (Introduced in redis version 2.8.13)
     * - `LATENCY GRAPH <https://redis.io/commands/latency-graph>`_
-      - Not Implemented. (Introduced in redis version 2.8.13)
-    * - `LATENCY HELP <https://redis.io/commands/latency-help>`_
       - Not Implemented. (Introduced in redis version 2.8.13)
     * - `LATENCY HISTORY <https://redis.io/commands/latency-history>`_
       - Not Implemented. (Introduced in redis version 2.8.13)
@@ -645,16 +625,12 @@ Server
       - Not Implemented. (Introduced in redis version 4.0.0)
     * - `MODULE <https://redis.io/commands/module>`_
       - Not Implemented. (Introduced in redis version 4.0.0)
-    * - `MODULE HELP <https://redis.io/commands/module-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `REPLCONF <https://redis.io/commands/replconf>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `RESTORE-ASKING <https://redis.io/commands/restore-asking>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `SLOWLOG <https://redis.io/commands/slowlog>`_
       - Not Implemented. (Introduced in redis version 2.2.12)
-    * - `SLOWLOG HELP <https://redis.io/commands/slowlog-help>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
 
 Connection
 ----------
@@ -704,8 +680,6 @@ Connection
       - Not Implemented. (Introduced in redis version 1.0.0)
     * - `CLIENT CACHING <https://redis.io/commands/client-caching>`_
       - Not Implemented. (Introduced in redis version 6.0.0)
-    * - `CLIENT HELP <https://redis.io/commands/client-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `HELLO <https://redis.io/commands/hello>`_
       - Not Implemented. (Introduced in redis version 6.0.0)
 
@@ -961,8 +935,6 @@ Generic
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
       - Not Implemented. (Introduced in redis version 4.0.0)
-    * - `OBJECT HELP <https://redis.io/commands/object-help>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
     * - `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
@@ -1007,8 +979,6 @@ Scripting
       - Not Implemented. (Introduced in redis version 2.6.0)
     * - `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
       - Not Implemented. (Introduced in redis version 3.2.0)
-    * - `SCRIPT HELP <https://redis.io/commands/script-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
 
 Geo
 ---
@@ -1111,8 +1081,6 @@ Pubsub
       - :meth:`~coredis.StrictRedisCluster.pubsub_numsub`
     * - `PSUBSCRIBE <https://redis.io/commands/psubscribe>`_
       - Not Implemented. (Introduced in redis version 2.0.0)
-    * - `PUBSUB HELP <https://redis.io/commands/pubsub-help>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
     * - `PUNSUBSCRIBE <https://redis.io/commands/punsubscribe>`_
       - Not Implemented. (Introduced in redis version 2.0.0)
     * - `SUBSCRIBE <https://redis.io/commands/subscribe>`_
@@ -1207,11 +1175,7 @@ Stream
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.xgroup_setid`)
     * - `XGROUP <https://redis.io/commands/xgroup>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `XGROUP HELP <https://redis.io/commands/xgroup-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `XINFO <https://redis.io/commands/xinfo>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `XINFO HELP <https://redis.io/commands/xinfo-help>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
     * - `XSETID <https://redis.io/commands/xsetid>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
@@ -1268,8 +1232,6 @@ Cluster
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER GETKEYSINSLOT <https://redis.io/commands/cluster-getkeysinslot>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
-    * - `CLUSTER HELP <https://redis.io/commands/cluster-help>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `CLUSTER MYID <https://redis.io/commands/cluster-myid>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER SAVECONFIG <https://redis.io/commands/cluster-saveconfig>`_

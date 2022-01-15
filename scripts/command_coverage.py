@@ -84,6 +84,8 @@ def generate_compatibility_section(section, kls, sync_kls, redis_namespace, grou
         missing = []
 
         for method in get_official_commands(group):
+            if method["name"].find(" HELP") >= 0:
+                continue
             name = MAPPING.get(method["name"], method["name"].lower().replace(" ", "_"))
             located = find_method(kls, name)
             sync_located = find_method(sync_kls, name)
