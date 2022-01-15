@@ -1,4 +1,4 @@
-`aredis <https://github.com/NoneGG/aredis>`_
+.. _aredis: https://github.com/NoneGG/aredis
 
 Changelog
 =========
