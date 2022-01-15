@@ -320,10 +320,6 @@ Geo
       - :meth:`~coredis.StrictRedis.geosearch`
     * - `GEOSEARCHSTORE <https://redis.io/commands/geosearchstore>`_
       - :meth:`~coredis.StrictRedis.geosearchstore`
-    * - `GEORADIUSBYMEMBER_RO <https://redis.io/commands/georadiusbymember_ro>`_
-      - Not Implemented. (Introduced in redis version 3.2.10)
-    * - `GEORADIUS_RO <https://redis.io/commands/georadius_ro>`_
-      - Not Implemented. (Introduced in redis version 3.2.10)
 
 Hash
 ----
@@ -975,10 +971,6 @@ Geo
       - :meth:`~coredis.StrictRedisCluster.geosearch`
     * - `GEOSEARCHSTORE <https://redis.io/commands/geosearchstore>`_
       - :meth:`~coredis.StrictRedisCluster.geosearchstore`
-    * - `GEORADIUSBYMEMBER_RO <https://redis.io/commands/georadiusbymember_ro>`_
-      - Not Implemented. (Introduced in redis version 3.2.10)
-    * - `GEORADIUS_RO <https://redis.io/commands/georadius_ro>`_
-      - Not Implemented. (Introduced in redis version 3.2.10)
 
 Hash
 ----

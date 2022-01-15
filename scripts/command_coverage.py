@@ -77,6 +77,14 @@ def skip_command(command):
     return False
 
 
+def is_deprecated(command):
+    if (
+        command.get("deprecated_since")
+        and version.parse(command["deprecated_since"]) < MAX_SUPPORTED_VERSION
+    ):
+        return version.parse(command["deprecated_since"])
+
+
 def generate_compatibility_section(section, kls, sync_kls, redis_namespace, groups):
     doc = f"{section}\n"
     doc += f"{len(section)*'^'}\n"
@@ -105,11 +113,11 @@ def generate_compatibility_section(section, kls, sync_kls, redis_namespace, grou
                 supported.append(
                     f"    * - {redis_command_link(method['name'])}\n      - :meth:`~coredis.{kls.__name__}.{name}`"
                 )
-            elif sync_located:
+            elif sync_located and not is_deprecated(method):
                 needs_porting.append(
                     f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. (redis-py reference: :meth:`~{redis_namespace}.{name}`)"
                 )
-            else:
+            elif not is_deprecated(method):
                 missing.append(
                     f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. (Introduced in redis version {method['since']})"
                 )
