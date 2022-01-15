@@ -1846,6 +1846,21 @@ class TestRedisCommands:
         assert await r.hstrlen(key, "f2") == 2
         assert await r.hstrlen(key, "f3") == 4
 
+    @skip_if_server_version_lt("6.2.0")
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_hrandfield(self, r):
+        await r.flushdb()
+        assert await r.hrandfield("key") is None
+        await r.hmset("key", {"a": 1, "b": 2, "c": 3, "d": 4, "e": 5})
+        assert await r.hrandfield("key") is not None
+        assert len(await r.hrandfield("key", 2)) == 2
+        # with values
+        assert len(await r.hrandfield("key", 2, True)) == 4
+        # without duplications
+        assert len(await r.hrandfield("key", 10)) == 5
+        # with duplications
+        assert len(await r.hrandfield("key", -10)) == 10
+
     # SORT
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_sort_basic(self, r):

@@ -351,6 +351,8 @@ Hash
       - :meth:`~coredis.StrictRedis.hmget`
     * - `HMSET <https://redis.io/commands/hmset>`_
       - :meth:`~coredis.StrictRedis.hmset`
+    * - `HRANDFIELD <https://redis.io/commands/hrandfield>`_
+      - :meth:`~coredis.StrictRedis.hrandfield`
     * - `HSCAN <https://redis.io/commands/hscan>`_
       - :meth:`~coredis.StrictRedis.hscan`
     * - `HSET <https://redis.io/commands/hset>`_
@@ -361,8 +363,6 @@ Hash
       - :meth:`~coredis.StrictRedis.hstrlen`
     * - `HVALS <https://redis.io/commands/hvals>`_
       - :meth:`~coredis.StrictRedis.hvals`
-    * - `HRANDFIELD <https://redis.io/commands/hrandfield>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.hrandfield`)
 
 Hyperloglog
 -----------
@@ -1006,6 +1006,8 @@ Hash
       - :meth:`~coredis.StrictRedisCluster.hmget`
     * - `HMSET <https://redis.io/commands/hmset>`_
       - :meth:`~coredis.StrictRedisCluster.hmset`
+    * - `HRANDFIELD <https://redis.io/commands/hrandfield>`_
+      - :meth:`~coredis.StrictRedisCluster.hrandfield`
     * - `HSCAN <https://redis.io/commands/hscan>`_
       - :meth:`~coredis.StrictRedisCluster.hscan`
     * - `HSET <https://redis.io/commands/hset>`_
@@ -1016,8 +1018,6 @@ Hash
       - :meth:`~coredis.StrictRedisCluster.hstrlen`
     * - `HVALS <https://redis.io/commands/hvals>`_
       - :meth:`~coredis.StrictRedisCluster.hvals`
-    * - `HRANDFIELD <https://redis.io/commands/hrandfield>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.hrandfield`)
 
 Hyperloglog
 -----------
