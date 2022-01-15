@@ -1,7 +1,7 @@
 import datetime
 import time
 
-from coredis.exceptions import DataError, RedisError
+from coredis.exceptions import DataError, ReadOnlyError, RedisError
 from coredis.utils import (
     NodeFlag,
     bool_ok,
@@ -13,7 +13,7 @@ from coredis.utils import (
 )
 
 
-class BitField:
+class BitFieldOperation:
     """
     The command treats a Redis string as a array of bits,
     and is capable of addressing specific integer fields
@@ -26,9 +26,10 @@ class BitField:
     for command detail you should see: https://redis.io/commands/bitfield
     """
 
-    def __init__(self, redis_client, key):
-        self._command_stack = ["BITFIELD", key]
+    def __init__(self, redis_client, key, readonly=False):
+        self._command_stack = ["BITFIELD" if not readonly else "BITFIELD_RO", key]
         self.redis = redis_client
+        self.readonly = readonly
 
     def __del__(self):
         self._command_stack.clear()
@@ -37,6 +38,9 @@ class BitField:
         """
         Set the specified bit field and returns its old value.
         """
+        if self.readonly:
+            raise ReadOnlyError()
+
         self._command_stack.extend(["SET", type, offset, value])
 
         return self
@@ -45,6 +49,7 @@ class BitField:
         """
         Returns the specified bit field.
         """
+
         self._command_stack.extend(["GET", type, offset])
 
         return self
@@ -54,6 +59,10 @@ class BitField:
         Increments or decrements (if a negative increment is given)
         the specified bit field and returns the new value.
         """
+
+        if self.readonly:
+            raise ReadOnlyError()
+
         self._command_stack.extend(["INCRBY", type, offset, increment])
 
         return self
@@ -64,6 +73,9 @@ class BitField:
         have no effect unless used before `incrby`
         three types are available: WRAP|SAT|FAIL
         """
+
+        if self.readonly:
+            raise ReadOnlyError()
         self._command_stack.extend(["OVERFLOW", type])
 
         return self
@@ -141,7 +153,20 @@ class StringsCommandMixin:
         return await self.execute_command("BITPOS", *params)
 
     def bitfield(self, key):
-        return BitField(self, key)
+        """
+        Return a :class:`BitFieldOperation` instance to conveniently construct one or
+        more bitfield operations on ``key``.
+        """
+        return BitFieldOperation(self, key)
+
+    def bitfield_ro(self, key):
+        """
+        Return a :class:`BitFieldOperation` instance to conveniently construct bitfield
+        operations on a read only replica against ``key``.
+
+        Raises :class:`ReadOnlyError` if a write operation is attempted
+        """
+        return BitFieldOperation(self, key, readonly=True)
 
     async def decr(self, name, amount=1):
         """

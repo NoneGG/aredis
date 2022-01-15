@@ -68,6 +68,8 @@ Bitmap
       - :meth:`~coredis.StrictRedis.bitcount`
     * - `BITFIELD <https://redis.io/commands/bitfield>`_
       - :meth:`~coredis.StrictRedis.bitfield`
+    * - `BITFIELD_RO <https://redis.io/commands/bitfield_ro>`_
+      - :meth:`~coredis.StrictRedis.bitfield_ro`
     * - `BITOP <https://redis.io/commands/bitop>`_
       - :meth:`~coredis.StrictRedis.bitop`
     * - `BITPOS <https://redis.io/commands/bitpos>`_
@@ -76,8 +78,6 @@ Bitmap
       - :meth:`~coredis.StrictRedis.getbit`
     * - `SETBIT <https://redis.io/commands/setbit>`_
       - :meth:`~coredis.StrictRedis.setbit`
-    * - `BITFIELD_RO <https://redis.io/commands/bitfield_ro>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
 
 List
 ----
@@ -723,6 +723,8 @@ Bitmap
       - :meth:`~coredis.StrictRedisCluster.bitcount`
     * - `BITFIELD <https://redis.io/commands/bitfield>`_
       - :meth:`~coredis.StrictRedisCluster.bitfield`
+    * - `BITFIELD_RO <https://redis.io/commands/bitfield_ro>`_
+      - :meth:`~coredis.StrictRedisCluster.bitfield_ro`
     * - `BITOP <https://redis.io/commands/bitop>`_
       - :meth:`~coredis.StrictRedisCluster.bitop`
     * - `BITPOS <https://redis.io/commands/bitpos>`_
@@ -731,8 +733,6 @@ Bitmap
       - :meth:`~coredis.StrictRedisCluster.getbit`
     * - `SETBIT <https://redis.io/commands/setbit>`_
       - :meth:`~coredis.StrictRedisCluster.setbit`
-    * - `BITFIELD_RO <https://redis.io/commands/bitfield_ro>`_
-      - Not Implemented. (Introduced in redis version 6.2.0)
 
 List
 ----

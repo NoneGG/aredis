@@ -9,7 +9,7 @@ import pytest
 
 import coredis
 from coredis.commands.server import parse_info
-from coredis.exceptions import DataError, RedisError, ResponseError
+from coredis.exceptions import DataError, ReadOnlyError, RedisError, ResponseError
 from coredis.utils import b, iteritems, iterkeys, itervalues
 
 from .conftest import skip_if_server_version_lt
@@ -317,6 +317,27 @@ class TestRedisCommands:
         key = "key:bitfield:get"
         await r.set(key, "\x00d")
         assert [100] == await r.bitfield(key).get("i8", "#1").exc()
+
+    @skip_if_server_version_lt("6.2.0")
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_bitfield_ro_get(self, r):
+        key = "key:bitfield_ro:get"
+        await r.set(key, "\x00d")
+        assert [100] == await r.bitfield_ro(key).get("i8", "#1").exc()
+
+    @skip_if_server_version_lt("6.2.0")
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_bitfield_ro_set(self, r):
+        key = "key:bitfield_ro:set"
+        with pytest.raises(ReadOnlyError):
+            await r.bitfield_ro(key).set("i4", "#1", 100).exc()
+
+    @skip_if_server_version_lt("6.2.0")
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_bitfield_ro_incrby(self, r):
+        key = "key:bitfield_ro:set"
+        with pytest.raises(ReadOnlyError):
+            await r.bitfield_ro(key).incrby("i8", 0, 128).exc()
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_bitfield_incrby(self, r):
