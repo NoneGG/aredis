@@ -1,16 +1,16 @@
 import functools
 import inspect
 
-from packaging import version
-
 import coredis
 import redis
 import redis.cluster
 import requests
+from packaging import version
 
 MAX_SUPPORTED_VERSION = version.parse("6.999.999")
 
 MAPPING = {"DEL": "delete"}
+
 
 @functools.cache
 def get_commands():
@@ -24,6 +24,7 @@ def get_official_commands(group=None):
         by_group.setdefault(command["group"], []).append(command | {"name": name})
 
         for name, command in response.items()
+
         if version.parse(command["since"]) < MAX_SUPPORTED_VERSION
     ]
 
@@ -66,6 +67,16 @@ def redis_command_link(command):
     )
 
 
+def skip_command(command):
+    if (
+        command["name"].find(" HELP") >= 0
+        or command["summary"].find("container for") >= 0
+    ):
+        return True
+
+    return False
+
+
 def generate_compatibility_section(section, kls, sync_kls, redis_namespace, groups):
     doc = f"{section}\n"
     doc += f"{len(section)*'^'}\n"
@@ -84,7 +95,7 @@ def generate_compatibility_section(section, kls, sync_kls, redis_namespace, grou
         missing = []
 
         for method in get_official_commands(group):
-            if method["name"].find(" HELP") >= 0:
+            if skip_command(method):
                 continue
             name = MAPPING.get(method["name"], method["name"].lower().replace(" ", "_"))
             located = find_method(kls, name)

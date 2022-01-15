@@ -214,8 +214,6 @@ Generic
       - :meth:`~coredis.StrictRedis.keys`
     * - `MOVE <https://redis.io/commands/move>`_
       - :meth:`~coredis.StrictRedis.move`
-    * - `OBJECT <https://redis.io/commands/object>`_
-      - :meth:`~coredis.StrictRedis.object`
     * - `PERSIST <https://redis.io/commands/persist>`_
       - :meth:`~coredis.StrictRedis.persist`
     * - `PEXPIRE <https://redis.io/commands/pexpire>`_
@@ -296,8 +294,6 @@ Scripting
       - :meth:`~coredis.StrictRedis.script_load`
     * - `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.script_debug`)
-    * - `SCRIPT <https://redis.io/commands/script>`_
-      - Not Implemented. (Introduced in redis version 2.6.0)
 
 Geo
 ---
@@ -390,8 +386,6 @@ Pubsub
 
     * - `PUBLISH <https://redis.io/commands/publish>`_
       - :meth:`~coredis.StrictRedis.publish`
-    * - `PUBSUB <https://redis.io/commands/pubsub>`_
-      - :meth:`~coredis.StrictRedis.pubsub`
     * - `PUBSUB CHANNELS <https://redis.io/commands/pubsub-channels>`_
       - :meth:`~coredis.StrictRedis.pubsub_channels`
     * - `PUBSUB NUMPAT <https://redis.io/commands/pubsub-numpat>`_
@@ -492,10 +486,6 @@ Stream
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.xgroup_delconsumer`)
     * - `XGROUP SETID <https://redis.io/commands/xgroup-setid>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.xgroup_setid`)
-    * - `XGROUP <https://redis.io/commands/xgroup>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `XINFO <https://redis.io/commands/xinfo>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `XSETID <https://redis.io/commands/xsetid>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
 
@@ -599,16 +589,8 @@ Server
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.swapdb`)
     * - `SYNC <https://redis.io/commands/sync>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.sync`)
-    * - `ACL <https://redis.io/commands/acl>`_
-      - Not Implemented. (Introduced in redis version 6.0.0)
-    * - `CONFIG <https://redis.io/commands/config>`_
-      - Not Implemented. (Introduced in redis version 2.0.0)
-    * - `DEBUG <https://redis.io/commands/debug>`_
-      - Not Implemented. (Introduced in redis version 1.0.0)
     * - `FAILOVER <https://redis.io/commands/failover>`_
       - Not Implemented. (Introduced in redis version 6.2.0)
-    * - `LATENCY <https://redis.io/commands/latency>`_
-      - Not Implemented. (Introduced in redis version 2.8.13)
     * - `LATENCY DOCTOR <https://redis.io/commands/latency-doctor>`_
       - Not Implemented. (Introduced in redis version 2.8.13)
     * - `LATENCY GRAPH <https://redis.io/commands/latency-graph>`_
@@ -619,18 +601,12 @@ Server
       - Not Implemented. (Introduced in redis version 2.8.13)
     * - `LATENCY RESET <https://redis.io/commands/latency-reset>`_
       - Not Implemented. (Introduced in redis version 2.8.13)
-    * - `MEMORY <https://redis.io/commands/memory>`_
-      - Not Implemented. (Introduced in redis version 4.0.0)
     * - `MEMORY MALLOC-STATS <https://redis.io/commands/memory-malloc-stats>`_
-      - Not Implemented. (Introduced in redis version 4.0.0)
-    * - `MODULE <https://redis.io/commands/module>`_
       - Not Implemented. (Introduced in redis version 4.0.0)
     * - `REPLCONF <https://redis.io/commands/replconf>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `RESTORE-ASKING <https://redis.io/commands/restore-asking>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
-    * - `SLOWLOG <https://redis.io/commands/slowlog>`_
-      - Not Implemented. (Introduced in redis version 2.2.12)
 
 Connection
 ----------
@@ -652,8 +628,6 @@ Connection
       - :meth:`~coredis.StrictRedis.echo`
     * - `PING <https://redis.io/commands/ping>`_
       - :meth:`~coredis.StrictRedis.ping`
-    * - `CLIENT <https://redis.io/commands/client>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.client`)
     * - `CLIENT GETREDIR <https://redis.io/commands/client-getredir>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.client_getredir`)
     * - `CLIENT ID <https://redis.io/commands/client-id>`_
@@ -895,8 +869,6 @@ Generic
       - :meth:`~coredis.StrictRedisCluster.keys`
     * - `MOVE <https://redis.io/commands/move>`_
       - :meth:`~coredis.StrictRedisCluster.move`
-    * - `OBJECT <https://redis.io/commands/object>`_
-      - :meth:`~coredis.StrictRedisCluster.object`
     * - `PERSIST <https://redis.io/commands/persist>`_
       - :meth:`~coredis.StrictRedisCluster.persist`
     * - `PEXPIRE <https://redis.io/commands/pexpire>`_
@@ -975,8 +947,6 @@ Scripting
       - :meth:`~coredis.StrictRedisCluster.script_kill`
     * - `SCRIPT LOAD <https://redis.io/commands/script-load>`_
       - :meth:`~coredis.StrictRedisCluster.script_load`
-    * - `SCRIPT <https://redis.io/commands/script>`_
-      - Not Implemented. (Introduced in redis version 2.6.0)
     * - `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
       - Not Implemented. (Introduced in redis version 3.2.0)
 
@@ -1071,8 +1041,6 @@ Pubsub
 
     * - `PUBLISH <https://redis.io/commands/publish>`_
       - :meth:`~coredis.StrictRedisCluster.publish`
-    * - `PUBSUB <https://redis.io/commands/pubsub>`_
-      - :meth:`~coredis.StrictRedisCluster.pubsub`
     * - `PUBSUB CHANNELS <https://redis.io/commands/pubsub-channels>`_
       - :meth:`~coredis.StrictRedisCluster.pubsub_channels`
     * - `PUBSUB NUMPAT <https://redis.io/commands/pubsub-numpat>`_
@@ -1173,10 +1141,6 @@ Stream
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.xgroup_delconsumer`)
     * - `XGROUP SETID <https://redis.io/commands/xgroup-setid>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.xgroup_setid`)
-    * - `XGROUP <https://redis.io/commands/xgroup>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `XINFO <https://redis.io/commands/xinfo>`_
-      - Not Implemented. (Introduced in redis version 5.0.0)
     * - `XSETID <https://redis.io/commands/xsetid>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
 
@@ -1221,8 +1185,6 @@ Cluster
     * - `READWRITE <https://redis.io/commands/readwrite>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.readwrite`)
     * - `ASKING <https://redis.io/commands/asking>`_
-      - Not Implemented. (Introduced in redis version 3.0.0)
-    * - `CLUSTER <https://redis.io/commands/cluster>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER BUMPEPOCH <https://redis.io/commands/cluster-bumpepoch>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
