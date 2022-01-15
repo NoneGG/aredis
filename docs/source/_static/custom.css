@@ -137,5 +137,6 @@ em.sig-param span.default_value {
 }
 
 table.command-table {
+  width: 100%;
   margin-left: 0 !important;
 }
