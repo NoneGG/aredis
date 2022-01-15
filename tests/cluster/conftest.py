@@ -8,9 +8,10 @@ import sys
 
 # 3rd party imports
 import pytest
+from packaging import version
+
 # rediscluster imports
 from coredis import StrictRedis, StrictRedisCluster
-from packaging import version
 
 # put our path in front so we can be sure we are testing locally not against the global package
 basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
