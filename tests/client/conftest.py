@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import asyncio
-from distutils.version import StrictVersion
+from packaging import version
 from unittest.mock import Mock
 
 import pytest
@@ -26,8 +26,8 @@ async def get_version(**kwargs):
 
 def skip_if_server_version_lt(min_version):
     loop = asyncio.get_event_loop()
-    version = StrictVersion(loop.run_until_complete(get_version()))
-    check = version < StrictVersion(min_version)
+    cur = version.parse(loop.run_until_complete(get_version()))
+    check = cur < version.parse(min_version)
 
     return pytest.mark.skipif(check, reason="")
 
