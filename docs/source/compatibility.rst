@@ -200,6 +200,8 @@ Generic
 .. list-table::
     :class: command-table
 
+    * - `DEL <https://redis.io/commands/del>`_
+      - :meth:`~coredis.StrictRedis.delete`
     * - `DUMP <https://redis.io/commands/dump>`_
       - :meth:`~coredis.StrictRedis.dump`
     * - `EXISTS <https://redis.io/commands/exists>`_
@@ -248,8 +250,6 @@ Generic
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.copy`)
     * - `MIGRATE <https://redis.io/commands/migrate>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.migrate`)
-    * - `DEL <https://redis.io/commands/del>`_
-      - Not Implemented. (Introduced in redis version 1.0.0)
     * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
@@ -907,6 +907,8 @@ Generic
 .. list-table::
     :class: command-table
 
+    * - `DEL <https://redis.io/commands/del>`_
+      - :meth:`~coredis.StrictRedisCluster.delete`
     * - `DUMP <https://redis.io/commands/dump>`_
       - :meth:`~coredis.StrictRedisCluster.dump`
     * - `EXISTS <https://redis.io/commands/exists>`_
@@ -955,8 +957,6 @@ Generic
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.copy`)
     * - `MIGRATE <https://redis.io/commands/migrate>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.migrate`)
-    * - `DEL <https://redis.io/commands/del>`_
-      - Not Implemented. (Introduced in redis version 1.0.0)
     * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_

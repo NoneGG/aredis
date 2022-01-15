@@ -10,6 +10,8 @@ import requests
 
 MAX_SUPPORTED_VERSION = version.parse("6.999.999")
 
+MAPPING = {"DEL": "delete"}
+
 @functools.cache
 def get_commands():
     return requests.get("https://redis.io/commands.json").json()
@@ -82,7 +84,7 @@ def generate_compatibility_section(section, kls, sync_kls, redis_namespace, grou
         missing = []
 
         for method in get_official_commands(group):
-            name = method["name"].lower().replace(" ", "_")
+            name = MAPPING.get(method["name"], method["name"].lower().replace(" ", "_"))
             located = find_method(kls, name)
             sync_located = find_method(sync_kls, name)
 
