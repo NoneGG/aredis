@@ -3,6 +3,33 @@
 Changelog
 =========
 
+v2.1.0
+------
+Release Date: 2022-01-15
+
+This release attempts to update missing command
+coverage for common datastructures and gets closer
+to :pypi:`redis-py` version ``4.1.0``
+
+Feature:
+
+    * Added string commands ``decrby``, ``getdel`` & ``getex``
+    * Added list commands ``lmove``, ``blmove`` & ``lpos``
+    * Added set command ``smismember``
+    * Added sorted set commands ``zdiff``, ``zdiffstore``, ``zinter``, ``zmscore``,
+      ``zpopmin``, ``zpopmax``, ``bzpopmin``, ``bzpopmax`` & ``zrandmember``
+    * Added geo commands ``geosearch``, ``geosearchstore``
+    * Added hash command ``hrandfield``
+    * Added support for object inspection commands ``object_encoding``, ``object_freq``, ``object_idletime`` & ``object_refcount``
+    * Added ``lolwut``
+
+Chore:
+    * Standardize linting against black
+    * Add API documentation
+    * Add compatibility documentation
+    * Add CI coverage for redis 6.0
+
+
 v2.0.1
 ------
 Release Date: 2022-01-15
@@ -161,3 +188,4 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
