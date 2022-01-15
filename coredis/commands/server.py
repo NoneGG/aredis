@@ -27,25 +27,30 @@ def parse_slowlog_get(response, **options):
 
 def parse_client_list(response, **options):
     clients = []
+
     for c in nativestr(response).splitlines():
         # Values might contain '='
         clients.append(dict([pair.split("=", 1) for pair in c.split(" ")]))
+
     return clients
 
 
 def parse_config_get(response, **options):
     response = [nativestr(i) if i is not None else None for i in response]
+
     return response and pairs_to_dict(response) or {}
 
 
 def timestamp_to_datetime(response):
     """Converts a unix timestamp to a Python datetime object"""
+
     if not response:
         return None
     try:
         response = int(response)
     except ValueError:
         return None
+
     return datetime.datetime.fromtimestamp(response)
 
 
@@ -62,6 +67,7 @@ def parse_debug_object(response):
     # parse some expected int values from the string response
     # note: this cmd isn't spec'd so these may not appear in all redis versions
     int_fields = ("refcount", "serializedlength", "lru", "lru_seconds_idle")
+
     for field in int_fields:
         if field in response:
             response[field] = int(response[field])
@@ -85,9 +91,11 @@ def parse_info(response):
                 return value
         else:
             sub_dict = {}
+
             for item in value.split(","):
                 k, v = item.rsplit("=", 1)
                 sub_dict[k] = get_value(v)
+
             return sub_dict
 
     for line in response.splitlines():
@@ -108,15 +116,18 @@ def parse_role(response):
     def _parse_master(response):
         offset, slaves = response[1:]
         res = {"role": role, "offset": offset, "slaves": []}
+
         for slave in slaves:
             host, port, offset = slave
             res["slaves"].append(
                 {"host": host, "port": int(port), "offset": int(offset)}
             )
+
         return res
 
     def _parse_slave(response):
         host, port, status, offset = response[1:]
+
         return {
             "role": role,
             "host": host,
@@ -133,6 +144,7 @@ def parse_role(response):
         "slave": _parse_slave,
         "sentinel": _parse_sentinel,
     }[role]
+
     return parser(response)
 
 
@@ -162,6 +174,7 @@ class ServerCommandMixin:
 
     async def bgrewriteaof(self):
         """Tell the Redis server to rewrite the AOF file from data in memory"""
+
         return await self.execute_command("BGREWRITEAOF")
 
     async def bgsave(self):
@@ -169,22 +182,27 @@ class ServerCommandMixin:
         Tells the Redis server to save its data to disk.  Unlike save(),
         this method is asynchronous and returns immediately.
         """
+
         return await self.execute_command("BGSAVE")
 
     async def client_kill(self, address):
         """Disconnects the client at ``address`` (ip:port)"""
+
         return await self.execute_command("CLIENT KILL", address)
 
     async def client_list(self):
         """Returns a list of currently connected clients"""
+
         return await self.execute_command("CLIENT LIST")
 
     async def client_getname(self):
         """Returns the current connection name"""
+
         return await self.execute_command("CLIENT GETNAME")
 
     async def client_setname(self, name):
         """Sets the current connection name"""
+
         return await self.execute_command("CLIENT SETNAME", name)
 
     async def client_pause(self, timeout=0):
@@ -192,40 +210,49 @@ class ServerCommandMixin:
         Suspends all the Redis clients for the specified amount of time
         (in milliseconds).
         """
+
         return await self.execute_command("CLIENT PAUSE", timeout)
 
     async def config_get(self, pattern="*"):
         """Returns a dictionary of configuration based on the ``pattern``"""
+
         return await self.execute_command("CONFIG GET", pattern)
 
     async def config_set(self, name, value):
         """Sets config item ``name`` to ``value``"""
+
         return await self.execute_command("CONFIG SET", name, value)
 
     async def config_resetstat(self):
         """Resets runtime statistics"""
+
         return await self.execute_command("CONFIG RESETSTAT")
 
     async def config_rewrite(self):
         """
         Rewrites config file with the minimal change to reflect running config
         """
+
         return await self.execute_command("CONFIG REWRITE")
 
     async def dbsize(self):
         """Returns the number of keys in the current database"""
+
         return await self.execute_command("DBSIZE")
 
     async def debug_object(self, key):
         """Returns version specific meta information about a given key"""
+
         return await self.execute_command("DEBUG OBJECT", key)
 
     async def flushall(self):
         """Deletes all keys in all databases on the current host"""
+
         return await self.execute_command("FLUSHALL")
 
     async def flushdb(self):
         """Deletes all keys in the current database"""
+
         return await self.execute_command("FLUSHDB")
 
     async def info(self, section=None):
@@ -238,6 +265,7 @@ class ServerCommandMixin:
         The section option is not supported by older versions of Redis Server,
         and will generate ResponseError
         """
+
         if section is None:
             return await self.execute_command("INFO")
         else:
@@ -248,6 +276,7 @@ class ServerCommandMixin:
         Returns a Python datetime object representing the last time the
         Redis database was saved to disk
         """
+
         return await self.execute_command("LASTSAVE")
 
     async def save(self):
@@ -255,6 +284,7 @@ class ServerCommandMixin:
         Tells the Redis server to save its data to disk,
         blocking until the save is complete
         """
+
         return await self.execute_command("SAVE")
 
     async def shutdown(self):
@@ -263,6 +293,7 @@ class ServerCommandMixin:
             await self.execute_command("SHUTDOWN")
         except ConnectionError:
             # a ConnectionError here is expected
+
             return
         raise RedisError("SHUTDOWN seems to have failed.")
 
@@ -272,8 +303,10 @@ class ServerCommandMixin:
         by the ``host`` and ``port``. If called without arguments, the
         instance is promoted to a master instead.
         """
+
         if host is None and port is None:
             return await self.execute_command("SLAVEOF", b("NO"), b("ONE"))
+
         return await self.execute_command("SLAVEOF", host, port)
 
     async def slowlog_get(self, num=None):
@@ -282,16 +315,20 @@ class ServerCommandMixin:
         most recent ``num`` items.
         """
         args = ["SLOWLOG GET"]
+
         if num is not None:
             args.append(num)
+
         return await self.execute_command(*args)
 
     async def slowlog_len(self):
         """Gets the number of items in the slowlog"""
+
         return await self.execute_command("SLOWLOG LEN")
 
     async def slowlog_reset(self):
         """Removes all items in the slowlog"""
+
         return await self.execute_command("SLOWLOG RESET")
 
     async def time(self):
@@ -299,6 +336,7 @@ class ServerCommandMixin:
         Returns the server time as a 2-item tuple of ints:
         (seconds since epoch, microseconds into this second).
         """
+
         return await self.execute_command("TIME")
 
     async def role(self):
@@ -310,7 +348,20 @@ class ServerCommandMixin:
         or the list of monitored master names (if the role is sentinel).
         :return:
         """
+
         return await self.execute_command("ROLE")
+
+    async def lolwut(self, *version_numbers, **kwargs):
+        """
+        Get the Redis version and a piece of generative computer art
+        """
+
+        if version_numbers:
+            return await self.execute_command(
+                "LOLWUT VERSION", *version_numbers, **kwargs
+            )
+        else:
+            return await self.execute_command("LOLWUT", **kwargs)
 
 
 class ClusterServerCommandMixin(ServerCommandMixin):
