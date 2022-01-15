@@ -15,6 +15,15 @@ jobs:
       - checkout
       - run: pip install -r requirements/dev.txt
       - run: make lint
+  check-docs:
+    docker:
+      - image: python:3.10
+        auth:
+          username: alisaifee
+          password: $DOCKERHUB_ACCESS_TOKEN
+    steps:
+      - checkout
+      - run: pip install -r requirements/dev.txt
       - run: make generate-compatibility-docs
       - run: if [[ $(git diff --stat docs/source/compatibility.rst) != '' ]]; then echo 'Compatibility docs need updating'; exit 1; fi;
   python_37_client_5:
@@ -602,6 +611,7 @@ workflows:
           matrix:
             parameters:
               version: ["3.7", "3.8", "3.9", "3.10"]
+      - check-docs
       - python_37_client_5
       - python_37_client_6
 
