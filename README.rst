@@ -10,7 +10,7 @@
     :target: https://pypi.python.org/pypi/coredis/
     :alt: Supported Python versions
 
-.. |docs| image:: https://readthedocs.org/projects/coredis/badge/?version=latest
+.. |docs| image:: https://readthedocs.org/projects/coredis/badge/?version=stable
    :target: https://coredis.readthedocs.org
 
 .. |codecov| image:: https://codecov.io/gh/alisaifee/coredis/branch/master/graph/badge.svg
@@ -101,7 +101,8 @@ To see a full list of supported redis commands refer to the `Command compatibili
 Links
 -----
 
-* `Documentation <http://coredis.readthedocs.org/en/latest>`_
+* `Documentation (Stable) <http://coredis.readthedocs.org/en/stable>`_
+* `Documentation (Latest) <http://coredis.readthedocs.org/en/latest>`_
 * `Changelog <http://coredis.readthedocs.org/en/stable/release_notes.html>`_
 
 .. _Command compatibility: https://coredis.readthedocs.org/en/stable/compatibility
