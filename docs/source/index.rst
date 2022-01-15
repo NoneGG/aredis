@@ -100,12 +100,12 @@ Cluster client
 
 Dependencies & supported python versions
 ----------------------------------------
+coredis is tested against redis versions 5 & 6.
 
 hiredis and uvloop can make coredis faster, but it is up to you whether to install them or not.
 
 - :pypi:`hiredis` >= `0.2.0`. Older versions might work but is not tested.
 - :pypi:`uvloop` >= `0.8.0`. Older versions might work but is not tested.
-
 
 
 Supported python versions
