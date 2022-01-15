@@ -44,11 +44,6 @@ or from source:
 Getting started
 ---------------
 
-`More examples`_
-
-.. _More examples: https://github.com/alisaifee/coredis/tree/master/examples
-
-
 Single Node client
 ^^^^^^^^^^^^^^^^^^
 
@@ -101,6 +96,7 @@ Cluster client
    # (0, 5460): [{'host': b'172.17.0.2', 'node_id': b'0932215036dc0d908cf662fdfca4d3614f221b01', 'server_type': 'master', 'port': 7000},
    # {'host': b'172.17.0.2', 'node_id': b'f6603ab4cb77e672de23a6361ec165f3a1a2bb42', 'server_type': 'slave', 'port': 7003}]}
 
+To see a full list of supported redis commands refer to the `Command compatibility`_  documentation
 
 Links
 -----
@@ -108,3 +104,4 @@ Links
 * `Documentation <http://coredis.readthedocs.org/en/latest>`_
 * `Changelog <http://coredis.readthedocs.org/en/stable/release_notes.html>`_
 
+.. _Command compatibility: https://coredis.readthedocs.org/en/stable/compatibility
