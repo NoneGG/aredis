@@ -16,7 +16,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio()
     async def test_pipeline(self, r):
-        await r.flushdb()
         async with await r.pipeline() as pipe:
             await (
                 await (await (await pipe.set("a", "a1")).get("a")).zadd("z", z1=1)
@@ -33,7 +32,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio()
     async def test_pipeline_length(self, r):
-        await r.flushdb()
         async with await r.pipeline() as pipe:
             # Initially empty.
             assert len(pipe) == 0
@@ -51,7 +49,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio()
     async def test_pipeline_no_transaction(self, r):
-        await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
             await (await (await pipe.set("a", "a1")).set("b", "b1")).set("c", "c1")
             assert await pipe.execute() == [True, True, True]
@@ -61,7 +58,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio()
     async def test_pipeline_eval(self, r):
-        await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.eval(
                 "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}",
@@ -80,7 +76,6 @@ class TestPipeline:
     @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_pipeline_no_transaction_watch(self, r):
-        await r.flushdb()
         await r.set("a", 0)
 
         async with await r.pipeline(transaction=False) as pipe:
@@ -94,7 +89,6 @@ class TestPipeline:
     @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_pipeline_no_transaction_watch_failure(self, r):
-        await r.flushdb()
         await r.set("a", 0)
 
         async with await r.pipeline(transaction=False) as pipe:
@@ -117,7 +111,6 @@ class TestPipeline:
         an invalid pipeline command at exec time adds the exception instance
         to the list of returned values
         """
-        await r.flushdb()
         await r.set("c", "a")
         async with await r.pipeline() as pipe:
             await (
@@ -147,7 +140,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio()
     async def test_exec_error_raised(self, r):
-        await r.flushdb()
         await r.set("c", "a")
         async with await r.pipeline() as pipe:
             await pipe.set("a", 1)
@@ -184,7 +176,6 @@ class TestPipeline:
     @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_watch_succeed(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
 
@@ -204,7 +195,6 @@ class TestPipeline:
     @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_watch_failure(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
 
@@ -221,7 +211,6 @@ class TestPipeline:
     @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_unwatch(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
 
@@ -236,7 +225,6 @@ class TestPipeline:
     @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="unsupported command: watch")
     async def test_transaction_callable(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
         has_run = []

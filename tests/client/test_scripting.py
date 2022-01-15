@@ -25,7 +25,6 @@ return "hello " .. name
 class TestScripting:
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_eval(self, r):
-        await r.flushdb()
         await r.set("a", 2)
         # 2 * 3 == 6
         assert await r.eval(multiply_script, 1, "a", 3) == 6

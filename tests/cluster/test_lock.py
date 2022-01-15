@@ -15,7 +15,6 @@ class TestLock:
 
     @pytest.mark.asyncio()
     async def test_lock(self, r):
-        await r.flushdb()
         lock = self.get_lock(r, "foo", timeout=3)
         assert await lock.acquire(blocking=False)
         assert await r.get("foo") == lock.local.get()
@@ -91,7 +90,6 @@ class TestLock:
 
     @pytest.mark.asyncio()
     async def test_extend_lock(self, r):
-        await r.flushdb()
         lock = self.get_lock(r, "foo", timeout=10)
         assert await lock.acquire(blocking=False)
         assert 8000 < await r.pttl("foo") <= 10000
@@ -101,7 +99,6 @@ class TestLock:
 
     @pytest.mark.asyncio()
     async def test_extend_lock_float(self, r):
-        await r.flushdb()
         lock = self.get_lock(r, "foo", timeout=10.0)
         assert await lock.acquire(blocking=False)
         assert 8000 < await r.pttl("foo") <= 10000

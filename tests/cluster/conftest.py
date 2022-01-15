@@ -114,7 +114,7 @@ def ro(request, *args, **kwargs):
 
 
 @pytest.fixture()
-def s(*args, **kwargs):
+async def s(*args, **kwargs):
     """
     Create a StrictRedisCluster instance with 'init_slot_cache' set to false
     """
@@ -126,18 +126,24 @@ def s(*args, **kwargs):
 
 
 @pytest.fixture()
-def t(*args, **kwargs):
+async def t(*args, **kwargs):
     """
     Create a regular StrictRedis object instance
     """
 
-    return StrictRedis(*args, **kwargs)
+    client = StrictRedis(*args, **kwargs)
+    await client.flushdb()
+
+    return client
 
 
 @pytest.fixture()
-def sr(request, *args, **kwargs):
+async def sr(request, *args, **kwargs):
     """
     Returns a instance of StrictRedisCluster
     """
 
-    return _get_client(reinitialize_steps=1, cls=StrictRedisCluster, **kwargs)
+    client = _get_client(reinitialize_steps=1, cls=StrictRedisCluster, **kwargs)
+    await client.flushdb()
+
+    return client

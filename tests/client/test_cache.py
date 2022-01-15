@@ -20,7 +20,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set(self, r):
-        await r.flushdb()
         cache = Cache(r, self.app)
         res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
@@ -31,7 +30,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_timeout(self, r, event_loop):
-        await r.flushdb()
         cache = Cache(r, self.app)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
@@ -47,7 +45,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_with_plain_key(self, r):
-        await r.flushdb()
         cache = Cache(r, self.app, identity_generator_class=None)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
@@ -61,7 +58,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_get(self, r):
-        await r.flushdb()
         cache = Cache(r, self.app)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
@@ -72,7 +68,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_many(self, r):
-        await r.flushdb()
         cache = Cache(r, self.app)
         res = await cache.set_many(self.expensive_work(self.data), self.data)
         assert res
@@ -81,7 +76,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_delete(self, r):
-        await r.flushdb()
         cache = Cache(r, self.app)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
@@ -96,7 +90,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_delete_pattern(self, r):
-        await r.flushdb()
         cache = Cache(r, self.app)
         await cache.set_many(self.expensive_work(self.data), self.data)
         res = await cache.delete_pattern("test_*", 10)
@@ -106,7 +99,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_ttl(self, r, event_loop):
-        await r.flushdb()
         cache = Cache(r, self.app)
         await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
@@ -119,7 +111,6 @@ class TestCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exists(self, r, event_loop):
-        await r.flushdb()
         cache = Cache(r, self.app)
         await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
@@ -142,7 +133,6 @@ class TestHerdCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set(self, r):
-        await r.flushdb()
         cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
         now = int(time.time())
         res = await cache.set(self.key, self.expensive_work(self.data), self.data)
@@ -156,7 +146,6 @@ class TestHerdCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_get(self, r):
-        await r.flushdb()
         cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
         res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
@@ -165,7 +154,6 @@ class TestHerdCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_set_many(self, r):
-        await r.flushdb()
         cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
         res = await cache.set_many(self.expensive_work(self.data), self.data)
         assert res
@@ -174,7 +162,6 @@ class TestHerdCache:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_herd(self, r, event_loop):
-        await r.flushdb()
         now = int(time.time())
         cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
         await cache.set(self.key, self.expensive_work(self.data), self.data)

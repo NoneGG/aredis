@@ -20,13 +20,11 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_without_given_id(self, r):
-        await r.flushdb()
         stream_id = await r.xadd("test_stream", {"k1": "v1", "k2": 1})
         assert len(stream_id.decode().split("-")) == 2
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_given_id(self, r):
-        await r.flushdb()
         stream_id = await r.xadd(
             "test_stream", {"k1": "v1", "k2": 1}, stream_id="12321"
         )
@@ -39,7 +37,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_maxlen_accurately(self, r):
-        await r.flushdb()
         for idx in range(10):
             await r.xadd(
                 "test_stream", {"k1": "v1", "k2": 1}, max_len=2, approximate=False
@@ -50,7 +47,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xadd_with_maxlen_approximately(self, r):
-        await r.flushdb()
         for idx in range(10):
             await r.xadd(
                 "test_stream", {"k1": "v1", "k2": 1}, max_len=2, approximate=True
@@ -60,7 +56,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xrange(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd(
                 "test_stream",
@@ -80,7 +75,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xrevrange(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd(
                 "test_stream",
@@ -102,7 +96,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xread(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd("test_stream", {"k1": "v1", "k2": 1}, stream_id=idx)
         entries = await r.xread(count=5, block=10, test_stream="0")
@@ -115,7 +108,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xreadgroup(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd("test_stream", {"k1": "v1", "k2": 1}, stream_id=idx)
         # read from group does not exist
@@ -131,7 +123,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_create(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd("test_stream", {"k1": "v1", "k2": 1}, stream_id=idx)
         with pytest.raises(ResponseError):
@@ -144,7 +135,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_set_id(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd("test_stream", {"k1": "v1", "k2": 1}, stream_id=idx)
         assert await r.xgroup_create("test_stream", "test_group", "$") is True
@@ -161,7 +151,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_destroy(self, r):
-        await r.flushdb()
         await r.xadd("test_stream", {"k1": "v1", "k2": 1})
         assert await r.xgroup_create("test_stream", "test_group") is True
         group_info = await r.xinfo_groups("test_stream")
@@ -173,7 +162,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xgroup_del_consumer(self, r):
-        await r.flushdb()
         await r.xadd("test_stream", {"k1": "v1", "k2": 1})
         assert await r.xgroup_create("test_stream", "test_group") is True
         await r.xreadgroup("test_group", "consumer1", count=5, test_stream="1")
@@ -189,7 +177,6 @@ class TestStreams:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_xpending(self, r):
-        await r.flushdb()
         for idx in range(1, 10):
             await r.xadd("test_stream", {"k1": "v1", "k2": 1}, stream_id=idx)
         assert await r.xgroup_create("test_stream", "test_group", "$") is True

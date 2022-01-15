@@ -9,7 +9,6 @@ from coredis.utils import b
 class TestPipeline:
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline(self, r):
-        await r.flushdb()
         async with await r.pipeline() as pipe:
             await pipe.set("a", "a1")
             await pipe.get("a")
@@ -28,7 +27,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_length(self, r):
-        await r.flushdb()
         async with await r.pipeline() as pipe:
             # Initially empty.
             assert len(pipe) == 0
@@ -48,7 +46,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction(self, r):
-        await r.flushdb()
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.set("a", "a1")
             await pipe.set("b", "b1")
@@ -60,7 +57,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction_watch(self, r):
-        await r.flushdb()
         await r.set("a", 0)
 
         async with await r.pipeline(transaction=False) as pipe:
@@ -73,7 +69,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_pipeline_no_transaction_watch_failure(self, r):
-        await r.flushdb()
         await r.set("a", 0)
 
         async with await r.pipeline(transaction=False) as pipe:
@@ -96,7 +91,6 @@ class TestPipeline:
         an invalid pipeline command at exec time adds the exception instance
         to the list of returned values
         """
-        await r.flushdb()
         await r.set("c", "a")
         async with await r.pipeline() as pipe:
             await pipe.set("a", 1)
@@ -127,7 +121,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exec_error_raised(self, r):
-        await r.flushdb()
         await r.set("c", "a")
         async with await r.pipeline() as pipe:
             await pipe.set("a", 1)
@@ -144,7 +137,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_parse_error_raised(self, r):
-        await r.flushdb()
         async with await r.pipeline() as pipe:
             # the zrem is invalid because we don't pass any keys to it
             await pipe.set("a", 1)
@@ -160,7 +152,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_watch_succeed(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
 
@@ -179,7 +170,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_watch_failure(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
 
@@ -195,7 +185,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_unwatch(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
 
@@ -209,7 +198,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_transaction_callable(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         await r.set("b", 2)
         has_run = []
@@ -235,7 +223,6 @@ class TestPipeline:
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exec_error_in_no_transaction_pipeline(self, r):
-        await r.flushdb()
         await r.set("a", 1)
         async with await r.pipeline(transaction=False) as pipe:
             await pipe.llen("a")
