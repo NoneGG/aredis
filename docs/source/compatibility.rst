@@ -54,8 +54,6 @@ String
       - :meth:`~coredis.StrictRedis.strlen`
     * - `SUBSTR <https://redis.io/commands/substr>`_
       - :meth:`~coredis.StrictRedis.substr`
-    * - `LCS <https://redis.io/commands/lcs>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Bitmap
 ------
@@ -124,10 +122,6 @@ List
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.lmove`)
     * - `LPOS <https://redis.io/commands/lpos>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.lpos`)
-    * - `BLMPOP <https://redis.io/commands/blmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `LMPOP <https://redis.io/commands/lmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Sorted-Set
 ----------
@@ -199,12 +193,6 @@ Sorted-Set
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zrangestore`)
     * - `ZUNION <https://redis.io/commands/zunion>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zunion`)
-    * - `BZMPOP <https://redis.io/commands/bzmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `ZINTERCARD <https://redis.io/commands/zintercard>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `ZMPOP <https://redis.io/commands/zmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Generic
 -------
@@ -262,8 +250,6 @@ Generic
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.migrate`)
     * - `DEL <https://redis.io/commands/del>`_
       - Not Implemented. (Introduced in redis version 1.0.0)
-    * - `EXPIRETIME <https://redis.io/commands/expiretime>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
@@ -274,10 +260,6 @@ Generic
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
-    * - `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `SORT_RO <https://redis.io/commands/sort_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Transactions
 ------------
@@ -316,36 +298,6 @@ Scripting
       - :meth:`~coredis.StrictRedis.script_load`
     * - `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.script_debug`)
-    * - `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `EVAL_RO <https://redis.io/commands/eval_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FCALL <https://redis.io/commands/fcall>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FCALL_RO <https://redis.io/commands/fcall_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION <https://redis.io/commands/function>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION CREATE <https://redis.io/commands/function-create>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION HELP <https://redis.io/commands/function-help>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION INFO <https://redis.io/commands/function-info>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION KILL <https://redis.io/commands/function-kill>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION LIST <https://redis.io/commands/function-list>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION STATS <https://redis.io/commands/function-stats>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `SCRIPT <https://redis.io/commands/script>`_
       - Not Implemented. (Introduced in redis version 2.6.0)
     * - `SCRIPT HELP <https://redis.io/commands/script-help>`_
@@ -499,8 +451,6 @@ Set
       - :meth:`~coredis.StrictRedis.sunionstore`
     * - `SMISMEMBER <https://redis.io/commands/smismember>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.smismember`)
-    * - `SINTERCARD <https://redis.io/commands/sintercard>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Stream
 ------
@@ -667,8 +617,6 @@ Server
       - Not Implemented. (Introduced in redis version 6.0.0)
     * - `COMMAND HELP <https://redis.io/commands/command-help>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `COMMAND LIST <https://redis.io/commands/command-list>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `CONFIG <https://redis.io/commands/config>`_
       - Not Implemented. (Introduced in redis version 2.0.0)
     * - `CONFIG HELP <https://redis.io/commands/config-help>`_
@@ -758,8 +706,6 @@ Connection
       - Not Implemented. (Introduced in redis version 6.0.0)
     * - `CLIENT HELP <https://redis.io/commands/client-help>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `CLIENT NO-EVICT <https://redis.io/commands/client-no-evict>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `HELLO <https://redis.io/commands/hello>`_
       - Not Implemented. (Introduced in redis version 6.0.0)
 
@@ -815,8 +761,6 @@ String
       - :meth:`~coredis.StrictRedisCluster.strlen`
     * - `SUBSTR <https://redis.io/commands/substr>`_
       - :meth:`~coredis.StrictRedisCluster.substr`
-    * - `LCS <https://redis.io/commands/lcs>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Bitmap
 ------
@@ -885,10 +829,6 @@ List
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.lmove`)
     * - `LPOS <https://redis.io/commands/lpos>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.lpos`)
-    * - `BLMPOP <https://redis.io/commands/blmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `LMPOP <https://redis.io/commands/lmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Sorted-Set
 ----------
@@ -960,12 +900,6 @@ Sorted-Set
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zrangestore`)
     * - `ZUNION <https://redis.io/commands/zunion>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zunion`)
-    * - `BZMPOP <https://redis.io/commands/bzmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `ZINTERCARD <https://redis.io/commands/zintercard>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `ZMPOP <https://redis.io/commands/zmpop>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Generic
 -------
@@ -1023,8 +957,6 @@ Generic
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.migrate`)
     * - `DEL <https://redis.io/commands/del>`_
       - Not Implemented. (Introduced in redis version 1.0.0)
-    * - `EXPIRETIME <https://redis.io/commands/expiretime>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
@@ -1035,10 +967,6 @@ Generic
       - Not Implemented. (Introduced in redis version 2.2.3)
     * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
       - Not Implemented. (Introduced in redis version 2.2.3)
-    * - `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `SORT_RO <https://redis.io/commands/sort_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Transactions
 ------------
@@ -1075,36 +1003,6 @@ Scripting
       - :meth:`~coredis.StrictRedisCluster.script_kill`
     * - `SCRIPT LOAD <https://redis.io/commands/script-load>`_
       - :meth:`~coredis.StrictRedisCluster.script_load`
-    * - `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `EVAL_RO <https://redis.io/commands/eval_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FCALL <https://redis.io/commands/fcall>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FCALL_RO <https://redis.io/commands/fcall_ro>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION <https://redis.io/commands/function>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION CREATE <https://redis.io/commands/function-create>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION HELP <https://redis.io/commands/function-help>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION INFO <https://redis.io/commands/function-info>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION KILL <https://redis.io/commands/function-kill>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION LIST <https://redis.io/commands/function-list>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
-    * - `FUNCTION STATS <https://redis.io/commands/function-stats>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `SCRIPT <https://redis.io/commands/script>`_
       - Not Implemented. (Introduced in redis version 2.6.0)
     * - `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
@@ -1260,8 +1158,6 @@ Set
       - :meth:`~coredis.StrictRedisCluster.sunionstore`
     * - `SMISMEMBER <https://redis.io/commands/smismember>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.smismember`)
-    * - `SINTERCARD <https://redis.io/commands/sintercard>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
 
 Stream
 ------
@@ -1364,22 +1260,16 @@ Cluster
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER <https://redis.io/commands/cluster>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
-    * - `CLUSTER ADDSLOTSRANGE <https://redis.io/commands/cluster-addslotsrange>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `CLUSTER BUMPEPOCH <https://redis.io/commands/cluster-bumpepoch>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER COUNT-FAILURE-REPORTS <https://redis.io/commands/cluster-count-failure-reports>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
-    * - `CLUSTER DELSLOTSRANGE <https://redis.io/commands/cluster-delslotsrange>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `CLUSTER FLUSHSLOTS <https://redis.io/commands/cluster-flushslots>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER GETKEYSINSLOT <https://redis.io/commands/cluster-getkeysinslot>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER HELP <https://redis.io/commands/cluster-help>`_
       - Not Implemented. (Introduced in redis version 5.0.0)
-    * - `CLUSTER LINKS <https://redis.io/commands/cluster-links>`_
-      - Not Implemented. (Introduced in redis version 7.0.0)
     * - `CLUSTER MYID <https://redis.io/commands/cluster-myid>`_
       - Not Implemented. (Introduced in redis version 3.0.0)
     * - `CLUSTER SAVECONFIG <https://redis.io/commands/cluster-saveconfig>`_

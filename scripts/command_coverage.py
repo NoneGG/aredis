@@ -1,11 +1,14 @@
 import functools
 import inspect
 
+from packaging import version
+
 import coredis
 import redis
 import redis.cluster
 import requests
 
+MAX_SUPPORTED_VERSION = version.parse("6.999.999")
 
 @functools.cache
 def get_commands():
@@ -19,6 +22,7 @@ def get_official_commands(group=None):
         by_group.setdefault(command["group"], []).append(command | {"name": name})
 
         for name, command in response.items()
+        if version.parse(command["since"]) < MAX_SUPPORTED_VERSION
     ]
 
     return by_group if not group else by_group.get(group)
