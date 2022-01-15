@@ -1278,6 +1278,25 @@ class TestRedisCommands:
         assert await r.zcount("a", 10, 20) == 0
 
     @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_zdiff(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2, a3=3)
+        await r.zadd("b", a1=1, a2=2)
+        assert (await r.zdiff(["a", "b"])) == [b"a3"]
+        assert (await r.zdiff(["a", "b"], withscores=True)) == [b"a3", b"3"]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_zdiffstore(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2, a3=3)
+        await r.zadd("b", a1=1, a2=2)
+        assert await r.zdiffstore("out", ["a", "b"])
+        assert (await r.zrange("out", 0, -1)) == [b"a3"]
+        assert (await r.zrange("out", 0, -1, withscores=True)) == [(b"a3", 3.0)]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zincrby(self, r):
         await r.flushdb()
         await r.zadd("a", a1=1, a2=2, a3=3)
@@ -1342,6 +1361,66 @@ class TestRedisCommands:
         ]
 
     @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("4.9.0")
+    async def test_zpopmax(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2, a3=3)
+        assert (await r.zpopmax("a")) == [(b"a3", 3)]
+        # with count
+        assert (await r.zpopmax("a", count=2)) == [(b"a2", 2), (b"a1", 1)]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("4.9.0")
+    async def test_zpopmin(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2, a3=3)
+        assert (await r.zpopmin("a")) == [(b"a1", 1)]
+        # with count
+        assert (await r.zpopmin("a", count=2)) == [(b"a2", 2), (b"a3", 3)]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_zrandemember(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2, a3=3, a4=4, a5=5)
+        assert (await r.zrandmember("a")) is not None
+        assert len(await r.zrandmember("a", 2)) == 2
+        # with scores
+        assert len(await r.zrandmember("a", 2, True)) == 4
+        # without duplications
+        assert len(await r.zrandmember("a", 10)) == 5
+        # with duplications
+        assert len(await r.zrandmember("a", -10)) == 10
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("4.9.0")
+    async def test_bzpopmax(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2)
+        await r.zadd("b", b1=10, b2=20)
+        assert (await r.bzpopmax(["b", "a"], timeout=1)) == (b"b", b"b2", 20)
+        assert (await r.bzpopmax(["b", "a"], timeout=1)) == (b"b", b"b1", 10)
+        assert (await r.bzpopmax(["b", "a"], timeout=1)) == (b"a", b"a2", 2)
+        assert (await r.bzpopmax(["b", "a"], timeout=1)) == (b"a", b"a1", 1)
+        assert (await r.bzpopmax(["b", "a"], timeout=1)) is None
+        await r.zadd("c", c1=100)
+        assert (await r.bzpopmax("c", timeout=1)) == (b"c", b"c1", 100)
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("4.9.0")
+    async def test_bzpopmin(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2)
+        await r.zadd("b", b1=10, b2=20)
+        assert (await r.bzpopmin(["b", "a"], timeout=1)) == (b"b", b"b1", 10)
+        assert (await r.bzpopmin(["b", "a"], timeout=1)) == (b"b", b"b2", 20)
+        assert (await r.bzpopmin(["b", "a"], timeout=1)) == (b"a", b"a1", 1)
+        assert (await r.bzpopmin(["b", "a"], timeout=1)) == (b"a", b"a2", 2)
+        assert (await r.bzpopmin(["b", "a"], timeout=1)) is None
+        await r.zadd("c", c1=100)
+        assert (await r.bzpopmin("c", timeout=1)) == (b"c", b"c1", 100)
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zrange(self, r):
         await r.flushdb()
         await r.zadd("a", a1=1, a2=2, a3=3)
@@ -1363,6 +1442,28 @@ class TestRedisCommands:
             (b("a1"), 1),
             (b("a2"), 2),
         ]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_zrangestore(self, r):
+        await r.flushdb()
+        await r.zadd("a", a1=1, a2=2, a3=3)
+        assert await r.zrangestore("b", "a", 0, 1)
+        assert await r.zrange("b", 0, -1) == [b"a1", b"a2"]
+        assert await r.zrangestore("b", "a", 1, 2)
+        assert await r.zrange("b", 0, -1) == [b"a2", b"a3"]
+        assert await r.zrange("b", 0, -1, withscores=True) == [(b"a2", 2), (b"a3", 3)]
+        # reversed order
+        assert await r.zrangestore("b", "a", 1, 2, desc=True)
+        assert await r.zrange("b", 0, -1) == [b"a1", b"a2"]
+        # by score
+        assert await r.zrangestore(
+            "b", "a", 2, 1, byscore=True, offset=0, num=1, desc=True
+        )
+        assert await r.zrange("b", 0, -1) == [b"a2"]
+        # by lex
+        assert await r.zrangestore("b", "a", "[a2", "(a3", bylex=True, offset=0, num=1)
+        assert await r.zrange("b", 0, -1) == [b"a2"]
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_zrangebylex(self, r):
@@ -1583,6 +1684,18 @@ class TestRedisCommands:
             (b("a3"), 20),
             (b("a1"), 23),
         ]
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.1.240")
+    async def test_zmscore(self, r):
+        await r.flushdb()
+        with pytest.raises(DataError):
+            await r.zmscore("invalid_key", [])
+
+        assert await r.zmscore("invalid_key", ["invalid_member"]) == [None]
+
+        await r.zadd("a", a1=1, a2=2, a3=3.5)
+        assert (await r.zmscore("a", ["a1", "a2", "a3", "a4"])) == [1.0, 2.0, 3.5, None]
 
     # HYPERLOGLOG TESTS
     @pytest.mark.asyncio(forbid_global_loop=True)

@@ -132,24 +132,44 @@ Sorted-Set
 .. list-table::
     :class: command-table
 
+    * - `BZPOPMAX <https://redis.io/commands/bzpopmax>`_
+      - :meth:`~coredis.StrictRedis.bzpopmax`
+    * - `BZPOPMIN <https://redis.io/commands/bzpopmin>`_
+      - :meth:`~coredis.StrictRedis.bzpopmin`
     * - `ZADD <https://redis.io/commands/zadd>`_
       - :meth:`~coredis.StrictRedis.zadd`
     * - `ZCARD <https://redis.io/commands/zcard>`_
       - :meth:`~coredis.StrictRedis.zcard`
     * - `ZCOUNT <https://redis.io/commands/zcount>`_
       - :meth:`~coredis.StrictRedis.zcount`
+    * - `ZDIFF <https://redis.io/commands/zdiff>`_
+      - :meth:`~coredis.StrictRedis.zdiff`
+    * - `ZDIFFSTORE <https://redis.io/commands/zdiffstore>`_
+      - :meth:`~coredis.StrictRedis.zdiffstore`
     * - `ZINCRBY <https://redis.io/commands/zincrby>`_
       - :meth:`~coredis.StrictRedis.zincrby`
+    * - `ZINTER <https://redis.io/commands/zinter>`_
+      - :meth:`~coredis.StrictRedis.zinter`
     * - `ZINTERSTORE <https://redis.io/commands/zinterstore>`_
       - :meth:`~coredis.StrictRedis.zinterstore`
     * - `ZLEXCOUNT <https://redis.io/commands/zlexcount>`_
       - :meth:`~coredis.StrictRedis.zlexcount`
+    * - `ZMSCORE <https://redis.io/commands/zmscore>`_
+      - :meth:`~coredis.StrictRedis.zmscore`
+    * - `ZPOPMAX <https://redis.io/commands/zpopmax>`_
+      - :meth:`~coredis.StrictRedis.zpopmax`
+    * - `ZPOPMIN <https://redis.io/commands/zpopmin>`_
+      - :meth:`~coredis.StrictRedis.zpopmin`
+    * - `ZRANDMEMBER <https://redis.io/commands/zrandmember>`_
+      - :meth:`~coredis.StrictRedis.zrandmember`
     * - `ZRANGE <https://redis.io/commands/zrange>`_
       - :meth:`~coredis.StrictRedis.zrange`
     * - `ZRANGEBYLEX <https://redis.io/commands/zrangebylex>`_
       - :meth:`~coredis.StrictRedis.zrangebylex`
     * - `ZRANGEBYSCORE <https://redis.io/commands/zrangebyscore>`_
       - :meth:`~coredis.StrictRedis.zrangebyscore`
+    * - `ZRANGESTORE <https://redis.io/commands/zrangestore>`_
+      - :meth:`~coredis.StrictRedis.zrangestore`
     * - `ZRANK <https://redis.io/commands/zrank>`_
       - :meth:`~coredis.StrictRedis.zrank`
     * - `ZREM <https://redis.io/commands/zrem>`_
@@ -172,30 +192,10 @@ Sorted-Set
       - :meth:`~coredis.StrictRedis.zscan`
     * - `ZSCORE <https://redis.io/commands/zscore>`_
       - :meth:`~coredis.StrictRedis.zscore`
+    * - `ZUNION <https://redis.io/commands/zunion>`_
+      - :meth:`~coredis.StrictRedis.zunion`
     * - `ZUNIONSTORE <https://redis.io/commands/zunionstore>`_
       - :meth:`~coredis.StrictRedis.zunionstore`
-    * - `BZPOPMAX <https://redis.io/commands/bzpopmax>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.bzpopmax`)
-    * - `BZPOPMIN <https://redis.io/commands/bzpopmin>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.bzpopmin`)
-    * - `ZDIFF <https://redis.io/commands/zdiff>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zdiff`)
-    * - `ZDIFFSTORE <https://redis.io/commands/zdiffstore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zdiffstore`)
-    * - `ZINTER <https://redis.io/commands/zinter>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zinter`)
-    * - `ZMSCORE <https://redis.io/commands/zmscore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zmscore`)
-    * - `ZPOPMAX <https://redis.io/commands/zpopmax>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zpopmax`)
-    * - `ZPOPMIN <https://redis.io/commands/zpopmin>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zpopmin`)
-    * - `ZRANDMEMBER <https://redis.io/commands/zrandmember>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zrandmember`)
-    * - `ZRANGESTORE <https://redis.io/commands/zrangestore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zrangestore`)
-    * - `ZUNION <https://redis.io/commands/zunion>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.zunion`)
 
 Generic
 -------
@@ -787,24 +787,44 @@ Sorted-Set
 .. list-table::
     :class: command-table
 
+    * - `BZPOPMAX <https://redis.io/commands/bzpopmax>`_
+      - :meth:`~coredis.StrictRedisCluster.bzpopmax`
+    * - `BZPOPMIN <https://redis.io/commands/bzpopmin>`_
+      - :meth:`~coredis.StrictRedisCluster.bzpopmin`
     * - `ZADD <https://redis.io/commands/zadd>`_
       - :meth:`~coredis.StrictRedisCluster.zadd`
     * - `ZCARD <https://redis.io/commands/zcard>`_
       - :meth:`~coredis.StrictRedisCluster.zcard`
     * - `ZCOUNT <https://redis.io/commands/zcount>`_
       - :meth:`~coredis.StrictRedisCluster.zcount`
+    * - `ZDIFF <https://redis.io/commands/zdiff>`_
+      - :meth:`~coredis.StrictRedisCluster.zdiff`
+    * - `ZDIFFSTORE <https://redis.io/commands/zdiffstore>`_
+      - :meth:`~coredis.StrictRedisCluster.zdiffstore`
     * - `ZINCRBY <https://redis.io/commands/zincrby>`_
       - :meth:`~coredis.StrictRedisCluster.zincrby`
+    * - `ZINTER <https://redis.io/commands/zinter>`_
+      - :meth:`~coredis.StrictRedisCluster.zinter`
     * - `ZINTERSTORE <https://redis.io/commands/zinterstore>`_
       - :meth:`~coredis.StrictRedisCluster.zinterstore`
     * - `ZLEXCOUNT <https://redis.io/commands/zlexcount>`_
       - :meth:`~coredis.StrictRedisCluster.zlexcount`
+    * - `ZMSCORE <https://redis.io/commands/zmscore>`_
+      - :meth:`~coredis.StrictRedisCluster.zmscore`
+    * - `ZPOPMAX <https://redis.io/commands/zpopmax>`_
+      - :meth:`~coredis.StrictRedisCluster.zpopmax`
+    * - `ZPOPMIN <https://redis.io/commands/zpopmin>`_
+      - :meth:`~coredis.StrictRedisCluster.zpopmin`
+    * - `ZRANDMEMBER <https://redis.io/commands/zrandmember>`_
+      - :meth:`~coredis.StrictRedisCluster.zrandmember`
     * - `ZRANGE <https://redis.io/commands/zrange>`_
       - :meth:`~coredis.StrictRedisCluster.zrange`
     * - `ZRANGEBYLEX <https://redis.io/commands/zrangebylex>`_
       - :meth:`~coredis.StrictRedisCluster.zrangebylex`
     * - `ZRANGEBYSCORE <https://redis.io/commands/zrangebyscore>`_
       - :meth:`~coredis.StrictRedisCluster.zrangebyscore`
+    * - `ZRANGESTORE <https://redis.io/commands/zrangestore>`_
+      - :meth:`~coredis.StrictRedisCluster.zrangestore`
     * - `ZRANK <https://redis.io/commands/zrank>`_
       - :meth:`~coredis.StrictRedisCluster.zrank`
     * - `ZREM <https://redis.io/commands/zrem>`_
@@ -827,30 +847,10 @@ Sorted-Set
       - :meth:`~coredis.StrictRedisCluster.zscan`
     * - `ZSCORE <https://redis.io/commands/zscore>`_
       - :meth:`~coredis.StrictRedisCluster.zscore`
+    * - `ZUNION <https://redis.io/commands/zunion>`_
+      - :meth:`~coredis.StrictRedisCluster.zunion`
     * - `ZUNIONSTORE <https://redis.io/commands/zunionstore>`_
       - :meth:`~coredis.StrictRedisCluster.zunionstore`
-    * - `BZPOPMAX <https://redis.io/commands/bzpopmax>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.bzpopmax`)
-    * - `BZPOPMIN <https://redis.io/commands/bzpopmin>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.bzpopmin`)
-    * - `ZDIFF <https://redis.io/commands/zdiff>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zdiff`)
-    * - `ZDIFFSTORE <https://redis.io/commands/zdiffstore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zdiffstore`)
-    * - `ZINTER <https://redis.io/commands/zinter>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zinter`)
-    * - `ZMSCORE <https://redis.io/commands/zmscore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zmscore`)
-    * - `ZPOPMAX <https://redis.io/commands/zpopmax>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zpopmax`)
-    * - `ZPOPMIN <https://redis.io/commands/zpopmin>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zpopmin`)
-    * - `ZRANDMEMBER <https://redis.io/commands/zrandmember>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zrandmember`)
-    * - `ZRANGESTORE <https://redis.io/commands/zrangestore>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zrangestore`)
-    * - `ZUNION <https://redis.io/commands/zunion>`_
-      - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.zunion`)
 
 Generic
 -------
