@@ -100,7 +100,7 @@ Cluster client
 
 Dependencies & supported python versions
 ----------------------------------------
-coredis is tested against redis versions 5 & 6.
+coredis is tested against redis versions ``5.0.x``, ``6.0.x`` & ``6.2.x``.
 
 hiredis and uvloop can make coredis faster, but it is up to you whether to install them or not.
 
@@ -117,7 +117,7 @@ Supported python versions
 - 3.10
 
 
-The API (mostly) follows :doc:`Redis-py <redis-py:index>`. For a full mapping
+The API (mostly) follows :doc:`redis-py <redis-py:index>`. For a full mapping
 of redis commands to API methods refer to the :ref:`compatibility:command compatibilty`
 section.
 
