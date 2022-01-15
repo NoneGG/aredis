@@ -1,3 +1,4 @@
+from coredis.exceptions import DataError
 from coredis.utils import NodeFlag, bool_ok, dict_merge, list_keys_to_dict, nativestr
 
 
@@ -19,6 +20,7 @@ class ScriptingCommandMixin:
         In practice, use the object returned by ``register_script``. This
         function exists purely for Redis API completion.
         """
+
         return await self.execute_command("EVAL", script, numkeys, *keys_and_args)
 
     async def evalsha(self, sha, numkeys, *keys_and_args):
@@ -31,6 +33,7 @@ class ScriptingCommandMixin:
         In practice, use the object returned by ``register_script``. This
         function exists purely for Redis API completion.
         """
+
         return await self.execute_command("EVALSHA", sha, numkeys, *keys_and_args)
 
     async def script_exists(self, *args):
@@ -39,18 +42,38 @@ class ScriptingCommandMixin:
         each script as ``args``. Returns a list of boolean values indicating if
         if each already script exists in the cache.
         """
+
         return await self.execute_command("SCRIPT EXISTS", *args)
 
-    async def script_flush(self):
-        """Flushes all scripts from the script cache"""
-        return await self.execute_command("SCRIPT FLUSH")
+    async def script_flush(self, sync_type=None):
+        """
+        Flushes all scripts from the script cache
+
+        :param sync_type: ``SYNC`` or ``ASYNC``. Default ``SYNC``
+        """
+
+        if sync_type not in ["SYNC", "ASYNC", None]:
+            raise DataError(
+                "SCRIPT FLUSH defaults to SYNC in redis > 6.2, or "
+                "accepts SYNC/ASYNC. For older versions, "
+                "of redis leave as None."
+            )
+
+        if sync_type is None:
+            pieces = []
+        else:
+            pieces = [sync_type]
+
+        return await self.execute_command("SCRIPT FLUSH", *pieces)
 
     async def script_kill(self):
         """Kills the currently executing Lua script"""
+
         return await self.execute_command("SCRIPT KILL")
 
     async def script_load(self, script):
         """Loads a Lua ``script`` into the script cache. Returns the SHA."""
+
         return await self.execute_command("SCRIPT LOAD", script)
 
     def register_script(self, script):
