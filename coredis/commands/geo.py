@@ -22,6 +22,7 @@ def parse_geosearch_generic(response, **options):
 
     if not options["withdist"] and not options["withcoord"] and not options["withhash"]:
         # just a bunch of places
+
         return [nativestr(r) for r in response_list]
 
     cast = {
@@ -272,29 +273,42 @@ class GeoCommandMixin:
         areas, it supports searching within rectangular areas.
         This command should be used in place of the deprecated
         GEORADIUS and GEORADIUSBYMEMBER commands.
+
         ``member`` Use the position of the given existing
          member in the sorted set. Can't be given with ``longitude``
          and ``latitude``.
+
         ``longitude`` and ``latitude`` Use the position given by
-        this coordinates. Can't be given with ``member``
+         this coordinates. Can't be given with ``member``
+
         ``radius`` Similar to GEORADIUS, search inside circular
         area according the given radius. Can't be given with
         ``height`` and ``width``.
+
         ``height`` and ``width`` Search inside an axis-aligned
         rectangle, determined by the given height and width.
         Can't be given with ``radius``
+
         ``unit`` must be one of the following : m, km, mi, ft.
         `m` for meters (the default value), `km` for kilometers,
         `mi` for miles and `ft` for feet.
+
         ``sort`` indicates to return the places in a sorted way,
         ASC for nearest to farest and DESC for farest to nearest.
+
         ``count`` limit the results to the first count matching items.
+
         ``any`` is set to True, the command will return as soon as
         enough matches are found. Can't be provided without ``count``
+
         ``withdist`` indicates to return the distances of each place.
+
         ``withcoord`` indicates to return the latitude and longitude of
         each place.
+
         ``withhash`` indicates to return the geohash string of each place.
+
+        .. versionadded:: 2.1.0
         """
 
         return await self._geosearchgeneric(
@@ -340,6 +354,8 @@ class GeoCommandMixin:
         if ``store_dist`` set to True, the command will stores the
         items in a sorted set populated with their distance from the
         center of the circle or box, as a floating-point number.
+
+        .. versionadded:: 2.1.0
         """
 
         return await self._geosearchgeneric(

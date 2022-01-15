@@ -38,6 +38,7 @@ class BitFieldOperation:
         """
         Set the specified bit field and returns its old value.
         """
+
         if self.readonly:
             raise ReadOnlyError()
 
@@ -157,6 +158,7 @@ class StringsCommandMixin:
         Return a :class:`BitFieldOperation` instance to conveniently construct one or
         more bitfield operations on ``key``.
         """
+
         return BitFieldOperation(self, key)
 
     def bitfield_ro(self, key):
@@ -165,7 +167,10 @@ class StringsCommandMixin:
         operations on a read only replica against ``key``.
 
         Raises :class:`ReadOnlyError` if a write operation is attempted
+
+        .. versionadded:: 2.1.0
         """
+
         return BitFieldOperation(self, key, readonly=True)
 
     async def decr(self, name, amount=1):
@@ -180,6 +185,8 @@ class StringsCommandMixin:
         """
         Decrements the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as 0 - ``amount``
+
+        .. versionadded:: 2.1.0
         """
 
         return await self.execute_command("DECRBY", name, amount)
@@ -197,6 +204,8 @@ class StringsCommandMixin:
         is similar to GET, except for the fact that it also deletes
         the key on success (if and only if the key's value type
         is a string).
+
+        .. versionadded:: 2.1.0
         """
 
         return await self.execute_command("GETDEL", name)
@@ -217,6 +226,8 @@ class StringsCommandMixin:
         :param pxat: sets an expire flag on key ``name`` for ``ex`` milliseconds,
          specified in unix time.
         :param persist: remove the time to live associated with ``name``.
+
+        .. versionadded:: 2.1.0
         """
 
         opset = {ex, px, exat, pxat}

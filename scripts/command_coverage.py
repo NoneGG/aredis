@@ -1,5 +1,6 @@
 import functools
 import inspect
+import re
 
 import coredis
 import redis
@@ -22,9 +23,7 @@ def get_official_commands(group=None):
     by_group = {}
     [
         by_group.setdefault(command["group"], []).append(command | {"name": name})
-
         for name, command in response.items()
-
         if version.parse(command["since"]) < MAX_SUPPORTED_VERSION
     ]
 
@@ -35,9 +34,7 @@ def find_method(kls, command_name):
     members = inspect.getmembers(kls)
     mapping = {
         k[0]: k[1]
-
         for k in members
-
         if inspect.ismethod(k[1]) or inspect.isfunction(k[1])
     }
 
@@ -59,6 +56,8 @@ STD_GROUPS = [
     "set",
     "stream",
 ]
+
+VERSIONADDED_DOC = re.compile("(.. versionadded:: ([\d\.]+))")
 
 
 def redis_command_link(command):
@@ -82,7 +81,7 @@ def is_deprecated(command):
         command.get("deprecated_since")
         and version.parse(command["deprecated_since"]) < MAX_SUPPORTED_VERSION
     ):
-        return version.parse(command["deprecated_since"])
+        return command["deprecated_since"]
 
 
 def generate_compatibility_section(section, kls, sync_kls, redis_namespace, groups):
@@ -110,16 +109,35 @@ def generate_compatibility_section(section, kls, sync_kls, redis_namespace, grou
             sync_located = find_method(sync_kls, name)
 
             if located:
+                version_added = VERSIONADDED_DOC.findall(located.__doc__)
+                version_added = (version_added and version_added[0][0]) or ""
+
+                if server_deprecated := is_deprecated(method):
+                    server_deprecated = f"Deprecated in redis {server_deprecated}"
                 supported.append(
-                    f"    * - {redis_command_link(method['name'])}\n      - :meth:`~coredis.{kls.__name__}.{name}`"
+                    f"""
+    * - {redis_command_link(method['name'])}
+      - :meth:`~coredis.{kls.__name__}.{name}`
+
+        {version_added or ''}
+        {server_deprecated or ''}
+      """
                 )
             elif sync_located and not is_deprecated(method):
                 needs_porting.append(
-                    f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. (redis-py reference: :meth:`~{redis_namespace}.{name}`)"
+                    f"""
+    * - {redis_command_link(method['name'])}
+      - Not Implemented
+        redis-py reference: :meth:`~{redis_namespace}.{name}`
+        """
                 )
             elif not is_deprecated(method):
                 missing.append(
-                    f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. (Introduced in redis version {method['since']})"
+                    f"""
+    * - {redis_command_link(method['name'])}
+      - Not Implemented.
+        Introduced in redis version {method['since']}
+    """
                 )
         doc += "\n".join(supported + needs_porting + missing)
         doc += "\n\n"

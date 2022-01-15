@@ -189,6 +189,8 @@ class ListsCommandMixin:
         Atomically returns and removes the first/last element of a list,
         pushing it as the first/last element on the destination list.
         Returns the element being popped and pushed.
+
+        .. versionadded:: 2.1.0
         """
         params = [first_list, second_list, src, dest]
 
@@ -197,6 +199,8 @@ class ListsCommandMixin:
     async def blmove(self, first_list, second_list, timeout, src="LEFT", dest="RIGHT"):
         """
         Blocking version of lmove.
+
+        .. versionadded:: 2.1.0
         """
         params = [first_list, second_list, src, dest, timeout]
 
@@ -222,6 +226,8 @@ class ListsCommandMixin:
          elements to scan. A ``maxlen`` of 1000 will only return the
          position(s) of items within the first 1000 entries in the list.
          A ``maxlen`` of 0 (the default) will scan the entire list.
+
+        .. versionadded:: 2.1.0
         """
         pieces = [name, value]
 

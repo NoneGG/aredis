@@ -50,6 +50,8 @@ class ScriptingCommandMixin:
         Flushes all scripts from the script cache
 
         :param sync_type: ``SYNC`` or ``ASYNC``. Default ``SYNC``
+
+        .. versionadded:: 2.1.0
         """
 
         if sync_type not in ["SYNC", "ASYNC", None]:

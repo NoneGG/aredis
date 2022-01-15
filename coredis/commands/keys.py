@@ -73,6 +73,8 @@ class KeysCommandMixin:
     async def object_encoding(self, name):
         """
         Return the internal encoding for the object stored at ``name``
+
+        .. versionadded:: 2.1.0
         """
 
         return await self.execute_command("OBJECT ENCODING", name)
@@ -81,6 +83,8 @@ class KeysCommandMixin:
         """
         Return the logarithmic access frequency counter for the object
         stored at ``name``
+
+        .. versionadded:: 2.1.0
         """
 
         return await self.execute_command("OBJECT FREQ", name)
@@ -89,6 +93,8 @@ class KeysCommandMixin:
         """
         Return the time in seconds since the last access to the object
         stored at ``name``
+
+        .. versionadded:: 2.1.0
         """
 
         return await self.execute_command("OBJECT IDLETIME", name)
@@ -96,6 +102,8 @@ class KeysCommandMixin:
     async def object_refcount(self, name):
         """
         Return the reference count of the object stored at ``name``
+
+        .. versionadded:: 2.1.0
         """
 
         return await self.execute_command("OBJECT REFCOUNT", name)

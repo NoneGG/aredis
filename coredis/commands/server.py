@@ -354,6 +354,8 @@ class ServerCommandMixin:
     async def lolwut(self, *version_numbers, **kwargs):
         """
         Get the Redis version and a piece of generative computer art
+
+        .. versionadded:: 2.1.0
         """
 
         if version_numbers:

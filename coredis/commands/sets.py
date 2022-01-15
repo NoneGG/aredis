@@ -76,6 +76,8 @@ class SetsCommandMixin:
         """
         Return whether each value in ``values`` is a member of the set ``name``
         as a list of ``bool`` in the order of ``values``
+
+        .. versionadded:: 2.1.0
         """
         args = list_or_args(values, args)
 

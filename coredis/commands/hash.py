@@ -120,9 +120,8 @@ class HashCommandMixin:
         Incrementallys return key/value slices in a hash. Also returns a
         cursor pointing to the scan position.
 
-        ``match`` allows for filtering the keys by pattern
-
-        ``count`` allows for hint the minimum number of returns
+        :param match: allows for filtering the keys by pattern
+        :param count: allows for hint the minimum number of returns
         """
         pieces = [name, cursor]
 
@@ -146,13 +145,16 @@ class HashCommandMixin:
     async def hrandfield(self, key, count=None, withvalues=False):
         """
         Return a random field from the hash value stored at key.
-        count: if the argument is positive, return an array of distinct fields.
-        If called with a negative count, the behavior changes and the command
-        is allowed to return the same field multiple times. In this case,
-        the number of returned fields is the absolute value of the
-        specified count.
-        withvalues: The optional WITHVALUES modifier changes the reply so it
-        includes the respective values of the randomly selected hash fields.
+
+        :param count: if the argument is positive, return an array of distinct fields.
+         If called with a negative count, the behavior changes and the command
+         is allowed to return the same field multiple times. In this case,
+         the number of returned fields is the absolute value of the
+         specified count.
+        :param withvalues: The optional WITHVALUES modifier changes the reply so it
+         includes the respective values of the randomly selected hash fields.
+
+        .. versionadded:: 2.1.0
         """
         params = []
 

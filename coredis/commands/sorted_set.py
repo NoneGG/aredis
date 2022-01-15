@@ -153,6 +153,8 @@ class SortedSetCommandMixin:
         """
         Returns the difference between the first and all successive input
         sorted sets provided in ``keys``.
+
+        .. versionadded:: 2.1.0
         """
         pieces = [len(keys), *keys]
 
@@ -165,6 +167,8 @@ class SortedSetCommandMixin:
         """
         Computes the difference between the first and all successive input
         sorted sets provided in ``keys`` and stores the result in ``dest``.
+
+        .. versionadded:: 2.1.0
         """
         pieces = [len(keys), *keys]
 
@@ -186,6 +190,8 @@ class SortedSetCommandMixin:
         exists. When this option is set to either MIN or MAX, the resulting
         set will contain the minimum or maximum score of an element across
         the inputs where it exists.
+
+        .. versionadded:: 2.1.0
         """
 
         return await self._zaggregate(
@@ -197,6 +203,8 @@ class SortedSetCommandMixin:
         Intersects multiple sorted sets specified by ``keys`` into
         a new sorted set, ``dest``. Scores in the destination will be
         aggregated based on the ``aggregate``, or SUM if none is provided.
+
+        .. versionadded:: 2.1.0
         """
 
         return await self._zaggregate("ZINTERSTORE", dest, keys, aggregate)
@@ -213,6 +221,8 @@ class SortedSetCommandMixin:
         """
         Remove and return up to ``count`` members with the highest scores
         from the sorted set ``name``.
+
+        .. versionadded:: 2.1.0
         """
         args = (count is not None) and [count] or []
         options = {"withscores": True}
@@ -223,6 +233,8 @@ class SortedSetCommandMixin:
         """
         Remove and return up to ``count`` members with the lowest scores
         from the sorted set ``name``.
+
+        .. versionadded:: 2.1.0
         """
         args = (count is not None) and [count] or []
         options = {"withscores": True}
@@ -240,6 +252,8 @@ class SortedSetCommandMixin:
         ``withscores`` The optional WITHSCORES modifier changes the reply so it
         includes the respective scores of the randomly selected elements from
         the sorted set.
+
+        .. versionadded:: 2.1.0
         """
         params = []
 
@@ -259,6 +273,8 @@ class SortedSetCommandMixin:
         then block for ``timeout`` seconds, or until a member gets added
         to one of the sorted sets.
         If timeout is 0, then block indefinitely.
+
+        .. versionadded:: 2.1.0
         """
 
         if timeout is None:
@@ -276,6 +292,8 @@ class SortedSetCommandMixin:
         then block for ``timeout`` seconds, or until a member gets added
         to one of the sorted sets.
         If timeout is 0, then block indefinitely.
+
+        .. versionadded:: 2.1.0
         """
 
         if timeout is None:
@@ -552,6 +570,8 @@ class SortedSetCommandMixin:
         order.
         ``offset`` and ``num`` are specified, then return a slice of the range.
         Can't be provided when using ``bylex``.
+
+        .. versionadded:: 2.1.0
         """
 
         return await self._zrange(
@@ -624,6 +644,8 @@ class SortedSetCommandMixin:
         ``keys`` can be provided as dictionary of keys and their weights.
         Scores will be aggregated based on the ``aggregate``, or SUM if
         none is provided.
+
+        .. versionadded:: 2.1.0
         """
 
         return await self._zaggregate(
@@ -647,6 +669,8 @@ class SortedSetCommandMixin:
         Return type is a list of score.
         If the member does not exist, a None will be returned
         in corresponding position.
+
+        .. versionadded:: 2.1.0
         """
 
         if not members:
