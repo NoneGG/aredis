@@ -90,12 +90,16 @@ def o(request, *args, **kwargs):
 
 
 @pytest.fixture()
-def r(request, *args, **kwargs):
+async def r(request, *args, **kwargs):
     """
     Create a StrictRedisCluster instance with default settings.
     """
 
-    return _get_client(cls=StrictRedisCluster, **kwargs)
+    client = _get_client(cls=StrictRedisCluster, **kwargs)
+    await client.config_set("maxmemory-policy", "noeviction")
+    await client.flushdb()
+
+    return client
 
 
 @pytest.fixture()

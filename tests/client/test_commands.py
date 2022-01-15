@@ -417,6 +417,35 @@ class TestRedisCommands:
         assert await r.get("a") == b("bar")
 
     @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_encoding(self, r):
+        await r.flushdb()
+        await r.set("a", "foo")
+        await r.hset("b", "foo", 1)
+        assert await r.object_encoding("a") == b"embstr"
+        assert await r.object_encoding("b") == b"ziplist"
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_freq(self, r):
+        await r.set("a", "foo")
+        with pytest.raises(ResponseError):
+            await r.object_freq("a"),
+        await r.config_set("maxmemory-policy", "allkeys-lfu")
+        assert isinstance(await r.object_freq("a"), int)
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_idletime(self, r):
+        await r.set("a", "foo")
+        assert isinstance(await r.object_idletime("a"), int)
+        await r.config_set("maxmemory-policy", "allkeys-lfu")
+        with pytest.raises(ResponseError):
+            await r.object_idletime("a"),
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_refcount(self, r):
+        await r.set("a", "foo")
+        assert await r.object_refcount("a") == 1
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_exists(self, r):
         await r.flushdb()
         assert not await r.exists("a")

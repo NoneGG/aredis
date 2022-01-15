@@ -217,6 +217,14 @@ Generic
       - :meth:`~coredis.StrictRedis.keys`
     * - `MOVE <https://redis.io/commands/move>`_
       - :meth:`~coredis.StrictRedis.move`
+    * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
+      - :meth:`~coredis.StrictRedis.object_encoding`
+    * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
+      - :meth:`~coredis.StrictRedis.object_freq`
+    * - `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
+      - :meth:`~coredis.StrictRedis.object_idletime`
+    * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
+      - :meth:`~coredis.StrictRedis.object_refcount`
     * - `PERSIST <https://redis.io/commands/persist>`_
       - :meth:`~coredis.StrictRedis.persist`
     * - `PEXPIRE <https://redis.io/commands/pexpire>`_
@@ -251,14 +259,6 @@ Generic
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.copy`)
     * - `MIGRATE <https://redis.io/commands/migrate>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.core.CoreCommands.migrate`)
-    * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
-      - Not Implemented. (Introduced in redis version 2.2.3)
-    * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
-      - Not Implemented. (Introduced in redis version 4.0.0)
-    * - `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
-      - Not Implemented. (Introduced in redis version 2.2.3)
-    * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
-      - Not Implemented. (Introduced in redis version 2.2.3)
 
 Transactions
 ------------
@@ -872,6 +872,14 @@ Generic
       - :meth:`~coredis.StrictRedisCluster.keys`
     * - `MOVE <https://redis.io/commands/move>`_
       - :meth:`~coredis.StrictRedisCluster.move`
+    * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
+      - :meth:`~coredis.StrictRedisCluster.object_encoding`
+    * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
+      - :meth:`~coredis.StrictRedisCluster.object_freq`
+    * - `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
+      - :meth:`~coredis.StrictRedisCluster.object_idletime`
+    * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
+      - :meth:`~coredis.StrictRedisCluster.object_refcount`
     * - `PERSIST <https://redis.io/commands/persist>`_
       - :meth:`~coredis.StrictRedisCluster.persist`
     * - `PEXPIRE <https://redis.io/commands/pexpire>`_
@@ -906,14 +914,6 @@ Generic
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.copy`)
     * - `MIGRATE <https://redis.io/commands/migrate>`_
       - Not Implemented. (redis-py reference: :meth:`~redis.commands.cluster.RedisClusterCommands.migrate`)
-    * - `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
-      - Not Implemented. (Introduced in redis version 2.2.3)
-    * - `OBJECT FREQ <https://redis.io/commands/object-freq>`_
-      - Not Implemented. (Introduced in redis version 4.0.0)
-    * - `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
-      - Not Implemented. (Introduced in redis version 2.2.3)
-    * - `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
-      - Not Implemented. (Introduced in redis version 2.2.3)
 
 Transactions
 ------------

@@ -33,8 +33,12 @@ def skip_if_server_version_lt(min_version):
 
 
 @pytest.fixture()
-def r(event_loop):
-    return coredis.StrictRedis(loop=event_loop)
+async def r(event_loop):
+    client = coredis.StrictRedis(loop=event_loop)
+
+    await client.config_set("maxmemory-policy", "noeviction")
+    await client.flushdb()
+    return client
 
 
 class AsyncMock(Mock):

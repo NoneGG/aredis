@@ -28,6 +28,7 @@ async def redis_server_time(client):
     t = await client.time()
     seconds, milliseconds = list(t.values())[0]
     timestamp = float("{0}.{1}".format(seconds, milliseconds))
+
     return datetime.datetime.fromtimestamp(timestamp)
 
 
@@ -59,6 +60,7 @@ class TestRedisCommands:
     @pytest.mark.asyncio
     async def test_client_list(self, r):
         client_lists = await r.client_list()
+
         for server, clients in client_lists.items():
             assert isinstance(clients[0], dict)
             assert "addr" in clients[0]
@@ -66,6 +68,7 @@ class TestRedisCommands:
     @pytest.mark.asyncio
     async def test_client_getname(self, r):
         client_names = await r.client_getname()
+
         for server, name in client_names.items():
             assert name is None
 
@@ -77,6 +80,7 @@ class TestRedisCommands:
     @pytest.mark.asyncio
     async def test_config_get(self, r):
         config = await r.config_get()
+
         for server, data in config.items():
             assert "maxmemory" in data
             assert data["maxmemory"].isdigit()
@@ -85,11 +89,13 @@ class TestRedisCommands:
     async def test_config_resetstat(self, r):
         await r.ping()
         info = await r.info()
+
         for server, info in info.items():
             prior_commands_processed = int(info["total_commands_processed"])
             assert prior_commands_processed >= 1
         await r.config_resetstat()
         info = await r.info()
+
         for server, info in info.items():
             reset_commands_processed = int(info["total_commands_processed"])
             assert reset_commands_processed < prior_commands_processed
@@ -98,12 +104,14 @@ class TestRedisCommands:
     async def test_config_set(self, r):
         assert await r.config_set("dbfilename", "redis_py_test.rdb")
         config = await r.config_get()
+
         for server, config in config.items():
             assert config["dbfilename"] == "redis_py_test.rdb"
 
     @pytest.mark.asyncio
     async def test_echo(self, r):
         echo = await r.echo("foo bar")
+
         for server, res in echo.items():
             assert res == b("foo bar")
 
@@ -117,6 +125,35 @@ class TestRedisCommands:
         # assert await r.object('encoding', 'a') in (b('raw'), b('embstr'))
         assert await r.object("idletime", "invalid-key") is None
 
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_encoding(self, r):
+        await r.flushdb()
+        await r.set("a", "foo")
+        await r.hset("b", "foo", 1)
+        assert await r.object_encoding("a") == b"embstr"
+        assert await r.object_encoding("b") == b"ziplist"
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_freq(self, r):
+        await r.set("a", "foo")
+        with pytest.raises(ResponseError):
+            await r.object_freq("a"),
+        await r.config_set("maxmemory-policy", "allkeys-lfu")
+        assert isinstance(await r.object_freq("a"), int)
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_idletime(self, r):
+        await r.set("a", "foo")
+        assert isinstance(await r.object_idletime("a"), int)
+        await r.config_set("maxmemory-policy", "allkeys-lfu")
+        with pytest.raises(ResponseError):
+            await r.object_idletime("a"),
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_object_refcount(self, r):
+        await r.set("a", "foo")
+        assert await r.object_refcount("a") == 1
+
     @pytest.mark.asyncio
     async def test_ping(self, r):
         assert await r.ping()
@@ -125,6 +162,7 @@ class TestRedisCommands:
     async def test_time(self, r):
         await r.flushdb()
         time = await r.time()
+
         for t in time.values():
             assert len(t) == 2
             assert isinstance(t[0], int)
@@ -406,6 +444,7 @@ class TestRedisCommands:
         assert keys == []
         keys_with_underscores = set(["test_a", "test_b"])
         keys = keys_with_underscores.union(set(["testc"]))
+
         for key in keys:
             await r.set(key, 1)
         assert set(await r.keys(pattern="test_*")) == {
@@ -427,6 +466,7 @@ class TestRedisCommands:
         await r.flushdb()
         d = {"a": b("1"), "b": b("2"), "c": b("3")}
         assert await r.mset(d)
+
         for k, v in iteritems(d):
             assert await r.mget(k) == [v]
 
@@ -435,6 +475,7 @@ class TestRedisCommands:
         await r.flushdb()
         d = {"a": b("1"), "b": b("2"), "c": b("3")}
         assert await r.mset(**d)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
 
@@ -445,6 +486,7 @@ class TestRedisCommands:
         assert await r.msetnx(d)
         d2 = {"a": b("x"), "d": b("4")}
         assert not await r.msetnx(d2)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
         assert await r.get("d") is None
@@ -456,6 +498,7 @@ class TestRedisCommands:
         assert await r.msetnx(**d)
         d2 = {"a": b("x"), "d": b("4")}
         assert not await r.msetnx(**d2)
+
         for k, v in iteritems(d):
             assert await r.get(k) == v
         assert await r.get("d") is None
@@ -514,6 +557,7 @@ class TestRedisCommands:
     async def test_randomkey(self, r):
         await r.flushdb()
         assert await r.randomkey() is None
+
         for key in ("a", "b", "c"):
             await r.set(key, 1)
         assert await r.randomkey() in (b("a"), b("b"), b("c"))
@@ -828,6 +872,7 @@ class TestRedisCommands:
         await r.set("b", 2)
         await r.set("c", 3)
         keys = []
+
         for result in (await r.scan()).values():
             cursor, partial_keys = result
             assert cursor == 0
@@ -836,6 +881,7 @@ class TestRedisCommands:
         assert set(keys) == set([b("a"), b("b"), b("c")])
 
         keys = []
+
         for result in (await r.scan(match="a")).values():
             cursor, partial_keys = result
             assert cursor == 0
@@ -1771,6 +1817,7 @@ class TestBinarySave:
             b("foo\tbar\x07"): [b("7"), b("8"), b("9")],
         }
         # fill in lists
+
         for key, value in iteritems(mapping):
             await r.rpush(key, *value)
 
@@ -1778,6 +1825,7 @@ class TestBinarySave:
         assert sorted(await r.keys("*")) == sorted(list(iterkeys(mapping)))
 
         # check that it is possible to get list content by key name
+
         for key, value in iteritems(mapping):
             assert await r.lrange(key, 0, -1) == value
 
