@@ -3,6 +3,15 @@
 Changelog
 =========
 
+v2.0.1
+------
+Release Date: 2022-01-15
+
+Bug Fix:
+
+    * Ensure installation succeeds without gcc
+
+
 v2.0.0
 ------
 Release Date: 2022-01-05
