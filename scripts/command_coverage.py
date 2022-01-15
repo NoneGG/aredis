@@ -88,11 +88,11 @@ def generate_compatibility_section(section, kls, sync_kls, redis_namespace, grou
                 )
             elif sync_located:
                 needs_porting.append(
-                    f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. redis-py reference: :meth:`~{redis_namespace}.{name}`"
+                    f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. (redis-py reference: :meth:`~{redis_namespace}.{name}`)"
                 )
             else:
                 missing.append(
-                    f"    * - {redis_command_link(method['name'])}\n      - Not Implemented"
+                    f"    * - {redis_command_link(method['name'])}\n      - Not Implemented. (Introduced in redis version {method['since']})"
                 )
         doc += "\n".join(supported + needs_porting + missing)
         doc += "\n\n"

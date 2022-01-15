@@ -12,6 +12,8 @@ from coredis.commands.server import parse_info
 from coredis.exceptions import DataError, RedisError, ResponseError
 from coredis.utils import b, iteritems, iterkeys, itervalues
 
+from .conftest import skip_if_server_version_lt
+
 
 async def redis_server_time(client):
     seconds, milliseconds = await client.time()
@@ -349,6 +351,14 @@ class TestRedisCommands:
         assert await r.get("a") == b("-7")
 
     @pytest.mark.asyncio(forbid_global_loop=True)
+    async def test_decr_by(self, r):
+        await r.flushdb()
+        assert await r.decrby("a", 2) == -2
+        assert await r.get("a") == b("-2")
+        assert await r.decrby("a", 2) == -4
+        assert await r.get("a") == b("-4")
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_delete(self, r):
         await r.flushdb()
         assert await r.delete("a") == 0
@@ -437,6 +447,30 @@ class TestRedisCommands:
         assert await r.get("byte_string") == byte_string
         assert await r.get("integer") == b(str(integer))
         assert (await r.get("unicode_string")).decode("utf-8") == unicode_string
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_getdel(self, r):
+        assert await r.getdel("a") is None
+        await r.set("a", 1)
+        assert await r.getdel("a") == b"1"
+        assert await r.getdel("a") is None
+
+    @pytest.mark.asyncio(forbid_global_loop=True)
+    @skip_if_server_version_lt("6.2.0")
+    async def test_getex(self, r):
+        await r.set("a", 1)
+        assert await r.getex("a") == b"1"
+        assert await r.ttl("a") == -1
+        assert await r.getex("a", ex=60) == b"1"
+        assert await r.ttl("a") == 60
+        assert await r.getex("a", px=6000) == b"1"
+        assert await r.ttl("a") == 6
+        expire_at = await redis_server_time(r) + datetime.timedelta(minutes=1)
+        assert await r.getex("a", pxat=expire_at) == b"1"
+        assert await r.ttl("a") <= 61
+        assert await r.getex("a", persist=True) == b"1"
+        assert await r.ttl("a") == -1
 
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_get_set_bit(self, r):
