@@ -11,4 +11,4 @@ lint-fix:
 
 generate-compatibility-docs:
 	rm -rf docs/source/compatibility.rst
-	python scripts/command_coverage.py > docs/source/compatibility.rst
+	PYTHONPATH=${CURDIR} python scripts/command_coverage.py > docs/source/compatibility.rst
