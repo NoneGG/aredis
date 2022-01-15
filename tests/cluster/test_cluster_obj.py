@@ -6,13 +6,15 @@ from __future__ import with_statement
 import asyncio
 
 import pytest
+
+# 3rd party imports
+from mock import patch
+
 # rediscluster imports
 from coredis import StrictRedisCluster
 from coredis.exceptions import AskError
 from coredis.pool import ClusterConnectionPool
 from coredis.utils import b
-# 3rd party imports
-from mock import patch
 
 
 class DummyConnectionPool(ClusterConnectionPool):

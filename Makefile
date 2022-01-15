@@ -1,10 +1,10 @@
 lint:
-	black --check
+	black --check coredis tests
 	#mypy coredis
 	flake8 coredis tests
 
 lint-fix:
-	black tests coredis
+	black coredis tests
 	#mypy coredis
 	isort -r --profile=black tests coredis
 	autoflake8 -i -r tests coredis

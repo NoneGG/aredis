@@ -464,7 +464,7 @@ if not _C_EXTENSION_SPEEDUP:
         if start > -1:
             end = key.find(b"}", start + 1)
             if end > -1 and end != start + 1:
-                key = key[start + 1:end]
+                key = key[start + 1 : end]
         return crc16(key) % 16384
 
     hash_slot = _hash_slot  # noqa: F811

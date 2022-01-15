@@ -272,7 +272,7 @@ class ClusterListsCommandMixin(ListsCommandMixin):
             if desc:
                 data = data[::-1]
             if not (start is None and num is None):
-                data = data[start:start + num]
+                data = data[start : start + num]
 
             if get:
                 data = await self._retrive_data_from_sort(data, get)

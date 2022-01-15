@@ -400,7 +400,7 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
 
         if command in ["EVAL", "EVALSHA"]:
             numkeys = args[2]
-            keys = args[3:3 + numkeys]
+            keys = args[3 : 3 + numkeys]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
 
             if len(slots) != 1:

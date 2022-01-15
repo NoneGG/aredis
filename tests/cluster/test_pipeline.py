@@ -5,6 +5,7 @@ from __future__ import with_statement
 
 # 3rd party imports
 import pytest
+
 # rediscluster imports
 from coredis.exceptions import ResponseError, WatchError
 from coredis.utils import b

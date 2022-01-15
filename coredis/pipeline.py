@@ -1,6 +1,6 @@
-from asyncio import CancelledError
 import inspect
 import sys
+from asyncio import CancelledError
 from itertools import chain
 
 from coredis.client import StrictRedis, StrictRedisCluster
@@ -389,7 +389,7 @@ class StrictClusterPipeline(StrictRedisCluster):
 
         if command in ["EVAL", "EVALSHA"]:
             numkeys = args[2]
-            keys = args[3:3 + numkeys]
+            keys = args[3 : 3 + numkeys]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
             if len(slots) != 1:
                 raise RedisClusterException(

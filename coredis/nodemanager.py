@@ -19,7 +19,7 @@ class NodeManager:
         reinitialize_steps=None,
         skip_full_coverage_check=False,
         nodemanager_follow_cluster=False,
-        **connection_kwargs
+        **connection_kwargs,
     ):
         """
         :skip_full_coverage_check:
