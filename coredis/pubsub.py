@@ -117,7 +117,7 @@ class PubSub:
                 # when connection is reused
                 connection.disconnect()
 
-            return None
+            raise
         except (ConnectionError, TimeoutError) as e:
             connection.disconnect()
 
