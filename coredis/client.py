@@ -157,6 +157,7 @@ class StrictRedis(*mixins):
         retry_on_timeout=False,
         max_idle_time=0,
         idle_check_interval=1,
+        client_name=None,
         loop=None,
         **kwargs
     ):
@@ -172,6 +173,7 @@ class StrictRedis(*mixins):
                 "decode_responses": decode_responses,
                 "max_idle_time": max_idle_time,
                 "idle_check_interval": idle_check_interval,
+                "client_name": client_name,
                 "loop": loop,
             }
             # based on input, setup appropriate connection args

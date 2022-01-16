@@ -376,7 +376,8 @@ class BaseConnection:
         encoding="utf-8",
         decode_responses=False,
         *,
-        loop=None
+        client_name=None,
+        loop=None,
     ):
         self._parser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
@@ -391,6 +392,7 @@ class BaseConnection:
         self.encoding = encoding
         self.decode_responses = decode_responses
         self.loop = loop
+        self.client_name = client_name
         # flag to show if a connection is waiting for response
         self.awaiting_response = False
         self.last_active_at = time.time()
@@ -454,6 +456,11 @@ class BaseConnection:
             await self.send_command("SELECT", self.db)
             if nativestr(await self.read_response()) != "OK":
                 raise ConnectionError("Invalid Database")
+
+        if self.client_name is not None:
+            await self.send_command("CLIENT SETNAME", self.client_name)
+            if nativestr(await self.read_response()) != "OK":
+                raise ConnectionError(f"Failed to set client name: {self.client_name}")
         self.last_active_at = time.time()
 
     async def read_response(self):
@@ -598,7 +605,8 @@ class Connection(BaseConnection):
         socket_keepalive=None,
         socket_keepalive_options=None,
         *,
-        loop=None
+        client_name=None,
+        loop=None,
     ):
         super(Connection, self).__init__(
             retry_on_timeout,
@@ -607,6 +615,7 @@ class Connection(BaseConnection):
             reader_read_size,
             encoding,
             decode_responses,
+            client_name=client_name,
             loop=loop,
         )
         self.host = host
@@ -667,7 +676,8 @@ class UnixDomainSocketConnection(BaseConnection):
         encoding="utf-8",
         decode_responses=False,
         *,
-        loop=None
+        client_name=None,
+        loop=None,
     ):
         super(UnixDomainSocketConnection, self).__init__(
             retry_on_timeout,
@@ -676,6 +686,7 @@ class UnixDomainSocketConnection(BaseConnection):
             reader_read_size,
             encoding,
             decode_responses,
+            client_name=client_name,
             loop=loop,
         )
         self.path = path
