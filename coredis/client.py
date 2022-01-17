@@ -140,6 +140,7 @@ class StrictRedis(*mixins):
         host="localhost",
         port=6379,
         db=0,
+        username=None,
         password=None,
         stream_timeout=None,
         connect_timeout=None,
@@ -164,6 +165,7 @@ class StrictRedis(*mixins):
         if not connection_pool:
             kwargs = {
                 "db": db,
+                "username": username,
                 "password": password,
                 "encoding": encoding,
                 "stream_timeout": stream_timeout,

@@ -25,8 +25,10 @@ FALSE_STRINGS = ("0", "F", "FALSE", "N", "NO")
 def to_bool(value):
     if value is None or value == "":
         return None
+
     if isinstance(value, str) and value.upper() in FALSE_STRINGS:
         return False
+
     return bool(value)
 
 
@@ -90,6 +92,7 @@ class ConnectionPool:
         for name, value in iter(parse_qs(qs).items()):
             if value and len(value) > 0:
                 parser = URL_QUERY_ARGUMENT_PARSERS.get(name)
+
                 if parser:
                     try:
                         url_options[name] = parser(value[0])
@@ -102,19 +105,23 @@ class ConnectionPool:
                 else:
                     url_options[name] = value[0]
 
+        username = url.username
+        password = url.password
+        path = url.path
+        hostname = url.hostname
+
         if decode_components:
-            password = unquote(url.password) if url.password else None
-            path = unquote(url.path) if url.path else None
-            hostname = unquote(url.hostname) if url.hostname else None
-        else:
-            password = url.password
-            path = url.path
-            hostname = url.hostname
+            username = unquote(username) if username else None
+            password = unquote(password) if password else None
+            path = unquote(path) if path else None
+            hostname = unquote(hostname) if hostname else None
 
         # We only support redis:// and unix:// schemes.
+
         if url.scheme == "unix":
             url_options.update(
                 {
+                    "username": username,
                     "password": password,
                     "path": path,
                     "connection_class": UnixDomainSocketConnection,
@@ -123,11 +130,17 @@ class ConnectionPool:
 
         else:
             url_options.update(
-                {"host": hostname, "port": int(url.port or 6379), "password": password}
+                {
+                    "host": hostname,
+                    "port": int(url.port or 6379),
+                    "username": username,
+                    "password": password,
+                }
             )
 
             # If there's a path argument, use it as the db argument if a
             # querystring value wasn't specified
+
             if "db" not in url_options and path:
                 try:
                     url_options["db"] = int(path.replace("/", ""))
@@ -148,6 +161,7 @@ class ConnectionPool:
 
         # update the arguments from the URL values
         kwargs.update(url_options)
+
         return cls(**kwargs)
 
     def __init__(
@@ -169,6 +183,7 @@ class ConnectionPool:
         connection_class.
         """
         max_connections = max_connections or 2 ** 31
+
         if not isinstance(max_connections, int) or max_connections < 0:
             raise ValueError('"max_connections" must be a positive integer')
 
@@ -199,6 +214,7 @@ class ConnectionPool:
                 except ValueError:
                     pass
                 self._created_connections -= 1
+
                 break
             await asyncio.sleep(self.idle_check_interval)
 
@@ -215,6 +231,7 @@ class ConnectionPool:
                 if self.pid == os.getpid():
                     # another thread already did the work while we waited
                     # on the lock.
+
                     return
                 self.disconnect()
                 self.reset()
@@ -227,26 +244,32 @@ class ConnectionPool:
         except IndexError:
             connection = self.make_connection()
         self._in_use_connections.add(connection)
+
         return connection
 
     def make_connection(self):
         """Creates a new connection"""
+
         if self._created_connections >= self.max_connections:
             raise ConnectionError("Too many connections")
         self._created_connections += 1
         connection = self.connection_class(**self.connection_kwargs)
+
         if self.max_idle_time > self.idle_check_interval > 0:
             # do not await the future
             asyncio.ensure_future(self.disconnect_on_idle_time_exceeded(connection))
+
         return connection
 
     def release(self, connection):
         """Releases the connection back to the pool"""
         self._checkpid()
+
         if connection.pid != self.pid:
             return
         self._in_use_connections.remove(connection)
         # discard connection with unread response
+
         if connection.awaiting_response:
             connection.disconnect()
             self._created_connections -= 1
@@ -256,6 +279,7 @@ class ConnectionPool:
     def disconnect(self):
         """Closes all connections in the pool"""
         all_conns = chain(self._available_connections, self._in_use_connections)
+
         for connection in all_conns:
             connection.disconnect()
             self._created_connections -= 1
@@ -296,6 +320,7 @@ class ClusterConnectionPool(ConnectionPool):
         # Special case to make from_url method compliant with cluster setting.
         # from_url method will send in the ip and port through a different variable then the
         # regular startup_nodes variable.
+
         if startup_nodes is None:
             if "port" in connection_kwargs and "host" in connection_kwargs:
                 startup_nodes = [
@@ -335,6 +360,7 @@ class ClusterConnectionPool(ConnectionPool):
         Returns a string with all unique ip:port combinations that this pool
         is connected to
         """
+
         return "{0}<{1}>".format(
             type(self).__name__,
             ", ".join(
@@ -360,6 +386,7 @@ class ClusterConnectionPool(ConnectionPool):
                 node = connection.node
                 self._available_connections[node["name"]].remove(connection)
                 self._created_connections_per_node[node["name"]] -= 1
+
                 break
             await asyncio.sleep(self.idle_check_interval)
 
@@ -378,12 +405,14 @@ class ClusterConnectionPool(ConnectionPool):
                 if self.pid == os.getpid():
                     # another thread already did the work while we waited
                     # on the lockself.
+
                     return
                 self.disconnect()
                 self.reset()
 
     def get_connection(self, command_name, *keys, **options):
         # Only pubsub command/connection should be allowed here
+
         if command_name != "pubsub":
             raise RedisClusterException(
                 "Only 'pubsub' commands can use get_connection()"
@@ -413,6 +442,7 @@ class ClusterConnectionPool(ConnectionPool):
 
     def make_connection(self, node):
         """Creates a new connection"""
+
         if self.count_all_num_connections(node) >= self.max_connections:
             if self.max_connections_per_node:
                 raise RedisClusterException(
@@ -431,14 +461,17 @@ class ClusterConnectionPool(ConnectionPool):
 
         # Must store node in the connection to make it eaiser to track
         connection.node = node
+
         if self.max_idle_time > self.idle_check_interval > 0:
             # do not await the future
             asyncio.ensure_future(self.disconnect_on_idle_time_exceeded(connection))
+
         return connection
 
     def release(self, connection):
         """Releases the connection back to the pool"""
         self._checkpid()
+
         if connection.pid != self.pid:
             return
 
@@ -446,14 +479,17 @@ class ClusterConnectionPool(ConnectionPool):
         # pool. There is cases where the connection is to be removed but it will not exist and
         # there must be a safe way to remove
         i_c = self._in_use_connections.get(connection.node["name"], set())
+
         if connection in i_c:
             i_c.remove(connection)
         else:
             pass
         # discard connection with unread response
+
         if connection.awaiting_response:
             connection.disconnect()
             # reduce node connection count in case of too many connection error raised
+
             if (
                 self.max_connections_per_node
                 and self._created_connections_per_node.get(connection.node["name"])
@@ -483,12 +519,15 @@ class ClusterConnectionPool(ConnectionPool):
 
     def get_random_connection(self):
         """Opens new connection to random redis server"""
+
         if self._available_connections:
             node_name = random.choice(list(self._available_connections.keys()))
             conn_list = self._available_connections[node_name]
             # check it in case of empty connection list
+
             if conn_list:
                 return conn_list.pop()
+
         for node in self.nodes.random_startup_node_iter():
             connection = self.get_connection_by_node(node)
 
@@ -538,4 +577,5 @@ class ClusterConnectionPool(ConnectionPool):
     def get_node_by_slot(self, slot):
         if self.readonly:
             return random.choice(self.nodes.slots[slot])
+
         return self.get_master_node_by_slot(slot)

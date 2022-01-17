@@ -144,3 +144,29 @@ class MovedError(AskError):
     A request sent to a node that doesn't serve this key will be replayed with
     a ``MOVED`` error that points to the correct node.
     """
+
+
+class AuthenticationError(ResponseError):
+    """
+    Base class for authentication errors
+    """
+
+
+class AuthenticationFailureError(AuthenticationError):
+    """
+    Raised when authentication parameters were provided
+    but were invalid
+    """
+
+
+class AuthenticationRequiredError(AuthenticationError):
+    """
+    Raised when authentication parameters are required
+    but not provided
+    """
+
+
+class AuthorizationError(RedisError):
+    """
+    Base class for authorization errors
+    """

@@ -3,6 +3,9 @@ from coredis.commands.strings import BitFieldOperation
 from coredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
 from coredis.exceptions import (
     AskError,
+    AuthenticationFailureError,
+    AuthenticationRequiredError,
+    AuthorizationError,
     BusyLoadingError,
     CacheError,
     ClusterCrossSlotError,
@@ -41,6 +44,9 @@ __all__ = [
     "ConnectionPool",
     "ClusterConnectionPool",
     "AskError",
+    "AuthenticationFailureError",
+    "AuthenticationRequiredError",
+    "AuthorizationError",
     "BusyLoadingError",
     "CacheError",
     "ClusterCrossSlotError",

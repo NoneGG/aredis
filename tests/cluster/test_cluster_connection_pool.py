@@ -294,6 +294,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 0,
+            "username": None,
             "password": None,
         }
 
@@ -304,6 +305,7 @@ class TestConnectionPoolURLParsing:
             "host": "myhost",
             "port": 6379,
             "db": 0,
+            "username": None,
             "password": None,
         }
 
@@ -316,6 +318,7 @@ class TestConnectionPoolURLParsing:
             "host": "my / host +=+",
             "port": 6379,
             "db": 0,
+            "username": None,
             "password": None,
         }
 
@@ -326,6 +329,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6380,
             "db": 0,
+            "username": None,
             "password": None,
         }
 
@@ -336,6 +340,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 0,
+            "username": "",
             "password": "mypassword",
         }
 
@@ -348,6 +353,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 0,
+            "username": None,
             "password": "/mypass/+ word=$+",
         }
 
@@ -360,6 +366,7 @@ class TestConnectionPoolURLParsing:
         assert pool.connection_kwargs == {
             "path": "/my/path/to/../+_+=$ocket",
             "db": 0,
+            "username": None,
             "password": "mypassword",
         }
 
@@ -370,6 +377,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 1,
+            "username": None,
             "password": None,
         }
 
@@ -380,6 +388,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 2,
+            "username": None,
             "password": None,
         }
 
@@ -390,6 +399,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 3,
+            "username": None,
             "password": None,
         }
 
@@ -400,6 +410,7 @@ class TestConnectionPoolURLParsing:
             "host": "localhost",
             "port": 6379,
             "db": 0,
+            "username": None,
             "password": None,
             "a": "1",
             "b": "2",
@@ -412,6 +423,7 @@ class TestConnectionPoolURLParsing:
             "host": "myhost",
             "port": 6379,
             "db": 0,
+            "username": None,
             "password": None,
         }
 
@@ -423,6 +435,7 @@ class TestConnectionPoolUnixSocketURLParsing:
         assert pool.connection_kwargs == {
             "path": "/socket",
             "db": 0,
+            "username": None,
             "password": None,
         }
 
@@ -432,6 +445,7 @@ class TestConnectionPoolUnixSocketURLParsing:
         assert pool.connection_kwargs == {
             "path": "/socket",
             "db": 0,
+            "username": "",
             "password": "mypassword",
         }
 
@@ -441,6 +455,7 @@ class TestConnectionPoolUnixSocketURLParsing:
         assert pool.connection_kwargs == {
             "path": "/socket",
             "db": 1,
+            "username": None,
             "password": None,
         }
 
@@ -450,6 +465,7 @@ class TestConnectionPoolUnixSocketURLParsing:
         assert pool.connection_kwargs == {
             "path": "/socket",
             "db": 2,
+            "username": None,
             "password": None,
         }
 
@@ -459,6 +475,7 @@ class TestConnectionPoolUnixSocketURLParsing:
         assert pool.connection_kwargs == {
             "path": "/socket",
             "db": 0,
+            "username": None,
             "password": None,
             "a": "1",
             "b": "2",

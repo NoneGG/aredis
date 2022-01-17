@@ -40,11 +40,19 @@ Exceptions
 
 .. currentmodule:: coredis
 
+Authentication & Authorization
+------------------------------
+
+.. autoexception:: AuthenticationFailureError
+   :no-inherited-members:
+.. autoexception:: AuthenticationRequiredError
+   :no-inherited-members:
+.. autoexception:: AuthorizationError
+   :no-inherited-members:
+
+Cluster
+-------
 .. autoexception:: AskError
-   :no-inherited-members:
-.. autoexception:: BusyLoadingError
-   :no-inherited-members:
-.. autoexception:: CacheError
    :no-inherited-members:
 .. autoexception:: ClusterCrossSlotError
    :no-inherited-members:
@@ -53,6 +61,17 @@ Exceptions
 .. autoexception:: ClusterError
    :no-inherited-members:
 .. autoexception:: ClusterTransactionError
+   :no-inherited-members:
+.. autoexception:: MovedError
+   :no-inherited-members:
+.. autoexception:: RedisClusterException
+   :no-inherited-members:
+
+General Exceptions
+-------------------
+.. autoexception:: BusyLoadingError
+   :no-inherited-members:
+.. autoexception:: CacheError
    :no-inherited-members:
 .. autoexception:: CompressError
    :no-inherited-members:
@@ -66,15 +85,11 @@ Exceptions
    :no-inherited-members:
 .. autoexception:: LockError
    :no-inherited-members:
-.. autoexception:: MovedError
-   :no-inherited-members:
 .. autoexception:: NoScriptError
    :no-inherited-members:
 .. autoexception:: PubSubError
    :no-inherited-members:
 .. autoexception:: ReadOnlyError
-   :no-inherited-members:
-.. autoexception:: RedisClusterException
    :no-inherited-members:
 .. autoexception:: RedisError
    :no-inherited-members:
