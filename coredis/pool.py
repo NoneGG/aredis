@@ -80,6 +80,10 @@ URL_QUERY_ARGUMENT_PARSERS = {
     "stream_timeout": float,
     "connect_timeout": float,
     "retry_on_timeout": to_bool,
+    "max_connections": int,
+    "max_idle_time": int,
+    "idle_check_interval": int,
+    "reader_read_size": int,
 }
 
 
@@ -132,7 +136,6 @@ class ConnectionPool:
         qs = url.query
 
         url_options = {}
-
         for name, value in iter(parse_qs(qs).items()):
             if value and len(value) > 0:
                 parser = URL_QUERY_ARGUMENT_PARSERS.get(name)
@@ -563,9 +566,11 @@ class ClusterConnectionPool(ConnectionPool):
                 connection.disconnect()
                 node = connection.node
                 connections = self._available_connections.get(node["name"])
+
                 if connections:
                     connections.remove(connection)
                 self._created_connections_per_node[node["name"]] -= 1
+
                 break
             await asyncio.sleep(self.idle_check_interval)
 

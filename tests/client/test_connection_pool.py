@@ -366,6 +366,34 @@ class TestConnectionPoolURLParsing:
             "Invalid value for `stream_timeout` in connection URL.",
         ]
 
+    def test_max_connections_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url("redis://localhost?max_connections=32")
+        assert pool.max_connections == 32
+
+    def test_max_idle_times_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url("redis://localhost?max_idle_time=5")
+        assert pool.max_idle_time == 5
+
+    def test_idle_check_interval_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url(
+            "redis://localhost?idle_check_interval=1"
+        )
+        assert pool.idle_check_interval == 1
+
+    def test_reader_read_size_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url(
+            "redis://localhost?reader_read_size=65535"
+        )
+        assert pool.connection_class == coredis.Connection
+        assert pool.connection_kwargs == {
+            "host": "localhost",
+            "port": 6379,
+            "db": 0,
+            "username": None,
+            "password": None,
+            "reader_read_size": 65535,
+        }
+
     def test_extra_querystring_options(self):
         pool = coredis.ConnectionPool.from_url("redis://localhost?a=1&b=2")
         assert pool.connection_class == coredis.Connection
@@ -455,6 +483,31 @@ class TestConnectionPoolUnixSocketURLParsing:
             "db": 2,
             "username": None,
             "password": None,
+        }
+
+    def test_max_connections_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url("unix:///localhost?max_connections=32")
+        assert pool.max_connections == 32
+
+    def test_max_idle_times_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url("unix:///localhost?max_idle_time=5")
+        assert pool.max_idle_time == 5
+
+    def test_idle_check_interval_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url(
+            "unix:///localhost?idle_check_interval=1"
+        )
+        assert pool.idle_check_interval == 1
+
+    def test_reader_read_size_querystring_option(self):
+        pool = coredis.ConnectionPool.from_url("unix:///socket?reader_read_size=65535")
+        assert pool.connection_class == coredis.UnixDomainSocketConnection
+        assert pool.connection_kwargs == {
+            "path": "/socket",
+            "db": 0,
+            "username": None,
+            "password": None,
+            "reader_read_size": 65535,
         }
 
     def test_extra_querystring_options(self):
