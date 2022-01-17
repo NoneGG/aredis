@@ -21,6 +21,50 @@ from coredis.nodemanager import NodeManager
 
 FALSE_STRINGS = ("0", "F", "FALSE", "N", "NO")
 
+READ_COMMANDS = frozenset(
+    [
+        "BITCOUNT",
+        "BITPOS",
+        "EXISTS",
+        "GEODIST",
+        "GEOHASH",
+        "GEOPOS",
+        "GEORADIUS",
+        "GEORADIUSBYMEMBER",
+        "GET",
+        "GETBIT",
+        "GETRANGE",
+        "HEXISTS",
+        "HGET",
+        "HGETALL",
+        "HKEYS",
+        "HLEN",
+        "HMGET",
+        "HSTRLEN",
+        "HVALS",
+        "KEYS",
+        "LINDEX",
+        "LLEN",
+        "LRANGE",
+        "MGET",
+        "PTTL",
+        "RANDOMKEY",
+        "SCARD",
+        "SDIFF",
+        "SINTER",
+        "SISMEMBER",
+        "SMEMBERS",
+        "SRANDMEMBER",
+        "STRLEN",
+        "SUNION",
+        "TTL",
+        "ZCARD",
+        "ZCOUNT",
+        "ZRANGE",
+        "ZSCORE",
+    ]
+)
+
 
 def to_bool(value):
     if value is None or value == "":
@@ -574,8 +618,8 @@ class ClusterConnectionPool(ConnectionPool):
     def get_master_node_by_slot(self, slot):
         return self.nodes.slots[slot][0]
 
-    def get_node_by_slot(self, slot):
-        if self.readonly:
+    def get_node_by_slot(self, slot, command=None):
+        if self.readonly and command in READ_COMMANDS:
             return random.choice(self.nodes.slots[slot])
 
         return self.get_master_node_by_slot(slot)
