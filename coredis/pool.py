@@ -669,10 +669,7 @@ class ClusterConnectionPool(ConnectionPool):
             connection.disconnect()
             # reduce node connection count in case of too many connection error raised
 
-            if (
-                self.max_connections_per_node
-                and self._created_connections_per_node.get(connection.node["name"])
-            ):
+            if self._created_connections_per_node.get(connection.node["name"]):
                 self._created_connections_per_node[connection.node["name"]] -= 1
         else:
             self._available_connections.setdefault(connection.node["name"], []).append(
