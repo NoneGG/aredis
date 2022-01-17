@@ -21,6 +21,10 @@ Connection Classes
 .. autoclass:: Connection
 .. autoclass:: UnixDomainSocketConnection
 .. autoclass:: ClusterConnection
+
+Connection Pools
+^^^^^^^^^^^^^^^^
+.. autoclass:: BlockingConnectionPool
 .. autoclass:: ConnectionPool
 .. autoclass:: ClusterConnectionPool
 

@@ -190,7 +190,7 @@ class TestConnectionPool:
         pool = await self.get_pool()
 
         with pytest.raises(RedisClusterException) as ex:
-            pool.get_connection("GET")
+            await pool.get_connection("GET")
         assert str(ex.value).startswith(
             "Only 'pubsub' commands can use get_connection()"
         )

@@ -30,7 +30,7 @@ from coredis.exceptions import (
     TryAgainError,
     WatchError,
 )
-from coredis.pool import ClusterConnectionPool, ConnectionPool
+from coredis.pool import BlockingConnectionPool, ClusterConnectionPool, ConnectionPool
 
 from . import _version
 
@@ -41,6 +41,7 @@ __all__ = [
     "Connection",
     "UnixDomainSocketConnection",
     "ClusterConnection",
+    "BlockingConnectionPool",
     "ConnectionPool",
     "ClusterConnectionPool",
     "AskError",
