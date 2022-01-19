@@ -4,6 +4,7 @@ black==21.12b0
 contextvars
 flake8
 hiredis
+inflect
 isort
 mypy==0.931
 redis>4

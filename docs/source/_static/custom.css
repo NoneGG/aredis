@@ -88,6 +88,10 @@ dl.py.exception em.property {
   font-weight: 700;
 }
 
+td dl.py.method {
+  font-size: small;
+}
+
 dl.py.method dt.sig {
   border-top: none;
   border-left: solid 1px var(--purple2);
