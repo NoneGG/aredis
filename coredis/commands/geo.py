@@ -54,10 +54,10 @@ class GeoCommandMixin:
     }
 
     # GEO COMMANDS
-    async def geoadd(self, name, *values):
+    async def geoadd(self, key, *values):
         """
         Add the specified geospatial items to the specified key identified
-        by the ``name`` argument. The Geospatial items are given as ordered
+        by the ``key`` argument. The Geospatial items are given as ordered
         members of the ``values`` argument, each item or place is formed by
         the triad latitude, longitude and name.
         """
@@ -65,16 +65,16 @@ class GeoCommandMixin:
         if len(values) % 3 != 0:
             raise RedisError("GEOADD requires places with lon, lat and name" " values")
 
-        return await self.execute_command("GEOADD", name, *values)
+        return await self.execute_command("GEOADD", key, *values)
 
-    async def geodist(self, name, place1, place2, unit=None):
+    async def geodist(self, key, place1, place2, unit=None):
         """
         Return the distance between ``place1`` and ``place2`` members of the
-        ``name`` key.
+        ``key`` key.
         The units must be one of the following : m, km mi, ft. By async default
         meters are used.
         """
-        pieces = [name, place1, place2]
+        pieces = [key, place1, place2]
 
         if unit and unit not in ("m", "km", "mi", "ft"):
             raise RedisError("GEODIST invalid unit")
@@ -83,26 +83,26 @@ class GeoCommandMixin:
 
         return await self.execute_command("GEODIST", *pieces)
 
-    async def geohash(self, name, *values):
+    async def geohash(self, key, *values):
         """
         Return the geo hash string for each item of ``values`` members of
-        the specified key identified by the ``name`` argument.
+        the specified key identified by the ``key`` argument.
         """
 
-        return await self.execute_command("GEOHASH", name, *values)
+        return await self.execute_command("GEOHASH", key, *values)
 
-    async def geopos(self, name, *values):
+    async def geopos(self, key, *values):
         """
         Return the positions of each item of ``values`` as members of
-        the specified key identified by the ``name`` argument. Each position
+        the specified key identified by the ``key`` argument. Each position
         is represented by the pairs lon and lat.
         """
 
-        return await self.execute_command("GEOPOS", name, *values)
+        return await self.execute_command("GEOPOS", key, *values)
 
     async def georadius(
         self,
-        name,
+        key,
         longitude,
         latitude,
         radius,
@@ -118,7 +118,7 @@ class GeoCommandMixin:
     ):
         """
         Return the members of the specified key identified by the
-        ``name`` argument which are within the borders of the area specified
+        ``key`` argument which are within the borders of the area specified
         with the ``latitude`` and ``longitude`` location and the maximum
         distance from the center specified by the ``radius`` value.
 
@@ -147,7 +147,7 @@ class GeoCommandMixin:
 
         return await self._georadiusgeneric(
             "GEORADIUS",
-            name,
+            key,
             longitude,
             latitude,
             radius,
@@ -164,7 +164,7 @@ class GeoCommandMixin:
 
     async def georadiusbymember(
         self,
-        name,
+        key,
         member,
         radius,
         unit=None,
@@ -186,7 +186,7 @@ class GeoCommandMixin:
 
         return await self._georadiusgeneric(
             "GEORADIUSBYMEMBER",
-            name,
+            key,
             member,
             radius,
             unit=unit,
@@ -250,7 +250,7 @@ class GeoCommandMixin:
 
     async def geosearch(
         self,
-        name,
+        key,
         member=None,
         longitude=None,
         latitude=None,
@@ -267,7 +267,7 @@ class GeoCommandMixin:
     ):
         """
         Return the members of specified key identified by the
-        ``name`` argument, which are within the borders of the
+        ``key`` argument, which are within the borders of the
         area specified by a given shape. This command extends the
         GEORADIUS command, so in addition to searching within circular
         areas, it supports searching within rectangular areas.
@@ -313,7 +313,7 @@ class GeoCommandMixin:
 
         return await self._geosearchgeneric(
             "GEOSEARCH",
-            name,
+            key,
             member=member,
             longitude=longitude,
             latitude=latitude,
@@ -334,7 +334,7 @@ class GeoCommandMixin:
     async def geosearchstore(
         self,
         dest,
-        name,
+        key,
         member=None,
         longitude=None,
         latitude=None,
@@ -361,7 +361,7 @@ class GeoCommandMixin:
         return await self._geosearchgeneric(
             "GEOSEARCHSTORE",
             dest,
-            name,
+            key,
             member=member,
             longitude=longitude,
             latitude=latitude,

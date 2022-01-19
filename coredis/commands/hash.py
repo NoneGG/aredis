@@ -28,70 +28,70 @@ class HashCommandMixin:
         },
     )
 
-    async def hdel(self, name, *keys):
-        """Deletes ``keys`` from hash ``name``"""
+    async def hdel(self, key, *keys):
+        """Deletes ``keys`` from hash ``key``"""
 
-        return await self.execute_command("HDEL", name, *keys)
+        return await self.execute_command("HDEL", key, *keys)
 
-    async def hexists(self, name, key):
+    async def hexists(self, key, field):
         """
-        Returns a boolean indicating if ``key`` exists within hash ``name``
+        Returns a boolean indicating if ``field`` exists within hash ``key``
         """
 
-        return await self.execute_command("HEXISTS", name, key)
+        return await self.execute_command("HEXISTS", key, field)
 
-    async def hget(self, name, key):
-        """Returns the value of ``key`` within the hash ``name``"""
+    async def hget(self, key, field):
+        """Returns the value of ``field`` within the hash ``key``"""
 
-        return await self.execute_command("HGET", name, key)
+        return await self.execute_command("HGET", key, field)
 
-    async def hgetall(self, name):
+    async def hgetall(self, key):
         """Returns a Python dict of the hash's name/value pairs"""
 
-        return await self.execute_command("HGETALL", name)
+        return await self.execute_command("HGETALL", key)
 
-    async def hincrby(self, name, key, amount=1):
-        """Increments the value of ``key`` in hash ``name`` by ``amount``"""
+    async def hincrby(self, key, field, amount=1):
+        """Increments the value of ``field`` in hash ``key`` by ``amount``"""
 
-        return await self.execute_command("HINCRBY", name, key, amount)
+        return await self.execute_command("HINCRBY", key, key, amount)
 
-    async def hincrbyfloat(self, name, key, amount=1.0):
+    async def hincrbyfloat(self, key, field, amount=1.0):
         """
-        Increments the value of ``key`` in hash ``name`` by floating
+        Increments the value of ``field`` in hash ``key`` by floating
         ``amount``
         """
 
-        return await self.execute_command("HINCRBYFLOAT", name, key, amount)
+        return await self.execute_command("HINCRBYFLOAT", key, field, amount)
 
-    async def hkeys(self, name):
-        """Returns the list of keys within hash ``name``"""
+    async def hkeys(self, key):
+        """Returns the list of keys within hash ``key``"""
 
-        return await self.execute_command("HKEYS", name)
+        return await self.execute_command("HKEYS", key)
 
-    async def hlen(self, name):
-        """Returns the number of elements in hash ``name``"""
+    async def hlen(self, key):
+        """Returns the number of elements in hash ``key``"""
 
-        return await self.execute_command("HLEN", name)
+        return await self.execute_command("HLEN", key)
 
-    async def hset(self, name, key, value):
+    async def hset(self, key, field, value):
         """
-        Sets ``key`` to ``value`` within hash ``name``
+        Sets ``field`` to ``value`` within hash ``key``
         Returns 1 if HSET created a new field, otherwise 0
         """
 
-        return await self.execute_command("HSET", name, key, value)
+        return await self.execute_command("HSET", key, field, value)
 
-    async def hsetnx(self, name, key, value):
+    async def hsetnx(self, key, field, value):
         """
-        Sets ``key`` to ``value`` within hash ``name`` if ``key`` does not
+        Sets ``field`` to ``value`` within hash ``key`` if ``field`` does not
         exist.  Returns 1 if HSETNX created a field, otherwise 0.
         """
 
-        return await self.execute_command("HSETNX", name, key, value)
+        return await self.execute_command("HSETNX", key, field, value)
 
-    async def hmset(self, name, mapping):
+    async def hmset(self, key, mapping):
         """
-        Sets key to value within hash ``name`` for each corresponding
+        Sets key to value within hash ``key`` for each corresponding
         key and value from the ``mapping`` dict.
         """
 
@@ -102,20 +102,20 @@ class HashCommandMixin:
         for pair in iteritems(mapping):
             items.extend(pair)
 
-        return await self.execute_command("HMSET", name, *items)
+        return await self.execute_command("HMSET", key, *items)
 
-    async def hmget(self, name, keys, *args):
+    async def hmget(self, key, keys, *args):
         """Returns a list of values ordered identically to ``keys``"""
         args = list_or_args(keys, args)
 
-        return await self.execute_command("HMGET", name, *args)
+        return await self.execute_command("HMGET", key, *args)
 
-    async def hvals(self, name):
-        """Returns the list of values within hash ``name``"""
+    async def hvals(self, key):
+        """Returns the list of values within hash ``key``"""
 
-        return await self.execute_command("HVALS", name)
+        return await self.execute_command("HVALS", key)
 
-    async def hscan(self, name, cursor=0, match=None, count=None):
+    async def hscan(self, key, cursor=0, match=None, count=None):
         """
         Incrementallys return key/value slices in a hash. Also returns a
         cursor pointing to the scan position.
@@ -123,7 +123,7 @@ class HashCommandMixin:
         :param match: allows for filtering the keys by pattern
         :param count: allows for hint the minimum number of returns
         """
-        pieces = [name, cursor]
+        pieces = [key, cursor]
 
         if match is not None:
             pieces.extend([b("MATCH"), match])
@@ -133,14 +133,14 @@ class HashCommandMixin:
 
         return await self.execute_command("HSCAN", *pieces)
 
-    async def hstrlen(self, name, key):
+    async def hstrlen(self, key, field):
         """
         Returns the string length of the value associated
         with field in the hash stored at key.
         If the key or the field do not exist, 0 is returned.
         """
 
-        return await self.execute_command("HSTRLEN", name, key)
+        return await self.execute_command("HSTRLEN", key, field)
 
     async def hrandfield(self, key, count=None, withvalues=False):
         """

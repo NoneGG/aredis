@@ -173,15 +173,15 @@ class StringsCommandMixin:
 
         return BitFieldOperation(self, key, readonly=True)
 
-    async def decr(self, name, amount=1):
+    async def decr(self, key, amount=1):
         """
         Decrements the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as 0 - ``amount``
         """
 
-        return await self.execute_command("DECRBY", name, amount)
+        return await self.execute_command("DECRBY", key, amount)
 
-    async def decrby(self, name, amount=1):
+    async def decrby(self, key, amount=1):
         """
         Decrements the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as 0 - ``amount``
@@ -189,18 +189,18 @@ class StringsCommandMixin:
         .. versionadded:: 2.1.0
         """
 
-        return await self.execute_command("DECRBY", name, amount)
+        return await self.execute_command("DECRBY", key, amount)
 
-    async def get(self, name):
+    async def get(self, key):
         """
-        Return the value at key ``name``, or None if the key doesn't exist
+        Return the value at key ``key``, or None if the key doesn't exist
         """
 
-        return await self.execute_command("GET", name)
+        return await self.execute_command("GET", key)
 
-    async def getdel(self, name):
+    async def getdel(self, key):
         """
-        Get the value at key ``name`` and delete the key. This command
+        Get the value at key ``key`` and delete the key. This command
         is similar to GET, except for the fact that it also deletes
         the key on success (if and only if the key's value type
         is a string).
@@ -208,9 +208,9 @@ class StringsCommandMixin:
         .. versionadded:: 2.1.0
         """
 
-        return await self.execute_command("GETDEL", name)
+        return await self.execute_command("GETDEL", key)
 
-    async def getex(self, name, ex=None, px=None, exat=None, pxat=None, persist=False):
+    async def getex(self, key, ex=None, px=None, exat=None, pxat=None, persist=False):
         """
         Get the value of key and optionally set its expiration.
 
@@ -218,14 +218,14 @@ class StringsCommandMixin:
         additional options. All time parameters can be given as
         :class:`datetime.timedelta` or integers.
 
-        :param name: name of the key
-        :param ex: sets an expire flag on key ``name`` for ``ex`` seconds.
-        :param px: sets an expire flag on key ``name`` for ``px`` milliseconds.
-        :param exat: sets an expire flag on key ``name`` for ``ex`` seconds,
+        :param key: name of the key
+        :param ex: sets an expire flag on key ``key`` for ``ex`` seconds.
+        :param px: sets an expire flag on key ``key`` for ``px`` milliseconds.
+        :param exat: sets an expire flag on key ``key`` for ``ex`` seconds,
          specified in unix time.
-        :param pxat: sets an expire flag on key ``name`` for ``ex`` milliseconds,
+        :param pxat: sets an expire flag on key ``key`` for ``ex`` milliseconds,
          specified in unix time.
-        :param persist: remove the time to live associated with ``name``.
+        :param persist: remove the time to live associated with ``key``.
 
         .. versionadded:: 2.1.0
         """
@@ -275,12 +275,12 @@ class StringsCommandMixin:
         if persist:
             pieces.append("PERSIST")
 
-        return await self.execute_command("GETEX", name, *pieces)
+        return await self.execute_command("GETEX", key, *pieces)
 
-    async def getbit(self, name, offset):
-        "Returns a boolean indicating the value of ``offset`` in ``name``"
+    async def getbit(self, key, offset):
+        "Returns a boolean indicating the value of ``offset`` in ``key``"
 
-        return await self.execute_command("GETBIT", name, offset)
+        return await self.execute_command("GETBIT", key, offset)
 
     async def getrange(self, key, start, end):
         """
@@ -290,23 +290,23 @@ class StringsCommandMixin:
 
         return await self.execute_command("GETRANGE", key, start, end)
 
-    async def getset(self, name, value):
+    async def getset(self, key, value):
         """
-        Sets the value at key ``name`` to ``value``
-        and returns the old value at key ``name`` atomically.
+        Sets the value at key ``key`` to ``value``
+        and returns the old value at key ``key`` atomically.
         """
 
-        return await self.execute_command("GETSET", name, value)
+        return await self.execute_command("GETSET", key, value)
 
-    async def incr(self, name, amount=1):
+    async def incr(self, key, amount=1):
         """
         Increments the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as ``amount``
         """
 
-        return await self.execute_command("INCRBY", name, amount)
+        return await self.execute_command("INCRBY", key, amount)
 
-    async def incrby(self, name, amount=1):
+    async def incrby(self, key, amount=1):
         """
         Increments the value of ``key`` by ``amount``.  If no key exists,
         the value will be initialized as ``amount``
@@ -315,15 +315,15 @@ class StringsCommandMixin:
         # An alias for ``incr()``, because it is already implemented
         # as INCRBY redis command.
 
-        return await self.incr(name, amount)
+        return await self.incr(key, amount)
 
-    async def incrbyfloat(self, name, amount=1.0):
+    async def incrbyfloat(self, key, amount=1.0):
         """
-        Increments the value at key ``name`` by floating ``amount``.
+        Increments the value at key ``key`` by floating ``amount``.
         If no key exists, the value will be initialized as ``amount``
         """
 
-        return await self.execute_command("INCRBYFLOAT", name, amount)
+        return await self.execute_command("INCRBYFLOAT", key, amount)
 
     async def mget(self, keys, *args):
         """
@@ -368,9 +368,9 @@ class StringsCommandMixin:
 
         return await self.execute_command("MSETNX", *items)
 
-    async def psetex(self, name, time_ms, value):
+    async def psetex(self, key, time_ms, value):
         """
-        Set the value of key ``name`` to ``value`` that expires in ``time_ms``
+        Set the value of key ``key`` to ``value`` that expires in ``time_ms``
         milliseconds. ``time_ms`` can be represented by an integer or a Python
         timedelta object
         """
@@ -379,23 +379,23 @@ class StringsCommandMixin:
             ms = int(time_ms.microseconds / 1000)
             time_ms = (time_ms.seconds + time_ms.days * 24 * 3600) * 1000 + ms
 
-        return await self.execute_command("PSETEX", name, time_ms, value)
+        return await self.execute_command("PSETEX", key, time_ms, value)
 
-    async def set(self, name, value, ex=None, px=None, nx=False, xx=False):
+    async def set(self, key, value, ex=None, px=None, nx=False, xx=False):
         """
-        Set the value at key ``name`` to ``value``
+        Set the value at key ``key`` to ``value``
 
-        ``ex`` sets an expire flag on key ``name`` for ``ex`` seconds.
+        ``ex`` sets an expire flag on key ``key`` for ``ex`` seconds.
 
-        ``px`` sets an expire flag on key ``name`` for ``px`` milliseconds.
+        ``px`` sets an expire flag on key ``key`` for ``px`` milliseconds.
 
-        ``nx`` if set to True, set the value at key ``name`` to ``value`` if it
+        ``nx`` if set to True, set the value at key ``key`` to ``value`` if it
             does not already exist.
 
-        ``xx`` if set to True, set the value at key ``name`` to ``value`` if it
+        ``xx`` if set to True, set the value at key ``key`` to ``value`` if it
             already exists.
         """
-        pieces = [name, value]
+        pieces = [key, value]
 
         if ex is not None:
             pieces.append("EX")
@@ -420,37 +420,37 @@ class StringsCommandMixin:
 
         return await self.execute_command("SET", *pieces)
 
-    async def setbit(self, name, offset, value):
+    async def setbit(self, key, offset, value):
         """
-        Flag the ``offset`` in ``name`` as ``value``. Returns a boolean
+        Flag the ``offset`` in ``key`` as ``value``. Returns a boolean
         indicating the previous value of ``offset``.
         """
         value = value and 1 or 0
 
-        return await self.execute_command("SETBIT", name, offset, value)
+        return await self.execute_command("SETBIT", key, offset, value)
 
-    async def setex(self, name, time, value):
+    async def setex(self, key, seconds, value):
         """
-        Set the value of key ``name`` to ``value`` that expires in ``time``
+        Set the value of key ``key`` to ``value`` that expires in ``time``
         seconds. ``time`` can be represented by an integer or a Python
         timedelta object.
         """
 
-        if isinstance(time, datetime.timedelta):
-            time = time.seconds + time.days * 24 * 3600
+        if isinstance(seconds, datetime.timedelta):
+            seconds = seconds.seconds + time.days * 24 * 3600
 
-        return await self.execute_command("SETEX", name, time, value)
+        return await self.execute_command("SETEX", key, seconds, value)
 
-    async def setnx(self, name, value):
+    async def setnx(self, key, value):
         """
-        Sets the value of key ``name`` to ``value`` if key doesn't exist
+        Sets the value of key ``key`` to ``value`` if key doesn't exist
         """
 
-        return await self.execute_command("SETNX", name, value)
+        return await self.execute_command("SETNX", key, value)
 
-    async def setrange(self, name, offset, value):
+    async def setrange(self, key, offset, value):
         """
-        Overwrite bytes in the value of ``name`` starting at ``offset`` with
+        Overwrite bytes in the value of ``key`` starting at ``offset`` with
         ``value``. If ``offset`` plus the length of ``value`` exceeds the
         length of the original value, the new value will be larger than before.
         If ``offset`` exceeds the length of the original value, null bytes
@@ -460,20 +460,20 @@ class StringsCommandMixin:
         Returns the length of the new string.
         """
 
-        return await self.execute_command("SETRANGE", name, offset, value)
+        return await self.execute_command("SETRANGE", key, offset, value)
 
-    async def strlen(self, name):
-        """Returns the number of bytes stored in the value of ``name``"""
+    async def strlen(self, key):
+        """Returns the number of bytes stored in the value of ``key``"""
 
-        return await self.execute_command("STRLEN", name)
+        return await self.execute_command("STRLEN", key)
 
-    async def substr(self, name, start, end=-1):
+    async def substr(self, key, start, end=-1):
         """
-        Returns a substring of the string at key ``name``. ``start`` and ``end``
+        Returns a substring of the string at key ``key``. ``start`` and ``end``
         are 0-based integers specifying the portion of the string to return.
         """
 
-        return await self.execute_command("SUBSTR", name, start, end)
+        return await self.execute_command("SUBSTR", key, start, end)
 
 
 class ClusterStringsCommandMixin(StringsCommandMixin):

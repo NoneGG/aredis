@@ -10,24 +10,24 @@ class HyperLogCommandMixin:
         string_keys_to_dict("PFADD PFCOUNT", int), {"PFMERGE": bool_ok}
     )
 
-    async def pfadd(self, name, *values):
+    async def pfadd(self, key, *elements):
         "Adds the specified elements to the specified HyperLogLog."
-        return await self.execute_command("PFADD", name, *values)
+        return await self.execute_command("PFADD", key, *elements)
 
-    async def pfcount(self, *sources):
+    async def pfcount(self, *keys):
         """
         Return the approximated cardinality of
         the set observed by the HyperLogLog at key(s).
         """
-        return await self.execute_command("PFCOUNT", *sources)
+        return await self.execute_command("PFCOUNT", *keys)
 
-    async def pfmerge(self, dest, *sources):
+    async def pfmerge(self, destkey, *sourcekeys):
         "Merge N different HyperLogLogs into a single one."
-        return await self.execute_command("PFMERGE", dest, *sources)
+        return await self.execute_command("PFMERGE", destkey, *sourcekeys)
 
 
 class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
-    async def pfmerge(self, dest, *sources):
+    async def pfmerge(self, destkey, *sourcekeys):
         """
         Merge N different HyperLogLogs into a single one.
 
@@ -44,7 +44,7 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
 
         # Fetch all HLL objects via GET and store them client side as strings
         all_hll_objects = list()
-        for hll_key in sources:
+        for hll_key in sourcekeys:
             all_hll_objects.append(await self.get(hll_key))
 
         # Randomize a keyslot hash that should be used inside {} when doing SET
@@ -52,7 +52,7 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
 
         # Special handling of dest variable if it already exists, then it shold be included
         # in the HLL merge dest can exists anywhere in the cluster.
-        dest_data = await self.get(dest)
+        dest_data = await self.get(destkey)
 
         if dest_data:
             all_hll_objects.append(dest_data)
@@ -70,7 +70,7 @@ class ClusterHyperLogCommandMixin(HyperLogCommandMixin):
         # Do GET and SET so that result will be stored in the destination object any where in the
         # cluster
         parsed_dest = await self.get(tmp_dest)
-        await self.set(dest, parsed_dest)
+        await self.set(destkey, parsed_dest)
 
         # Cleanup tmp variables
         await self.delete(tmp_dest)

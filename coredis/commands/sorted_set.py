@@ -71,9 +71,9 @@ class SortedSetCommandMixin:
         {"ZMSCORE": parse_zmscore},
     )
 
-    async def zadd(self, name, *args, **kwargs):
+    async def zadd(self, key, *args, **kwargs):
         """
-        Set any number of score, element-name pairs to the key ``name``. Pairs
+        Set any number of score, element-name pairs to the key ``key``. Pairs
         can be specified in two ways:
 
         As ``*args``, in the form of: score1, name1, score2, name2, ...
@@ -95,9 +95,9 @@ class SortedSetCommandMixin:
             pieces.append(pair[1])
             pieces.append(pair[0])
 
-        return await self.execute_command("ZADD", name, *pieces)
+        return await self.execute_command("ZADD", key, *pieces)
 
-    async def zaddoption(self, name, option=None, *args, **kwargs):
+    async def zaddoption(self, key, option=None, *args, **kwargs):
         """
         Differs from zadd in that you can set either 'XX' or 'NX' option as
         described here: https://redis.io/commands/zadd. Only for Redis 3.0.2 or
@@ -134,20 +134,20 @@ class SortedSetCommandMixin:
         if "INCR" in options and len(members) != 2:
             raise RedisError("ZADD with INCR only takes one score-name pair")
 
-        return await self.execute_command("ZADD", name, *pieces, *members)
+        return await self.execute_command("ZADD", key, *pieces, *members)
 
-    async def zcard(self, name):
-        """Returns the number of elements in the sorted set ``name``"""
+    async def zcard(self, key):
+        """Returns the number of elements in the sorted set ``key``"""
 
-        return await self.execute_command("ZCARD", name)
+        return await self.execute_command("ZCARD", key)
 
-    async def zcount(self, name, min, max):
+    async def zcount(self, key, min, max):
         """
-        Returns the number of elements in the sorted set at key ``name`` with
+        Returns the number of elements in the sorted set at key ``key`` with
         a score between ``min`` and ``max``.
         """
 
-        return await self.execute_command("ZCOUNT", name, min, max)
+        return await self.execute_command("ZCOUNT", key, min, max)
 
     async def zdiff(self, keys, withscores=False):
         """
@@ -174,12 +174,12 @@ class SortedSetCommandMixin:
 
         return await self.execute_command("ZDIFFSTORE", dest, *pieces)
 
-    async def zincrby(self, name, value, amount=1):
+    async def zincrby(self, key, value, amount=1):
         """
-        Increments the score of ``value`` in sorted set ``name`` by ``amount``
+        Increments the score of ``value`` in sorted set ``key`` by ``amount``
         """
 
-        return await self.execute_command("ZINCRBY", name, amount, value)
+        return await self.execute_command("ZINCRBY", key, amount, value)
 
     async def zinter(self, keys, aggregate=None, withscores=False):
         """
@@ -209,37 +209,37 @@ class SortedSetCommandMixin:
 
         return await self._zaggregate("ZINTERSTORE", dest, keys, aggregate)
 
-    async def zlexcount(self, name, min, max):
+    async def zlexcount(self, key, min, max):
         """
-        Returns the number of items in the sorted set ``name`` between the
+        Returns the number of items in the sorted set ``key`` between the
         lexicographical range ``min`` and ``max``.
         """
 
-        return await self.execute_command("ZLEXCOUNT", name, min, max)
+        return await self.execute_command("ZLEXCOUNT", key, min, max)
 
-    async def zpopmax(self, name, count=None):
+    async def zpopmax(self, key, count=None):
         """
         Remove and return up to ``count`` members with the highest scores
-        from the sorted set ``name``.
+        from the sorted set ``key``.
 
         .. versionadded:: 2.1.0
         """
         args = (count is not None) and [count] or []
         options = {"withscores": True}
 
-        return await self.execute_command("ZPOPMAX", name, *args, **options)
+        return await self.execute_command("ZPOPMAX", key, *args, **options)
 
-    async def zpopmin(self, name, count=None):
+    async def zpopmin(self, key, count=None):
         """
         Remove and return up to ``count`` members with the lowest scores
-        from the sorted set ``name``.
+        from the sorted set ``key``.
 
         .. versionadded:: 2.1.0
         """
         args = (count is not None) and [count] or []
         options = {"withscores": True}
 
-        return await self.execute_command("ZPOPMIN", name, *args, **options)
+        return await self.execute_command("ZPOPMIN", key, *args, **options)
 
     async def zrandmember(self, key, count=None, withscores=False):
         """
@@ -307,7 +307,7 @@ class SortedSetCommandMixin:
         self,
         command,
         dest,
-        name,
+        key,
         start,
         end,
         desc=False,
@@ -334,7 +334,7 @@ class SortedSetCommandMixin:
 
         if dest:
             pieces.append(dest)
-        pieces.extend([name, start, end])
+        pieces.extend([key, start, end])
 
         if byscore:
             pieces.append("BYSCORE")
@@ -356,7 +356,7 @@ class SortedSetCommandMixin:
 
     async def zrange(
         self,
-        name,
+        key,
         start,
         end,
         desc=False,
@@ -368,7 +368,7 @@ class SortedSetCommandMixin:
         num=None,
     ):
         """
-        Return a range of values from sorted set ``name`` between
+        Return a range of values from sorted set ``key`` between
         ``start`` and ``end`` sorted in ascending order.
         ``start`` and ``end`` can be negative, indicating the end of the range.
         ``desc`` a boolean indicating whether to sort the results in reversed
@@ -391,12 +391,12 @@ class SortedSetCommandMixin:
         # because it was supported in 3.5.3 (of redis-py)
 
         if not byscore and not bylex and (offset is None and num is None) and desc:
-            return self.zrevrange(name, start, end, withscores, score_cast_func)
+            return self.zrevrange(key, start, end, withscores, score_cast_func)
 
         return await self._zrange(
             "ZRANGE",
             None,
-            name,
+            key,
             start,
             end,
             desc,
@@ -408,9 +408,9 @@ class SortedSetCommandMixin:
             num,
         )
 
-    async def zrangebylex(self, name, min, max, start=None, num=None):
+    async def zrangebylex(self, key, min, max, start=None, num=None):
         """
-        Returns the lexicographical range of values from sorted set ``name``
+        Returns the lexicographical range of values from sorted set ``key``
         between ``min`` and ``max``.
 
         If ``start`` and ``num`` are specified, then return a slice of the
@@ -419,17 +419,17 @@ class SortedSetCommandMixin:
 
         if (start is not None and num is None) or (num is not None and start is None):
             raise RedisError("``start`` and ``num`` must both be specified")
-        pieces = ["ZRANGEBYLEX", name, min, max]
+        pieces = ["ZRANGEBYLEX", key, min, max]
 
         if start is not None and num is not None:
             pieces.extend([b("LIMIT"), start, num])
 
         return await self.execute_command(*pieces)
 
-    async def zrevrangebylex(self, name, max, min, start=None, num=None):
+    async def zrevrangebylex(self, key, max, min, start=None, num=None):
         """
         Returns the reversed lexicographical range of values from sorted set
-        ``name`` between ``max`` and ``min``.
+        ``key`` between ``max`` and ``min``.
 
         If ``start`` and ``num`` are specified, then return a slice of the
         range.
@@ -437,7 +437,7 @@ class SortedSetCommandMixin:
 
         if (start is not None and num is None) or (num is not None and start is None):
             raise RedisError("``start`` and ``num`` must both be specified")
-        pieces = ["ZREVRANGEBYLEX", name, max, min]
+        pieces = ["ZREVRANGEBYLEX", key, max, min]
 
         if start is not None and num is not None:
             pieces.extend([b("LIMIT"), start, num])
@@ -446,7 +446,7 @@ class SortedSetCommandMixin:
 
     async def zrangebyscore(
         self,
-        name,
+        key,
         min,
         max,
         start=None,
@@ -455,7 +455,7 @@ class SortedSetCommandMixin:
         score_cast_func=float,
     ):
         """
-        Returns a range of values from the sorted set ``name`` with scores
+        Returns a range of values from the sorted set ``key`` with scores
         between ``min`` and ``max``.
 
         If ``start`` and ``num`` are specified, then return a slice
@@ -469,7 +469,7 @@ class SortedSetCommandMixin:
 
         if (start is not None and num is None) or (num is not None and start is None):
             raise RedisError("``start`` and ``num`` must both be specified")
-        pieces = ["ZRANGEBYSCORE", name, min, max]
+        pieces = ["ZRANGEBYSCORE", key, min, max]
 
         if start is not None and num is not None:
             pieces.extend([b("LIMIT"), start, num])
@@ -480,52 +480,50 @@ class SortedSetCommandMixin:
 
         return await self.execute_command(*pieces, **options)
 
-    async def zrank(self, name, value):
+    async def zrank(self, key, value):
         """
         Returns a 0-based value indicating the rank of ``value`` in sorted set
-        ``name``
+        ``key``
         """
 
-        return await self.execute_command("ZRANK", name, value)
+        return await self.execute_command("ZRANK", key, value)
 
-    async def zrem(self, name, *values):
-        """Removes member ``values`` from sorted set ``name``"""
+    async def zrem(self, key, *values):
+        """Removes member ``values`` from sorted set ``key``"""
 
-        return await self.execute_command("ZREM", name, *values)
+        return await self.execute_command("ZREM", key, *values)
 
-    async def zremrangebylex(self, name, min, max):
+    async def zremrangebylex(self, key, min, max):
         """
-        Removes all elements in the sorted set ``name`` between the
+        Removes all elements in the sorted set ``key`` between the
         lexicographical range specified by ``min`` and ``max``.
 
         Returns the number of elements removed.
         """
 
-        return await self.execute_command("ZREMRANGEBYLEX", name, min, max)
+        return await self.execute_command("ZREMRANGEBYLEX", key, min, max)
 
-    async def zremrangebyrank(self, name, min, max):
+    async def zremrangebyrank(self, key, min, max):
         """
-        Removes all elements in the sorted set ``name`` with ranks between
+        Removes all elements in the sorted set ``key`` with ranks between
         ``min`` and ``max``. Values are 0-based, ordered from smallest score
         to largest. Values can be negative indicating the highest scores.
         Returns the number of elements removed
         """
 
-        return await self.execute_command("ZREMRANGEBYRANK", name, min, max)
+        return await self.execute_command("ZREMRANGEBYRANK", key, min, max)
 
-    async def zremrangebyscore(self, name, min, max):
+    async def zremrangebyscore(self, key, min, max):
         """
-        Removes all elements in the sorted set ``name`` with scores
+        Removes all elements in the sorted set ``key`` with scores
         between ``min`` and ``max``. Returns the number of elements removed.
         """
 
-        return await self.execute_command("ZREMRANGEBYSCORE", name, min, max)
+        return await self.execute_command("ZREMRANGEBYSCORE", key, min, max)
 
-    async def zrevrange(
-        self, name, start, end, withscores=False, score_cast_func=float
-    ):
+    async def zrevrange(self, key, start, end, withscores=False, score_cast_func=float):
         """
-        Returns a range of values from sorted set ``name`` between
+        Returns a range of values from sorted set ``key`` between
         ``start`` and ``end`` sorted in descending order.
 
         ``start`` and ``end`` can be negative, indicating the end of the range.
@@ -535,7 +533,7 @@ class SortedSetCommandMixin:
 
         ``score_cast_func`` a callable used to cast the score return value
         """
-        pieces = ["ZREVRANGE", name, start, end]
+        pieces = ["ZREVRANGE", key, start, end]
 
         if withscores:
             pieces.append(b("WITHSCORES"))
@@ -546,7 +544,7 @@ class SortedSetCommandMixin:
     async def zrangestore(
         self,
         dest,
-        name,
+        key,
         start,
         end,
         byscore=False,
@@ -557,7 +555,7 @@ class SortedSetCommandMixin:
     ):
         """
         Stores in ``dest`` the result of a range of values from sorted set
-        ``name`` between ``start`` and ``end`` sorted in ascending order.
+        ``key`` between ``start`` and ``end`` sorted in ascending order.
         ``start`` and ``end`` can be negative, indicating the end of the range.
         ``byscore`` when set to True, returns the range of elements from the
         sorted set having scores equal or between ``start`` and ``end``.
@@ -577,7 +575,7 @@ class SortedSetCommandMixin:
         return await self._zrange(
             "ZRANGESTORE",
             dest,
-            name,
+            key,
             start,
             end,
             desc,
@@ -591,7 +589,7 @@ class SortedSetCommandMixin:
 
     async def zrevrangebyscore(
         self,
-        name,
+        key,
         max,
         min,
         start=None,
@@ -600,7 +598,7 @@ class SortedSetCommandMixin:
         score_cast_func=float,
     ):
         """
-        Returns a range of values from the sorted set ``name`` with scores
+        Returns a range of values from the sorted set ``key`` with scores
         between ``min`` and ``max`` in descending order.
 
         If ``start`` and ``num`` are specified, then return a slice
@@ -614,7 +612,7 @@ class SortedSetCommandMixin:
 
         if (start is not None and num is None) or (num is not None and start is None):
             raise RedisError("``start`` and ``num`` must both be specified")
-        pieces = ["ZREVRANGEBYSCORE", name, max, min]
+        pieces = ["ZREVRANGEBYSCORE", key, max, min]
 
         if start is not None and num is not None:
             pieces.extend([b("LIMIT"), start, num])
@@ -625,18 +623,18 @@ class SortedSetCommandMixin:
 
         return await self.execute_command(*pieces, **options)
 
-    async def zrevrank(self, name, value):
+    async def zrevrank(self, key, value):
         """
         Returns a 0-based value indicating the descending rank of
-        ``value`` in sorted set ``name``
+        ``value`` in sorted set ``key``
         """
 
-        return await self.execute_command("ZREVRANK", name, value)
+        return await self.execute_command("ZREVRANK", key, value)
 
-    async def zscore(self, name, value):
-        "Return the score of element ``value`` in sorted set ``name``"
+    async def zscore(self, key, value):
+        "Return the score of element ``value`` in sorted set ``key``"
 
-        return await self.execute_command("ZSCORE", name, value)
+        return await self.execute_command("ZSCORE", key, value)
 
     async def zunion(self, keys, aggregate=None, withscores=False):
         """
@@ -698,9 +696,7 @@ class SortedSetCommandMixin:
 
         return await self.execute_command(*pieces)
 
-    async def zscan(
-        self, name, cursor=0, match=None, count=None, score_cast_func=float
-    ):
+    async def zscan(self, key, cursor=0, match=None, count=None, score_cast_func=float):
         """
         Incrementally returns lists of elements in a sorted set. Also returns
         a cursor pointing to the scan position.
@@ -711,7 +707,7 @@ class SortedSetCommandMixin:
 
         ``score_cast_func`` a callable used to cast the score return value
         """
-        pieces = [name, cursor]
+        pieces = [key, cursor]
 
         if match is not None:
             pieces.extend([b("MATCH"), match])

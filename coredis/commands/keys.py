@@ -57,107 +57,107 @@ class KeysCommandMixin:
         },
     )
 
-    async def delete(self, *names):
-        """Delete one or more keys specified by ``names``"""
+    async def delete(self, *keys):
+        """Delete one or more keys specified by ``keys``"""
 
-        return await self.execute_command("DEL", *names)
+        return await self.execute_command("DEL", *keys)
 
-    async def dump(self, name):
+    async def dump(self, key):
         """
         Return a serialized version of the value stored at the specified key.
         If key does not exist a nil bulk reply is returned.
         """
 
-        return await self.execute_command("DUMP", name)
+        return await self.execute_command("DUMP", key)
 
-    async def object_encoding(self, name):
+    async def object_encoding(self, key):
         """
-        Return the internal encoding for the object stored at ``name``
+        Return the internal encoding for the object stored at ``key``
 
         .. versionadded:: 2.1.0
         """
 
-        return await self.execute_command("OBJECT ENCODING", name)
+        return await self.execute_command("OBJECT ENCODING", key)
 
-    async def object_freq(self, name):
+    async def object_freq(self, key):
         """
         Return the logarithmic access frequency counter for the object
-        stored at ``name``
+        stored at ``key``
 
         .. versionadded:: 2.1.0
         """
 
-        return await self.execute_command("OBJECT FREQ", name)
+        return await self.execute_command("OBJECT FREQ", key)
 
-    async def object_idletime(self, name):
+    async def object_idletime(self, key):
         """
         Return the time in seconds since the last access to the object
-        stored at ``name``
+        stored at ``key``
 
         .. versionadded:: 2.1.0
         """
 
-        return await self.execute_command("OBJECT IDLETIME", name)
+        return await self.execute_command("OBJECT IDLETIME", key)
 
-    async def object_refcount(self, name):
+    async def object_refcount(self, key):
         """
-        Return the reference count of the object stored at ``name``
+        Return the reference count of the object stored at ``key``
 
         .. versionadded:: 2.1.0
         """
 
-        return await self.execute_command("OBJECT REFCOUNT", name)
+        return await self.execute_command("OBJECT REFCOUNT", key)
 
-    async def exists(self, name):
-        """Returns a boolean indicating whether key ``name`` exists"""
+    async def exists(self, key):
+        """Returns a boolean indicating whether key ``key`` exists"""
 
-        return await self.execute_command("EXISTS", name)
+        return await self.execute_command("EXISTS", key)
 
-    async def expire(self, name, time):
+    async def expire(self, key, time):
         """
-        Set an expire flag on key ``name`` for ``time`` seconds. ``time``
+        Set an expire flag on key ``key`` for ``time`` seconds. ``time``
         can be represented by an integer or a Python timedelta object.
         """
 
         if isinstance(time, datetime.timedelta):
             time = time.seconds + time.days * 24 * 3600
 
-        return await self.execute_command("EXPIRE", name, time)
+        return await self.execute_command("EXPIRE", key, time)
 
-    async def expireat(self, name, when):
+    async def expireat(self, key, when):
         """
-        Set an expire flag on key ``name``. ``when`` can be represented
+        Set an expire flag on key ``key``. ``when`` can be represented
         as an integer indicating unix time or a Python datetime object.
         """
 
         if isinstance(when, datetime.datetime):
             when = int(mod_time.mktime(when.timetuple()))
 
-        return await self.execute_command("EXPIREAT", name, when)
+        return await self.execute_command("EXPIREAT", key, when)
 
     async def keys(self, pattern="*"):
         """Returns a list of keys matching ``pattern``"""
 
         return await self.execute_command("KEYS", pattern)
 
-    async def move(self, name, db):
-        """Moves the key ``name`` to a different Redis database ``db``"""
+    async def move(self, key, db):
+        """Moves the key ``key`` to a different Redis database ``db``"""
 
-        return await self.execute_command("MOVE", name, db)
+        return await self.execute_command("MOVE", key, db)
 
     async def object(self, infotype, key):
         """Returns the encoding, idletime, or refcount about the key"""
 
         return await self.execute_command("OBJECT", infotype, key, infotype=infotype)
 
-    async def persist(self, name):
-        """Removes an expiration on ``name``"""
+    async def persist(self, key):
+        """Removes an expiration on ``key``"""
 
-        return await self.execute_command("PERSIST", name)
+        return await self.execute_command("PERSIST", key)
 
-    async def pexpire(self, name, time):
+    async def pexpire(self, key, time):
         """
-        Set an expire flag on key ``name`` for ``time`` milliseconds.
+        Set an expire flag on key ``key`` for ``time`` milliseconds.
         ``time`` can be represented by an integer or a Python timedelta
         object.
         """
@@ -166,11 +166,11 @@ class KeysCommandMixin:
             ms = int(time.microseconds / 1000)
             time = (time.seconds + time.days * 24 * 3600) * 1000 + ms
 
-        return await self.execute_command("PEXPIRE", name, time)
+        return await self.execute_command("PEXPIRE", key, time)
 
-    async def pexpireat(self, name, when):
+    async def pexpireat(self, key, when):
         """
-        Set an expire flag on key ``name``. ``when`` can be represented
+        Set an expire flag on key ``key``. ``when`` can be represented
         as an integer representing unix time in milliseconds (unix time * 1000)
         or a Python datetime object.
         """
@@ -179,14 +179,14 @@ class KeysCommandMixin:
             ms = int(when.microsecond / 1000)
             when = int(mod_time.mktime(when.timetuple())) * 1000 + ms
 
-        return await self.execute_command("PEXPIREAT", name, when)
+        return await self.execute_command("PEXPIREAT", key, when)
 
-    async def pttl(self, name):
+    async def pttl(self, key):
         """
-        Returns the number of milliseconds until the key ``name`` will expire
+        Returns the number of milliseconds until the key ``key`` will expire
         """
 
-        return await self.execute_command("PTTL", name)
+        return await self.execute_command("PTTL", key)
 
     async def randomkey(self):
         """Returns the name of a random key"""
@@ -195,22 +195,22 @@ class KeysCommandMixin:
 
     async def rename(self, src, dst):
         """
-        Renames key ``src`` to ``dst``
+        Rekeys key ``src`` to ``dst``
         """
 
         return await self.execute_command("RENAME", src, dst)
 
     async def renamenx(self, src, dst):
-        """Renames key ``src`` to ``dst`` if ``dst`` doesn't already exist"""
+        """Rekeys key ``src`` to ``dst`` if ``dst`` doesn't already exist"""
 
         return await self.execute_command("RENAMENX", src, dst)
 
-    async def restore(self, name, ttl, value, replace=False):
+    async def restore(self, key, ttl, value, replace=False):
         """
         Creates a key using the provided serialized value, previously obtained
         using DUMP.
         """
-        params = [name, ttl, value]
+        params = [key, ttl, value]
 
         if replace:
             params.append("REPLACE")
@@ -219,7 +219,7 @@ class KeysCommandMixin:
 
     async def sort(
         self,
-        name,
+        key,
         start=None,
         num=None,
         by=None,
@@ -230,7 +230,7 @@ class KeysCommandMixin:
         groups=False,
     ):
         """
-        Sorts and returns a list, set or sorted set at ``name``.
+        Sorts and returns a list, set or sorted set at ``key``.
 
         ``start`` and ``num`` are for paginating sorted data
 
@@ -257,7 +257,7 @@ class KeysCommandMixin:
         if (start is not None and num is None) or (num is not None and start is None):
             raise RedisError("``start`` and ``num`` must both be specified")
 
-        pieces = [name]
+        pieces = [key]
 
         if by is not None:
             pieces.append(b("BY"))
@@ -312,15 +312,15 @@ class KeysCommandMixin:
 
         return await self.execute_command("TOUCH", *keys)
 
-    async def ttl(self, name):
-        """Returns the number of seconds until the key ``name`` will expire"""
+    async def ttl(self, key):
+        """Returns the number of seconds until the key ``key`` will expire"""
 
-        return await self.execute_command("TTL", name)
+        return await self.execute_command("TTL", key)
 
-    async def type(self, name):
-        """Returns the type of key ``name``"""
+    async def type(self, key):
+        """Returns the type of key ``key``"""
 
-        return await self.execute_command("TYPE", name)
+        return await self.execute_command("TYPE", key)
 
     async def unlink(self, *keys):
         """Removes the specified keys in a different thread, not blocking"""
@@ -339,7 +339,7 @@ class KeysCommandMixin:
 
     async def scan(self, cursor=0, match=None, count=None):
         """
-        Incrementally return lists of key names. Also return a cursor
+        Incrementally return lists of key keys. Also return a cursor
         indicating the scan position.
 
         ``match`` allows for filtering the keys by pattern
@@ -402,9 +402,9 @@ class ClusterKeysCommandMixin(KeysCommandMixin):
 
         return True
 
-    async def delete(self, *names):
+    async def delete(self, *keys):
         """
-        "Delete one or more keys specified by ``names``"
+        "Delete one or more keys specified by ``keys``"
 
         Cluster impl:
             Iterate all keys and send DELETE for each key.
@@ -414,7 +414,7 @@ class ClusterKeysCommandMixin(KeysCommandMixin):
         """
         count = 0
 
-        for arg in names:
+        for arg in keys:
             count += await self.execute_command("DEL", arg)
 
         return count

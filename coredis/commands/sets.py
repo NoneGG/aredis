@@ -20,15 +20,15 @@ class SetsCommandMixin:
         {"SSCAN": parse_sscan},
     )
 
-    async def sadd(self, name, *values):
-        """Adds ``value(s)`` to set ``name``"""
+    async def sadd(self, key, *members):
+        """Adds ``member(s)`` to set ``key``"""
 
-        return await self.execute_command("SADD", name, *values)
+        return await self.execute_command("SADD", key, *members)
 
-    async def scard(self, name):
-        """Returns the number of elements in set ``name``"""
+    async def scard(self, key):
+        """Returns the number of elements in set ``key``"""
 
-        return await self.execute_command("SCARD", name)
+        return await self.execute_command("SCARD", key)
 
     async def sdiff(self, keys, *args):
         """Returns the difference of sets specified by ``keys``"""
@@ -36,14 +36,14 @@ class SetsCommandMixin:
 
         return await self.execute_command("SDIFF", *args)
 
-    async def sdiffstore(self, dest, keys, *args):
+    async def sdiffstore(self, destination, keys, *args):
         """
         Stores the difference of sets specified by ``keys`` into a new
         set named ``dest``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
 
-        return await self.execute_command("SDIFFSTORE", dest, *args)
+        return await self.execute_command("SDIFFSTORE", destination, *args)
 
     async def sinter(self, keys, *args):
         """Returns the intersection of sets specified by ``keys``"""
@@ -51,72 +51,72 @@ class SetsCommandMixin:
 
         return await self.execute_command("SINTER", *args)
 
-    async def sinterstore(self, dest, keys, *args):
+    async def sinterstore(self, destination, keys, *args):
         """
         Stores the intersection of sets specified by ``keys`` into a new
-        set named ``dest``.  Returns the number of keys in the new set.
+        set named ``destination``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
 
-        return await self.execute_command("SINTERSTORE", dest, *args)
+        return await self.execute_command("SINTERSTORE", destination, *args)
 
-    async def sismember(self, name, value):
+    async def sismember(self, key, member):
         """
-        Returns a boolean indicating if ``value`` is a member of set ``name``
+        Returns a boolean indicating if ``member`` is a member of set ``key``
         """
 
-        return await self.execute_command("SISMEMBER", name, value)
+        return await self.execute_command("SISMEMBER", key, member)
 
-    async def smembers(self, name):
-        """Returns all members of the set ``name``"""
+    async def smembers(self, key):
+        """Returns all members of the set ``key``"""
 
-        return await self.execute_command("SMEMBERS", name)
+        return await self.execute_command("SMEMBERS", key)
 
-    async def smismember(self, name, values, *args):
+    async def smismember(self, key, members, *args):
         """
-        Return whether each value in ``values`` is a member of the set ``name``
+        Return whether each value in ``values`` is a member of the set ``key``
         as a list of ``bool`` in the order of ``values``
 
         .. versionadded:: 2.1.0
         """
-        args = list_or_args(values, args)
+        args = list_or_args(members, args)
 
-        return await self.execute_command("SMISMEMBER", name, *args)
+        return await self.execute_command("SMISMEMBER", key, *args)
 
-    async def smove(self, src, dst, value):
-        """Moves ``value`` from set ``src`` to set ``dst`` atomically"""
+    async def smove(self, source, destination, member):
+        """Moves ``member`` from set ``source`` to set ``destination`` atomically"""
 
-        return await self.execute_command("SMOVE", src, dst, value)
+        return await self.execute_command("SMOVE", source, destination, member)
 
-    async def spop(self, name, count=None):
+    async def spop(self, key, count=None):
         """
-        Removes and returns a random member of set ``name``
+        Removes and returns a random member of set ``key``
         ``count`` should be type of int and default set to 1.
         If ``count`` is supplied, pops a list of ``count`` random
-        members of set ``name``
+        members of set ``key``
         """
 
         if count and isinstance(count, int):
-            return await self.execute_command("SPOP", name, count)
+            return await self.execute_command("SPOP", key, count)
         else:
-            return await self.execute_command("SPOP", name)
+            return await self.execute_command("SPOP", key)
 
-    async def srandmember(self, name, number=None):
+    async def srandmember(self, key, number=None):
         """
-        If ``number`` is None, returns a random member of set ``name``.
+        If ``number`` is None, returns a random member of set ``key``.
 
         If ``number`` is supplied, returns a list of ``number`` random
-        memebers of set ``name``. Note this is only available when running
+        memebers of set ``key``. Note this is only available when running
         Redis 2.6+.
         """
         args = number and [number] or []
 
-        return await self.execute_command("SRANDMEMBER", name, *args)
+        return await self.execute_command("SRANDMEMBER", key, *args)
 
-    async def srem(self, name, *values):
-        """Removes ``values`` from set ``name``"""
+    async def srem(self, key, *members):
+        """Removes ``members`` from set ``key``"""
 
-        return await self.execute_command("SREM", name, *values)
+        return await self.execute_command("SREM", key, *members)
 
     async def sunion(self, keys, *args):
         """Returns the union of sets specified by ``keys``"""
@@ -124,16 +124,16 @@ class SetsCommandMixin:
 
         return await self.execute_command("SUNION", *args)
 
-    async def sunionstore(self, dest, keys, *args):
+    async def sunionstore(self, destination, keys, *args):
         """
         Stores the union of sets specified by ``keys`` into a new
-        set named ``dest``.  Returns the number of keys in the new set.
+        set named ``destination``.  Returns the number of keys in the new set.
         """
         args = list_or_args(keys, args)
 
-        return await self.execute_command("SUNIONSTORE", dest, *args)
+        return await self.execute_command("SUNIONSTORE", destination, *args)
 
-    async def sscan(self, name, cursor=0, match=None, count=None):
+    async def sscan(self, key, cursor=0, match=None, count=None):
         """
         Incrementally returns lists of elements in a set. Also returns a
         cursor pointing to the scan position.
@@ -142,7 +142,7 @@ class SetsCommandMixin:
 
         ``count`` is for hint the minimum number of returns
         """
-        pieces = [name, cursor]
+        pieces = [key, cursor]
 
         if match is not None:
             pieces.extend([b("MATCH"), match])

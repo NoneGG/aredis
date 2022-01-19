@@ -36,9 +36,9 @@ class TransactionCommandMixin:
                             )
                     continue
 
-    async def watch(self, *names):
+    async def watch(self, *keys):
         """
-        Watches the values at keys ``names``, or None if the key doesn't exist
+        Watches the values at keys ``keys``, or None if the key doesn't exist
         """
         warnings.warn(DeprecationWarning("Call WATCH from a Pipeline object"))
 
