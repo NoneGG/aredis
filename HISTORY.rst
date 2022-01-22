@@ -3,6 +3,21 @@
 Changelog
 =========
 
+v2.2.1
+------
+Release Date: 2022-01-21
+
+
+This release brings in pending pull requests from
+the original `aredis`_ repository and updates the signatures
+of all implemented methods to be synchronized (as much as possible)
+with the official redis documentation.
+
+Feature (extracted from pull requests in `aredis`_):
+    * Add option to provide ``client_name``
+    * Add support for username/password authentication
+    * Add BlockingConnectionPool
+
 v2.1.0
 ------
 Release Date: 2022-01-15
@@ -188,4 +203,5 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
