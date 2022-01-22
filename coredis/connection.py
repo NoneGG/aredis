@@ -489,7 +489,7 @@ class BaseConnection:
         self._parser.on_connect(self)
 
         if self.username or self.password:
-            if self.username or self.password:
+            if self.username and self.password:
                 await self.send_command("AUTH", self.username, self.password)
             elif self.password:
                 await self.send_command("AUTH", self.password)
