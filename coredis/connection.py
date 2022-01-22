@@ -485,19 +485,22 @@ class BaseConnection:
     async def _connect(self):
         raise NotImplementedError
 
+    async def check_auth_response(self):
+        if nativestr(await self.read_response()) != "OK":
+            raise ConnectionError(
+                f"Failed to authenticate: username={self.username} & password={self.password}"
+            )
+
     async def on_connect(self):
         self._parser.on_connect(self)
 
         if self.username or self.password:
             if self.username and self.password:
                 await self.send_command("AUTH", self.username, self.password)
+                await self.check_auth_response()
             elif self.password:
                 await self.send_command("AUTH", self.password)
-
-            if nativestr(await self.read_response()) != "OK":
-                raise ConnectionError(
-                    f"Failed to authenticate: username={self.username} & password={self.password}"
-                )
+                await self.check_auth_response()
 
         # if a database is specified, switch to it
 
