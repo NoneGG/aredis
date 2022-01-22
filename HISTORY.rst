@@ -3,6 +3,14 @@
 Changelog
 =========
 
+v2.2.3
+------
+Release Date: 2022-01-22
+
+Bug fix:
+
+    * Fix stalled connection when only username is provided
+
 v2.2.2
 ------
 Release Date: 2022-01-22
@@ -211,6 +219,7 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
 
 
