@@ -86,16 +86,16 @@ class ListsCommandMixin:
 
         return await self.execute_command("LINDEX", key, index)
 
-    async def linsert(self, key, where, refvalue, value):
+    async def linsert(self, key, where, pivot, element):
         """
-        Insert ``value`` in list ``key`` either immediately before or after
-        [``where``] ``refvalue``
+        Insert ``element`` in list ``key`` either immediately before or after
+        [``where``] ``pivot``
 
-        Returns the new length of the list on success or -1 if ``refvalue``
+        Returns the new length of the list on success or -1 if ``pivot``
         is not in the list.
         """
 
-        return await self.execute_command("LINSERT", key, where, refvalue, value)
+        return await self.execute_command("LINSERT", key, where, pivot, element)
 
     async def llen(self, key):
         """Returns the length of the list ``key``"""
@@ -112,27 +112,27 @@ class ListsCommandMixin:
 
         return await self.execute_command("LPUSH", key, *elements)
 
-    async def lpushx(self, key, value):
+    async def lpushx(self, key, *elements):
         """
-        Pushes ``value`` onto the head of the list ``key`` if ``name`` exists
+        Pushes ``elements`` onto the head of the list ``key`` if it exists
         """
 
-        return await self.execute_command("LPUSHX", key, value)
+        return await self.execute_command("LPUSHX", key, *elements)
 
-    async def lrange(self, key, start, end):
+    async def lrange(self, key, start, stop):
         """
         Returns a slice of the list ``key`` between
-        position ``start`` and ``end``
+        position ``start`` and ``stop``
 
-        ``start`` and ``end`` can be negative numbers just like
+        ``start`` and ``stop`` can be negative numbers just like
         Python slicing notation
         """
 
-        return await self.execute_command("LRANGE", key, start, end)
+        return await self.execute_command("LRANGE", key, start, stop)
 
-    async def lrem(self, key, count, value):
+    async def lrem(self, key, count, element):
         """
-        Removes the first ``count`` occurrences of elements equal to ``value``
+        Removes the first ``count`` occurrences of elements equal to ``element``
         from the list stored at ``key``.
 
         The count argument influences the operation in the following ways:
@@ -141,23 +141,23 @@ class ListsCommandMixin:
             count = 0: Remove all elements equal to value.
         """
 
-        return await self.execute_command("LREM", key, count, value)
+        return await self.execute_command("LREM", key, count, element)
 
-    async def lset(self, key, index, value):
-        """Sets ``position`` of list ``key`` to ``value``"""
+    async def lset(self, key, index, element):
+        """Sets ``index`` of list ``key`` to ``element``"""
 
-        return await self.execute_command("LSET", key, index, value)
+        return await self.execute_command("LSET", key, index, element)
 
-    async def ltrim(self, key, start, end):
+    async def ltrim(self, key, start, stop):
         """
         Trims the list ``key``, removing all values not within the slice
-        between ``start`` and ``end``
+        between ``start`` and ``stop``
 
-        ``start`` and ``end`` can be negative numbers just like
+        ``start`` and ``stop`` can be negative numbers just like
         Python slicing notation
         """
 
-        return await self.execute_command("LTRIM", key, start, end)
+        return await self.execute_command("LTRIM", key, start, stop)
 
     async def rpop(self, key):
         """Removes and return the last item of the list ``key``"""
@@ -172,19 +172,19 @@ class ListsCommandMixin:
 
         return await self.execute_command("RPOPLPUSH", source, destination)
 
-    async def rpush(self, key, *values):
-        """Pushes ``values`` onto the tail of the list ``key``"""
+    async def rpush(self, key, *elements):
+        """Pushes ``elements`` onto the tail of the list ``key``"""
 
-        return await self.execute_command("RPUSH", key, *values)
+        return await self.execute_command("RPUSH", key, *elements)
 
-    async def rpushx(self, key, value):
+    async def rpushx(self, key, *elements):
         """
-        Pushes ``value`` onto the tail of the list ``key`` if ``name`` exists
+        Pushes ``elements`` onto the tail of the list ``key`` if it exists
         """
 
-        return await self.execute_command("RPUSHX", key, value)
+        return await self.execute_command("RPUSHX", key, *elements)
 
-    async def lmove(self, first_list, second_list, src="LEFT", dest="RIGHT"):
+    async def lmove(self, source, destination, wherefrom="LEFT", whereto="RIGHT"):
         """
         Atomically returns and removes the first/last element of a list,
         pushing it as the first/last element on the destination list.
@@ -192,17 +192,19 @@ class ListsCommandMixin:
 
         .. versionadded:: 2.1.0
         """
-        params = [first_list, second_list, src, dest]
+        params = [source, destination, wherefrom, whereto]
 
         return await self.execute_command("LMOVE", *params)
 
-    async def blmove(self, first_list, second_list, timeout, src="LEFT", dest="RIGHT"):
+    async def blmove(
+        self, source, destination, timeout, wherefrom="LEFT", whereto="RIGHT"
+    ):
         """
         Blocking version of lmove.
 
         .. versionadded:: 2.1.0
         """
-        params = [first_list, second_list, src, dest, timeout]
+        params = [source, destination, wherefrom, whereto, timeout]
 
         return await self.execute_command("BLMOVE", *params)
 

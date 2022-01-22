@@ -108,32 +108,32 @@ class KeysCommandMixin:
 
         return await self.execute_command("OBJECT REFCOUNT", key)
 
-    async def exists(self, key):
-        """Returns a boolean indicating whether key ``key`` exists"""
+    async def exists(self, *keys):
+        """Returns a count indicating the number of keys in ``keys`` that exist"""
 
-        return await self.execute_command("EXISTS", key)
+        return await self.execute_command("EXISTS", *keys)
 
-    async def expire(self, key, time):
+    async def expire(self, key, seconds):
         """
-        Set an expire flag on key ``key`` for ``time`` seconds. ``time``
+        Set an expire flag on key ``key`` for ``seconds`` seconds. ``seconds``
         can be represented by an integer or a Python timedelta object.
         """
 
-        if isinstance(time, datetime.timedelta):
-            time = time.seconds + time.days * 24 * 3600
+        if isinstance(seconds, datetime.timedelta):
+            seconds = seconds.seconds + seconds.days * 24 * 3600
 
-        return await self.execute_command("EXPIRE", key, time)
+        return await self.execute_command("EXPIRE", key, seconds)
 
-    async def expireat(self, key, when):
+    async def expireat(self, key, timestamp):
         """
-        Set an expire flag on key ``key``. ``when`` can be represented
+        Set an expire flag on key ``key``. ``timestamp`` can be represented
         as an integer indicating unix time or a Python datetime object.
         """
 
-        if isinstance(when, datetime.datetime):
-            when = int(mod_time.mktime(when.timetuple()))
+        if isinstance(timestamp, datetime.datetime):
+            timestamp = int(mod_time.mktime(timestamp.timetuple()))
 
-        return await self.execute_command("EXPIREAT", key, when)
+        return await self.execute_command("EXPIREAT", key, timestamp)
 
     async def keys(self, pattern="*"):
         """Returns a list of keys matching ``pattern``"""
@@ -155,31 +155,33 @@ class KeysCommandMixin:
 
         return await self.execute_command("PERSIST", key)
 
-    async def pexpire(self, key, time):
+    async def pexpire(self, key, milliseconds):
         """
-        Set an expire flag on key ``key`` for ``time`` milliseconds.
-        ``time`` can be represented by an integer or a Python timedelta
+        Set an expire flag on key ``key`` for ``milliseconds`` milliseconds.
+        ``milliseconds`` can be represented by an integer or a Python timedelta
         object.
         """
 
-        if isinstance(time, datetime.timedelta):
-            ms = int(time.microseconds / 1000)
-            time = (time.seconds + time.days * 24 * 3600) * 1000 + ms
+        if isinstance(milliseconds, datetime.timedelta):
+            ms = int(milliseconds.microseconds / 1000)
+            milliseconds = (
+                milliseconds.seconds + milliseconds.days * 24 * 3600
+            ) * 1000 + ms
 
-        return await self.execute_command("PEXPIRE", key, time)
+        return await self.execute_command("PEXPIRE", key, milliseconds)
 
-    async def pexpireat(self, key, when):
+    async def pexpireat(self, key, timestamp):
         """
-        Set an expire flag on key ``key``. ``when`` can be represented
+        Set an expire flag on key ``key``. ``timestamp`` can be represented
         as an integer representing unix time in milliseconds (unix time * 1000)
         or a Python datetime object.
         """
 
-        if isinstance(when, datetime.datetime):
-            ms = int(when.microsecond / 1000)
-            when = int(mod_time.mktime(when.timetuple())) * 1000 + ms
+        if isinstance(timestamp, datetime.datetime):
+            ms = int(timestamp.microsecond / 1000)
+            timestamp = int(mod_time.mktime(timestamp.timetuple())) * 1000 + ms
 
-        return await self.execute_command("PEXPIREAT", key, when)
+        return await self.execute_command("PEXPIREAT", key, timestamp)
 
     async def pttl(self, key):
         """
@@ -193,24 +195,24 @@ class KeysCommandMixin:
 
         return await self.execute_command("RANDOMKEY")
 
-    async def rename(self, src, dst):
+    async def rename(self, key, newkey):
         """
-        Rekeys key ``src`` to ``dst``
+        Rekeys key ``key`` to ``newkey``
         """
 
-        return await self.execute_command("RENAME", src, dst)
+        return await self.execute_command("RENAME", key, newkey)
 
-    async def renamenx(self, src, dst):
-        """Rekeys key ``src`` to ``dst`` if ``dst`` doesn't already exist"""
+    async def renamenx(self, key, newkey):
+        """Rekeys key ``key`` to ``newkey`` if ``newkey`` doesn't already exist"""
 
-        return await self.execute_command("RENAMENX", src, dst)
+        return await self.execute_command("RENAMENX", key, newkey)
 
-    async def restore(self, key, ttl, value, replace=False):
+    async def restore(self, key, ttl, serialized_value, replace=False):
         """
         Creates a key using the provided serialized value, previously obtained
         using DUMP.
         """
-        params = [key, ttl, value]
+        params = [key, ttl, serialized_value]
 
         if replace:
             params.append("REPLACE")
@@ -327,15 +329,15 @@ class KeysCommandMixin:
 
         return await self.execute_command("UNLINK", *keys)
 
-    async def wait(self, num_replicas, timeout):
+    async def wait(self, numreplicas, timeout):
         """
         Redis synchronous replication
         That returns the number of replicas that processed the query when
-        we finally have at least ``num_replicas``, or when the ``timeout`` was
+        we finally have at least ``numreplicas``, or when the ``timeout`` was
         reached.
         """
 
-        return await self.execute_command("WAIT", num_replicas, timeout)
+        return await self.execute_command("WAIT", numreplicas, timeout)
 
     async def scan(self, cursor=0, match=None, count=None):
         """

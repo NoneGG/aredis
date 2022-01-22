@@ -124,13 +124,13 @@ class StringsCommandMixin:
 
         return await self.execute_command("BITCOUNT", *params)
 
-    async def bitop(self, operation, dest, *keys):
+    async def bitop(self, operation, destkey, *keys):
         """
         Perform a bitwise operation using ``operation`` between ``keys`` and
-        store the result in ``dest``.
+        store the result in ``destkey``.
         """
 
-        return await self.execute_command("BITOP", operation, dest, *keys)
+        return await self.execute_command("BITOP", operation, destkey, *keys)
 
     async def bitpos(self, key, bit, start=None, end=None):
         """
@@ -368,18 +368,20 @@ class StringsCommandMixin:
 
         return await self.execute_command("MSETNX", *items)
 
-    async def psetex(self, key, time_ms, value):
+    async def psetex(self, key, milliseconds, value):
         """
-        Set the value of key ``key`` to ``value`` that expires in ``time_ms``
-        milliseconds. ``time_ms`` can be represented by an integer or a Python
+        Set the value of key ``key`` to ``value`` that expires in ``milliseconds``
+        milliseconds. ``milliseconds`` can be represented by an integer or a Python
         timedelta object
         """
 
-        if isinstance(time_ms, datetime.timedelta):
-            ms = int(time_ms.microseconds / 1000)
-            time_ms = (time_ms.seconds + time_ms.days * 24 * 3600) * 1000 + ms
+        if isinstance(milliseconds, datetime.timedelta):
+            ms = int(milliseconds.microseconds / 1000)
+            milliseconds = (
+                milliseconds.seconds + milliseconds.days * 24 * 3600
+            ) * 1000 + ms
 
-        return await self.execute_command("PSETEX", key, time_ms, value)
+        return await self.execute_command("PSETEX", key, milliseconds, value)
 
     async def set(self, key, value, ex=None, px=None, nx=False, xx=False):
         """

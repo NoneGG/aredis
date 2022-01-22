@@ -163,16 +163,16 @@ class SortedSetCommandMixin:
 
         return await self.execute_command("ZDIFF", *pieces)
 
-    async def zdiffstore(self, dest, keys):
+    async def zdiffstore(self, destination, keys):
         """
         Computes the difference between the first and all successive input
-        sorted sets provided in ``keys`` and stores the result in ``dest``.
+        sorted sets provided in ``keys`` and stores the result in ``destination``.
 
         .. versionadded:: 2.1.0
         """
         pieces = [len(keys), *keys]
 
-        return await self.execute_command("ZDIFFSTORE", dest, *pieces)
+        return await self.execute_command("ZDIFFSTORE", destination, *pieces)
 
     async def zincrby(self, key, value, amount=1):
         """
@@ -480,18 +480,18 @@ class SortedSetCommandMixin:
 
         return await self.execute_command(*pieces, **options)
 
-    async def zrank(self, key, value):
+    async def zrank(self, key, member):
         """
-        Returns a 0-based value indicating the rank of ``value`` in sorted set
+        Returns a 0-based value indicating the rank of ``member`` in sorted set
         ``key``
         """
 
-        return await self.execute_command("ZRANK", key, value)
+        return await self.execute_command("ZRANK", key, member)
 
-    async def zrem(self, key, *values):
-        """Removes member ``values`` from sorted set ``key``"""
+    async def zrem(self, key, *members):
+        """Removes member ``members`` from sorted set ``key``"""
 
-        return await self.execute_command("ZREM", key, *values)
+        return await self.execute_command("ZREM", key, *members)
 
     async def zremrangebylex(self, key, min, max):
         """
@@ -503,15 +503,15 @@ class SortedSetCommandMixin:
 
         return await self.execute_command("ZREMRANGEBYLEX", key, min, max)
 
-    async def zremrangebyrank(self, key, min, max):
+    async def zremrangebyrank(self, key, start, stop):
         """
         Removes all elements in the sorted set ``key`` with ranks between
-        ``min`` and ``max``. Values are 0-based, ordered from smallest score
+        ``start`` and ``stop``. Values are 0-based, ordered from smallest score
         to largest. Values can be negative indicating the highest scores.
         Returns the number of elements removed
         """
 
-        return await self.execute_command("ZREMRANGEBYRANK", key, min, max)
+        return await self.execute_command("ZREMRANGEBYRANK", key, start, stop)
 
     async def zremrangebyscore(self, key, min, max):
         """
@@ -623,18 +623,18 @@ class SortedSetCommandMixin:
 
         return await self.execute_command(*pieces, **options)
 
-    async def zrevrank(self, key, value):
+    async def zrevrank(self, key, member):
         """
         Returns a 0-based value indicating the descending rank of
-        ``value`` in sorted set ``key``
+        ``member`` in sorted set ``key``
         """
 
-        return await self.execute_command("ZREVRANK", key, value)
+        return await self.execute_command("ZREVRANK", key, member)
 
-    async def zscore(self, key, value):
-        "Return the score of element ``value`` in sorted set ``key``"
+    async def zscore(self, key, member):
+        "Return the score of element ``member`` in sorted set ``key``"
 
-        return await self.execute_command("ZSCORE", key, value)
+        return await self.execute_command("ZSCORE", key, member)
 
     async def zunion(self, keys, aggregate=None, withscores=False):
         """

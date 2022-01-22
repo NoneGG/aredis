@@ -63,7 +63,9 @@ def get_official_commands(group=None):
     by_group = {}
     [
         by_group.setdefault(command["group"], []).append(command | {"name": name})
+
         for name, command in response.items()
+
         if version.parse(command["since"]) < MAX_SUPPORTED_VERSION
     ]
 
@@ -74,7 +76,9 @@ def find_method(kls, command_name):
     members = inspect.getmembers(kls)
     mapping = {
         k[0]: k[1]
+
         for k in members
+
         if inspect.ismethod(k[1]) or inspect.isfunction(k[1])
     }
 
@@ -101,19 +105,27 @@ def skip_command(command):
     return False
 
 
-def is_deprecated(command):
+def is_deprecated(command, kls):
     if (
         command.get("deprecated_since")
         and version.parse(command["deprecated_since"]) < MAX_SUPPORTED_VERSION
     ):
-        return command["deprecated_since"]
+        replacement = command.get("replaced_by", "")
+        replacement = re.sub("`(.*?)`", "``\\1``", replacement)
+        replacement_method = re.search("(``(.*?)``)", replacement)
+        if replacement_method := replacement_method.group():
+            preferred_method = f"Use :meth:`~coredis.{kls.__name__}.{sanitized(replacement_method, None).replace('`','')}` "
+            replacement = replacement.replace(replacement_method, preferred_method)
+        return command["deprecated_since"], replacement
 
 
-def sanitized(x, command):
+def sanitized(x, command=None):
     cleansed_name = x.lower().replace("-", "_").replace(":", "_")
 
-    if override := REDIS_ARGUMENT_NAME_OVERRIDES.get(command["name"], {}).get(
-        cleansed_name
+    if command and (
+        override := REDIS_ARGUMENT_NAME_OVERRIDES.get(command["name"], {}).get(
+            cleansed_name
+        )
     ):
         return override
 
@@ -198,6 +210,7 @@ def get_argument(
     else:
         name = sanitized(
             arg.get("token", arg["name"])
+
             if not arg.get("type") == "pure-token"
             else arg["name"],
             command,
@@ -287,6 +300,7 @@ def generate_compatibility_section(
             located = find_method(kls, name)
             sync_located = find_method(sync_kls, name)
             redis_version_introduced = version.parse(method["since"])
+            summary = method["summary"]
 
             if not method["name"] in SKIP_SPEC:
                 rec_params = get_command_spec(method)
@@ -300,15 +314,21 @@ def generate_compatibility_section(
                     raise
 
             server_new_in = ""
-            if server_deprecated := is_deprecated(method):
-                server_deprecated = f"☠️ Deprecated in redis: {server_deprecated}"
+            server_deprecated = ""
+            recommended_replacement = ""
+            if deprecation_info := is_deprecated(method, kls):
+                server_deprecated = f"☠️ Deprecated in redis: {deprecation_info[0]}."
+
+                if deprecation_info[1]:
+                    recommended_replacement = deprecation_info[1]
+
             if redis_version_introduced > MIN_SUPPORTED_VERSION:
                 server_new_in = f"🎉 New in redis: {method['since']}"
 
             if located:
                 version_added = VERSIONADDED_DOC.findall(located.__doc__)
                 version_added = (version_added and version_added[0][0]) or ""
-
+                version_added.strip()
                 if not method["name"] in SKIP_SPEC:
                     current_signature = [
                         k for k in inspect.signature(located).parameters
@@ -321,12 +341,16 @@ def generate_compatibility_section(
                     else:
                         diff_minus = [
                             str(k)
+
                             for k, v in rec_signature.parameters.items()
+
                             if k not in current_signature
                         ]
                         diff_plus = [
                             str(k)
+
                             for k in current_signature
+
                             if k not in rec_signature.parameters
                         ]
                         recommendation = str(rec_signature)
@@ -339,6 +363,7 @@ def generate_compatibility_section(
 
         .. method:: {name}{recommendation}
            :noindex:
+
                      """
                         recommendation += f"\n\n{' '*8}\+ ``({','.join(diff_plus)})`` |  - ``({','.join(diff_minus)})``\n"
                 else:
@@ -352,17 +377,20 @@ def generate_compatibility_section(
                 supported.append(
                     f"""
     * - {redis_command_link(method['name'])}
+
+        {summary}
       - :meth:`~coredis.{kls.__name__}.{located.__name__}`
 
-        {version_added or ''}
+        {version_added and ("- " + version_added)}
+        {server_deprecated and ("- " + server_deprecated)}
+        {recommended_replacement and ("- " + recommended_replacement)}
+        {server_new_in and ("- " + server_new_in)}
 
-        {server_deprecated or ''}
-        {server_new_in or ''}
 
       {recommendation.strip() if debug else ""}
             """
                 )
-            elif sync_located and not is_deprecated(method):
+            elif sync_located and not is_deprecated(method, kls):
                 recommendation = f"""- Recommended Signature:
 
         .. method:: {name}{str(rec_signature)}
@@ -371,6 +399,8 @@ def generate_compatibility_section(
                 needs_porting.append(
                     f"""
     * - {redis_command_link(method['name'])}
+
+        {summary}
       - Not Implemented
 
         redis-py reference: :meth:`~{redis_namespace}.{name}`
@@ -379,7 +409,7 @@ def generate_compatibility_section(
       {recommendation if debug else ""}
                     """
                 )
-            elif not is_deprecated(method):
+            elif not is_deprecated(method, kls):
                 recommendation = f"""- Recommended Signature:
 
         .. method:: {name}{str(rec_signature)}
@@ -388,6 +418,8 @@ def generate_compatibility_section(
                 missing.append(
                     f"""
     * - {redis_command_link(method['name'])}
+
+        {summary}
       - Not Implemented.
 
         {server_new_in or ''}

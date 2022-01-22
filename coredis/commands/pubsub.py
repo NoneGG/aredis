@@ -39,12 +39,12 @@ class PubSubCommandMixin:
         """
         return await self.execute_command("PUBSUB NUMPAT")
 
-    async def pubsub_numsub(self, *args):
+    async def pubsub_numsub(self, *channels):
         """
         Return a list of (channel, number of subscribers) tuples
-        for each channel given in ``*args``
+        for each channel given in ``*channels``
         """
-        return await self.execute_command("PUBSUB NUMSUB", *args)
+        return await self.execute_command("PUBSUB NUMSUB", *channels)
 
 
 def parse_cluster_pubsub_channels(res, **options):

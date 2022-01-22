@@ -2407,10 +2407,10 @@ class TestRedisCommands:
             ["place1", 0.0, 3471609698139488, (2.1909382939338684, 41.433790281840835)],
         ]
 
-    @skip_if_server_version_lt("5.0.0")
+    @skip_if_server_version_lt("6.0.0")
     @pytest.mark.asyncio(forbid_global_loop=True)
     async def test_lolwut(self, r):
-        lolwut = (await r.lolwut()).decode("utf-8")
+        lolwut = (await r.lolwut(5)).decode("utf-8")
         assert "Redis ver." in lolwut
 
 

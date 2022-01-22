@@ -351,19 +351,14 @@ class ServerCommandMixin:
 
         return await self.execute_command("ROLE")
 
-    async def lolwut(self, *version_numbers, **kwargs):
+    async def lolwut(self, version, *arguments):
         """
         Get the Redis version and a piece of generative computer art
 
         .. versionadded:: 2.1.0
         """
 
-        if version_numbers:
-            return await self.execute_command(
-                "LOLWUT VERSION", *version_numbers, **kwargs
-            )
-        else:
-            return await self.execute_command("LOLWUT", **kwargs)
+        return await self.execute_command("LOLWUT VERSION", version, *arguments)
 
 
 class ClusterServerCommandMixin(ServerCommandMixin):

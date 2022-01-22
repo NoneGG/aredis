@@ -28,10 +28,10 @@ class HashCommandMixin:
         },
     )
 
-    async def hdel(self, key, *keys):
-        """Deletes ``keys`` from hash ``key``"""
+    async def hdel(self, key, *fields):
+        """Deletes ``fields`` from hash ``key``"""
 
-        return await self.execute_command("HDEL", key, *keys)
+        return await self.execute_command("HDEL", key, *fields)
 
     async def hexists(self, key, field):
         """
@@ -89,24 +89,24 @@ class HashCommandMixin:
 
         return await self.execute_command("HSETNX", key, field, value)
 
-    async def hmset(self, key, mapping):
+    async def hmset(self, key, field_values):
         """
         Sets key to value within hash ``key`` for each corresponding
-        key and value from the ``mapping`` dict.
+        key and value from the ``field_items`` dict.
         """
 
-        if not mapping:
-            raise DataError("'hmset' with 'mapping' of length 0")
+        if not field_values:
+            raise DataError("'hmset' with 'field_values' of length 0")
         items = []
 
-        for pair in iteritems(mapping):
+        for pair in iteritems(field_values):
             items.extend(pair)
 
         return await self.execute_command("HMSET", key, *items)
 
-    async def hmget(self, key, keys, *args):
-        """Returns a list of values ordered identically to ``keys``"""
-        args = list_or_args(keys, args)
+    async def hmget(self, key, fields, *args):
+        """Returns a list of values ordered identically to ``fields``"""
+        args = list_or_args(fields, args)
 
         return await self.execute_command("HMGET", key, *args)
 
