@@ -3,6 +3,14 @@
 Changelog
 =========
 
+v2.2.2
+------
+Release Date: 2022-01-22
+
+Bug fix:
+
+    * Fix failure to authenticate when just using password
+
 v2.2.1
 ------
 Release Date: 2022-01-21
@@ -203,5 +211,6 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
 
