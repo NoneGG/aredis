@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import datetime
 import os
 import platform
@@ -12,6 +13,14 @@ import coredis
 import coredis.sentinel
 
 REDIS_VERSIONS = {}
+
+
+@pytest.fixture(scope="session", autouse=True)
+def uvloop():
+    if os.environ.get("COREDIS_UVLOOP") == "True":
+        import uvloop
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 async def check_min_version(request, client):

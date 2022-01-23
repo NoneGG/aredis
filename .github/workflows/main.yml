@@ -18,6 +18,7 @@ jobs:
           - REDIS_VERSION=6.0.16 REDIS_SSL_VERSION=6.0.16
           - REDIS_VERSION=6.2.6 REDIS_SSL_VERSION=6.2.6
         parser: [hiredis, python]
+        uvloop: ["False"]
     steps:
     - uses: actions/checkout@v2
     - name: Cache dependencies
@@ -40,6 +41,8 @@ jobs:
       run:
         pip install hiredis
     - name: Tests
+      env:
+        COREDIS_UVLOOP: "{{matrix.uvloop}}"
       run: |
         eval "export ${{ matrix.service_version }}"
         pytest --cov-report=xml --cov-branch
