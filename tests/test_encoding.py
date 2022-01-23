@@ -6,9 +6,9 @@ import coredis
 
 
 @pytest.fixture
-def redis(redis_basic_server):
+async def redis(redis_basic_server):
     client = coredis.StrictRedis(decode_responses=True)
-    client.flushdb()
+    await client.flushdb()
     return client
 
 

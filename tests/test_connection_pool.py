@@ -56,8 +56,8 @@ class TestConnectionPool:
 
     def test_multiple_connections(self):
         pool = self.get_pool()
-        c1 = pool.get_connection()
-        c2 = pool.get_connection()
+        c1 = await pool.get_connection()
+        c2 = await pool.get_connection()
         assert c1 != c2
 
     @pytest.mark.asyncio()
@@ -105,7 +105,7 @@ class TestConnectionPool:
         await rs.info()
         assert len(rs.connection_pool._available_connections) == 1
         assert len(rs.connection_pool._in_use_connections) == 0
-        conn = rs.connection_pool._available_connections[0]
+        conn = await rs.connection_pool._available_connections[0]
         last_active_at = conn.last_active_at
         await asyncio.sleep(0.3)
         assert len(rs.connection_pool._available_connections) == 0
@@ -212,7 +212,7 @@ class TestBlockingConnectionPool:
         assert len(rs.connection_pool._in_use_connections) == 0
         assert last_active_at == conn.last_active_at
         assert conn._writer is None and conn._reader is None
-        new_conn = rs.connection_pool.get_connection()
+        new_conn = await rs.connection_pool.get_connection()
         assert conn != new_conn
 
 
