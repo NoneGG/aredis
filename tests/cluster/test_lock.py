@@ -6,6 +6,7 @@ from coredis.exceptions import LockError
 from coredis.lock import ClusterLock
 
 
+@pytest.mark.flaky
 class TestLock:
     lock_class = ClusterLock
 

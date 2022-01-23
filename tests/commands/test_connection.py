@@ -18,6 +18,7 @@ class TestConnection:
         assert isinstance(clients[0], dict)
         assert "addr" in clients[0]
 
+    @pytest.mark.flaky
     async def test_client_list_after_client_setname(self, client):
         await client.client_setname("cl=i=ent")
         clients = await client.client_list()
