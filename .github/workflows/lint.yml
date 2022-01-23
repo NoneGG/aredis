@@ -38,3 +38,8 @@ jobs:
     - name: Check imports
       run: |
         isort -c --profile=black coredis tests
+    - name: Check docs
+      run: |
+        make generate-compatibility-docs
+        if [[ $(git diff --stat docs/source/compatibility.rst) != '' ]]; then echo 'Compatibility docs need updating'; exit 1; fi;
+
