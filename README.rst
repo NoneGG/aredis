@@ -1,6 +1,5 @@
-.. |circleci-status| image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg
-    :alt: CircleCI build status
-    :target: https://circleci.com/gh/alisaifee/coredis/tree/master
+.. |ci| image:: https://github.com/alisaifee/coredis/workflows/CI/badge.svg?branch=master
+    :target: https://github.com/alisaifee/coredis/actions?query=branch%3Amaster+workflow%3ACI
 
 .. |pypi-ver| image::  https://img.shields.io/pypi/v/coredis.svg
     :target: https://pypi.python.org/pypi/coredis/
@@ -19,7 +18,7 @@
 coredis
 =======
 
-|docs| |codecov| |pypi-ver| |circleci-status| |python-ver|
+|docs| |codecov| |pypi-ver| |ci| |python-ver|
 
 coredis is an async redis client with support for redis server, cluster & sentinel.
 

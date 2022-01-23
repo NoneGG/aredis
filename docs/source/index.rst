@@ -3,9 +3,9 @@ coredis
 
 .. container:: badges
 
-   .. image:: https://img.shields.io/circleci/project/github/alisaifee/coredis/master.svg?style=flat-square
-      :alt: CircleCI build status
-      :target: https://circleci.com/gh/alisaifee/coredis/tree/master
+   .. image:: https://github.com/alisaifee/coredis/workflows/CI/badge.svg?branch=master
+      :alt: CI status
+      :target: https://github.com/alisaifee/coredis/actions?query=branch%3Amaster+workflow%3ACI
       :class: header-badge
 
    .. image::  https://img.shields.io/pypi/v/coredis.svg?style=flat-square
