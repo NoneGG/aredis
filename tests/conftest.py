@@ -42,8 +42,8 @@ async def check_min_version(request, client):
 
 def check_redis_cluster_ready(host, port):
     try:
-        return len(redis.Redis(host, 7000).cluster("stats")) == 3
-    except Exception:
+        return len(redis.Redis(host, 7000).cluster("slots")) == 3
+    except:
         return False
 
 
@@ -115,7 +115,7 @@ def redis_ssl_server(docker_services):
 @pytest.fixture(scope="session")
 def redis_cluster_server(docker_services):
     docker_services.start("redis-cluster-init")
-    docker_services.wait_for_service("redis-cluster-6", 7005, ping_socket)
+    docker_services.wait_for_service("redis-cluster-6", 7005, check_redis_cluster_ready)
     yield
 
 
