@@ -4,6 +4,7 @@ import coredis
 from coredis.exceptions import AuthenticationError
 
 
+@pytest.mark.min_server_version("6.0.0")
 @pytest.mark.parametrize(
     "username, password",
     (
@@ -13,16 +14,15 @@ from coredis.exceptions import AuthenticationError
         ["fubar", "fubar"],
     ),
 )
-async def test_invalid_authentication(redis_auth_server, username, password):
+async def test_invalid_authentication(redis_auth, username, password):
     client = coredis.StrictRedis(
-        redis_auth_server[0], redis_auth_server[1], username=username, password=password
+        "localhost", 6389, username=username, password=password
     )
     with pytest.raises(AuthenticationError):
         await client.ping()
 
 
-async def test_valid_authentication(redis_auth_server):
-    client = coredis.StrictRedis(
-        redis_auth_server[0], redis_auth_server[1], password="sekret"
-    )
+@pytest.mark.min_server_version("6.0.0")
+async def test_valid_authentication(redis_auth):
+    client = coredis.StrictRedis("localhost", 6389, password="sekret")
     assert await client.ping()
