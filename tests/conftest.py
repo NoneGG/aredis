@@ -89,7 +89,7 @@ def docker_services(host_ip_env, docker_services):
 def redis_basic_server(docker_services):
     docker_services.start("redis-basic")
     docker_services.wait_for_service("redis-basic", 6379, ping_socket)
-    yield
+    yield ["localhost", 6379]
 
 
 @pytest.fixture(scope="session")
@@ -97,13 +97,13 @@ def redis_uds_server(docker_services):
     if platform.system().lower() == "darwin":
         pytest.skip("Fixture not supported on OSX")
     docker_services.start("redis-uds")
-    yield
+    yield "/tmp/limits.redis.sock"
 
 
 @pytest.fixture(scope="session")
 def redis_auth_server(docker_services):
     docker_services.start("redis-auth")
-    yield
+    yield ["localhost", 6389]
 
 
 @pytest.fixture(scope="session")
@@ -164,7 +164,9 @@ async def redis_ssl(redis_ssl_server, request):
 
 @pytest.fixture
 async def redis_auth(redis_auth_server, request):
-    client = coredis.StrictRedis.from_url("redis://:sekret@localhost:6389")
+    client = coredis.StrictRedis.from_url(
+        f"redis://:sekret@{redis_auth_server[0]}:{redis_auth_server[1]}"
+    )
     await check_min_version(request, client)
     await client.flushall()
     await client.config_set("maxmemory-policy", "noeviction")
@@ -174,7 +176,7 @@ async def redis_auth(redis_auth_server, request):
 
 @pytest.fixture
 async def redis_uds(redis_uds_server, request):
-    client = coredis.StrictRedis.from_url("unix:///tmp/limits.redis.sock")
+    client = coredis.StrictRedis.from_url(f"unix://{redis_uds_server}")
     await check_min_version(request, client)
     await client.flushall()
     await client.config_set("maxmemory-policy", "noeviction")

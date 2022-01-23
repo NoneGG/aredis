@@ -247,7 +247,6 @@ class PythonParser(BaseParser):
             # inside a pipeline response. the connection's read_response()
             # and/or the pipeline's execute() will raise this error if
             # necessary, so just return the exception instance here.
-
             return error
         # single value
         elif byte == "+":
@@ -465,6 +464,8 @@ class BaseConnection:
             await self._connect()
         except asyncio.CancelledError:
             raise
+        except RedisError:
+            raise
         except Exception:
             raise ConnectionError()
         # run any user callbacks. right now the only internal callback
@@ -483,7 +484,9 @@ class BaseConnection:
         raise NotImplementedError
 
     async def check_auth_response(self):
-        if nativestr(await self.read_response()) != "OK":
+        response = await self.read_response()
+
+        if nativestr(response) != "OK":
             raise ConnectionError(
                 f"Failed to authenticate: username={self.username} & password={self.password}"
             )
