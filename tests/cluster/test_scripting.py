@@ -103,7 +103,7 @@ class TestScripting:
         # test first evalsha
         assert await multiply.execute(keys=["a"], args=[3]) == 6
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="Not Yet Implemented")
     async def test_script_object_in_pipeline(self, redis_cluster):
         multiply = await redis_cluster.register_script(multiply_script)
@@ -132,7 +132,7 @@ class TestScripting:
         # [SET worked, GET 'a', result of multiple script]
         assert await pipe.execute() == [True, b("2"), 6]
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     @pytest.mark.xfail(reason="Not Yet Implemented")
     async def test_eval_msgpack_pipeline_error_in_lua(self, redis_cluster):
         msgpack_hello = await redis_cluster.register_script(msgpack_hello_script)

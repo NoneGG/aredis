@@ -46,7 +46,7 @@ class TestConnectionPool:
 
         return pool
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_connection_creation(self):
         connection_kwargs = {"foo": "bar", "biz": "baz"}
         pool = self.get_pool(connection_kwargs=connection_kwargs)
@@ -60,7 +60,7 @@ class TestConnectionPool:
         c2 = pool.get_connection()
         assert c1 != c2
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_max_connections(self):
         pool = self.get_pool(max_connections=2)
         await pool.get_connection()
@@ -68,7 +68,7 @@ class TestConnectionPool:
         with pytest.raises(ConnectionError):
             await pool.get_connection()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_reuse_previously_released_connection(self):
         pool = self.get_pool()
         c1 = await pool.get_connection()
@@ -93,7 +93,7 @@ class TestConnectionPool:
         expected = "ConnectionPool<UnixDomainSocketConnection<path=/abc,db=1>>"
         assert repr(pool) == expected
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_connection_idle_check(self, event_loop):
         rs = coredis.StrictRedis(
             host="127.0.0.1",
@@ -132,7 +132,7 @@ class TestBlockingConnectionPool:
 
         return pool
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_connection_creation(self):
         connection_kwargs = {"foo": "bar", "biz": "baz"}
         pool = self.get_pool(connection_kwargs=connection_kwargs)
@@ -140,14 +140,14 @@ class TestBlockingConnectionPool:
         assert isinstance(connection, DummyConnection)
         assert connection.kwargs == connection_kwargs
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_multiple_connections(self):
         pool = self.get_pool()
         c1 = await pool.get_connection()
         c2 = await pool.get_connection()
         assert c1 != c2
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_max_connections_timeout(self):
         pool = self.get_pool(max_connections=2, timeout=0.1)
         await pool.get_connection()
@@ -155,7 +155,7 @@ class TestBlockingConnectionPool:
         with pytest.raises(ConnectionError):
             await pool.get_connection()
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_max_connections_no_timeout(self):
         pool = self.get_pool(max_connections=2)
         await pool.get_connection()
@@ -169,7 +169,7 @@ class TestBlockingConnectionPool:
         new_conn = await pool.get_connection()
         assert new_conn == released_conn
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_reuse_previously_released_connection(self):
         pool = self.get_pool()
         c1 = await pool.get_connection()
@@ -194,7 +194,7 @@ class TestBlockingConnectionPool:
         expected = "BlockingConnectionPool<UnixDomainSocketConnection<path=/abc,db=1>>"
         assert repr(pool) == expected
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_connection_idle_check(self, event_loop):
         rs = coredis.StrictRedis(
             host="127.0.0.1",
@@ -567,7 +567,7 @@ class TestSSLConnectionURLParsing:
 
 
 class TestConnection:
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_on_connect_error(self, event_loop):
         """
         An error in Connection.on_connect should disconnect from the server
@@ -582,7 +582,7 @@ class TestConnection:
         pool = bad_connection.connection_pool
         assert len(pool._available_connections) == 0
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_busy_loading_disconnects_socket(self, event_loop):
         """
         If Redis raises a LOADING error, the connection should be
@@ -594,7 +594,7 @@ class TestConnection:
         pool = client.connection_pool
         assert len(pool._available_connections) == 0
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_busy_loading_from_pipeline_immediate_command(self, event_loop):
         """
         BusyLoadingErrors should raise from Pipelines that execute a
@@ -610,7 +610,7 @@ class TestConnection:
         assert not pipe.connection
         assert len(pool._available_connections) == 0
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_busy_loading_from_pipeline(self, event_loop):
         """
         BusyLoadingErrors should be raised from a pipeline execution
@@ -627,7 +627,7 @@ class TestConnection:
         assert pool._available_connections[0]._writer
         assert pool._available_connections[0]._reader
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
+    @pytest.mark.asyncio()
     async def test_read_only_error(self, event_loop):
         "READONLY errors get turned in ReadOnlyError exceptions"
         client = coredis.StrictRedis(loop=event_loop)

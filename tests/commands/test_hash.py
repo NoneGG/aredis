@@ -5,7 +5,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestHash:
     async def test_hget_and_hset(self, client):
         await client.hmset("a", {"1": 1, "2": 2, "3": 3})

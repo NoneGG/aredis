@@ -9,7 +9,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestGeneric:
     async def test_sort_basic(self, client):
         await client.rpush("a", "3", "2", "1", "4")

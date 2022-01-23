@@ -11,8 +11,6 @@ try:
 except Exception:
     pass
 
-LOOP_DEPRECATED = sys.version_info >= (3, 8)
-
 
 def b(x):
     return x.encode("latin-1") if not isinstance(x, bytes) else x
@@ -80,8 +78,10 @@ def list_keys_to_dict(key_list, callback):
 
 def dict_merge(*dicts):
     merged = {}
+
     for d in dicts:
         merged.update(d)
+
     return merged
 
 
@@ -95,24 +95,29 @@ def list_or_args(keys, args):
         iter(keys)
         # a string or bytes instance can be iterated, but indicates
         # keys wasn't passed as a list
+
         if isinstance(keys, (str, bytes)):
             keys = [keys]
     except TypeError:
         keys = [keys]
+
     if args:
         keys.extend(args)
+
     return keys
 
 
 def int_or_none(response):
     if response is None:
         return None
+
     return int(response)
 
 
 def pairs_to_dict(response):
     """Creates a dict given a list of key/value pairs"""
     it = iter(response)
+
     return dict(zip(it, it))
 
 
@@ -124,6 +129,7 @@ def merge_result(res):
     This command is used when sending a command to multiple nodes
     and they result from each node should be merged into a single list.
     """
+
     if not isinstance(res, dict):
         raise ValueError("Value should be of dict type")
 
@@ -142,6 +148,7 @@ def first_key(res):
 
     If more then 1 result is returned then a `RedisClusterException` is raised.
     """
+
     if not isinstance(res, dict):
         raise ValueError("Value should be of dict type")
 
@@ -451,20 +458,25 @@ if not _C_EXTENSION_SPEEDUP:
 
     def _crc16(data):
         crc = 0
+
         for byte in data:
             crc = ((crc << 8) & 0xFF00) ^ x_mode_m_crc16_lookup[
                 ((crc >> 8) & 0xFF) ^ byte
             ]
+
         return crc & 0xFFFF
 
     crc16 = _crc16  # noqa: F811
 
     def _hash_slot(key):
         start = key.find(b"{")
+
         if start > -1:
             end = key.find(b"}", start + 1)
+
             if end > -1 and end != start + 1:
                 key = key[start + 1 : end]
+
         return crc16(key) % 16384
 
     hash_slot = _hash_slot  # noqa: F811

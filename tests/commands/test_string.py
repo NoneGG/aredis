@@ -7,7 +7,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestString:
     async def test_append(self, client):
         assert await client.append("a", "a1") == 2

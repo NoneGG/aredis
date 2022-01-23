@@ -27,7 +27,7 @@ from coredis.exceptions import (
     TimeoutError,
     TryAgainError,
 )
-from coredis.utils import LOOP_DEPRECATED, b, nativestr
+from coredis.utils import b, nativestr
 
 try:
     import hiredis
@@ -45,10 +45,7 @@ SYM_EMPTY = b("")
 
 async def exec_with_timeout(coroutine, timeout, *, loop=None):
     try:
-        if LOOP_DEPRECATED:
-            return await asyncio.wait_for(coroutine, timeout)
-        else:
-            return await asyncio.wait_for(coroutine, timeout, loop=loop)
+        return await asyncio.wait_for(coroutine, timeout)
     except asyncio.TimeoutError as exc:
         raise TimeoutError(exc)
 
@@ -698,14 +695,9 @@ class Connection(BaseConnection):
         self.socket_keepalive_options = socket_keepalive_options or {}
 
     async def _connect(self):
-        if LOOP_DEPRECATED:
-            connection = asyncio.open_connection(
-                host=self.host, port=self.port, ssl=self.ssl_context
-            )
-        else:
-            connection = asyncio.open_connection(
-                host=self.host, port=self.port, ssl=self.ssl_context, loop=self.loop
-            )
+        connection = asyncio.open_connection(
+            host=self.host, port=self.port, ssl=self.ssl_context
+        )
         reader, writer = await exec_with_timeout(
             connection, self._connect_timeout, loop=self.loop
         )
@@ -771,14 +763,7 @@ class UnixDomainSocketConnection(BaseConnection):
         self._description_args = {"path": self.path, "db": self.db}
 
     async def _connect(self):
-        if LOOP_DEPRECATED:
-            connection = asyncio.open_unix_connection(
-                path=self.path, ssl=self.ssl_context
-            )
-        else:
-            connection = asyncio.open_unix_connection(
-                path=self.path, ssl=self.ssl_context, loop=self.loop
-            )
+        connection = asyncio.open_unix_connection(path=self.path, ssl=self.ssl_context)
         reader, writer = await exec_with_timeout(
             connection, self._connect_timeout, loop=self.loop
         )

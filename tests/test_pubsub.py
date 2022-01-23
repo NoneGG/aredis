@@ -58,7 +58,7 @@ def make_subscribe_test_data(pubsub, type):
     assert False, "invalid subscribe type: %s" % type
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 @targets("redis_basic")
 class TestPubSubSubscribeUnsubscribe:
     async def _test_subscribe_unsubscribe(
@@ -230,7 +230,7 @@ class TestPubSubSubscribeUnsubscribe:
         assert p.subscribed is False
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 @targets("redis_basic")
 class TestPubSubMessages:
     def setup_method(self, method):
@@ -359,7 +359,7 @@ class TestPubSubMessages:
         await p.unsubscribe()
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestPubSubRedisDown:
     async def test_channel_subscribe(self):
         client = coredis.StrictRedis(host="localhost", port=9999)
@@ -368,7 +368,7 @@ class TestPubSubRedisDown:
             await p.subscribe("foo")
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 @targets("redis_basic")
 class TestPubSubPubSubSubcommands:
     async def test_pubsub_channels(self, client):

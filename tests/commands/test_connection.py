@@ -5,7 +5,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestConnection:
     async def test_ping(self, client):
         assert await client.ping()

@@ -5,7 +5,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestSet:
     async def test_sadd(self, client):
         members = set([b("1"), b("2"), b("3")])

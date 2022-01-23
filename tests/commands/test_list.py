@@ -5,7 +5,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestList:
     async def test_blpop(self, client):
         await client.rpush("a{foo}", "1", "2")

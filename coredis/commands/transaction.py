@@ -2,7 +2,7 @@ import asyncio
 import warnings
 
 from coredis.exceptions import WatchError
-from coredis.utils import LOOP_DEPRECATED, bool_ok, string_keys_to_dict
+from coredis.utils import bool_ok, string_keys_to_dict
 
 
 class TransactionCommandMixin:
@@ -28,12 +28,7 @@ class TransactionCommandMixin:
                     return func_value if value_from_callable else exec_value
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
-                        if LOOP_DEPRECATED:
-                            await asyncio.sleep(watch_delay)
-                        else:
-                            await asyncio.sleep(
-                                watch_delay, loop=self.connection_pool.loop
-                            )
+                        await asyncio.sleep(watch_delay)
                     continue
 
     async def watch(self, *keys):
@@ -70,10 +65,5 @@ class ClusterTransactionCommandMixin(TransactionCommandMixin):
                     return func_value if value_from_callable else exec_value
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
-                        if LOOP_DEPRECATED:
-                            await asyncio.sleep(watch_delay)
-                        else:
-                            await asyncio.sleep(
-                                watch_delay, loop=self.connection_pool.loop
-                            )
+                        await asyncio.sleep(watch_delay)
                     continue

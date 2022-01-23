@@ -24,7 +24,7 @@ return "hello " .. name
 """
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 @targets("redis_basic")
 class TestScripting:
     async def test_eval(self, client):

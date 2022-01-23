@@ -5,7 +5,7 @@ from coredis.utils import b
 from tests.conftest import targets
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 @targets("redis_basic")
 class TestPipeline:
     async def test_pipeline(self, client):

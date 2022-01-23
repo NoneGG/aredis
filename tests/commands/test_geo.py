@@ -5,7 +5,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestGeo:
     async def test_geoadd(self, client):
         values = (2.1909389952632, 41.433791470673, "place1") + (

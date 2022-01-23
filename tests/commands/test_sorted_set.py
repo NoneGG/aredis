@@ -6,7 +6,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestSortedSet:
     async def test_zadd(self, client):
         await client.zadd("a{foo}", a1=1, a2=2, a3=3)

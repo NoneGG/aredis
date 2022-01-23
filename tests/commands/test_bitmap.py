@@ -8,7 +8,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic", "redis_cluster")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestBitmap:
     async def test_bitcount(self, client):
         await client.setbit("a", 5, True)

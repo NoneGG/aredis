@@ -7,7 +7,7 @@ from tests.conftest import targets
 
 
 @targets("redis_basic")
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 class TestServer:
     async def slowlog(self, client):
         current_config = await client.config_get()

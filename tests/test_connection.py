@@ -5,7 +5,7 @@ import pytest
 from coredis import Connection
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 async def test_connect_tcp(event_loop, redis_basic):
     conn = Connection(loop=event_loop)
     assert conn.host == "127.0.0.1"
@@ -19,7 +19,7 @@ async def test_connect_tcp(event_loop, redis_basic):
     assert (conn._reader is None) and (conn._writer is None)
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 async def test_connect_tcp_keepalive_options(event_loop, redis_basic):
     conn = Connection(
         loop=event_loop,
@@ -43,7 +43,7 @@ async def test_connect_tcp_keepalive_options(event_loop, redis_basic):
 
 
 @pytest.mark.parametrize("option", ["UNKNOWN", 999])
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option, redis_basic):
     conn = Connection(
         loop=event_loop, socket_keepalive=True, socket_keepalive_options={option: 1}
@@ -55,7 +55,7 @@ async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option, redis_bas
 
 
 # only test during dev
-# @pytest.mark.asyncio(forbid_global_loop=True)
+# @pytest.mark.asyncio()
 # async def test_connect_unix_socket(event_loop):
 #     # to run this test case you should change your redis configuration
 #     # unixsocket /var/run/redis/redis.sock

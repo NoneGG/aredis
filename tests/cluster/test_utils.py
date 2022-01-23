@@ -196,7 +196,7 @@ def test_first_key_value_error():
         first_key(None)
 
 
-@pytest.mark.asyncio(forbid_global_loop=True)
+@pytest.mark.asyncio()
 async def test_clusterdown_wrapper():
     @clusterdown_wrapper
     def bad_func():
