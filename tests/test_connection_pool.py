@@ -54,7 +54,8 @@ class TestConnectionPool:
         assert isinstance(connection, DummyConnection)
         assert connection.kwargs == connection_kwargs
 
-    def test_multiple_connections(self):
+    @pytest.mark.asyncio()
+    async def test_multiple_connections(self):
         pool = self.get_pool()
         c1 = await pool.get_connection()
         c2 = await pool.get_connection()
@@ -105,7 +106,7 @@ class TestConnectionPool:
         await rs.info()
         assert len(rs.connection_pool._available_connections) == 1
         assert len(rs.connection_pool._in_use_connections) == 0
-        conn = await rs.connection_pool._available_connections[0]
+        conn = rs.connection_pool._available_connections[0]
         last_active_at = conn.last_active_at
         await asyncio.sleep(0.3)
         assert len(rs.connection_pool._available_connections) == 0
