@@ -1,12 +1,13 @@
 import time
 
 import pytest
+from flaky import flaky
 
 from coredis.exceptions import LockError
 from coredis.lock import ClusterLock
 
 
-@pytest.mark.flaky
+@flaky(max_runs=3)
 class TestLock:
     lock_class = ClusterLock
 
