@@ -43,7 +43,7 @@ async def check_min_version(request, client):
 def check_redis_cluster_ready(host, port):
     try:
         return len(redis.Redis(host, 7000).cluster("slots")) == 3
-    except:
+    except Exception:
         return False
 
 
