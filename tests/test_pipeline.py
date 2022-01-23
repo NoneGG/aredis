@@ -1,15 +1,15 @@
-from __future__ import with_statement
-
 import pytest
 
 from coredis.exceptions import ResponseError, WatchError
 from coredis.utils import b
+from tests.conftest import targets
 
 
+@pytest.mark.asyncio(forbid_global_loop=True)
+@targets("redis_basic")
 class TestPipeline:
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_pipeline(self, r):
-        async with await r.pipeline() as pipe:
+    async def test_pipeline(self, client):
+        async with await client.pipeline() as pipe:
             await pipe.set("a", "a1")
             await pipe.get("a")
             await pipe.zadd("z", z1=1)
@@ -25,9 +25,8 @@ class TestPipeline:
                 [(b("z1"), 2.0), (b("z2"), 4)],
             ]
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_pipeline_length(self, r):
-        async with await r.pipeline() as pipe:
+    async def test_pipeline_length(self, client):
+        async with await client.pipeline() as pipe:
             # Initially empty.
             assert len(pipe) == 0
             assert not pipe
@@ -44,22 +43,20 @@ class TestPipeline:
             assert len(pipe) == 0
             assert not pipe
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_pipeline_no_transaction(self, r):
-        async with await r.pipeline(transaction=False) as pipe:
+    async def test_pipeline_no_transaction(self, client):
+        async with await client.pipeline(transaction=False) as pipe:
             await pipe.set("a", "a1")
             await pipe.set("b", "b1")
             await pipe.set("c", "c1")
             assert await pipe.execute() == [True, True, True]
-            assert await r.get("a") == b("a1")
-            assert await r.get("b") == b("b1")
-            assert await r.get("c") == b("c1")
+            assert await client.get("a") == b("a1")
+            assert await client.get("b") == b("b1")
+            assert await client.get("c") == b("c1")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_pipeline_no_transaction_watch(self, r):
-        await r.set("a", 0)
+    async def test_pipeline_no_transaction_watch(self, client):
+        await client.set("a", 0)
 
-        async with await r.pipeline(transaction=False) as pipe:
+        async with await client.pipeline(transaction=False) as pipe:
             await pipe.watch("a")
             a = await pipe.get("a")
 
@@ -67,15 +64,14 @@ class TestPipeline:
             await pipe.set("a", int(a) + 1)
             assert await pipe.execute() == [True]
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_pipeline_no_transaction_watch_failure(self, r):
-        await r.set("a", 0)
+    async def test_pipeline_no_transaction_watch_failure(self, client):
+        await client.set("a", 0)
 
-        async with await r.pipeline(transaction=False) as pipe:
+        async with await client.pipeline(transaction=False) as pipe:
             await pipe.watch("a")
             a = await pipe.get("a")
 
-            await r.set("a", "bad")
+            await client.set("a", "bad")
 
             pipe.multi()
             await pipe.set("a", int(a) + 1)
@@ -83,16 +79,15 @@ class TestPipeline:
             with pytest.raises(WatchError):
                 await pipe.execute()
 
-            assert await r.get("a") == b("bad")
+            assert await client.get("a") == b("bad")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_exec_error_in_response(self, r):
+    async def test_exec_error_in_response(self, client):
         """
         an invalid pipeline command at exec time adds the exception instance
         to the list of returned values
         """
-        await r.set("c", "a")
-        async with await r.pipeline() as pipe:
+        await client.set("c", "a")
+        async with await client.pipeline() as pipe:
             await pipe.set("a", 1)
             await pipe.set("b", 2)
             await pipe.lpush("c", 3)
@@ -100,29 +95,28 @@ class TestPipeline:
             result = await pipe.execute(raise_on_error=False)
 
             assert result[0]
-            assert await r.get("a") == b("1")
+            assert await client.get("a") == b("1")
             assert result[1]
-            assert await r.get("b") == b("2")
+            assert await client.get("b") == b("2")
 
             # we can't lpush to a key that's a string value, so this should
             # be a ResponseError exception
             assert isinstance(result[2], ResponseError)
-            assert await r.get("c") == b("a")
+            assert await client.get("c") == b("a")
 
             # since this isn't a transaction, the other commands after the
             # error are still executed
             assert result[3]
-            assert await r.get("d") == b("4")
+            assert await client.get("d") == b("4")
 
             # make sure the pipe was restored to a working state
             await pipe.set("z", "zzz")
             assert await pipe.execute() == [True]
-            assert await r.get("z") == b("zzz")
+            assert await client.get("z") == b("zzz")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_exec_error_raised(self, r):
-        await r.set("c", "a")
-        async with await r.pipeline() as pipe:
+    async def test_exec_error_raised(self, client):
+        await client.set("c", "a")
+        async with await client.pipeline() as pipe:
             await pipe.set("a", 1)
             await pipe.set("b", 2)
             await pipe.lpush("c", 3)
@@ -133,11 +127,10 @@ class TestPipeline:
             # make sure the pipe was restored to a working state
             await pipe.set("z", "zzz")
             assert await pipe.execute() == [True]
-            assert await r.get("z") == b("zzz")
+            assert await client.get("z") == b("zzz")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_parse_error_raised(self, r):
-        async with await r.pipeline() as pipe:
+    async def test_parse_error_raised(self, client):
+        async with await client.pipeline() as pipe:
             # the zrem is invalid because we don't pass any keys to it
             await pipe.set("a", 1)
             await pipe.zrem("b")
@@ -148,14 +141,13 @@ class TestPipeline:
             # make sure the pipe was restored to a working state
             await pipe.set("z", "zzz")
             assert await pipe.execute() == [True]
-            assert await r.get("z") == b("zzz")
+            assert await client.get("z") == b("zzz")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_watch_succeed(self, r):
-        await r.set("a", 1)
-        await r.set("b", 2)
+    async def test_watch_succeed(self, client):
+        await client.set("a", 1)
+        await client.set("b", 2)
 
-        async with await r.pipeline() as pipe:
+        async with await client.pipeline() as pipe:
             await pipe.watch("a", "b")
             assert pipe.watching
             a_value = await pipe.get("a")
@@ -168,14 +160,13 @@ class TestPipeline:
             assert await pipe.execute() == [True]
             assert not pipe.watching
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_watch_failure(self, r):
-        await r.set("a", 1)
-        await r.set("b", 2)
+    async def test_watch_failure(self, client):
+        await client.set("a", 1)
+        await client.set("b", 2)
 
-        async with await r.pipeline() as pipe:
+        async with await client.pipeline() as pipe:
             await pipe.watch("a", "b")
-            await r.set("b", 3)
+            await client.set("b", 3)
             pipe.multi()
             await pipe.get("a")
             with pytest.raises(WatchError):
@@ -183,23 +174,21 @@ class TestPipeline:
 
             assert not pipe.watching
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_unwatch(self, r):
-        await r.set("a", 1)
-        await r.set("b", 2)
+    async def test_unwatch(self, client):
+        await client.set("a", 1)
+        await client.set("b", 2)
 
-        async with await r.pipeline() as pipe:
+        async with await client.pipeline() as pipe:
             await pipe.watch("a", "b")
-            await r.set("b", 3)
+            await client.set("b", 3)
             await pipe.unwatch()
             assert not pipe.watching
             await pipe.get("a")
             assert await pipe.execute() == [b("1")]
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_transaction_callable(self, r):
-        await r.set("a", 1)
-        await r.set("b", 2)
+    async def test_transaction_callable(self, client):
+        await client.set("a", 1)
+        await client.set("b", 2)
         has_run = []
 
         async def my_transaction(pipe):
@@ -210,38 +199,37 @@ class TestPipeline:
 
             # silly run-once code... incr's "a" so WatchError should be raised
             # forcing this all to run again. this should incr "a" once to "2"
+
             if not has_run:
-                await r.incr("a")
+                await client.incr("a")
                 has_run.append("it has")
 
             pipe.multi()
             await pipe.set("c", int(a_value) + int(b_value))
 
-        result = await r.transaction(my_transaction, "a", "b", watch_delay=0.01)
+        result = await client.transaction(my_transaction, "a", "b", watch_delay=0.01)
         assert result == [True]
-        assert await r.get("c") == b("4")
+        assert await client.get("c") == b("4")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_exec_error_in_no_transaction_pipeline(self, r):
-        await r.set("a", 1)
-        async with await r.pipeline(transaction=False) as pipe:
+    async def test_exec_error_in_no_transaction_pipeline(self, client):
+        await client.set("a", 1)
+        async with await client.pipeline(transaction=False) as pipe:
             await pipe.llen("a")
             await pipe.expire("a", 100)
 
             with pytest.raises(ResponseError):
                 await pipe.execute()
 
-        assert await r.get("a") == b("1")
+        assert await client.get("a") == b("1")
 
-    @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_exec_error_in_no_transaction_pipeline_unicode_command(self, r):
+    async def test_exec_error_in_no_transaction_pipeline_unicode_command(self, client):
         key = chr(11) + "abcd" + chr(23)
-        await r.set(key, 1)
-        async with await r.pipeline(transaction=False) as pipe:
+        await client.set(key, 1)
+        async with await client.pipeline(transaction=False) as pipe:
             await pipe.llen(key)
             await pipe.expire(key, 100)
 
             with pytest.raises(ResponseError):
                 await pipe.execute()
 
-        assert await r.get(key) == b("1")
+        assert await client.get(key) == b("1")

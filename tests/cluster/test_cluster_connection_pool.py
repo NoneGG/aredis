@@ -1,28 +1,21 @@
 # -*- coding: utf-8 -*-
-
-
-# python std lib
 from __future__ import with_statement
 
 import asyncio
 import os
 
-# 3rd party imports
 import pytest
 from mock import Mock, patch
 
-# rediscluster imports
 from coredis import StrictRedis
 from coredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
 from coredis.exceptions import RedisClusterException
 from coredis.pool import ClusterConnectionPool, ConnectionPool
 
-try:
-    pass
 
-    ssl_available = True
-except ImportError:
-    ssl_available = False
+@pytest.fixture(autouse=True)
+def setup(redis_cluster):
+    pass
 
 
 class DummyConnection:
@@ -54,10 +47,11 @@ class TestConnectionPool:
             **connection_kwargs
         )
         await pool.initialize()
+
         return pool
 
     @pytest.mark.asyncio()
-    async def test_in_use_not_exists(self):
+    async def test_in_use_not_exists(self, redis_cluster):
         """
         Test that if for some reason, the node that it tries to get the connectino for
         do not exists in the _in_use_connection variable.
@@ -67,23 +61,24 @@ class TestConnectionPool:
         pool.get_connection("pubsub", channel="foobar")
 
     @pytest.mark.asyncio()
-    async def test_connection_creation(self):
+    async def test_connection_creation(self, redis_cluster):
         connection_kwargs = {"foo": "bar", "biz": "baz"}
         pool = await self.get_pool(connection_kwargs=connection_kwargs)
         connection = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         assert isinstance(connection, DummyConnection)
+
         for key in connection_kwargs:
             assert connection.kwargs[key] == connection_kwargs[key]
 
     @pytest.mark.asyncio()
-    async def test_multiple_connections(self):
+    async def test_multiple_connections(self, redis_cluster):
         pool = await self.get_pool()
         c1 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         c2 = pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         assert c1 != c2
 
     @pytest.mark.asyncio()
-    async def test_max_connections(self):
+    async def test_max_connections(self, redis_cluster):
         pool = await self.get_pool(max_connections=2)
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
@@ -91,7 +86,7 @@ class TestConnectionPool:
             pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
 
     @pytest.mark.asyncio()
-    async def test_max_connections_per_node(self):
+    async def test_max_connections_per_node(self, redis_cluster):
         pool = await self.get_pool(max_connections=2, max_connections_per_node=True)
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
@@ -246,6 +241,7 @@ class TestReadOnlyConnectionPool:
             **connection_kwargs
         )
         await pool.initialize()
+
         return pool
 
     @pytest.mark.asyncio()
@@ -270,20 +266,6 @@ class TestReadOnlyConnectionPool:
         pool.get_connection_by_node({"host": "127.0.0.1", "port": 7001})
         with pytest.raises(RedisClusterException):
             pool.get_connection_by_node({"host": "127.0.0.1", "port": 7000})
-
-    @pytest.mark.asyncio()
-    async def test_get_node_by_slot(self):
-        """
-        We can randomly get all nodes in readonly mode.
-        """
-        pool = await self.get_pool(connection_kwargs={})
-
-        expected_ports = set(range(7000, 7006))
-        actual_ports = set()
-        for i in range(0, 16383):
-            node = pool.get_node_by_slot(i, "GET")
-            actual_ports.add(node["port"])
-        assert actual_ports == expected_ports
 
 
 class TestConnectionPoolURLParsing:

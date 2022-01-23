@@ -1,0 +1,111 @@
+version: '3.2'
+
+services:
+  # redis sentinel
+  redis-sentinel-master:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 6380
+    ports:
+      - '6380:6380'
+  redis-sentinel-slave:
+    image: "redis:${REDIS_VERSION:-latest}"
+    depends_on: [redis-sentinel-master]
+    command: redis-server --port 6381 --slaveof ${HOST_IP} 6380 --slave-announce-ip ${HOST_IP}
+    ports:
+      - '6381:6381'
+  redis-sentinel:
+    image: 'bitnami/redis-sentinel:${REDIS_VERSION:-latest}'
+    depends_on: [redis-sentinel-slave]
+    environment:
+      - REDIS_MASTER_SET=localhost-redis-sentinel
+      - REDIS_MASTER_HOST=${HOST_IP}
+      - REDIS_MASTER_PORT_NUMBER=6380
+    ports:
+      - '26379:26379'
+  redis-sentinel-master-auth:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 6382 --requirepass sekret
+    ports:
+      - '6382:6382'
+  redis-sentinel-slave-auth:
+    image: "redis:${REDIS_VERSION:-latest}"
+    depends_on: [redis-sentinel-master-auth]
+    command: redis-server --port 6383 --slaveof ${HOST_IP} 6382 --slave-announce-ip ${HOST_IP} --requirepass sekret --masterauth sekret
+    ports:
+      - '6383:6383'
+  redis-sentinel-auth:
+    image: 'bitnami/redis-sentinel:${REDIS_VERSION:-latest}'
+    depends_on: [redis-sentinel-slave-auth]
+    environment:
+      - REDIS_MASTER_SET=localhost-redis-sentinel
+      - REDIS_MASTER_HOST=${HOST_IP}
+      - REDIS_MASTER_PASSWORD=sekret
+      - REDIS_MASTER_PORT_NUMBER=6382
+      - REDIS_SENTINEL_PASSWORD=sekret
+    ports:
+      - '36379:26379'
+  # cluster
+  redis-cluster-1:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 7000 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    ports:
+      - '7000:7000'
+      - '17000:17000'
+  redis-cluster-2:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 7001 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    ports:
+      - '7001:7001'
+      - '17001:17001'
+  redis-cluster-3:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 7002 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    ports:
+      - '7002:7002'
+      - '17002:17002'
+  redis-cluster-4:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 7003 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    ports:
+      - '7003:7003'
+      - '17003:17003'
+  redis-cluster-5:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 7004 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    ports:
+      - '7004:7004'
+      - '17004:17004'
+  redis-cluster-6:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 7005 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    ports:
+      - '7005:7005'
+      - '17005:17005'
+  redis-cluster-init:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: bash -c "echo yes | redis-cli --cluster create --cluster-replicas 1 ${HOST_IP}:7000 ${HOST_IP}:7001 ${HOST_IP}:7002 ${HOST_IP}:7003 ${HOST_IP}:7004 ${HOST_IP}:7005"
+    depends_on: [redis-cluster-1, redis-cluster-2, redis-cluster-3, redis-cluster-4, redis-cluster-5, redis-cluster-6]
+  redis-basic:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 6379
+    ports:
+      - '6379:6379'
+  redis-auth:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: redis-server --port 6389 --requirepass sekret
+    ports:
+      - '6389:6389'
+  redis-ssl:
+    image: "redis:${REDIS_SSL_VERSION:-latest}"
+    command: redis-server --port 0 --tls-port 8379 --tls-cert-file /tls/redis.crt --tls-key-file /tls/redis.key --tls-ca-cert-file /tls/ca.crt
+    ports:
+      - '8379:8379'
+    volumes:
+      - ./tests/tls:/tls
+  redis-uds:
+    image: "redis:${REDIS_VERSION:-latest}"
+    command: sh -c "test ${HOST_OS} = \"Darwin\" && exit || redis-server --port 0 --unixsocket /sockets/limits.redis.sock --unixsocketperm 777"
+    volumes:
+      - type: bind
+        source: /tmp/
+        target: /sockets/

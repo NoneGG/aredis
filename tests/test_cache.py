@@ -1,14 +1,13 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 import asyncio
 import time
 
 import pytest
 
 from coredis.cache import Cache, HerdCache
+from tests.conftest import targets
 
 
+@targets("redis_basic")
 class TestCache:
 
     app = "test_cache"
@@ -19,46 +18,46 @@ class TestCache:
         return data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_set(self, r):
-        cache = Cache(r, self.app)
+    async def test_set(self, client):
+        cache = Cache(client, self.app)
         res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
         identity = cache._gen_identity(self.key, self.data)
-        content = await r.get(identity)
+        content = await client.get(identity)
         content = cache._unpack(content)
         assert content == self.data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_set_timeout(self, r, event_loop):
-        cache = Cache(r, self.app)
+    async def test_set_timeout(self, client, event_loop):
+        cache = Cache(client, self.app)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
         )
         assert res
         identity = cache._gen_identity(self.key, self.data)
-        content = await r.get(identity)
+        content = await client.get(identity)
         content = cache._unpack(content)
         assert content == self.data
         await asyncio.sleep(1.1)
-        content = await r.get(identity)
+        content = await client.get(identity)
         assert content is None
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_set_with_plain_key(self, r):
-        cache = Cache(r, self.app, identity_generator_class=None)
+    async def test_set_with_plain_key(self, client):
+        cache = Cache(client, self.app, identity_generator_class=None)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
         )
         assert res
         identity = cache._gen_identity(self.key, self.data)
         assert identity == self.key
-        content = await r.get(identity)
+        content = await client.get(identity)
         content = cache._unpack(content)
         assert content == self.data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_get(self, r):
-        cache = Cache(r, self.app)
+    async def test_get(self, client):
+        cache = Cache(client, self.app)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
         )
@@ -67,16 +66,17 @@ class TestCache:
         assert content == self.data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_set_many(self, r):
-        cache = Cache(r, self.app)
+    async def test_set_many(self, client):
+        cache = Cache(client, self.app)
         res = await cache.set_many(self.expensive_work(self.data), self.data)
         assert res
+
         for key, value in self.data.items():
             assert await cache.get(key, self.data) == value
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_delete(self, r):
-        cache = Cache(r, self.app)
+    async def test_delete(self, client):
+        cache = Cache(client, self.app)
         res = await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
         )
@@ -89,8 +89,8 @@ class TestCache:
         assert content is None
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_delete_pattern(self, r):
-        cache = Cache(r, self.app)
+    async def test_delete_pattern(self, client):
+        cache = Cache(client, self.app)
         await cache.set_many(self.expensive_work(self.data), self.data)
         res = await cache.delete_pattern("test_*", 10)
         assert res == 3
@@ -98,8 +98,8 @@ class TestCache:
         assert content is None
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_ttl(self, r, event_loop):
-        cache = Cache(r, self.app)
+    async def test_ttl(self, client, event_loop):
+        cache = Cache(client, self.app)
         await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
         )
@@ -110,8 +110,8 @@ class TestCache:
         assert ttl < 0
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_exists(self, r, event_loop):
-        cache = Cache(r, self.app)
+    async def test_exists(self, client, event_loop):
+        cache = Cache(client, self.app)
         await cache.set(
             self.key, self.expensive_work(self.data), self.data, expire_time=1
         )
@@ -122,6 +122,7 @@ class TestCache:
         assert exists is False
 
 
+@targets("redis_basic")
 class TestHerdCache:
 
     app = "test_cache"
@@ -132,43 +133,52 @@ class TestHerdCache:
         return data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_set(self, r):
-        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+    async def test_set(self, client):
+        cache = HerdCache(
+            client, self.app, default_herd_timeout=1, extend_herd_timeout=1
+        )
         now = int(time.time())
         res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
         identity = cache._gen_identity(self.key, self.data)
-        content = await r.get(identity)
+        content = await client.get(identity)
         content, expect_expire_time = cache._unpack(content)
         # supposed equal to 1, but may there be latency
         assert expect_expire_time - now <= 1
         assert content == self.data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_get(self, r):
-        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+    async def test_get(self, client):
+        cache = HerdCache(
+            client, self.app, default_herd_timeout=1, extend_herd_timeout=1
+        )
         res = await cache.set(self.key, self.expensive_work(self.data), self.data)
         assert res
         content = await cache.get(self.key, self.data)
         assert content == self.data
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_set_many(self, r):
-        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+    async def test_set_many(self, client):
+        cache = HerdCache(
+            client, self.app, default_herd_timeout=1, extend_herd_timeout=1
+        )
         res = await cache.set_many(self.expensive_work(self.data), self.data)
         assert res
+
         for key, value in self.data.items():
             assert await cache.get(key, self.data) == value
 
     @pytest.mark.asyncio(forbid_global_loop=True)
-    async def test_herd(self, r, event_loop):
+    async def test_herd(self, client, event_loop):
         now = int(time.time())
-        cache = HerdCache(r, self.app, default_herd_timeout=1, extend_herd_timeout=1)
+        cache = HerdCache(
+            client, self.app, default_herd_timeout=1, extend_herd_timeout=1
+        )
         await cache.set(self.key, self.expensive_work(self.data), self.data)
         await asyncio.sleep(1)
         # first get
         identity = cache._gen_identity(self.key, self.data)
-        content = await r.get(identity)
+        content = await client.get(identity)
         content, expect_expire_time = cache._unpack(content)
         assert now + 1 == expect_expire_time
         # HerdCach.get
@@ -178,6 +188,6 @@ class TestHerdCache:
         assert res is None
         # second get
         identity = cache._gen_identity(self.key, self.data)
-        content = await r.get(identity)
+        content = await client.get(identity)
         content, new_expire_time = cache._unpack(content)
         assert new_expire_time >= expect_expire_time + 1

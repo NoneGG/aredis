@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 import socket
 
 import pytest
@@ -8,7 +6,7 @@ from coredis import Connection
 
 
 @pytest.mark.asyncio(forbid_global_loop=True)
-async def test_connect_tcp(event_loop):
+async def test_connect_tcp(event_loop, redis_basic):
     conn = Connection(loop=event_loop)
     assert conn.host == "127.0.0.1"
     assert conn.port == 6379
@@ -22,7 +20,7 @@ async def test_connect_tcp(event_loop):
 
 
 @pytest.mark.asyncio(forbid_global_loop=True)
-async def test_connect_tcp_keepalive_options(event_loop):
+async def test_connect_tcp_keepalive_options(event_loop, redis_basic):
     conn = Connection(
         loop=event_loop,
         socket_keepalive=True,
@@ -46,7 +44,7 @@ async def test_connect_tcp_keepalive_options(event_loop):
 
 @pytest.mark.parametrize("option", ["UNKNOWN", 999])
 @pytest.mark.asyncio(forbid_global_loop=True)
-async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option):
+async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option, redis_basic):
     conn = Connection(
         loop=event_loop, socket_keepalive=True, socket_keepalive_options={option: 1}
     )

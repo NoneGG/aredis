@@ -25,6 +25,11 @@ class DummyConnection:
         self.awaiting_response = False
 
 
+@pytest.fixture(autouse=True)
+def setup(redis_basic):
+    pass
+
+
 class TestConnectionPool:
     def get_pool(
         self,

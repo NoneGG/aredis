@@ -53,7 +53,7 @@ def test_keyslot():
 
 
 @pytest.mark.asyncio
-async def test_init_slots_cache_not_all_slots(s):
+async def test_init_slots_cache_not_all_slots(s, redis_cluster):
     """
     Test that if not all slots are covered it should raise an exception
     """
@@ -129,7 +129,9 @@ async def test_init_slots_cache_not_all_slots(s):
 
 
 @pytest.mark.asyncio
-async def test_init_slots_cache_not_all_slots_not_require_full_coverage(s):
+async def test_init_slots_cache_not_all_slots_not_require_full_coverage(
+    s, redis_cluster
+):
     """
     Test that if not all slots are covered it should raise an exception
     """
@@ -204,7 +206,7 @@ async def test_init_slots_cache_not_all_slots_not_require_full_coverage(s):
 
 
 @pytest.mark.asyncio
-async def test_init_slots_cache(s):
+async def test_init_slots_cache(s, redis_cluster):
     """
     Test that slots cache can in initialized and all slots are covered
     """
@@ -300,7 +302,7 @@ def test_wrong_startup_nodes_type():
 
 
 @pytest.mark.asyncio
-async def test_init_slots_cache_slots_collision():
+async def test_init_slots_cache_slots_collision(redis_cluster):
     """
     Test that if 2 nodes do not agree on the same slots setup it should raise an error.
     In this test both nodes will say that the first slots block should be bound to different
@@ -406,7 +408,7 @@ async def test_init_slots_cache_slots_collision():
 
 
 @pytest.mark.asyncio
-async def test_all_nodes():
+async def test_all_nodes(redis_cluster):
     """
     Set a list of nodes and it should be possible to itterate over all
     """
@@ -420,7 +422,7 @@ async def test_all_nodes():
 
 
 @pytest.mark.asyncio
-async def test_all_nodes_masters():
+async def test_all_nodes_masters(redis_cluster):
     """
     Set a list of nodes with random masters/slaves config and it shold be possible
     to itterate over all of them.
@@ -439,7 +441,7 @@ async def test_all_nodes_masters():
         assert node in nodes
 
 
-def test_random_startup_node():
+def test_random_startup_node(redis_cluster):
     """
     Hard to test reliable for a random
     """
@@ -452,7 +454,7 @@ def test_random_startup_node():
 
 
 @pytest.mark.asyncio
-async def test_cluster_slots_error():
+async def test_cluster_slots_error(redis_cluster):
     """
     Check that exception is raised if initialize can't execute
     'CLUSTER SLOTS' command.
@@ -485,7 +487,7 @@ def test_set_node():
 
 
 @pytest.mark.asyncio
-async def test_reset():
+async def test_reset(redis_cluster):
     """
     Test that reset method resets variables back to correct default values.
     """
@@ -504,7 +506,7 @@ async def test_reset():
 
 
 @pytest.mark.asyncio
-async def test_cluster_one_instance():
+async def test_cluster_one_instance(redis_cluster):
     """
     If the cluster exists of only 1 node then there is some hacks that must
     be validated they work.
@@ -554,7 +556,7 @@ async def test_cluster_one_instance():
 
 
 @pytest.mark.asyncio
-async def test_initialize_follow_cluster():
+async def test_initialize_follow_cluster(redis_cluster):
     n = NodeManager(
         nodemanager_follow_cluster=True,
         startup_nodes=[{"host": "127.0.0.1", "port": 7000}],
@@ -564,7 +566,7 @@ async def test_initialize_follow_cluster():
 
 
 @pytest.mark.asyncio
-async def test_init_with_down_node():
+async def test_init_with_down_node(redis_cluster):
     """
     If I can't connect to one of the nodes, everything should still work.
     But if I can't connect to any of the nodes, exception should be thrown.
