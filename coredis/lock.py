@@ -6,7 +6,7 @@ import warnings
 
 from coredis.connection import ClusterConnection
 from coredis.exceptions import LockError, WatchError
-from coredis.utils import b, dummy
+from coredis.utils import b, dummy, nativestr
 
 
 class Lock:
@@ -153,7 +153,7 @@ class Lock:
 
         async def execute_release(pipe):
             lock_value = await pipe.get(name)
-            if lock_value != expected_token:
+            if nativestr(lock_value) != nativestr(expected_token):
                 raise LockError("Cannot release a lock that's no longer owned")
             await pipe.delete(name)
 
