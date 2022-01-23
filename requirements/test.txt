@@ -1,3 +1,4 @@
+-r main.txt
 coverage
 docker-compose
 lovely-pytest-docker

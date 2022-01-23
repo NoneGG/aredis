@@ -7,8 +7,8 @@ hiredis
 inflect
 isort
 mypy==0.931
-redis>4
 requests
 twine
+typing-extensions
 uvloop
 wheel

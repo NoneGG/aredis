@@ -3,7 +3,11 @@ import functools
 import inspect
 import os
 import re
-from typing import Any, List, Literal, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
+try:
+    from typing import Literal
+except:
+    from typing_extensions import Literal
 
 import coredis
 import inflect
@@ -52,17 +56,21 @@ VERSIONADDED_DOC = re.compile("(.. versionadded:: ([\d\.]+))")
 
 inflection_engine = inflect.engine()
 
+RESP = None
 
-@functools.cache
 def get_commands():
-    return requests.get("https://redis.io/commands.json").json()
+    global RESP
 
+    if not RESP:
+        RESP = requests.get("https://redis.io/commands.json").json()
+
+    return RESP
 
 def get_official_commands(group=None):
     response = get_commands()
     by_group = {}
     [
-        by_group.setdefault(command["group"], []).append(command | {"name": name})
+        by_group.setdefault(command["group"], []).append({**command, **{"name": name}})
 
         for name, command in response.items()
 
@@ -113,28 +121,35 @@ def is_deprecated(command, kls):
         replacement = command.get("replaced_by", "")
         replacement = re.sub("`(.*?)`", "``\\1``", replacement)
         replacement_method = re.search("(``(.*?)``)", replacement)
-        if replacement_method := replacement_method.group():
+
+        replacement_method = replacement_method.group()
+
+        if replacement_method:
             preferred_method = f"Use :meth:`~coredis.{kls.__name__}.{sanitized(replacement_method, None).replace('`','')}` "
             replacement = replacement.replace(replacement_method, preferred_method)
+
         return command["deprecated_since"], replacement
 
 
 def sanitized(x, command=None):
     cleansed_name = x.lower().replace("-", "_").replace(":", "_")
 
-    if command and (
-        override := REDIS_ARGUMENT_NAME_OVERRIDES.get(command["name"], {}).get(
+    if command:
+        override = REDIS_ARGUMENT_NAME_OVERRIDES.get(command["name"], {}).get(
             cleansed_name
         )
-    ):
-        return override
+
+        if override:
+            return override
 
     return cleansed_name
 
 
 def skip_arg(argument):
-    if (arg_version := argument.get("since")) and version.parse(
-        arg_version
+    arg_version = argument.get("since")
+
+    if arg_version and version.parse(
+            arg_version
     ) > MAX_SUPPORTED_VERSION:
         return True
 
@@ -316,7 +331,9 @@ def generate_compatibility_section(
             server_new_in = ""
             server_deprecated = ""
             recommended_replacement = ""
-            if deprecation_info := is_deprecated(method, kls):
+
+            deprecation_info = is_deprecated(method, kls)
+            if deprecation_info:
                 server_deprecated = f"☠️ Deprecated in redis: {deprecation_info[0]}."
 
                 if deprecation_info[1]:
@@ -329,6 +346,7 @@ def generate_compatibility_section(
                 version_added = VERSIONADDED_DOC.findall(located.__doc__)
                 version_added = (version_added and version_added[0][0]) or ""
                 version_added.strip()
+
                 if not method["name"] in SKIP_SPEC:
                     current_signature = [
                         k for k in inspect.signature(located).parameters
