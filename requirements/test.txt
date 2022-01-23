@@ -1,6 +1,7 @@
 -r main.txt
 coverage
 docker-compose
+flaky
 lovely-pytest-docker
 mock
 pytest
