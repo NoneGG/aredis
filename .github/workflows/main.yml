@@ -19,6 +19,15 @@ jobs:
           - REDIS_VERSION=6.2.6 REDIS_SSL_VERSION=6.2.6
         parser: [hiredis, python]
         uvloop: ["False"]
+        include:
+          - python-version: 3.9
+            service_version: "REDIS_VERSION=latest REDIS_SSL_VERSION=latest"
+            parser: hiredis
+            uvloop: "True"
+          - python-version: "3.10"
+            service_version: "REDIS_VERSION=latest REDIS_SSL_VERSION=latest"
+            parser: hiredis
+            uvloop: "True"
     steps:
     - uses: actions/checkout@v2
     - name: Cache dependencies
