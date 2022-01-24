@@ -3,6 +3,20 @@
 Changelog
 =========
 
+v2.3.0
+------
+Release Date: 2022-01-23
+
+Final release maintaining backward compatibility with `aredis`_
+
+Chore:
+
+    * Add test coverage for uvloop
+    * Add test coverage for hiredis
+    * Extract tests to use docker-compose
+    * Add tests for basic authentication
+
+
 v2.2.3
 ------
 Release Date: 2022-01-22
@@ -219,6 +233,7 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
 
 
