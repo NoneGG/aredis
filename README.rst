@@ -22,6 +22,11 @@ coredis
 
 coredis is an async redis client with support for redis server, cluster & sentinel.
 
+The library was forked from `aredis <https://github.com/NoneGG/aredis>`_ which is
+now unmaintained. If you are looking for a drop in replacement head on over to
+the `2.x <https://github.com/alisaifee/coredis/tree/2.x>`_ branch which is
+backward compatible with the last release of ``aredis``.
+
 
 Installation
 ------------
