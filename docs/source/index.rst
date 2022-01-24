@@ -110,7 +110,6 @@ hiredis and uvloop can make coredis faster, but it is up to you whether to insta
 Supported python versions
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- 3.7
 - 3.8
 - 3.9
 - 3.10
