@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+import os
 import pathlib
-import re
-import sys
+
 import versioneer
 
 __author__ = "Ali-Akber Saifee"
@@ -10,31 +9,27 @@ __copyright__ = "Copyright 2022, Ali-Akber Saifee"
 
 try:
     from setuptools import setup
-    from setuptools.command.test import test as TestCommand
     from setuptools.command.build_ext import build_ext
     from setuptools.extension import Extension
-
-    class PyTest(TestCommand):
-        def finalize_options(self):
-            TestCommand.finalize_options(self)
-            self.test_args = []
-            self.test_suite = True
-
-        def run_tests(self):
-            # import here, because outside the eggs aren't loaded
-            import pytest
-
-            errno = pytest.main(self.test_args)
-            sys.exit(errno)
 
 
 except ImportError:
 
-    from distutils.core import setup, Extension
     from distutils.command.build_ext import build_ext
+    from distutils.core import Extension, setup
 
-    def PyTest(x):
-        x
+
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+
+
+def get_requirements(req_file):
+    requirements = []
+
+    for r in open(os.path.join(THIS_DIR, "requirements", req_file)).read().splitlines():
+        if r.strip():
+            requirements.append(r.strip())
+
+    return requirements
 
 
 class custom_build_ext(build_ext):
@@ -129,9 +124,9 @@ setup(
     license="MIT",
     packages=["coredis", "coredis.commands"],
     python_requires=">=3.8",
+    install_requires=get_requirements("main.txt"),
     extras_require={"hiredis": ["hiredis>=0.2.0"]},
-    tests_require=["pytest", "pytest_asyncio>=0.5.0"],
-    cmdclass=versioneer.get_cmdclass({"test": PyTest, "build_ext": custom_build_ext}),
+    cmdclass=versioneer.get_cmdclass({"build_ext": custom_build_ext}),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -142,5 +137,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
-    ext_modules=[Extension(name="coredis.speedups", sources=["coredis/speedups.c"]),],
+    ext_modules=[
+        Extension(name="coredis.speedups", sources=["coredis/speedups.c"]),
+    ],
 )

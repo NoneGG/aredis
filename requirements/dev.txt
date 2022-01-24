@@ -9,6 +9,5 @@ isort
 mypy==0.931
 requests
 twine
-typing-extensions
 uvloop
 wheel
