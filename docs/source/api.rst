@@ -79,6 +79,8 @@ General Exceptions
    :no-inherited-members:
 .. autoexception:: CompressError
    :no-inherited-members:
+.. autoexception:: CommandSyntaxError
+   :no-inherited-members:
 .. autoexception:: ConnectionError
    :no-inherited-members:
 .. autoexception:: DataError

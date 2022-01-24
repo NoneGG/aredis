@@ -1,5 +1,24 @@
+from typing import List
+
+
 class RedisError(Exception):
     pass
+
+
+class CommandSyntaxError(RedisError):
+    """
+    Raised when a redis command is called with an invalid syntax
+    """
+
+    def __init__(self, arguments: List[str], details: str):
+        self.arguments: List[str] = arguments
+        self.details = details
+        super().__init__(
+            (
+                f"Parameters: [{','.join(arguments)}] are mutually exclusive."
+                f"{' '+details if details else ''}"
+            )
+        )
 
 
 class ConnectionError(RedisError):
