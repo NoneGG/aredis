@@ -14,6 +14,8 @@ from coredis.utils import (
     string_keys_to_dict,
 )
 
+from . import CommandMixin
+
 
 def sort_return_tuples(response, **options):
     """
@@ -43,7 +45,7 @@ def parse_scan(response, **options):
     return int(cursor), r
 
 
-class KeysCommandMixin:
+class KeysCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("EXISTS EXPIRE EXPIREAT " "MOVE PERSIST RENAMENX", bool),

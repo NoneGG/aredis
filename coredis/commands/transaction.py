@@ -4,8 +4,10 @@ import warnings
 from coredis.exceptions import WatchError
 from coredis.utils import bool_ok, string_keys_to_dict
 
+from . import CommandMixin
 
-class TransactionCommandMixin:
+
+class TransactionCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = string_keys_to_dict("WATCH UNWATCH", bool_ok)
 

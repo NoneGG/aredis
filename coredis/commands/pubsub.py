@@ -1,12 +1,14 @@
 from coredis.pubsub import ClusterPubSub, PubSub
 from coredis.utils import NodeFlag, dict_merge, list_keys_to_dict, merge_result
 
+from . import CommandMixin
+
 
 def parse_pubsub_numsub(response, **options):
     return list(zip(response[0::2], response[1::2]))
 
 
-class PubSubCommandMixin:
+class PubSubCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = {
         "PUBSUB NUMSUB": parse_pubsub_numsub,

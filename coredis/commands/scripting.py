@@ -1,8 +1,10 @@
 from coredis.exceptions import DataError
 from coredis.utils import NodeFlag, bool_ok, dict_merge, list_keys_to_dict, nativestr
 
+from . import CommandMixin
 
-class ScriptingCommandMixin:
+
+class ScriptingCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = {
         "SCRIPT EXISTS": lambda r: list(map(bool, r)),

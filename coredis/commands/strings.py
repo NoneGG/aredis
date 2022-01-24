@@ -1,6 +1,8 @@
 import datetime
 import time
+from typing import Dict, Optional, Union
 
+from coredis.commands import CommandMixin
 from coredis.exceptions import DataError, ReadOnlyError, RedisError
 from coredis.utils import (
     NodeFlag,
@@ -87,7 +89,7 @@ class BitFieldOperation:
         return await self.redis.execute_command(*self._command_stack)
 
 
-class StringsCommandMixin:
+class StringsCommandMixin(CommandMixin):
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("MSETNX PSETEX SETEX SETNX", bool),
         string_keys_to_dict(

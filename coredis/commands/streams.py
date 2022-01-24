@@ -1,6 +1,8 @@
 from coredis.exceptions import RedisError
 from coredis.utils import bool_ok, dict_merge, pairs_to_dict, string_keys_to_dict
 
+from . import CommandMixin
+
 
 def stream_list(response):
     result = []
@@ -43,7 +45,7 @@ def parse_xinfo_stream(response):
     return res
 
 
-class StreamsCommandMixin:
+class StreamsCommandMixin(CommandMixin):
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("XREVRANGE XRANGE", stream_list),
         string_keys_to_dict("XREAD XREADGROUP", multi_stream_list),

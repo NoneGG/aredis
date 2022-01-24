@@ -1,5 +1,7 @@
 from coredis.utils import b, dict_merge, first_key, list_or_args, string_keys_to_dict
 
+from . import CommandMixin
+
 
 def parse_sscan(response, **options):
     cursor, r = response
@@ -7,7 +9,7 @@ def parse_sscan(response, **options):
     return int(cursor), r
 
 
-class SetsCommandMixin:
+class SetsCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict(

@@ -2,6 +2,8 @@ import warnings
 
 from coredis.utils import NodeFlag, bool_ok, dict_merge, list_keys_to_dict, nativestr
 
+from . import CommandMixin
+
 SENTINEL_STATE_TYPES = {
     "can-failover-its-master": int,
     "config-epoch": int,
@@ -32,6 +34,7 @@ SENTINEL_STATE_TYPES = {
 def pairs_to_dict_typed(response, type_info):
     it = iter(response)
     result = {}
+
     for key, value in zip(it, it):
         if key in type_info:
             try:
@@ -41,12 +44,14 @@ def pairs_to_dict_typed(response, type_info):
                 # the string value
                 pass
         result[key] = value
+
     return result
 
 
 def parse_sentinel_state(item):
     result = pairs_to_dict_typed(item, SENTINEL_STATE_TYPES)
     flags = set(result["flags"].split(","))
+
     for name, flag in (
         ("is_master", "master"),
         ("is_slave", "slave"),
@@ -57,6 +62,7 @@ def parse_sentinel_state(item):
         ("is_master_down", "master_down"),
     ):
         result[name] = flag in flags
+
     return result
 
 
@@ -66,9 +72,11 @@ def parse_sentinel_master(response):
 
 def parse_sentinel_masters(response):
     result = {}
+
     for item in response:
         state = parse_sentinel_state(map(nativestr, item))
         result[state["name"]] = state
+
     return result
 
 
@@ -80,7 +88,7 @@ def parse_sentinel_get_master(response):
     return response and (response[0], int(response[1])) or None
 
 
-class SentinelCommandMixin:
+class SentinelCommandMixin(CommandMixin):
     RESPONSE_CALLBACKS = {
         "SENTINEL GET-MASTER-ADDR-BY-NAME": parse_sentinel_get_master,
         "SENTINEL MASTER": parse_sentinel_master,
@@ -98,36 +106,44 @@ class SentinelCommandMixin:
 
     async def sentinel_get_master_addr_by_name(self, service_name):
         """Returns a (host, port) pair for the given ``service_name``"""
+
         return await self.execute_command(
             "SENTINEL GET-MASTER-ADDR-BY-NAME", service_name
         )
 
     async def sentinel_master(self, service_name):
         """Returns a dictionary containing the specified masters state."""
+
         return await self.execute_command("SENTINEL MASTER", service_name)
 
     async def sentinel_masters(self):
         """Returns a list of dictionaries containing each master's state."""
+
         return await self.execute_command("SENTINEL MASTERS")
 
     async def sentinel_monitor(self, name, ip, port, quorum):
         """Adds a new master to Sentinel to be monitored"""
+
         return await self.execute_command("SENTINEL MONITOR", name, ip, port, quorum)
 
     async def sentinel_remove(self, name):
         """Removes a master from Sentinel's monitoring"""
+
         return await self.execute_command("SENTINEL REMOVE", name)
 
     async def sentinel_sentinels(self, service_name):
         """Returns a list of sentinels for ``service_name``"""
+
         return await self.execute_command("SENTINEL SENTINELS", service_name)
 
     async def sentinel_set(self, name, option, value):
         """Sets Sentinel monitoring parameters for a given master"""
+
         return await self.execute_command("SENTINEL SET", name, option, value)
 
     async def sentinel_slaves(self, service_name):
         """Returns a list of slaves for ``service_name``"""
+
         return await self.execute_command("SENTINEL SLAVES", service_name)
 
 

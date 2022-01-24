@@ -1,7 +1,9 @@
 from coredis.utils import NodeFlag, bool_ok, nativestr
 
+from . import CommandMixin
 
-class ConnectionCommandMixin:
+
+class ConnectionCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = {
         "AUTH": bool,
@@ -11,10 +13,12 @@ class ConnectionCommandMixin:
 
     async def echo(self, value):
         "Echo the string back from the server"
+
         return await self.execute_command("ECHO", value)
 
     async def ping(self):
         "Ping the Redis server"
+
         return await self.execute_command("PING")
 
 

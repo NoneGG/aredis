@@ -1,8 +1,10 @@
 from coredis.exceptions import DataError, RedisClusterException, RedisError
 from coredis.utils import b, bool_ok, dict_merge, nativestr, string_keys_to_dict
 
+from . import CommandMixin
 
-class ListsCommandMixin:
+
+class ListsCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("BLPOP BRPOP", lambda r: r and tuple(r) or None),

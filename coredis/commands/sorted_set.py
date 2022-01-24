@@ -11,6 +11,8 @@ from coredis.utils import (
     string_keys_to_dict,
 )
 
+from . import CommandMixin
+
 VALID_ZADD_OPTIONS = {"NX", "XX", "CH", "INCR"}
 
 
@@ -47,7 +49,7 @@ def parse_zscan(response, **options):
     return int(cursor), list(zip(it, map(score_cast_func, it)))
 
 
-class SortedSetCommandMixin:
+class SortedSetCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict(

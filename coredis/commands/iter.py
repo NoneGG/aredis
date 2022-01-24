@@ -1,8 +1,7 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from . import CommandMixin
 
 
-class IterCommandMixin:
+class IterCommandMixin(CommandMixin):
     """
     convenient function of scan iter, make it a class separately
     because yield can not be used in async function in Python3.6

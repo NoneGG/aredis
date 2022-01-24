@@ -1,6 +1,8 @@
 from coredis.exceptions import DataError, RedisError
 from coredis.utils import nativestr
 
+from . import CommandMixin
+
 
 def parse_geosearch_generic(response, **options):
     """
@@ -39,7 +41,7 @@ def parse_geosearch_generic(response, **options):
     return [list(map(lambda fv: fv[0](fv[1]), zip(f, r))) for r in response_list]
 
 
-class GeoCommandMixin:
+class GeoCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = {
         "GEOPOS": lambda r: list(

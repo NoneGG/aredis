@@ -12,6 +12,8 @@ from coredis.utils import (
     string_keys_to_dict,
 )
 
+from . import CommandMixin
+
 
 def parse_slowlog_get(response, **options):
     return [
@@ -148,7 +150,7 @@ def parse_role(response):
     return parser(response)
 
 
-class ServerCommandMixin:
+class ServerCommandMixin(CommandMixin):
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("BGREWRITEAOF BGSAVE", lambda r: True),
         string_keys_to_dict("FLUSHALL FLUSHDB SAVE " "SHUTDOWN SLAVEOF", bool_ok),

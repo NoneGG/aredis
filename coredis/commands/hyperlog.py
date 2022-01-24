@@ -3,8 +3,10 @@ import string
 
 from coredis.utils import bool_ok, dict_merge, string_keys_to_dict
 
+from . import CommandMixin
 
-class HyperLogCommandMixin:
+
+class HyperLogCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("PFADD PFCOUNT", int), {"PFMERGE": bool_ok}

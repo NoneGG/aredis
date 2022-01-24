@@ -9,6 +9,8 @@ from coredis.utils import (
     string_keys_to_dict,
 )
 
+from . import CommandMixin
+
 
 def parse_hscan(response, **options):
     cursor, r = response
@@ -16,7 +18,7 @@ def parse_hscan(response, **options):
     return int(cursor), r and pairs_to_dict(r) or {}
 
 
-class HashCommandMixin:
+class HashCommandMixin(CommandMixin):
 
     RESPONSE_CALLBACKS = dict_merge(
         string_keys_to_dict("HDEL HLEN", int),
