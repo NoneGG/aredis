@@ -72,18 +72,6 @@ class LockError(RedisError, ValueError):
     # This was originally chosen to behave like threading.Lock.
 
 
-class CacheError(RedisError):
-    """Base exception for :mod:`coredis.cache`"""
-
-
-class SerializeError(CacheError):
-    pass
-
-
-class CompressError(CacheError):
-    pass
-
-
 class RedisClusterException(Exception):
     """Base exception for the RedisCluster client"""
 

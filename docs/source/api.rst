@@ -75,10 +75,6 @@ General Exceptions
 -------------------
 .. autoexception:: BusyLoadingError
    :no-inherited-members:
-.. autoexception:: CacheError
-   :no-inherited-members:
-.. autoexception:: CompressError
-   :no-inherited-members:
 .. autoexception:: CommandSyntaxError
    :no-inherited-members:
 .. autoexception:: ConnectionError
@@ -100,8 +96,6 @@ General Exceptions
 .. autoexception:: RedisError
    :no-inherited-members:
 .. autoexception:: ResponseError
-   :no-inherited-members:
-.. autoexception:: SerializeError
    :no-inherited-members:
 .. autoexception:: TimeoutError
    :no-inherited-members:
