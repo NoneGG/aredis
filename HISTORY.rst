@@ -3,6 +3,14 @@
 Changelog
 =========
 
+v2.3.1
+------
+Release Date: 2022-01-30
+
+Chore:
+
+    * Standardize doc themes
+
 v2.3.0
 ------
 Release Date: 2022-01-23
@@ -233,6 +241,7 @@ v1.0.1
     * fix bug of `PubSub.run_in_thread`
     * add more examples
     * change `Script.register` to `Script.execute`
+
 
 
 
