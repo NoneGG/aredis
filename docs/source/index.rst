@@ -3,22 +3,22 @@ coredis
 
 .. container:: badges
 
-   .. image:: https://github.com/alisaifee/coredis/workflows/CI/badge.svg?branch=master
+   .. image:: https://img.shields.io/github/workflow/status/alisaifee/coredis/CI?logo=github&style=for-the-badge&labelColor=#282828
       :alt: CI status
       :target: https://github.com/alisaifee/coredis/actions?query=branch%3Amaster+workflow%3ACI
       :class: header-badge
 
-   .. image::  https://img.shields.io/pypi/v/coredis.svg?style=flat-square
+   .. image::  https://img.shields.io/pypi/v/coredis.svg?style=for-the-badge
       :target: https://pypi.python.org/pypi/coredis/
       :alt: Latest Version in PyPI
       :class: header-badge
 
-   .. image:: https://img.shields.io/pypi/pyversions/coredis.svg?style=flat-square
+   .. image:: https://img.shields.io/pypi/pyversions/coredis.svg?style=for-the-badge
       :target: https://pypi.python.org/pypi/coredis/
       :alt: Supported Python versions
       :class: header-badge
 
-   .. image:: https://codecov.io/gh/alisaifee/coredis/branch/master/graph/badge.svg
+   .. image:: https://img.shields.io/codecov/c/github/alisaifee/coredis?logo=codecov&style=for-the-badge&labelColor=#282828
       :target: https://codecov.io/gh/alisaifee/coredis
       :alt: Code coverage
       :class: header-badge
@@ -119,28 +119,19 @@ The API (mostly) follows :doc:`redis-py <redis-py:index>`. For a full mapping
 of redis commands to API methods refer to the :ref:`compatibility:command compatibilty`
 section.
 
-
-Usage Guide
------------
-
 .. toctree::
     :maxdepth: 2
+    :hidden:
 
+    api
+    compatibility
     api_reference
     pubsub
     sentinel
     scripting
     pipelines
     extra
-
-The Community Guide
--------------------
-
-.. toctree::
-    :maxdepth: 2
-
-    compatibility
-    api
     release_notes
     testing
     authors
+
