@@ -145,6 +145,7 @@ async def test_moved_redirection_on_slave_with_default_client(sr):
 
 
 @pytest.mark.asyncio
+@pytest.mark.max_server_version("6.2.0")
 async def test_moved_redirection_on_slave_with_readonly_mode_client(sr):
     """
     Ditto with READONLY mode.

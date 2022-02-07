@@ -39,6 +39,7 @@ class TestServer:
         )
         assert reset_commands_processed < prior_commands_processed
 
+    @pytest.mark.max_server_version("6.2.0")
     async def test_config_set(self, client):
         data = await client.config_get()
         rdbname = data["dbfilename"]

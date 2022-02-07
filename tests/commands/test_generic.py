@@ -189,11 +189,19 @@ class TestGeneric:
         assert await client.object("encoding", "a") in (b("raw"), b("embstr"))
         assert await client.object("idletime", "invalid-key") is None
 
+    @pytest.mark.max_server_version("6.2.0")
     async def test_object_encoding(self, client):
         await client.set("a", "foo")
         await client.hset("b", "foo", 1)
         assert await client.object_encoding("a") == b"embstr"
         assert await client.object_encoding("b") == b"ziplist"
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_object_encoding_listpack(self, client):
+        await client.set("a", "foo")
+        await client.hset("b", "foo", 1)
+        assert await client.object_encoding("a") == b"embstr"
+        assert await client.object_encoding("b") == b"listpack"
 
     async def test_object_freq(self, client):
         await client.set("a", "foo")

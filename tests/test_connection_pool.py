@@ -584,6 +584,7 @@ class TestConnection:
         assert len(pool._available_connections) == 0
 
     @pytest.mark.asyncio()
+    @pytest.mark.max_server_version("6.2.0")
     async def test_busy_loading_disconnects_socket(self, event_loop):
         """
         If Redis raises a LOADING error, the connection should be
@@ -596,6 +597,7 @@ class TestConnection:
         assert len(pool._available_connections) == 0
 
     @pytest.mark.asyncio()
+    @pytest.mark.max_server_version("6.2.0")
     async def test_busy_loading_from_pipeline_immediate_command(self, event_loop):
         """
         BusyLoadingErrors should raise from Pipelines that execute a
@@ -629,6 +631,7 @@ class TestConnection:
         assert pool._available_connections[0]._reader
 
     @pytest.mark.asyncio()
+    @pytest.mark.max_server_version("6.2.0")
     async def test_read_only_error(self, event_loop):
         "READONLY errors get turned in ReadOnlyError exceptions"
         client = coredis.StrictRedis(loop=event_loop)

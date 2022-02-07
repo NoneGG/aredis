@@ -23,7 +23,7 @@ def uvloop():
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
-async def check_min_version(request, client):
+async def check_test_constraints(request, client):
     if client not in REDIS_VERSIONS:
         if isinstance(client, coredis.StrictRedisCluster):
             info = list((await client.info()).values()).pop()
@@ -37,6 +37,10 @@ async def check_min_version(request, client):
         if marker.name == "min_server_version" and marker.args:
             if REDIS_VERSIONS[client] < version.parse(marker.args[0]):
                 return pytest.skip(f"Skipped for versions < {marker.args[0]}")
+
+        if marker.name == "max_server_version" and marker.args:
+            if REDIS_VERSIONS[client] > version.parse(marker.args[0]):
+                return pytest.skip(f"Skipped for versions > {marker.args[0]}")
 
         if marker.name == "nocluster" and isinstance(
             client, coredis.StrictRedisCluster
@@ -148,7 +152,7 @@ def redis_sentinel_auth_server(docker_services):
 @pytest.fixture
 async def redis_basic(redis_basic_server, request):
     client = coredis.StrictRedis("localhost", 6379)
-    await check_min_version(request, client)
+    await check_test_constraints(request, client)
     await client.flushall()
     await client.config_set("maxmemory-policy", "noeviction")
 
@@ -164,7 +168,7 @@ async def redis_ssl(redis_ssl_server, request):
         "&ssl_ca_certs=./tests/tls/ca.crt"
     )
     client = coredis.StrictRedis.from_url(storage_url)
-    await check_min_version(request, client)
+    await check_test_constraints(request, client)
     await client.flushall()
     await client.config_set("maxmemory-policy", "noeviction")
 
@@ -176,7 +180,7 @@ async def redis_auth(redis_auth_server, request):
     client = coredis.StrictRedis.from_url(
         f"redis://:sekret@{redis_auth_server[0]}:{redis_auth_server[1]}"
     )
-    await check_min_version(request, client)
+    await check_test_constraints(request, client)
     await client.flushall()
     await client.config_set("maxmemory-policy", "noeviction")
 
@@ -186,7 +190,7 @@ async def redis_auth(redis_auth_server, request):
 @pytest.fixture
 async def redis_uds(redis_uds_server, request):
     client = coredis.StrictRedis.from_url(f"unix://{redis_uds_server}")
-    await check_min_version(request, client)
+    await check_test_constraints(request, client)
     await client.flushall()
     await client.config_set("maxmemory-policy", "noeviction")
 
@@ -196,7 +200,7 @@ async def redis_uds(redis_uds_server, request):
 @pytest.fixture
 async def redis_cluster(redis_cluster_server, request):
     cluster = coredis.StrictRedisCluster("localhost", 7000, stream_timeout=10)
-    await check_min_version(request, cluster)
+    await check_test_constraints(request, cluster)
     await cluster.flushall()
     await cluster.flushdb()
     await cluster.config_set("maxmemory-policy", "noeviction")
@@ -213,7 +217,7 @@ async def redis_sentinel(redis_sentinel_server, request):
         sentinel_kwargs={},
     )
     master = sentinel.master_for("localhost-redis-sentinel")
-    await check_min_version(request, master)
+    await check_test_constraints(request, master)
     await master.flushall()
 
     return sentinel
@@ -227,7 +231,7 @@ async def redis_sentinel_auth(redis_sentinel_auth_server, request):
         password="sekret",
     )
     master = sentinel.master_for("localhost-redis-sentinel")
-    await check_min_version(request, master)
+    await check_test_constraints(request, master)
     await master.flushall()
 
     return sentinel
