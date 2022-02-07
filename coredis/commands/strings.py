@@ -1,6 +1,5 @@
 import datetime
 import time
-from typing import Dict, Optional, Union
 
 from coredis.commands import CommandMixin
 from coredis.exceptions import DataError, ReadOnlyError, RedisError
