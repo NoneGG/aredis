@@ -14,9 +14,10 @@ jobs:
       matrix:
         python_version: [3.8, 3.9, "3.10"]
         service_version:
-          - REDIS_VERSION=5.0.14 REDIS_SSL_VERSION=6.2.6
-          - REDIS_VERSION=6.0.16 REDIS_SSL_VERSION=6.0.16
+          - REDIS_VERSION=5.0.14 REDIS_SENTINEL_VERSION=5.0.14 REDIS_SSL_VERSION=6.2.6
+          - REDIS_VERSION=6.0.16 REDIS_SENTINEL_VERSION=6.0.16 REDIS_SSL_VERSION=6.0.16
           - REDIS_VERSION=6.2.6 REDIS_SSL_VERSION=6.2.6
+          - REDIS_VERSION=7.0-rc1 REDIS_SSL_VERSION=7.0-rc1
         parser: [hiredis, python]
         uvloop: ["False"]
         include:

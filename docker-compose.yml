@@ -3,18 +3,18 @@ version: '3.2'
 services:
   # redis sentinel
   redis-sentinel-master:
-    image: "redis:${REDIS_VERSION:-latest}"
+    image: "redis:${REDIS_SENTINEL_VERSION:-latest}"
     command: redis-server --port 6380
     ports:
       - '6380:6380'
   redis-sentinel-slave:
-    image: "redis:${REDIS_VERSION:-latest}"
+    image: "redis:${REDIS_SENTINEL_VERSION:-latest}"
     depends_on: [redis-sentinel-master]
     command: redis-server --port 6381 --slaveof ${HOST_IP} 6380 --slave-announce-ip ${HOST_IP}
     ports:
       - '6381:6381'
   redis-sentinel:
-    image: 'bitnami/redis-sentinel:${REDIS_VERSION:-latest}'
+    image: "bitnami/redis-sentinel:${REDIS_SENTINEL_VERSION:-latest}"
     depends_on: [redis-sentinel-slave]
     environment:
       - REDIS_MASTER_SET=localhost-redis-sentinel
@@ -23,18 +23,18 @@ services:
     ports:
       - '26379:26379'
   redis-sentinel-master-auth:
-    image: "redis:${REDIS_VERSION:-latest}"
+    image: "redis:${REDIS_SENTINEL_VERSION:-latest}"
     command: redis-server --port 6382 --requirepass sekret
     ports:
       - '6382:6382'
   redis-sentinel-slave-auth:
-    image: "redis:${REDIS_VERSION:-latest}"
+    image: "redis:${REDIS_SENTINEL_VERSION:-latest}"
     depends_on: [redis-sentinel-master-auth]
     command: redis-server --port 6383 --slaveof ${HOST_IP} 6382 --slave-announce-ip ${HOST_IP} --requirepass sekret --masterauth sekret
     ports:
       - '6383:6383'
   redis-sentinel-auth:
-    image: 'bitnami/redis-sentinel:${REDIS_VERSION:-latest}'
+    image: "bitnami/redis-sentinel:${REDIS_SENTINEL_VERSION:-latest}"
     depends_on: [redis-sentinel-slave-auth]
     environment:
       - REDIS_MASTER_SET=localhost-redis-sentinel
