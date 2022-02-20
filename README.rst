@@ -109,4 +109,4 @@ Links
 * `Changelog <http://coredis.readthedocs.org/en/stable/release_notes.html>`_
 * `aredis <https://github.com/NoneGG/aredis>`_
 
-.. _Command compatibility: https://coredis.readthedocs.org/en/stable/compatibility
+.. _Command compatibility: https://coredis.readthedocs.io/en/stable/compatibility.html
