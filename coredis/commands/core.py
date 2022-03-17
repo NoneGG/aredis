@@ -355,7 +355,12 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "SET",
         group=CommandGroup.STRING,
-        arguments={"condition": {"version_introduced": "2.6.12"}},
+        arguments={
+            "exat": {"version_introduced": "6.2.0"},
+            "pxat": {"version_introduced": "6.2.0"},
+            "keepttl": {"version_introduced": "6.0.0"},
+            "get": {"version_introduced": "6.2.0"},
+        },
         response_callback=StringSetCallback(),
     )
     async def set(
@@ -1111,6 +1116,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         "GEORADIUS",
         version_deprecated="6.2.0",
         group=CommandGroup.GEO,
+        arguments={"any_": {"version_introduced": "6.2.0"}},
         response_callback=GeoSearchCallback(),
     )
     async def georadius(
@@ -2010,11 +2016,6 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "RESTORE",
         group=CommandGroup.GENERIC,
-        arguments={
-            "absttl": {"version_introduced": "5.0.0"},
-            "idletime": {"version_introduced": "5.0.0"},
-            "freq": {"version_introduced": "5.0.0"},
-        },
         response_callback=SimpleStringCallback(),
     )
     async def restore(
@@ -3852,6 +3853,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         "XPENDING",
         readonly=True,
         group=CommandGroup.STREAM,
+        arguments={"idle": {"version_introduced": "6.2.0"}},
         response_callback=PendingCallback(),
     )
     async def xpending(
@@ -3880,7 +3882,11 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("XPENDING", *pieces, count=count)
 
     @mutually_inclusive_parameters("trim_strategy", "threshold")
-    @redis_command("XTRIM", group=CommandGroup.STREAM)
+    @redis_command(
+        "XTRIM",
+        group=CommandGroup.STREAM,
+        arguments={"limit": {"version_introduced": "6.2.0"}},
+    )
     async def xtrim(
         self,
         key: KeyT,
@@ -4578,7 +4584,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         "CLIENT LIST",
         group=CommandGroup.CONNECTION,
         arguments={
-            "type_": {"version_introduced": "5.0.0"},
             "identifiers": {"version_introduced": "6.2.0"},
         },
         response_callback=ClientListCallback(),
