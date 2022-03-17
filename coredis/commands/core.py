@@ -156,7 +156,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         "GET",
         readonly=True,
         group=CommandGroup.STRING,
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def get(self, key: KeyT) -> Optional[AnyStr]:
         """
@@ -358,7 +357,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.STRING,
         arguments={"condition": {"version_introduced": "2.6.12"}},
         response_callback=StringSetCallback(),
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def set(
         self,
@@ -2366,9 +2364,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("LPOS", *pieces)
 
-    @redis_command(
-        "LPUSH", group=CommandGroup.LIST, cluster=ClusterCommandConfig(pipeline=True)
-    )
+    @redis_command("LPUSH", group=CommandGroup.LIST)
     async def lpush(self, key: KeyT, elements: Iterable[ValueT]) -> int:
         """
         Prepend one or multiple elements to a list
@@ -2821,7 +2817,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.SORTED_SET,
         arguments={"comparison": {"version_introduced": "6.2.0"}},
         response_callback=ZAddCallback(),
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def zadd(
         self,
@@ -2930,7 +2925,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         "ZINCRBY",
         group=CommandGroup.SORTED_SET,
         response_callback=OptionalFloatCallback(),
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def zincrby(self, key: KeyT, member: ValueT, increment: int) -> float:
         """
@@ -3136,7 +3130,6 @@ class CoreCommands(CommandMixin[AnyStr]):
             "count": {"version_introduced": "6.2.0"},
         },
         response_callback=ZMembersOrScoredMembers(),
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def zrange(
         self,
@@ -3288,7 +3281,6 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "ZREM",
         group=CommandGroup.SORTED_SET,
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def zrem(self, key: KeyT, members: Iterable[ValueT]) -> int:
         """
@@ -4332,7 +4324,6 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "EVAL",
         group=CommandGroup.SCRIPTING,
-        cluster=ClusterCommandConfig(pipeline=True),
     )
     async def eval(
         self,
