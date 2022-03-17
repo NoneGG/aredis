@@ -316,6 +316,16 @@ Get a substring of the string stored at a key
 
 
 
+LCS [X]
+*******
+
+Find longest common substring
+
+- Documentation: `LCS <https://redis.io/commands/lcs>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -956,6 +966,26 @@ Append an element to a list, only if the list exists
 
 
 
+BLMPOP [X]
+**********
+
+Pop elements from a list, or block until one is available
+
+- Documentation: `BLMPOP <https://redis.io/commands/blmpop>`_
+ 
+- Not Implemented
+
+
+LMPOP [X]
+*********
+
+Pop elements from a list
+
+- Documentation: `LMPOP <https://redis.io/commands/lmpop>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -1188,6 +1218,16 @@ Add multiple sets and store the resulting set in a key
 
 
 
+
+
+SINTERCARD [X]
+**************
+
+Intersect multiple sets and return the cardinality of the result
+
+- Documentation: `SINTERCARD <https://redis.io/commands/sintercard>`_
+ 
+- Not Implemented
 
 
 
@@ -1670,6 +1710,36 @@ Add multiple sorted sets and store the resulting sorted set in a new key
 
 
 
+BZMPOP [X]
+**********
+
+Remove and return members with scores in a sorted set or block until one is available
+
+- Documentation: `BZMPOP <https://redis.io/commands/bzmpop>`_
+ 
+- Not Implemented
+
+
+ZINTERCARD [X]
+**************
+
+Intersect multiple sorted sets and return the cardinality of the result
+
+- Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
+ 
+- Not Implemented
+
+
+ZMPOP [X]
+*********
+
+Remove and return members with scores in a sorted set
+
+- Documentation: `ZMPOP <https://redis.io/commands/zmpop>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -2076,6 +2146,36 @@ Wait for the synchronous replication of all the write commands sent in the conte
 
 
 
+EXPIRETIME [X]
+**************
+
+Get the expiration Unix timestamp for a key
+
+- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
+ 
+- Not Implemented
+
+
+PEXPIRETIME [X]
+***************
+
+Get the expiration Unix timestamp for a key in milliseconds
+
+- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
+ 
+- Not Implemented
+
+
+SORT_RO [X]
+***********
+
+Sort the elements in a list, set or sorted set. Read-only variant of SORT.
+
+- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -2292,6 +2392,126 @@ Load the specified Lua script into the script cache.
 
 
 
+EVALSHA_RO [X]
+**************
+
+Execute a read-only Lua script server side
+
+- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
+ 
+- Not Implemented
+
+
+EVAL_RO [X]
+***********
+
+Execute a read-only Lua script server side
+
+- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
+ 
+- Not Implemented
+
+
+FCALL [X]
+*********
+
+Invoke a function
+
+- Documentation: `FCALL <https://redis.io/commands/fcall>`_
+ 
+- Not Implemented
+
+
+FCALL_RO [X]
+************
+
+Invoke a read-only function
+
+- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
+ 
+- Not Implemented
+
+
+FUNCTION DELETE [X]
+*******************
+
+Delete a function by name
+
+- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
+ 
+- Not Implemented
+
+
+FUNCTION DUMP [X]
+*****************
+
+Dump all functions into a serialized binary payload
+
+- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
+ 
+- Not Implemented
+
+
+FUNCTION FLUSH [X]
+******************
+
+Deleting all functions
+
+- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
+ 
+- Not Implemented
+
+
+FUNCTION KILL [X]
+*****************
+
+Kill the function currently in execution.
+
+- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
+ 
+- Not Implemented
+
+
+FUNCTION LIST [X]
+*****************
+
+List information about all the functions
+
+- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
+ 
+- Not Implemented
+
+
+FUNCTION LOAD [X]
+*****************
+
+Create a function with the given arguments (name, code, description)
+
+- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
+ 
+- Not Implemented
+
+
+FUNCTION RESTORE [X]
+********************
+
+Restore all the functions on the given payload
+
+- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
+ 
+- Not Implemented
+
+
+FUNCTION STATS [X]
+******************
+
+Return information about the function currently running (name, description, duration)
+
+- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -2494,6 +2714,26 @@ Listen for messages published to channels matching the given patterns
 - Not Implemented
 
 
+PUBSUB SHARDCHANNELS [X]
+************************
+
+List active shard channels
+
+- Documentation: `PUBSUB SHARDCHANNELS <https://redis.io/commands/pubsub-shardchannels>`_
+ 
+- Not Implemented
+
+
+PUBSUB SHARDNUMSUB [X]
+**********************
+
+Get the count of subscribers for shard channels
+
+- Documentation: `PUBSUB SHARDNUMSUB <https://redis.io/commands/pubsub-shardnumsub>`_
+ 
+- Not Implemented
+
+
 PUNSUBSCRIBE [X]
 ****************
 
@@ -2504,12 +2744,42 @@ Stop listening for messages posted to channels matching the given patterns
 - Not Implemented
 
 
+SPUBLISH [X]
+************
+
+Post a message to a shard channel
+
+- Documentation: `SPUBLISH <https://redis.io/commands/spublish>`_
+ 
+- Not Implemented
+
+
+SSUBSCRIBE [X]
+**************
+
+Listen for messages published to the given shard channels
+
+- Documentation: `SSUBSCRIBE <https://redis.io/commands/ssubscribe>`_
+ 
+- Not Implemented
+
+
 SUBSCRIBE [X]
 *************
 
 Listen for messages published to the given channels
 
 - Documentation: `SUBSCRIBE <https://redis.io/commands/subscribe>`_
+ 
+- Not Implemented
+
+
+SUNSUBSCRIBE [X]
+****************
+
+Stop listening for messages posted to the given shard channels
+
+- Documentation: `SUNSUBSCRIBE <https://redis.io/commands/sunsubscribe>`_
  
 - Not Implemented
 
@@ -3586,6 +3856,56 @@ Return the current server time
 
 
 
+ACL DRYRUN [X]
+**************
+
+Returns whether the user can execute the given command without executing the command.
+
+- Documentation: `ACL DRYRUN <https://redis.io/commands/acl-dryrun>`_
+ 
+- Not Implemented
+
+
+COMMAND DOCS [X]
+****************
+
+Get array of specific Redis command documentation
+
+- Documentation: `COMMAND DOCS <https://redis.io/commands/command-docs>`_
+ 
+- Not Implemented
+
+
+COMMAND GETKEYSANDFLAGS [X]
+***************************
+
+Extract keys given a full Redis command
+
+- Documentation: `COMMAND GETKEYSANDFLAGS <https://redis.io/commands/command-getkeysandflags>`_
+ 
+- Not Implemented
+
+
+COMMAND LIST [X]
+****************
+
+Get an array of Redis command names
+
+- Documentation: `COMMAND LIST <https://redis.io/commands/command-list>`_
+ 
+- Not Implemented
+
+
+LATENCY HISTOGRAM [X]
+*********************
+
+Return the cumulative distribution of latencies of a subset of commands or all.
+
+- Documentation: `LATENCY HISTOGRAM <https://redis.io/commands/latency-histogram>`_
+ 
+- Not Implemented
+
+
 MODULE LIST [X]
 ***************
 
@@ -3970,6 +4290,16 @@ Change the selected database for the current connection
 
 
 
+CLIENT NO-EVICT [X]
+*******************
+
+Set client eviction mode for the current connection
+
+- Documentation: `CLIENT NO-EVICT <https://redis.io/commands/client-no-evict>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -4275,7 +4605,7 @@ List replica nodes of the specified master node
 - Implementation: :meth:`~coredis.Redis.cluster_slaves`
 
 
-- Deprecated in redis: 5.0.0. Use :meth:`~coredis.Redis.cluster replicas`
+- Deprecated in redis: 5.0.0. Use :meth:`~coredis.Redis.cluster_replicas`
 
 
 
@@ -4294,6 +4624,36 @@ Get array of Cluster slot to node mappings
 
 
 
+
+
+CLUSTER ADDSLOTSRANGE [X]
+*************************
+
+Assign new hash slots to receiving node
+
+- Documentation: `CLUSTER ADDSLOTSRANGE <https://redis.io/commands/cluster-addslotsrange>`_
+ 
+- Not Implemented
+
+
+CLUSTER DELSLOTSRANGE [X]
+*************************
+
+Set hash slots as unbound in receiving node
+
+- Documentation: `CLUSTER DELSLOTSRANGE <https://redis.io/commands/cluster-delslotsrange>`_
+ 
+- Not Implemented
+
+
+CLUSTER LINKS [X]
+*****************
+
+Returns a list of all TCP links to and from peer nodes in cluster
+
+- Documentation: `CLUSTER LINKS <https://redis.io/commands/cluster-links>`_
+ 
+- Not Implemented
 
 
 CLUSTER MYID [X]
@@ -4403,6 +4763,16 @@ Set the string value of a key
 
 
 
+LCS [X]
+*******
+
+Find longest common substring
+
+- Documentation: `LCS <https://redis.io/commands/lcs>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -4445,6 +4815,26 @@ Remove the last element in a list, prepend it to another list and return it
 
 
 
+
+
+BLMPOP [X]
+**********
+
+Pop elements from a list, or block until one is available
+
+- Documentation: `BLMPOP <https://redis.io/commands/blmpop>`_
+ 
+- Not Implemented
+
+
+LMPOP [X]
+*********
+
+Pop elements from a list
+
+- Documentation: `LMPOP <https://redis.io/commands/lmpop>`_
+ 
+- Not Implemented
 
 
 
@@ -4553,6 +4943,52 @@ Add multiple sets and store the resulting set in a key
 
 
 
+SINTERCARD [X]
+**************
+
+Intersect multiple sets and return the cardinality of the result
+
+- Documentation: `SINTERCARD <https://redis.io/commands/sintercard>`_
+ 
+- Not Implemented
+
+
+
+
+
+Sorted-Set
+----------
+
+
+
+BZMPOP [X]
+**********
+
+Remove and return members with scores in a sorted set or block until one is available
+
+- Documentation: `BZMPOP <https://redis.io/commands/bzmpop>`_
+ 
+- Not Implemented
+
+
+ZINTERCARD [X]
+**************
+
+Intersect multiple sorted sets and return the cardinality of the result
+
+- Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
+ 
+- Not Implemented
+
+
+ZMPOP [X]
+*********
+
+Remove and return members with scores in a sorted set
+
+- Documentation: `ZMPOP <https://redis.io/commands/zmpop>`_
+ 
+- Not Implemented
 
 
 
@@ -4570,62 +5006,6 @@ Delete a key
 
 - Documentation: `DEL <https://redis.io/commands/del>`_
 - Implementation: :meth:`~coredis.RedisCluster.delete`
-
-
-
-
-
-
-
-OBJECT ENCODING
-***************
-
-Inspect the internal encoding of a Redis object
-
-- Documentation: `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
-- Implementation: :meth:`~coredis.RedisCluster.object_encoding`
-
-
-
-
-
-
-
-OBJECT FREQ
-***********
-
-Get the logarithmic access frequency counter of a Redis object
-
-- Documentation: `OBJECT FREQ <https://redis.io/commands/object-freq>`_
-- Implementation: :meth:`~coredis.RedisCluster.object_freq`
-
-
-
-
-
-
-
-OBJECT IDLETIME
-***************
-
-Get the time since a Redis object was last accessed
-
-- Documentation: `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
-- Implementation: :meth:`~coredis.RedisCluster.object_idletime`
-
-
-
-
-
-
-
-OBJECT REFCOUNT
-***************
-
-Get the number of references to the value of the key
-
-- Documentation: `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
-- Implementation: :meth:`~coredis.RedisCluster.object_refcount`
 
 
 
@@ -4687,6 +5067,36 @@ Determine the type stored at key
 
 
 
+
+
+EXPIRETIME [X]
+**************
+
+Get the expiration Unix timestamp for a key
+
+- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
+ 
+- Not Implemented
+
+
+PEXPIRETIME [X]
+***************
+
+Get the expiration Unix timestamp for a key in milliseconds
+
+- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
+ 
+- Not Implemented
+
+
+SORT_RO [X]
+***********
+
+Sort the elements in a list, set or sorted set. Read-only variant of SORT.
+
+- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
+ 
+- Not Implemented
 
 
 
@@ -4771,76 +5181,124 @@ Execute a Lua script server side
 
 
 
-SCRIPT DEBUG
-************
+EVALSHA_RO [X]
+**************
 
-Set the debug mode for executed scripts.
+Execute a read-only Lua script server side
 
-- Documentation: `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
-- Implementation: :meth:`~coredis.RedisCluster.script_debug`
-
-
-
-- .. versionadded:: 3.0.0
+- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
+ 
+- Not Implemented
 
 
-
-
-
-SCRIPT EXISTS
-*************
-
-Check existence of scripts in the script cache.
-
-- Documentation: `SCRIPT EXISTS <https://redis.io/commands/script-exists>`_
-- Implementation: :meth:`~coredis.RedisCluster.script_exists`
-
-
-
-
-
-
-
-SCRIPT FLUSH
-************
-
-Remove all the scripts from the script cache.
-
-- Documentation: `SCRIPT FLUSH <https://redis.io/commands/script-flush>`_
-- Implementation: :meth:`~coredis.RedisCluster.script_flush`
-
-
-
-
-
-
-
-SCRIPT KILL
+EVAL_RO [X]
 ***********
 
-Kill the script currently in execution.
+Execute a read-only Lua script server side
 
-- Documentation: `SCRIPT KILL <https://redis.io/commands/script-kill>`_
-- Implementation: :meth:`~coredis.RedisCluster.script_kill`
-
-
-
+- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
+ 
+- Not Implemented
 
 
+FCALL [X]
+*********
+
+Invoke a function
+
+- Documentation: `FCALL <https://redis.io/commands/fcall>`_
+ 
+- Not Implemented
 
 
-SCRIPT LOAD
-***********
+FCALL_RO [X]
+************
 
-Load the specified Lua script into the script cache.
+Invoke a read-only function
 
-- Documentation: `SCRIPT LOAD <https://redis.io/commands/script-load>`_
-- Implementation: :meth:`~coredis.RedisCluster.script_load`
-
-
-
+- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
+ 
+- Not Implemented
 
 
+FUNCTION DELETE [X]
+*******************
+
+Delete a function by name
+
+- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
+ 
+- Not Implemented
+
+
+FUNCTION DUMP [X]
+*****************
+
+Dump all functions into a serialized binary payload
+
+- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
+ 
+- Not Implemented
+
+
+FUNCTION FLUSH [X]
+******************
+
+Deleting all functions
+
+- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
+ 
+- Not Implemented
+
+
+FUNCTION KILL [X]
+*****************
+
+Kill the function currently in execution.
+
+- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
+ 
+- Not Implemented
+
+
+FUNCTION LIST [X]
+*****************
+
+List information about all the functions
+
+- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
+ 
+- Not Implemented
+
+
+FUNCTION LOAD [X]
+*****************
+
+Create a function with the given arguments (name, code, description)
+
+- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
+ 
+- Not Implemented
+
+
+FUNCTION RESTORE [X]
+********************
+
+Restore all the functions on the given payload
+
+- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
+ 
+- Not Implemented
+
+
+FUNCTION STATS [X]
+******************
+
+Return information about the function currently running (name, description, duration)
+
+- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
+ 
+- Not Implemented
 
 
 
@@ -4853,54 +5311,32 @@ Pubsub
 
 
 
-PUBSUB CHANNELS
-***************
-
-List active channels
-
-- Documentation: `PUBSUB CHANNELS <https://redis.io/commands/pubsub-channels>`_
-- Implementation: :meth:`~coredis.RedisCluster.pubsub_channels`
-
-
-
-
-
-
-
-PUBSUB NUMPAT
-*************
-
-Get the count of unique patterns pattern subscriptions
-
-- Documentation: `PUBSUB NUMPAT <https://redis.io/commands/pubsub-numpat>`_
-- Implementation: :meth:`~coredis.RedisCluster.pubsub_numpat`
-
-
-
-
-
-
-
-PUBSUB NUMSUB
-*************
-
-Get the count of subscribers for channels
-
-- Documentation: `PUBSUB NUMSUB <https://redis.io/commands/pubsub-numsub>`_
-- Implementation: :meth:`~coredis.RedisCluster.pubsub_numsub`
-
-
-
-
-
-
-
 PSUBSCRIBE [X]
 **************
 
 Listen for messages published to channels matching the given patterns
 
 - Documentation: `PSUBSCRIBE <https://redis.io/commands/psubscribe>`_
+ 
+- Not Implemented
+
+
+PUBSUB SHARDCHANNELS [X]
+************************
+
+List active shard channels
+
+- Documentation: `PUBSUB SHARDCHANNELS <https://redis.io/commands/pubsub-shardchannels>`_
+ 
+- Not Implemented
+
+
+PUBSUB SHARDNUMSUB [X]
+**********************
+
+Get the count of subscribers for shard channels
+
+- Documentation: `PUBSUB SHARDNUMSUB <https://redis.io/commands/pubsub-shardnumsub>`_
  
 - Not Implemented
 
@@ -4915,12 +5351,42 @@ Stop listening for messages posted to channels matching the given patterns
 - Not Implemented
 
 
+SPUBLISH [X]
+************
+
+Post a message to a shard channel
+
+- Documentation: `SPUBLISH <https://redis.io/commands/spublish>`_
+ 
+- Not Implemented
+
+
+SSUBSCRIBE [X]
+**************
+
+Listen for messages published to the given shard channels
+
+- Documentation: `SSUBSCRIBE <https://redis.io/commands/ssubscribe>`_
+ 
+- Not Implemented
+
+
 SUBSCRIBE [X]
 *************
 
 Listen for messages published to the given channels
 
 - Documentation: `SUBSCRIBE <https://redis.io/commands/subscribe>`_
+ 
+- Not Implemented
+
+
+SUNSUBSCRIBE [X]
+****************
+
+Stop listening for messages posted to the given shard channels
+
+- Documentation: `SUNSUBSCRIBE <https://redis.io/commands/sunsubscribe>`_
  
 - Not Implemented
 
@@ -4938,132 +5404,6 @@ Stop listening for messages posted to the given channels
 
 
 
-Stream
-------
-
-
-
-XGROUP CREATE
-*************
-
-Create a consumer group.
-
-- Documentation: `XGROUP CREATE <https://redis.io/commands/xgroup-create>`_
-- Implementation: :meth:`~coredis.RedisCluster.xgroup_create`
-
-
-
-
-
-
-
-XGROUP CREATECONSUMER
-*********************
-
-Create a consumer in a consumer group.
-
-- Documentation: `XGROUP CREATECONSUMER <https://redis.io/commands/xgroup-createconsumer>`_
-- Implementation: :meth:`~coredis.RedisCluster.xgroup_createconsumer`
-
-- New in redis: 6.2.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-XGROUP DELCONSUMER
-******************
-
-Delete a consumer from a consumer group.
-
-- Documentation: `XGROUP DELCONSUMER <https://redis.io/commands/xgroup-delconsumer>`_
-- Implementation: :meth:`~coredis.RedisCluster.xgroup_delconsumer`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-XGROUP DESTROY
-**************
-
-Destroy a consumer group.
-
-- Documentation: `XGROUP DESTROY <https://redis.io/commands/xgroup-destroy>`_
-- Implementation: :meth:`~coredis.RedisCluster.xgroup_destroy`
-
-
-
-
-
-
-
-XGROUP SETID
-************
-
-Set a consumer group to an arbitrary last delivered ID value.
-
-- Documentation: `XGROUP SETID <https://redis.io/commands/xgroup-setid>`_
-- Implementation: :meth:`~coredis.RedisCluster.xgroup_setid`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-XINFO CONSUMERS
-***************
-
-List the consumers in a consumer group
-
-- Documentation: `XINFO CONSUMERS <https://redis.io/commands/xinfo-consumers>`_
-- Implementation: :meth:`~coredis.RedisCluster.xinfo_consumers`
-
-
-
-
-
-
-
-XINFO GROUPS
-************
-
-List the consumer groups of a stream
-
-- Documentation: `XINFO GROUPS <https://redis.io/commands/xinfo-groups>`_
-- Implementation: :meth:`~coredis.RedisCluster.xinfo_groups`
-
-
-
-
-
-
-
-XINFO STREAM
-************
-
-Get information about a stream
-
-- Documentation: `XINFO STREAM <https://redis.io/commands/xinfo-stream>`_
-- Implementation: :meth:`~coredis.RedisCluster.xinfo_stream`
-
-
-
-
-
-
-
-
 
 
 Server
@@ -5071,508 +5411,54 @@ Server
 
 
 
-ACL CAT
-*******
+ACL DRYRUN [X]
+**************
 
-List the ACL categories or the commands inside a category
+Returns whether the user can execute the given command without executing the command.
 
-- Documentation: `ACL CAT <https://redis.io/commands/acl-cat>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_cat`
+- Documentation: `ACL DRYRUN <https://redis.io/commands/acl-dryrun>`_
+ 
+- Not Implemented
 
-- New in redis: 6.0.0
 
+COMMAND DOCS [X]
+****************
 
+Get array of specific Redis command documentation
 
-- .. versionadded:: 3.0.0
+- Documentation: `COMMAND DOCS <https://redis.io/commands/command-docs>`_
+ 
+- Not Implemented
 
 
-
-
-
-ACL DELUSER
-***********
-
-Remove the specified ACL users and the associated rules
-
-- Documentation: `ACL DELUSER <https://redis.io/commands/acl-deluser>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_deluser`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL GENPASS
-***********
-
-Generate a pseudorandom secure password to use for ACL users
-
-- Documentation: `ACL GENPASS <https://redis.io/commands/acl-genpass>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_genpass`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL GETUSER
-***********
-
-Get the rules for a specific ACL user
-
-- Documentation: `ACL GETUSER <https://redis.io/commands/acl-getuser>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_getuser`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL LIST
-********
-
-List the current ACL rules in ACL config file format
-
-- Documentation: `ACL LIST <https://redis.io/commands/acl-list>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_list`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL LOAD
-********
-
-Reload the ACLs from the configured ACL file
-
-- Documentation: `ACL LOAD <https://redis.io/commands/acl-load>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_load`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL LOG
-*******
-
-List latest events denied because of ACLs in place
-
-- Documentation: `ACL LOG <https://redis.io/commands/acl-log>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_log`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL SAVE
-********
-
-Save the current ACL rules in the configured ACL file
-
-- Documentation: `ACL SAVE <https://redis.io/commands/acl-save>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_save`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL SETUSER
-***********
-
-Modify or create the rules for a specific ACL user
-
-- Documentation: `ACL SETUSER <https://redis.io/commands/acl-setuser>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_setuser`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL USERS
-*********
-
-List the username of all the configured ACL rules
-
-- Documentation: `ACL USERS <https://redis.io/commands/acl-users>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_users`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-ACL WHOAMI
-**********
-
-Return the name of the user associated to the current connection
-
-- Documentation: `ACL WHOAMI <https://redis.io/commands/acl-whoami>`_
-- Implementation: :meth:`~coredis.RedisCluster.acl_whoami`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-COMMAND COUNT
-*************
-
-Get total number of Redis commands
-
-- Documentation: `COMMAND COUNT <https://redis.io/commands/command-count>`_
-- Implementation: :meth:`~coredis.RedisCluster.command_count`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-COMMAND GETKEYS
-***************
+COMMAND GETKEYSANDFLAGS [X]
+***************************
 
 Extract keys given a full Redis command
 
-- Documentation: `COMMAND GETKEYS <https://redis.io/commands/command-getkeys>`_
-- Implementation: :meth:`~coredis.RedisCluster.command_getkeys`
+- Documentation: `COMMAND GETKEYSANDFLAGS <https://redis.io/commands/command-getkeysandflags>`_
+ 
+- Not Implemented
 
 
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-COMMAND INFO
-************
-
-Get array of specific Redis command details, or all when no argument is given.
-
-- Documentation: `COMMAND INFO <https://redis.io/commands/command-info>`_
-- Implementation: :meth:`~coredis.RedisCluster.command_info`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CONFIG GET
-**********
-
-Get the values of configuration parameters
-
-- Documentation: `CONFIG GET <https://redis.io/commands/config-get>`_
-- Implementation: :meth:`~coredis.RedisCluster.config_get`
-
-
-
-
-
-
-
-CONFIG RESETSTAT
+COMMAND LIST [X]
 ****************
 
-Reset the stats returned by INFO
+Get an array of Redis command names
 
-- Documentation: `CONFIG RESETSTAT <https://redis.io/commands/config-resetstat>`_
-- Implementation: :meth:`~coredis.RedisCluster.config_resetstat`
+- Documentation: `COMMAND LIST <https://redis.io/commands/command-list>`_
+ 
+- Not Implemented
 
 
+LATENCY HISTOGRAM [X]
+*********************
 
+Return the cumulative distribution of latencies of a subset of commands or all.
 
-
-
-
-CONFIG REWRITE
-**************
-
-Rewrite the configuration file with the in memory configuration
-
-- Documentation: `CONFIG REWRITE <https://redis.io/commands/config-rewrite>`_
-- Implementation: :meth:`~coredis.RedisCluster.config_rewrite`
-
-
-
-
-
-
-
-CONFIG SET
-**********
-
-Set configuration parameters to the given values
-
-- Documentation: `CONFIG SET <https://redis.io/commands/config-set>`_
-- Implementation: :meth:`~coredis.RedisCluster.config_set`
-
-
-
-
-
-
-
-LATENCY DOCTOR
-**************
-
-Return a human readable latency analysis report.
-
-- Documentation: `LATENCY DOCTOR <https://redis.io/commands/latency-doctor>`_
-- Implementation: :meth:`~coredis.RedisCluster.latency_doctor`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-LATENCY GRAPH
-*************
-
-Return a latency graph for the event.
-
-- Documentation: `LATENCY GRAPH <https://redis.io/commands/latency-graph>`_
-- Implementation: :meth:`~coredis.RedisCluster.latency_graph`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-LATENCY HISTORY
-***************
-
-Return timestamp-latency samples for the event.
-
-- Documentation: `LATENCY HISTORY <https://redis.io/commands/latency-history>`_
-- Implementation: :meth:`~coredis.RedisCluster.latency_history`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-LATENCY LATEST
-**************
-
-Return the latest latency samples for all events.
-
-- Documentation: `LATENCY LATEST <https://redis.io/commands/latency-latest>`_
-- Implementation: :meth:`~coredis.RedisCluster.latency_latest`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-LATENCY RESET
-*************
-
-Reset latency data for one or more events.
-
-- Documentation: `LATENCY RESET <https://redis.io/commands/latency-reset>`_
-- Implementation: :meth:`~coredis.RedisCluster.latency_reset`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-MEMORY DOCTOR
-*************
-
-Outputs memory problems report
-
-- Documentation: `MEMORY DOCTOR <https://redis.io/commands/memory-doctor>`_
-- Implementation: :meth:`~coredis.RedisCluster.memory_doctor`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-MEMORY MALLOC-STATS
-*******************
-
-Show allocator internal stats
-
-- Documentation: `MEMORY MALLOC-STATS <https://redis.io/commands/memory-malloc-stats>`_
-- Implementation: :meth:`~coredis.RedisCluster.memory_malloc_stats`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-MEMORY PURGE
-************
-
-Ask the allocator to release memory
-
-- Documentation: `MEMORY PURGE <https://redis.io/commands/memory-purge>`_
-- Implementation: :meth:`~coredis.RedisCluster.memory_purge`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-MEMORY STATS
-************
-
-Show memory usage details
-
-- Documentation: `MEMORY STATS <https://redis.io/commands/memory-stats>`_
-- Implementation: :meth:`~coredis.RedisCluster.memory_stats`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-MEMORY USAGE
-************
-
-Estimate the memory usage of a key
-
-- Documentation: `MEMORY USAGE <https://redis.io/commands/memory-usage>`_
-- Implementation: :meth:`~coredis.RedisCluster.memory_usage`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-SLOWLOG GET
-***********
-
-Get the slow log's entries
-
-- Documentation: `SLOWLOG GET <https://redis.io/commands/slowlog-get>`_
-- Implementation: :meth:`~coredis.RedisCluster.slowlog_get`
-
-
-
-
-
-
-
-SLOWLOG LEN
-***********
-
-Get the slow log's length
-
-- Documentation: `SLOWLOG LEN <https://redis.io/commands/slowlog-len>`_
-- Implementation: :meth:`~coredis.RedisCluster.slowlog_len`
-
-
-
-
-
-
-
-SLOWLOG RESET
-*************
-
-Clear all entries from the slow log
-
-- Documentation: `SLOWLOG RESET <https://redis.io/commands/slowlog-reset>`_
-- Implementation: :meth:`~coredis.RedisCluster.slowlog_reset`
-
-
-
-
-
+- Documentation: `LATENCY HISTOGRAM <https://redis.io/commands/latency-histogram>`_
+ 
+- Not Implemented
 
 
 MODULE LIST [X]
@@ -5623,232 +5509,6 @@ Connection
 
 
 
-CLIENT CACHING
-**************
-
-Instruct the server about tracking or not keys in the next request
-
-- Documentation: `CLIENT CACHING <https://redis.io/commands/client-caching>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_caching`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT GETNAME
-**************
-
-Get the current connection name
-
-- Documentation: `CLIENT GETNAME <https://redis.io/commands/client-getname>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_getname`
-
-
-
-
-
-
-
-CLIENT GETREDIR
-***************
-
-Get tracking notifications redirection client ID if any
-
-- Documentation: `CLIENT GETREDIR <https://redis.io/commands/client-getredir>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_getredir`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT ID
-*********
-
-Returns the client ID for the current connection
-
-- Documentation: `CLIENT ID <https://redis.io/commands/client-id>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_id`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT INFO
-***********
-
-Returns information about the current client connection.
-
-- Documentation: `CLIENT INFO <https://redis.io/commands/client-info>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_info`
-
-- New in redis: 6.2.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT KILL
-***********
-
-Kill the connection of a client
-
-- Documentation: `CLIENT KILL <https://redis.io/commands/client-kill>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_kill`
-
-
-
-
-
-
-
-CLIENT LIST
-***********
-
-Get the list of client connections
-
-- Documentation: `CLIENT LIST <https://redis.io/commands/client-list>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_list`
-
-
-
-
-
-
-
-CLIENT PAUSE
-************
-
-Stop processing commands from clients for some time
-
-- Documentation: `CLIENT PAUSE <https://redis.io/commands/client-pause>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_pause`
-
-
-
-
-
-
-
-CLIENT REPLY
-************
-
-Instruct the server whether to reply to commands
-
-- Documentation: `CLIENT REPLY <https://redis.io/commands/client-reply>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_reply`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT SETNAME
-**************
-
-Set the current connection name
-
-- Documentation: `CLIENT SETNAME <https://redis.io/commands/client-setname>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_setname`
-
-
-
-
-
-
-
-CLIENT TRACKING
-***************
-
-Enable or disable server assisted client side caching support
-
-- Documentation: `CLIENT TRACKING <https://redis.io/commands/client-tracking>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_tracking`
-
-- New in redis: 6.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT TRACKINGINFO
-*******************
-
-Return information about server assisted client side caching for the current connection
-
-- Documentation: `CLIENT TRACKINGINFO <https://redis.io/commands/client-trackinginfo>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_trackinginfo`
-
-- New in redis: 6.2.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT UNBLOCK
-**************
-
-Unblock a client blocked in a blocking command from a different connection
-
-- Documentation: `CLIENT UNBLOCK <https://redis.io/commands/client-unblock>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_unblock`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLIENT UNPAUSE
-**************
-
-Resume processing of clients that were paused
-
-- Documentation: `CLIENT UNPAUSE <https://redis.io/commands/client-unpause>`_
-- Implementation: :meth:`~coredis.RedisCluster.client_unpause`
-
-- New in redis: 6.2.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
 QUIT
 ****
 
@@ -5863,6 +5523,16 @@ Close the connection
 
 
 
+CLIENT NO-EVICT [X]
+*******************
+
+Set client eviction mode for the current connection
+
+- Documentation: `CLIENT NO-EVICT <https://redis.io/commands/client-no-evict>`_
+ 
+- Not Implemented
+
+
 
 
 
@@ -5871,306 +5541,34 @@ Cluster
 
 
 
-CLUSTER ADDSLOTS
-****************
+CLUSTER ADDSLOTSRANGE [X]
+*************************
 
 Assign new hash slots to receiving node
 
-- Documentation: `CLUSTER ADDSLOTS <https://redis.io/commands/cluster-addslots>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_addslots`
+- Documentation: `CLUSTER ADDSLOTSRANGE <https://redis.io/commands/cluster-addslotsrange>`_
+ 
+- Not Implemented
 
 
-
-
-
-
-
-CLUSTER BUMPEPOCH
-*****************
-
-Advance the cluster config epoch
-
-- Documentation: `CLUSTER BUMPEPOCH <https://redis.io/commands/cluster-bumpepoch>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_bumpepoch`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLUSTER COUNT-FAILURE-REPORTS
-*****************************
-
-Return the number of failure reports active for a given node
-
-- Documentation: `CLUSTER COUNT-FAILURE-REPORTS <https://redis.io/commands/cluster-count-failure-reports>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_count_failure_reports`
-
-
-
-
-
-
-
-CLUSTER COUNTKEYSINSLOT
-***********************
-
-Return the number of local keys in the specified hash slot
-
-- Documentation: `CLUSTER COUNTKEYSINSLOT <https://redis.io/commands/cluster-countkeysinslot>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_countkeysinslot`
-
-
-
-
-
-
-
-CLUSTER DELSLOTS
-****************
+CLUSTER DELSLOTSRANGE [X]
+*************************
 
 Set hash slots as unbound in receiving node
 
-- Documentation: `CLUSTER DELSLOTS <https://redis.io/commands/cluster-delslots>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_delslots`
+- Documentation: `CLUSTER DELSLOTSRANGE <https://redis.io/commands/cluster-delslotsrange>`_
+ 
+- Not Implemented
 
 
-
-
-
-
-
-CLUSTER FAILOVER
-****************
-
-Forces a replica to perform a manual failover of its master.
-
-- Documentation: `CLUSTER FAILOVER <https://redis.io/commands/cluster-failover>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_failover`
-
-
-
-
-
-
-
-CLUSTER FLUSHSLOTS
-******************
-
-Delete a node's own slots information
-
-- Documentation: `CLUSTER FLUSHSLOTS <https://redis.io/commands/cluster-flushslots>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_flushslots`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLUSTER FORGET
-**************
-
-Remove a node from the nodes table
-
-- Documentation: `CLUSTER FORGET <https://redis.io/commands/cluster-forget>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_forget`
-
-
-
-
-
-
-
-CLUSTER GETKEYSINSLOT
-*********************
-
-Return local key names in the specified hash slot
-
-- Documentation: `CLUSTER GETKEYSINSLOT <https://redis.io/commands/cluster-getkeysinslot>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_getkeysinslot`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-CLUSTER INFO
-************
-
-Provides info about Redis Cluster node state
-
-- Documentation: `CLUSTER INFO <https://redis.io/commands/cluster-info>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_info`
-
-
-
-
-
-
-
-CLUSTER KEYSLOT
-***************
-
-Returns the hash slot of the specified key
-
-- Documentation: `CLUSTER KEYSLOT <https://redis.io/commands/cluster-keyslot>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_keyslot`
-
-
-
-
-
-
-
-CLUSTER MEET
-************
-
-Force a node cluster to handshake with another node
-
-- Documentation: `CLUSTER MEET <https://redis.io/commands/cluster-meet>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_meet`
-
-
-
-
-
-
-
-CLUSTER NODES
-*************
-
-Get Cluster config for the node
-
-- Documentation: `CLUSTER NODES <https://redis.io/commands/cluster-nodes>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_nodes`
-
-
-
-
-
-
-
-CLUSTER REPLICAS
-****************
-
-List replica nodes of the specified master node
-
-- Documentation: `CLUSTER REPLICAS <https://redis.io/commands/cluster-replicas>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_replicas`
-
-
-
-
-
-
-
-CLUSTER REPLICATE
+CLUSTER LINKS [X]
 *****************
 
-Reconfigure a node as a replica of the specified master node
+Returns a list of all TCP links to and from peer nodes in cluster
 
-- Documentation: `CLUSTER REPLICATE <https://redis.io/commands/cluster-replicate>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_replicate`
-
-
-
-
-
-
-
-CLUSTER RESET
-*************
-
-Reset a Redis Cluster node
-
-- Documentation: `CLUSTER RESET <https://redis.io/commands/cluster-reset>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_reset`
-
-
-
-
-
-
-
-CLUSTER SAVECONFIG
-******************
-
-Forces the node to save cluster state on disk
-
-- Documentation: `CLUSTER SAVECONFIG <https://redis.io/commands/cluster-saveconfig>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_saveconfig`
-
-
-
-
-
-
-
-CLUSTER SET-CONFIG-EPOCH
-************************
-
-Set the configuration epoch in a new node
-
-- Documentation: `CLUSTER SET-CONFIG-EPOCH <https://redis.io/commands/cluster-set-config-epoch>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_set_config_epoch`
-
-
-
-
-
-
-
-CLUSTER SETSLOT
-***************
-
-Bind a hash slot to a specific node
-
-- Documentation: `CLUSTER SETSLOT <https://redis.io/commands/cluster-setslot>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_setslot`
-
-
-
-
-
-
-
-CLUSTER SLAVES
-**************
-
-List replica nodes of the specified master node
-
-- Documentation: `CLUSTER SLAVES <https://redis.io/commands/cluster-slaves>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_slaves`
-
-
-- Deprecated in redis: 5.0.0. Use :meth:`~coredis.RedisCluster.cluster replicas`
-
-
-
-
-
-
-CLUSTER SLOTS
-*************
-
-Get array of Cluster slot to node mappings
-
-- Documentation: `CLUSTER SLOTS <https://redis.io/commands/cluster-slots>`_
-- Implementation: :meth:`~coredis.RedisCluster.cluster_slots`
-
-
-
-
-
+- Documentation: `CLUSTER LINKS <https://redis.io/commands/cluster-links>`_
+ 
+- Not Implemented
 
 
 CLUSTER MYID [X]

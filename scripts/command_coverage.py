@@ -45,7 +45,7 @@ from coredis.response.types import (
 from coredis.typing import OrderedDict, ValueT, KeyT
 from coredis import PureToken, NodeFlag  # noqa
 
-MAX_SUPPORTED_VERSION = version.parse("6.999.999")
+MAX_SUPPORTED_VERSION = version.parse("7.999.999")
 MIN_SUPPORTED_VERSION = version.parse("5.0.0")
 
 MAPPING = {"DEL": "delete"}
