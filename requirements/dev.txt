@@ -9,7 +9,7 @@ inflect
 isort
 mypy==0.941
 jinja2
-pyright==1.1.229
+pyright==1.1.230
 requests
 redis
 twine
