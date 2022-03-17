@@ -47,7 +47,10 @@ autodoc_default_options = {
 }
 
 
-version, _ = release, part = coredis.__version__.split("+")
+if '+' in coredis.__version__:
+    version, _ = release, part = coredis.__version__.split("+")
+else:
+    version = coredis.__version__
 
 html_title = f"{project} <small><b style='color: var(--color-brand-primary)'>{{{release}}}</b></small>"
 try:
