@@ -3,6 +3,95 @@
 Changelog
 =========
 
+v3.0.0rc1
+---------
+Release Date: 2022-03-16
+
+* Features:
+
+    * Added type hints to all redis commands
+    * Added support for experimental runtime type checking
+    * Updated APIs upto redis 6.2.0
+
+* Breaking changes:
+
+    * Most redis command API arguments and return types have been
+      refactored to be in sync with the official docs.
+
+* New APIs:
+
+    * Generic:
+
+        * ``Redis.copy``
+        * ``Redis.migrate``
+
+    * Scripting:
+
+        * ``Redis.script_debug``
+
+    * Stream:
+
+        * ``Redis.xautoclaim``
+        * ``Redis.xgroup_createconsumer``
+        * ``Redis.xgroup_delconsumer``
+        * ``Redis.xgroup_setid``
+
+    * Server:
+
+        * ``Redis.acl_cat``
+        * ``Redis.acl_deluser``
+        * ``Redis.acl_genpass``
+        * ``Redis.acl_getuser``
+        * ``Redis.acl_list``
+        * ``Redis.acl_load``
+        * ``Redis.acl_log``
+        * ``Redis.acl_save``
+        * ``Redis.acl_setuser``
+        * ``Redis.acl_users``
+        * ``Redis.acl_whoami``
+        * ``Redis.command``
+        * ``Redis.command_count``
+        * ``Redis.command_getkeys``
+        * ``Redis.command_info``
+        * ``Redis.failover``
+        * ``Redis.latency_doctor``
+        * ``Redis.latency_graph``
+        * ``Redis.latency_history``
+        * ``Redis.latency_latest``
+        * ``Redis.latency_reset``
+        * ``Redis.memory_doctor``
+        * ``Redis.memory_malloc_stats``
+        * ``Redis.memory_purge``
+        * ``Redis.memory_stats``
+        * ``Redis.memory_usage``
+        * ``Redis.replicaof``
+        * ``Redis.swapdb``
+
+    * Connection:
+
+        * ``Redis.auth``
+        * ``Redis.client_caching``
+        * ``Redis.client_getredir``
+        * ``Redis.client_id``
+        * ``Redis.client_info``
+        * ``Redis.client_reply``
+        * ``Redis.client_tracking``
+        * ``Redis.client_trackinginfo``
+        * ``Redis.client_unblock``
+        * ``Redis.client_unpause``
+        * ``Redis.hello``
+        * ``Redis.reset``
+        * ``Redis.select``
+
+    * Cluster:
+
+        * ``Redis.asking``
+        * ``Redis.cluster_bumpepoch``
+        * ``Redis.cluster_flushslots``
+        * ``Redis.cluster_getkeysinslot``
+
+
+
 v2.3.1
 ------
 Release Date: 2022-01-30
@@ -242,6 +331,7 @@ v1.0.1
 * fix bug of `PubSub.run_in_thread`
 * add more examples
 * change `Script.register` to `Script.execute`
+
 
 
 
