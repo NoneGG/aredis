@@ -4100,7 +4100,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         "BITCOUNT",
         readonly=True,
         group=CommandGroup.BITMAP,
-        arguments={"index_unit": {"version_introduced": "7.0.0"}},
     )
     @mutually_inclusive_parameters("start", "end")
     async def bitcount(
@@ -4108,7 +4107,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         key: KeyT,
         start: Optional[int] = None,
         end: Optional[int] = None,
-        index_unit: Optional[Literal[PureToken.BIT, PureToken.BYTE]] = None,
     ) -> int:
         """
         Returns the count of set bits in the value of ``key``.  Optional
@@ -4123,8 +4121,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         elif (start is not None and end is None) or (end is not None and start is None):
             raise RedisError("Both start and end must be specified")
 
-        if index_unit is not None:
-            params.append(index_unit.value)
         return await self.execute_command("BITCOUNT", *params)
 
     def bitfield(self, key: KeyT) -> BitFieldOperation:
@@ -4164,7 +4160,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         "BITPOS",
         readonly=True,
         group=CommandGroup.BITMAP,
-        arguments={"end_index_unit": {"version_introduced": "7.0.0"}},
     )
     async def bitpos(
         self,
@@ -4172,7 +4167,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         bit: int,
         start: Optional[int] = None,
         end: Optional[int] = None,
-        end_index_unit: Optional[Literal[PureToken.BYTE, PureToken.BIT]] = None,
     ) -> int:
         """
 
@@ -4180,26 +4174,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         ``start`` and ``end`` defines the search range. The range is interpreted
         as a range of bytes and not a range of bits, so start=0 and end=2
         means to look at the first three bytes.
-
-
-        :return: The position of the first bit set to 1 or 0 according to the request.
-         If we look for set bits (the bit argument is 1) and the string is empty or
-         composed of just zero bytes, -1 is returned.
-
-         If we look for clear bits (the bit argument is 0) and the string only contains
-         bit set to 1, the function returns the first bit not part of the string on the right.
-
-         So if the string is three bytes set to the value ``0xff`` the command ``BITPOS key 0`` will
-         return 24, since up to bit 23 all the bits are 1.
-
-         Basically, the function considers the right of the string as padded with
-         zeros if you look for clear bits and specify no range or the ``start`` argument **only**.
-
-         However, this behavior changes if you are looking for clear bits and
-         specify a range with both ``start`` and ``end``.
-
-         If no clear bit is found in the specified range, the function returns -1 as the user
-         specified a clear range and there are no 0 bits in that range.
         """
 
         if bit not in (0, 1):
@@ -4213,9 +4187,6 @@ class CoreCommands(CommandMixin[AnyStr]):
             params.append(end)
         elif start is None and end is not None:
             raise RedisError("start argument is not set, when end is specified")
-
-        if end_index_unit is not None:
-            params.append(end_index_unit.value)
 
         return await self.execute_command("BITPOS", *params)
 
