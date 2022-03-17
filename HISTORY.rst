@@ -3,6 +3,59 @@
 Changelog
 =========
 
+v3.0.0rc2
+---------
+Release Date: 2022-03-17
+
+* Breaking changes:
+
+  * Updated all commands accepting multiple values for an argument
+    to use positional var args **only** if the argument is optional.
+    For all other cases, use a positional argument accepting an
+    ``Iterable``. Affected methods:
+
+    * ``bitop`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``delete`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``exists`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``touch`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``unlink`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``blpop`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``brpop`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``lpush`` -> ``*elements`` -> ``elements: Iterable[ValueT]``
+    * ``lpushx`` -> ``*elements`` -> ``elements: Iterable[ValueT]``
+    * ``rpush`` -> ``*elements`` -> ``elements: Iterable[ValueT]``
+    * ``rpushx`` -> ``*elements`` -> ``elements: Iterable[ValueT]``
+    * ``mget`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``sadd`` -> ``*members`` -> ``members: Iterable[ValueT]``
+    * ``sdiff`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``sdiffstore`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``sinter`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``sinterstore`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``smismember`` -> ``*members`` -> ``members: Iterable[ValueT]``
+    * ``srem`` -> ``*members` -> ``members: Iterable[ValueT]``
+    * ``sunion`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``sunionstore`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``geohash`` -> ``*members`` -> ``members: Iterable[ValueT]``
+    * ``hdel`` -> ``*fields`` -> ``fields: Iterable[ValueT]``
+    * ``hmet`` -> ``*fields`` -> ``fields: Iterable[ValueT]``
+    * ``pfcount`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``pfmerge`` -> ``*sourcekeys`` -> ``sourcekeys: Iterable[KeyT]``
+    * ``zdiff`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``zdiffstore`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``zinter`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``zinterstore`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``zmscore`` -> ``*members`` -> ``members: Iterable[ValueT]``
+    * ``zrem`` -> ``*members`` -> ``members: Iterable[ValueT]``
+    * ``zunion`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``zunionstore`` -> ``*keys`` -> ``keys: Iterable[KeyT]``
+    * ``xack`` -> ``*identifiers`` -> ``identifiers: Iterable[ValueT]``
+    * ``xdel`` -> ``*identifiers`` -> ``identifiers: Iterable[ValueT]``
+    * ``xclaim`` -> ``*identifiers`` -> ``identifiers: Iterable[ValueT]``
+    * ``script_exists`` -> ``*sha1s`` - > ``sha1s: Iterable[ValueT]``
+    * ``client_tracking`` -> ``*prefixes`` - > ``prefixes: Iterable[ValueT]``
+    * ``info`` -> ``*sections`` - > ``sections: Iterable[ValueT]``
+
+
 v3.0.0rc1
 ---------
 Release Date: 2022-03-16
@@ -331,6 +384,7 @@ v1.0.1
 * fix bug of `PubSub.run_in_thread`
 * add more examples
 * change `Script.register` to `Script.execute`
+
 
 
 
