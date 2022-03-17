@@ -68,10 +68,11 @@ Single Node client
         client = Redis(host='127.0.0.1', port=6379, db=0)
         await client.flushdb()
         await client.set('foo', 1)
-        assert await client.exists('foo') is True
-        await client.incr('foo', 100)
+        assert await client.exists(['foo']) == 1
+        await client.incr('foo')
+        await client.incrby('foo', increment=100)
 
-        assert int(await client.get('foo')) == 101
+        assert int(await client.get('foo')) == 102
         await client.expire('foo', 1)
         await asyncio.sleep(0.1)
         await client.ttl('foo')
@@ -93,7 +94,7 @@ Cluster client
         client = RedisCluster(host='172.17.0.2', port=7001)
         await client.flushdb()
         await client.set('foo', 1)
-        await client.lpush('a', 1)
+        await client.lpush('a', [1])
         print(await client.cluster_slots())
 
         await client.rpoplpush('a', 'b')

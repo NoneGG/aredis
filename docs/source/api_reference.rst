@@ -20,9 +20,9 @@ Without decoding:
         "localhost", 6379, db=0, decode_responses=False, encoding="utf-8"
     )
     await client.set("string", 1)
-    await client.lpush("list", 1)
+    await client.lpush("list", [1])
     await client.hset("hash", {"a": 1})
-    await client.sadd("set", "a")
+    await client.sadd("set", ["a"])
     await client.zadd("sset", {"a": 1.0, "b": 2.0})
 
     str_response = await client.get("string")
@@ -48,9 +48,9 @@ With decoding:
         "localhost", 6379, db=0, decode_responses=True, encoding="utf-8"
     )
     await client.set("string", 1)
-    await client.lpush("list", 1)
+    await client.lpush("list", [1])
     await client.hset("hash", {"a": 1})
-    await client.sadd("set", "a")
+    await client.sadd("set", ["a"])
     await client.zadd("sset", {"a": 1.0, "b": 2.0})
 
     str_response = await client.get("string")
