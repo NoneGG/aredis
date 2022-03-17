@@ -16,7 +16,7 @@ class TestACL:
         assert "user default" in (await client.acl_list())[0]
 
     async def test_del_user(self, client):
-        assert 0 == await client.acl_deluser("john", "doe")
+        assert 0 == await client.acl_deluser(["john", "doe"])
 
     async def test_gen_pass(self, client):
         assert len(await client.acl_genpass()) == 64
@@ -43,11 +43,11 @@ class TestACL:
 
     async def test_new_user(self, client):
         try:
-            assert await client.acl_setuser("test_user", rules=["on"])
+            assert await client.acl_setuser("test_user", "on")
             new_user = await client.acl_getuser("test_user")
             assert "on" in new_user["flags"]
         finally:
-            await client.acl_deluser("test_user")
+            await client.acl_deluser(["test_user"])
 
     async def test_get_user(self, client):
         default_user = await client.acl_getuser("default")

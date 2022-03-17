@@ -80,7 +80,7 @@ class TestStreams:
 
         # trying to claim a message that isn't already pending doesn't
         # do anything
-        response = await client.xclaim(stream, group, consumer2, 0, message_id)
+        response = await client.xclaim(stream, group, consumer2, 0, [message_id])
         assert response == ()
 
         # read the group as consumer1 to initially claim the messages
@@ -92,7 +92,7 @@ class TestStreams:
             group,
             consumer2,
             0,
-            message_id,
+            [message_id],
         )
         assert response[0] == message
 
@@ -103,7 +103,7 @@ class TestStreams:
             group,
             consumer1,
             0,
-            message_id,
+            [message_id],
             justid=True,
         ) == (message_id,)
 

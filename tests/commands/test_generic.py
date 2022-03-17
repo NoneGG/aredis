@@ -12,32 +12,32 @@ from tests.conftest import targets
 @pytest.mark.asyncio()
 class TestGeneric:
     async def test_sort_basic(self, client):
-        await client.rpush("a", "3", "2", "1", "4")
+        await client.rpush("a", ["3", "2", "1", "4"])
         assert await client.sort("a") == ("1", "2", "3", "4")
 
     async def test_sort_limited(self, client):
-        await client.rpush("a", "3", "2", "1", "4")
+        await client.rpush("a", ["3", "2", "1", "4"])
         assert await client.sort("a", offset=1, count=2) == ("2", "3")
 
     async def test_sort_by(self, client):
         await client.set("score:1", "8")
         await client.set("score:2", "3")
         await client.set("score:3", "5")
-        await client.rpush("a", "3", "2", "1")
+        await client.rpush("a", ["3", "2", "1"])
         assert await client.sort("a", by="score:*") == ("2", "3", "1")
 
     async def test_sort_get(self, client):
         await client.set("user:1", "u1")
         await client.set("user:2", "u2")
         await client.set("user:3", "u3")
-        await client.rpush("a", "2", "3", "1")
-        assert await client.sort("a", gets=["user:*"]) == ("u1", "u2", "u3")
+        await client.rpush("a", ["2", "3", "1"])
+        assert await client.sort("a", ["user:*"]) == ("u1", "u2", "u3")
 
     async def test_sort_get_multi(self, client):
         await client.set("user:1", "u1")
         await client.set("user:2", "u2")
         await client.set("user:3", "u3")
-        await client.rpush("a", "2", "3", "1")
+        await client.rpush("a", ["2", "3", "1"])
         assert await client.sort("a", gets=("user:*", "#")) == (
             "u1",
             "1",
@@ -54,7 +54,7 @@ class TestGeneric:
         await client.set("door:1", "d1")
         await client.set("door:2", "d2")
         await client.set("door:3", "d3")
-        await client.rpush("a", "2", "3", "1")
+        await client.rpush("a", ["2", "3", "1"])
         assert await client.sort("a", gets=["user:*", "door:*", "#"]) == (
             "u1",
             "d1",
@@ -68,11 +68,11 @@ class TestGeneric:
         )
 
     async def test_sort_desc(self, client):
-        await client.rpush("a", "2", "3", "1")
+        await client.rpush("a", ["2", "3", "1"])
         assert await client.sort("a", order=PureToken.DESC) == ("3", "2", "1")
 
     async def test_sort_alpha(self, client):
-        await client.rpush("a", "e", "c", "b", "d", "a")
+        await client.rpush("a", ["e", "c", "b", "d", "a"])
         assert await client.sort("a", alpha=True) == (
             "a",
             "b",
@@ -82,7 +82,7 @@ class TestGeneric:
         )
 
     async def test_sort_store(self, client):
-        await client.rpush("a", "2", "3", "1")
+        await client.rpush("a", ["2", "3", "1"])
         assert await client.sort("a", store="sorted_values") == 3
         assert await client.lrange("sorted_values", 0, -1) == ["1", "2", "3"]
 
@@ -105,7 +105,7 @@ class TestGeneric:
         await client.set("user:7:favorite_drink", "gin")
         await client.set("user:8:favorite_drink", "apple juice")
 
-        await client.rpush("gods", "5", "8", "3", "1", "2", "7", "6", "4")
+        await client.rpush("gods", ["5", "8", "3", "1", "2", "7", "6", "4"])
         num = await client.sort(
             "gods",
             offset=2,
@@ -132,7 +132,7 @@ class TestGeneric:
     async def test_delete_with_multiple_keys(self, client):
         await client.set("a", "foo")
         await client.set("b", "bar")
-        assert await client.delete("a", "b") == 2
+        assert await client.delete(["a", "b"]) == 2
         assert await client.get("a") is None
         assert await client.get("b") is None
 
@@ -170,15 +170,11 @@ class TestGeneric:
     async def test_migrate_single_key(self, client, redis_auth):
         auth_connection = await redis_auth.connection_pool.get_connection()
         await client.set("a", "1")
-        assert not await client.migrate(
-            ["b"], "172.17.0.1", auth_connection.port, 0, 100
-        )
+        assert not await client.migrate("172.17.0.1", auth_connection.port, 0, 100, "b")
         with pytest.raises(ResponseError):
-            assert await client.migrate(
-                ["a"], "172.17.0.1", auth_connection.port, 0, 100
-            )
+            assert await client.migrate("172.17.0.1", auth_connection.port, 0, 100, "a")
         assert await client.migrate(
-            ["a"], "172.17.0.1", auth_connection.port, 0, 100, auth="sekret"
+            "172.17.0.1", auth_connection.port, 0, 100, "a", auth="sekret"
         )
         assert await redis_auth.get("a") == "1"
 
@@ -188,10 +184,10 @@ class TestGeneric:
         await client.set("a", "1")
         await client.set("c", "2")
         assert not await client.migrate(
-            ["d", "b"], "172.17.0.1", auth_connection.port, 0, 100
+            "172.17.0.1", auth_connection.port, 0, 100, "d", "b"
         )
         assert await client.migrate(
-            ["a", "c"], "172.17.0.1", auth_connection.port, 0, 100, auth="sekret"
+            "172.17.0.1", auth_connection.port, 0, 100, "a", "c", auth="sekret"
         )
 
         assert await redis_auth.get("a") == "1"
@@ -352,14 +348,14 @@ class TestGeneric:
 
         for index, key in enumerate(keys):
             await client.set(key, str(index))
-        assert await client.touch(*keys) == len(keys)
+        assert await client.touch(keys) == len(keys)
 
     async def test_unlink(self, client):
         keys = ["a{foo}", "b{foo}", "c{foo}", "d{foo}"]
 
         for index, key in enumerate(keys):
             await client.set(key, str(index))
-        await client.unlink(*keys)
+        await client.unlink(keys)
 
         for key in keys:
             assert await client.get(key) is None

@@ -30,13 +30,13 @@ class TestServer:
         assert commands["get"]["arity"] == 2
 
     async def test_command_info(self, client):
-        commands = await client.command_info(["get"])
+        commands = await client.command_info("get")
         assert list(commands.keys()) == ["get"]
         assert commands["get"]["name"] == "get"
         assert commands["get"]["arity"] == 2
 
     async def test_config_get(self, client):
-        data = await client.config_get(["*"])
+        data = await client.config_get("*")
         assert "maxmemory" in data
         assert data["maxmemory"].isdigit()
 

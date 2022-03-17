@@ -94,11 +94,11 @@ class TestString:
             await client.getex("a", ex=1, px=1)
 
     async def test_mget(self, client):
-        assert await client.mget("a", "b") == (None, None)
+        assert await client.mget(["a", "b"]) == (None, None)
         await client.set("a", "1")
         await client.set("b", "2")
         await client.set("c", "3")
-        assert await client.mget("a", "other", "b", "c") == (
+        assert await client.mget(["a", "other", "b", "c"]) == (
             "1",
             None,
             "2",
@@ -217,6 +217,6 @@ class TestString:
             " foo bar ",
         ]
 
-        assert await client.delete(" foo bar ")
-        assert await client.delete(" foo\r\nbar\r\n ")
-        assert await client.delete(" \r\n\t\x07\x13 ")
+        assert await client.delete([" foo bar "])
+        assert await client.delete([" foo\r\nbar\r\n "])
+        assert await client.delete([" \r\n\t\x07\x13 "])

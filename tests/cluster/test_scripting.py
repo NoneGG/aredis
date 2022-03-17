@@ -87,9 +87,9 @@ class TestScripting:
         sha = await redis_cluster.script_load(multiply_script)
         await redis_cluster.script_flush()
 
-        assert await redis_cluster.script_exists(sha) == (False,)
+        assert await redis_cluster.script_exists([sha]) == (False,)
         await redis_cluster.script_load(multiply_script)
-        assert await redis_cluster.script_exists(sha) == (True,)
+        assert await redis_cluster.script_exists([sha]) == (True,)
 
     @pytest.mark.asyncio()
     async def test_script_object(self, redis_cluster):
@@ -99,7 +99,7 @@ class TestScripting:
         # test evalsha fail -> script load + retry
         assert await multiply.execute(keys=["a"], args=[3]) == 6
         assert multiply.sha
-        assert await redis_cluster.script_exists(multiply.sha) == (True,)
+        assert await redis_cluster.script_exists([multiply.sha]) == (True,)
         # test first evalsha
         assert await multiply.execute(keys=["a"], args=[3]) == 6
 

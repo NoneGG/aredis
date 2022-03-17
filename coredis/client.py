@@ -348,14 +348,14 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         if ttl is None or ttl < 1:
             ttl = 0
 
-        await self.delete(newkey)
+        await self.delete([newkey])
         await self.restore(newkey, ttl, data)
-        await self.delete(key)
+        await self.delete([key])
 
         return True
 
     @redis_command("DEL", group=CommandGroup.GENERIC)
-    async def delete(self, *keys: KeyT) -> int:
+    async def delete(self, keys: Iterable[KeyT]) -> int:
         """
         "Delete one or more keys specified by ``keys``"
         """
@@ -377,7 +377,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         :return: False when ``newkey`` already exists.
         """
 
-        if not await self.exists(newkey):
+        if not await self.exists([newkey]) == 1:
             return await self.rename(key, newkey)
 
         return False
@@ -438,11 +438,11 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
 
             if store is not None:
                 if data_type == "set":
-                    await self.delete(store)
-                    await self.rpush(store, *data)
+                    await self.delete([store])
+                    await self.rpush(store, data)
                 elif data_type == "list":
-                    await self.delete(store)
-                    await self.rpush(store, *data)
+                    await self.delete([store])
+                    await self.rpush(store, data)
                 else:
                     raise RedisClusterException(
                         f"Unable to store sorted data for data type : {data_type}"
@@ -454,23 +454,24 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         except KeyError:
             return ()
 
-    async def _retrive_data_from_sort(self, data, gets):
+    async def _retrive_data_from_sort(self, data, gets) -> List[AnyStr]:
         """
         Used by sort()
         """
 
         if gets:
-            new_data = []
+            new_data: List[AnyStr] = []
 
             for k in data:
                 for g in gets:
                     single_item = await self._get_single_item(k, g)
-                    new_data.append(single_item)
+                    if single_item:
+                        new_data.append(single_item)
             data = new_data
 
         return data
 
-    async def _get_single_item(self, k, g):
+    async def _get_single_item(self, k, g) -> Optional[AnyStr]:
         """
         Used by sort()
         """
@@ -525,7 +526,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         return [x[0] for x in sorted(sorted_data, key=lambda x: x[1])]
 
     @redis_command("MGET", readonly=True, group=CommandGroup.STRING)
-    async def mget(self, *keys: KeyT) -> Tuple[Optional[AnyStr], ...]:
+    async def mget(self, keys: Iterable[KeyT]) -> Tuple[Optional[AnyStr], ...]:
         """
         Returns values ordered identically to ``keys``
 
@@ -590,16 +591,17 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         group=CommandGroup.SET,
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def sdiff(self, *keys: KeyT) -> Set[AnyStr]:
+    async def sdiff(self, keys: Iterable[KeyT]) -> Set[AnyStr]:
         """
         Returns the difference of sets specified by ``keys``
 
         Cluster impl:
             Query all keys and diff all sets and return result
         """
-        res = await self.smembers(keys[0])
+        _keys = list(keys)
+        res = await self.smembers(_keys[0])
 
-        for arg in keys[1:]:
+        for arg in _keys[1:]:
             res -= await self.smembers(arg)
 
         return res
@@ -609,7 +611,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         group=CommandGroup.SET,
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def sdiffstore(self, *keys: KeyT, destination: KeyT) -> int:
+    async def sdiffstore(self, keys: Iterable[KeyT], destination: KeyT) -> int:
         """
         Stores the difference of sets specified by ``keys`` into a new
         set named ``destination``.  Returns the number of keys in the new set.
@@ -618,13 +620,13 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         Cluster impl:
             Use sdiff() --> Delete dest key --> store result in dest key
         """
-        res = await self.sdiff(*keys)
-        await self.delete(destination)
+        res = await self.sdiff(keys)
+        await self.delete([destination])
 
         if not res:
             return 0
 
-        return await self.sadd(destination, *res)
+        return await self.sadd(destination, res)
 
     @redis_command(
         "SINTER",
@@ -632,16 +634,17 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         group=CommandGroup.SET,
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def sinter(self, *keys: KeyT) -> Set[AnyStr]:
+    async def sinter(self, keys: Iterable[KeyT]) -> Set[AnyStr]:
         """
         Returns the intersection of sets specified by ``keys``
 
         Cluster impl:
             Query all keys, intersection and return result
         """
-        res = await self.smembers(keys[0])
+        _keys = list(keys)
+        res = await self.smembers(_keys[0])
 
-        for arg in keys[1:]:
+        for arg in _keys[1:]:
             res &= await self.smembers(arg)
 
         return res
@@ -651,7 +654,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         group=CommandGroup.SET,
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def sinterstore(self, *keys: KeyT, destination: KeyT) -> int:
+    async def sinterstore(self, keys: Iterable[KeyT], destination: KeyT) -> int:
         """
         Stores the intersection of sets specified by ``keys`` into a new
         set named ``destination``.  Returns the number of keys in the new set.
@@ -659,11 +662,11 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         Cluster impl:
             Use sinter() --> Delete dest key --> store result in dest key
         """
-        res = await self.sinter(*keys)
-        await self.delete(destination)
+        res = await self.sinter(keys)
+        await self.delete([destination])
 
         if res:
-            await self.sadd(destination, *res)
+            await self.sadd(destination, res)
 
             return len(res)
         else:
@@ -679,12 +682,12 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         Cluster impl:
             SMEMBERS --> SREM --> SADD. Function is no longer atomic.
         """
-        res = await self.srem(source, member)
+        res = await self.srem(source, [member])
 
         # Only add the element if existed in src set
 
         if res == 1:
-            await self.sadd(destination, member)
+            await self.sadd(destination, [member])
 
         return bool(res)
 
@@ -694,7 +697,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         group=CommandGroup.SET,
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def sunion(self, *keys: KeyT) -> Set[AnyStr]:
+    async def sunion(self, keys: Iterable[KeyT]) -> Set[AnyStr]:
         """
         Returns the union of sets specified by ``keys``
 
@@ -703,9 +706,10 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
 
             Operation is no longer atomic.
         """
-        res = await self.smembers(keys[0])
+        _keys = list(keys)
+        res = await self.smembers(_keys[0])
 
-        for arg in keys[1:]:
+        for arg in _keys[1:]:
             res |= await self.smembers(arg)
 
         return res
@@ -715,7 +719,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         group=CommandGroup.SET,
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def sunionstore(self, *keys: KeyT, destination: KeyT) -> int:
+    async def sunionstore(self, keys: Iterable[KeyT], destination: KeyT) -> int:
         """
         Stores the union of sets specified by ``keys`` into a new
         set named ``destination``.  Returns the number of keys in the new set.
@@ -725,10 +729,10 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
 
             Operation is no longer atomic.
         """
-        res = await self.sunion(*keys)
-        await self.delete(destination)
+        res = await self.sunion(keys)
+        await self.delete([destination])
 
-        return await self.sadd(destination, *res)
+        return await self.sadd(destination, res)
 
     @redis_command(
         "BRPOPLPUSH",
@@ -753,13 +757,13 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
             Operation is no longer atomic.
         """
         try:
-            values = await self.brpop(source, timeout=timeout)
+            values = await self.brpop([source], timeout=timeout)
 
             if not values:
                 return None
         except TimeoutError:
             return None
-        await self.lpush(destination, values[1])
+        await self.lpush(destination, [values[1]])
 
         return values[1]
 
@@ -782,7 +786,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
         value = await self.rpop(source)
 
         if value:
-            await self.lpush(destination, value)
+            await self.lpush(destination, [value])
             return value
         return None
 

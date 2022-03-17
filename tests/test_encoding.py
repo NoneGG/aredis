@@ -24,7 +24,7 @@ class TestEncoding:
     async def test_list_encoding(self, redis_basic):
         unicode_string = chr(124) + "abcd" + chr(125)
         result = [unicode_string, unicode_string, unicode_string]
-        await redis_basic.rpush("a", *result)
+        await redis_basic.rpush("a", result)
         assert await redis_basic.lrange("a", 0, -1) == result
 
     async def test_object_value(self, redis_basic):

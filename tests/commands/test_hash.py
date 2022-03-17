@@ -26,9 +26,9 @@ class TestHash:
 
     async def test_hdel(self, client):
         await client.hmset("a", {"1": 1, "2": 2, "3": 3})
-        assert await client.hdel("a", "2") == 1
+        assert await client.hdel("a", ["2"]) == 1
         assert await client.hget("a", "2") is None
-        assert await client.hdel("a", "1", "3") == 2
+        assert await client.hdel("a", ["1", "3"]) == 2
         assert await client.hlen("a") == 0
 
     async def test_hexists(self, client):
@@ -64,7 +64,7 @@ class TestHash:
 
     async def test_hmget(self, client):
         assert await client.hmset("a", {"a": 1, "b": 2, "c": 3})
-        assert await client.hmget("a", "a", "b", "c") == ("1", "2", "3")
+        assert await client.hmget("a", ["a", "b", "c"]) == ("1", "2", "3")
 
     async def test_hmset(self, client):
         h = {"a": "1", "b": "2", "c": "3"}

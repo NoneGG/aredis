@@ -5,7 +5,17 @@ from abc import ABCMeta
 from concurrent.futures import CancelledError
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, TypeVar
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+)
 
 from coredis.client import AbstractRedis, AbstractRedisCluster, ResponseParser
 from coredis.exceptions import (
@@ -22,7 +32,7 @@ from coredis.exceptions import (
     WatchError,
 )
 from coredis.pool import ClusterConnectionPool
-from coredis.typing import ParamSpec, ValueT
+from coredis.typing import KeyT, ParamSpec, ValueT
 from coredis.utils import NodeFlag, clusterdown_wrapper, dict_merge
 
 P = ParamSpec("P")
@@ -912,12 +922,13 @@ class ClusterPipeline(
             "method script_load_for_pipeline() is not implemented"
         )
 
-    def delete(self, *names):
+    def delete(self, keys: Iterable[KeyT]):
         """Deletes a key specified by ``names``"""
 
-        if len(names) != 1:
+        _keys = list(keys)
+        if len(_keys) != 1:
             raise RedisClusterException(
                 "deleting multiple keys is not implemented in pipeline command"
             )
 
-        return self.execute_command("DEL", names[0])
+        return self.execute_command("DEL", _keys[0])

@@ -132,7 +132,7 @@ class TestPipeline:
         async with await client.pipeline() as pipe:
             # the zrem is invalid because we don't pass any keys to it
             await pipe.set("a", "1")
-            await pipe.zrem("b")
+            await pipe.zrem("b", [])
             await pipe.set("b", "2")
             with pytest.raises(ResponseError):
                 await pipe.execute()

@@ -30,7 +30,7 @@ class TestBitmap:
     @pytest.mark.nocluster
     async def test_bitop_not_empty_string(self, client):
         await client.set("a", "")
-        await client.bitop("a", operation="not", destkey="r")
+        await client.bitop(["a"], operation="not", destkey="r")
         assert await client.get("r") is None
 
     @pytest.mark.nocluster
@@ -38,7 +38,7 @@ class TestBitmap:
         test_str = b"\xAA\x00\xFF\x55"
         correct = ~0xAA00FF55 & 0xFFFFFFFF
         await client.set("a", test_str)
-        await client.bitop("a", operation="not", destkey="r")
+        await client.bitop(["a"], operation="not", destkey="r")
         assert (await client.bitfield("r").get("i32", 0).exc()) == [correct]
 
     @pytest.mark.nocluster
@@ -46,16 +46,16 @@ class TestBitmap:
         test_str = b"\xAA\x00\xFF\x55"
         correct = ~0xAA00FF55 & 0xFFFFFFFF
         await client.set("a", test_str)
-        await client.bitop("a", operation="not", destkey="a")
+        await client.bitop(["a"], operation="not", destkey="a")
         assert (await client.bitfield("a").get("i32", 0).exc()) == [correct]
 
     @pytest.mark.nocluster
     async def test_bitop_single_string(self, client):
         test_str = "\x01\x02\xFF"
         await client.set("a", test_str)
-        await client.bitop("a", operation="and", destkey="res1")
-        await client.bitop("a", operation="or", destkey="res2")
-        await client.bitop("a", operation="xor", destkey="res3")
+        await client.bitop(["a"], operation="and", destkey="res1")
+        await client.bitop(["a"], operation="or", destkey="res2")
+        await client.bitop(["a"], operation="xor", destkey="res3")
         assert await client.get("res1") == test_str
         assert await client.get("res2") == test_str
         assert await client.get("res3") == test_str
@@ -64,9 +64,9 @@ class TestBitmap:
     async def test_bitop_string_operands(self, client):
         await client.set("a", b"\x01\x02\xFF\xFF")
         await client.set("b", b"\x01\x02\xFF")
-        await client.bitop("a", "b", operation="and", destkey="res1")
-        await client.bitop("a", "b", operation="or", destkey="res2")
-        await client.bitop("a", "b", operation="xor", destkey="res3")
+        await client.bitop(["a", "b"], operation="and", destkey="res1")
+        await client.bitop(["a", "b"], operation="or", destkey="res2")
+        await client.bitop(["a", "b"], operation="xor", destkey="res3")
         assert (await client.bitfield("res1").get("i32", 0).exc()) == [0x0102FF00]
         assert (await client.bitfield("res2").get("i32", 0).exc()) == [0x0102FFFF]
         assert (await client.bitfield("res3").get("i32", 0).exc()) == [0x000000FF]
@@ -134,11 +134,11 @@ class TestBitmap:
         assert [-128] == await client.bitfield(key).overflow("WRAP").incrby(
             "i8", 0, 128
         ).exc()
-        await client.delete(key)
+        await client.delete([key])
         assert [127] == await client.bitfield(key).overflow("SAT").incrby(
             "i8", 0, 128
         ).exc()
-        await client.delete(key)
+        await client.delete([key])
         assert [None] == await client.bitfield(key).overflow("fail").incrby(
             "i8", 0, 128
         ).exc()

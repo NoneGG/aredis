@@ -39,7 +39,7 @@ class TestConnection:
 
     @pytest.mark.min_server_version("6.2.0")
     async def test_client_trackinginfo_tracking_set(self, client):
-        resp = await client.client_tracking(PureToken.ON, [])
+        resp = await client.client_tracking(PureToken.ON)
         assert resp
         info = await client.client_trackinginfo()
         assert info["flags"] == ["on"]

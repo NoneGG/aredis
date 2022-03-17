@@ -387,7 +387,7 @@ class TestPubSubPubSubSubcommands:
         await p3.subscribe("baz")
 
         channels = OrderedDict({"foo": 1, "bar": 2, "baz": 3})
-        assert channels == await client.pubsub_numsub(("foo", "bar", "baz"))
+        assert channels == await client.pubsub_numsub("foo", "bar", "baz")
         await p1.unsubscribe()
         await p2.unsubscribe()
         await p3.unsubscribe()

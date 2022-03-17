@@ -60,7 +60,7 @@ class TestGeo:
         ]
 
         await client.geoadd("barcelona", values)
-        assert await client.geohash("barcelona", "place1", "place2") == (
+        assert await client.geohash("barcelona", ["place1", "place2"]) == (
             "sp3e9yg3kd0",
             "sp3e9cbc3t0",
         )

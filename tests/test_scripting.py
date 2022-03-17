@@ -67,15 +67,15 @@ class TestScripting:
         # get the sha, then clear the cache
         sha = await client.script_load(multiply_script)
         await client.script_flush()
-        assert await client.script_exists(sha) == (False,)
+        assert await client.script_exists([sha]) == (False,)
         await client.script_load(multiply_script)
-        assert await client.script_exists(sha) == (True,)
+        assert await client.script_exists([sha]) == (True,)
 
     @pytest.mark.min_server_version("6.2.0")
     async def test_script_flush_sync_mode(self, client):
         sha = await client.script_load(multiply_script)
         assert await client.script_flush(sync_type=PureToken.SYNC)
-        assert await client.script_exists(sha) == (False,)
+        assert await client.script_exists([sha]) == (False,)
 
     async def test_script_object(self, client):
         await client.script_flush()
@@ -83,11 +83,11 @@ class TestScripting:
         multiply = client.register_script(multiply_script)
         precalculated_sha = multiply.sha
         assert precalculated_sha
-        assert await client.script_exists(multiply.sha) == (False,)
+        assert await client.script_exists([multiply.sha]) == (False,)
         # Test second evalsha block (after NoScriptError)
         assert await multiply.execute(keys=["a"], args=[3]) == 6
         # At this point, the script should be loaded
-        assert await client.script_exists(multiply.sha) == (True,)
+        assert await client.script_exists([multiply.sha]) == (True,)
         # Test that the precalculated sha matches the one from redis
         assert multiply.sha == precalculated_sha
         # Test first evalsha block
@@ -103,11 +103,11 @@ class TestScripting:
         await pipe.set("a", "2")
         await pipe.get("a")
         await multiply.execute(keys=["a"], args=[3], client=pipe)
-        assert await client.script_exists(multiply.sha) == (False,)
+        assert await client.script_exists([multiply.sha]) == (False,)
         # [SET worked, GET 'a', result of multiple script]
         assert await pipe.execute() == (True, "2", 6)
         # The script should have been loaded by pipe.execute()
-        assert await client.script_exists(multiply.sha) == (True,)
+        assert await client.script_exists([multiply.sha]) == (True,)
         # The precalculated sha should have been the correct one
         assert multiply.sha == precalculated_sha
 
@@ -118,14 +118,14 @@ class TestScripting:
         await pipe.set("a", "2")
         await pipe.get("a")
         await multiply.execute(keys=["a"], args=[3], client=pipe)
-        assert await client.script_exists(multiply.sha) == (False,)
+        assert await client.script_exists([multiply.sha]) == (False,)
         # [SET worked, GET 'a', result of multiple script]
         assert await pipe.execute() == (
             True,
             "2",
             6,
         )
-        assert await client.script_exists(multiply.sha) == (True,)
+        assert await client.script_exists([multiply.sha]) == (True,)
 
     @pytest.mark.nocluster
     async def test_eval_msgpack_pipeline_error_in_lua(self, client):
@@ -140,9 +140,9 @@ class TestScripting:
 
         await msgpack_hello.execute(args=[msgpack_message_1], client=pipe)
 
-        assert await client.script_exists(msgpack_hello.sha) == (False,)
+        assert await client.script_exists([msgpack_hello.sha]) == (False,)
         assert (await pipe.execute())[0] == "hello Joe"
-        assert await client.script_exists(msgpack_hello.sha) == (True,)
+        assert await client.script_exists([msgpack_hello.sha]) == (True,)
 
         msgpack_hello_broken = client.register_script(msgpack_hello_script_broken)
 

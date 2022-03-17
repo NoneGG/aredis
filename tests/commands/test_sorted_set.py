@@ -100,8 +100,8 @@ class TestSortedSet:
     async def test_zdiff(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
         await client.zadd("b{foo}", dict(a1=1, a2=2))
-        assert (await client.zdiff("a{foo}", "b{foo}")) == ("a3",)
-        assert (await client.zdiff("a{foo}", "b{foo}", withscores=True)) == (
+        assert (await client.zdiff(["a{foo}", "b{foo}"])) == ("a3",)
+        assert (await client.zdiff(["a{foo}", "b{foo}"], withscores=True)) == (
             ("a3", 3.0),
         )
 
@@ -109,7 +109,7 @@ class TestSortedSet:
     async def test_zdiffstore(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
         await client.zadd("b{foo}", dict(a1=1, a2=2))
-        assert await client.zdiffstore("a{foo}", "b{foo}", destination="out{foo}")
+        assert await client.zdiffstore(["a{foo}", "b{foo}"], destination="out{foo}")
         assert (await client.zrange("out{foo}", 0, -1)) == ("a3",)
         assert (await client.zrange("out{foo}", 0, -1, withscores=True)) == (
             ("a3", 3.0),
@@ -132,8 +132,8 @@ class TestSortedSet:
         await client.zadd("a{foo}", dict(a1=1, a2=1, a3=1))
         await client.zadd("b{foo}", dict(a1=2, a2=2, a3=2))
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
-        assert await client.zinter("a{foo}", "b{foo}", "c{foo}") == ("a3", "a1")
-        assert await client.zinter("a{foo}", "b{foo}", "c{foo}", withscores=True) == (
+        assert await client.zinter(["a{foo}", "b{foo}", "c{foo}"]) == ("a3", "a1")
+        assert await client.zinter(["a{foo}", "b{foo}", "c{foo}"], withscores=True) == (
             ("a3", 8),
             ("a1", 9),
         )
@@ -144,13 +144,15 @@ class TestSortedSet:
         await client.zadd("b{foo}", dict(a1=2, a2=2, a3=2))
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert await client.zinter(
-            "a{foo}",
-            "b{foo}",
-            "c{foo}",
+            [
+                "a{foo}",
+                "b{foo}",
+                "c{foo}",
+            ],
             aggregate=PureToken.MAX,
         ) == ("a3", "a1")
         assert await client.zinter(
-            "a{foo}", "b{foo}", "c{foo}", aggregate=PureToken.MAX, withscores=True
+            ["a{foo}", "b{foo}", "c{foo}"], aggregate=PureToken.MAX, withscores=True
         ) == (("a3", 5), ("a1", 6))
 
     async def test_zinterstore_sum(self, client):
@@ -158,7 +160,9 @@ class TestSortedSet:
         await client.zadd("b{foo}", dict(a1=2, a2=2, a3=2))
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
-            await client.zinterstore("a{foo}", "b{foo}", "c{foo}", destination="d{foo}")
+            await client.zinterstore(
+                ["a{foo}", "b{foo}", "c{foo}"], destination="d{foo}"
+            )
             == 2
         )
         assert await client.zrange("d{foo}", 0, -1, withscores=True) == (
@@ -172,9 +176,7 @@ class TestSortedSet:
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
             await client.zinterstore(
-                "a{foo}",
-                "b{foo}",
-                "c{foo}",
+                ["a{foo}", "b{foo}", "c{foo}"],
                 destination="d{foo}",
                 aggregate=PureToken.MAX,
             )
@@ -191,9 +193,7 @@ class TestSortedSet:
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
             await client.zinterstore(
-                "a{foo}",
-                "b{foo}",
-                "c{foo}",
+                ["a{foo}", "b{foo}", "c{foo}"],
                 destination="d{foo}",
                 aggregate=PureToken.MIN,
             )
@@ -210,7 +210,7 @@ class TestSortedSet:
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
             await client.zinterstore(
-                "a{foo}", "b{foo}", "c{foo}", destination="d{foo}", weights=[1, 2, 3]
+                ["a{foo}", "b{foo}", "c{foo}"], destination="d{foo}", weights=[1, 2, 3]
             )
             == 2
         )
@@ -249,57 +249,57 @@ class TestSortedSet:
     async def test_bzpopmax(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2))
         await client.zadd("b{foo}", dict(b1=10, b2=20))
-        assert (await client.bzpopmax("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmax(["b{foo}", "a{foo}"], timeout=1)) == (
             "b{foo}",
             "b2",
             20,
         )
-        assert (await client.bzpopmax("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmax(["b{foo}", "a{foo}"], timeout=1)) == (
             "b{foo}",
             "b1",
             10,
         )
-        assert (await client.bzpopmax("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmax(["b{foo}", "a{foo}"], timeout=1)) == (
             "a{foo}",
             "a2",
             2,
         )
-        assert (await client.bzpopmax("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmax(["b{foo}", "a{foo}"], timeout=1)) == (
             "a{foo}",
             "a1",
             1,
         )
-        assert (await client.bzpopmax("b{foo}", "a{foo}", timeout=1)) is None
+        assert (await client.bzpopmax(["b{foo}", "a{foo}"], timeout=1)) is None
         await client.zadd("c{foo}", dict(c1=100))
-        assert (await client.bzpopmax("c{foo}", timeout=1)) == ("c{foo}", "c1", 100)
+        assert (await client.bzpopmax(["c{foo}"], timeout=1)) == ("c{foo}", "c1", 100)
 
     @pytest.mark.min_server_version("4.9.0")
     async def test_bzpopmin(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2))
         await client.zadd("b{foo}", dict(b1=10, b2=20))
-        assert (await client.bzpopmin("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmin(["b{foo}", "a{foo}"], timeout=1)) == (
             "b{foo}",
             "b1",
             10,
         )
-        assert (await client.bzpopmin("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmin(["b{foo}", "a{foo}"], timeout=1)) == (
             "b{foo}",
             "b2",
             20,
         )
-        assert (await client.bzpopmin("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmin(["b{foo}", "a{foo}"], timeout=1)) == (
             "a{foo}",
             "a1",
             1,
         )
-        assert (await client.bzpopmin("b{foo}", "a{foo}", timeout=1)) == (
+        assert (await client.bzpopmin(["b{foo}", "a{foo}"], timeout=1)) == (
             "a{foo}",
             "a2",
             2,
         )
-        assert (await client.bzpopmin("b{foo}", "a{foo}", timeout=1)) is None
+        assert (await client.bzpopmin(["b{foo}", "a{foo}"], timeout=1)) is None
         await client.zadd("c{foo}", dict(c1=100))
-        assert (await client.bzpopmin("c{foo}", timeout=1)) == ("c{foo}", "c1", 100)
+        assert (await client.bzpopmin(["c{foo}"], timeout=1)) == ("c{foo}", "c1", 100)
 
     async def test_zrange_basic(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
@@ -456,14 +456,14 @@ class TestSortedSet:
 
     async def test_zrem(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
-        assert await client.zrem("a{foo}", "a2") == 1
+        assert await client.zrem("a{foo}", ["a2"]) == 1
         assert await client.zrange("a{foo}", 0, -1) == ("a1", "a3")
-        assert await client.zrem("a{foo}", "b{foo}") == 0
+        assert await client.zrem("a{foo}", "junk") == 0
         assert await client.zrange("a{foo}", 0, -1) == ("a1", "a3")
 
     async def test_zrem_multiple_keys(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
-        assert await client.zrem("a{foo}", "a1", "a2") == 2
+        assert await client.zrem("a{foo}", ["a1", "a2"]) == 2
         assert await client.zrange("a{foo}", 0, 5) == ("a3",)
 
     async def test_zremrangebylex(self, client):
@@ -554,13 +554,13 @@ class TestSortedSet:
         await client.zadd("a{foo}", dict(a1=1, a2=1, a3=1))
         await client.zadd("b{foo}", dict(a1=2, a2=2, a3=2))
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
-        assert await client.zunion("a{foo}", "b{foo}", "c{foo}") == (
+        assert await client.zunion(["a{foo}", "b{foo}", "c{foo}"]) == (
             "a2",
             "a4",
             "a3",
             "a1",
         )
-        assert await client.zunion("a{foo}", "b{foo}", "c{foo}", withscores=True) == (
+        assert await client.zunion(["a{foo}", "b{foo}", "c{foo}"], withscores=True) == (
             ("a2", 3.0),
             ("a4", 4.0),
             ("a3", 8.0),
@@ -572,7 +572,9 @@ class TestSortedSet:
         await client.zadd("b{foo}", dict(a1=2, a2=2, a3=2))
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
-            await client.zunionstore("a{foo}", "b{foo}", "c{foo}", destination="d{foo}")
+            await client.zunionstore(
+                ["a{foo}", "b{foo}", "c{foo}"], destination="d{foo}"
+            )
             == 4
         )
         assert await client.zrange("d{foo}", 0, -1, withscores=True) == (
@@ -588,9 +590,7 @@ class TestSortedSet:
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
             await client.zunionstore(
-                "a{foo}",
-                "b{foo}",
-                "c{foo}",
+                ["a{foo}", "b{foo}", "c{foo}"],
                 destination="d{foo}",
                 aggregate=PureToken.MAX,
             )
@@ -609,9 +609,7 @@ class TestSortedSet:
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
             await client.zunionstore(
-                "a{foo}",
-                "b{foo}",
-                "c{foo}",
+                ["a{foo}", "b{foo}", "c{foo}"],
                 destination="d{foo}",
                 aggregate=PureToken.MIN,
             )
@@ -630,7 +628,7 @@ class TestSortedSet:
         await client.zadd("c{foo}", dict(a1=6, a3=5, a4=4))
         assert (
             await client.zunionstore(
-                "a{foo}", "b{foo}", "c{foo}", destination="d{foo}", weights=[1, 2, 3]
+                ["a{foo}", "b{foo}", "c{foo}"], destination="d{foo}", weights=[1, 2, 3]
             )
             == 4
         )
@@ -644,12 +642,12 @@ class TestSortedSet:
     @pytest.mark.min_server_version("6.1.240")
     async def test_zmscore(self, client):
         with pytest.raises(DataError):
-            await client.zmscore("invalid_key")
+            await client.zmscore("invalid_key", [])
 
-        assert await client.zmscore("invalid_key", "invalid_member") == (None,)
+        assert await client.zmscore("invalid_key", ["invalid_member"]) == (None,)
 
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3.5))
-        assert (await client.zmscore("a{foo}", "a1", "a2", "a3", "a4")) == (
+        assert (await client.zmscore("a{foo}", ["a1", "a2", "a3", "a4"])) == (
             1.0,
             2.0,
             3.5,

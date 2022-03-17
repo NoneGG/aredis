@@ -122,7 +122,7 @@ class TestPipeline:
     async def test_parse_error_raised(self, client):
         async with await client.pipeline() as pipe:
             # the zrem is invalid because we don't pass any keys to it
-            await (await (await pipe.set("a", "1")).zrem("b")).set("b", "2")
+            await (await (await pipe.set("a", "1")).zrem("b", [])).set("b", "2")
             with pytest.raises(ResponseError) as ex:
                 await pipe.execute()
 

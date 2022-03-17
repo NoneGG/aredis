@@ -162,7 +162,7 @@ class Lock:
             lock_value = await pipe.get(name)
             if nativestr(lock_value) != nativestr(expected_token):
                 raise LockError("Cannot release a lock that's no longer owned")
-            await pipe.delete(name)
+            await pipe.delete([name])
 
         await self.redis.transaction(execute_release, name)
 
