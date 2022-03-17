@@ -3,9 +3,12 @@ import contextvars
 import time as mod_time
 import uuid
 import warnings
+from typing import Optional, Union
 
+from coredis.commands.builders.script import Script
 from coredis.connection import ClusterConnection
 from coredis.exceptions import LockError, WatchError
+from coredis.tokens import PureToken
 from coredis.utils import b, dummy, nativestr
 
 
@@ -17,6 +20,8 @@ class Lock:
     It's left to the user to resolve deadlock issues and make sure
     multiple clients play nicely together.
     """
+
+    local: Union[dummy, contextvars.ContextVar]
 
     def __init__(
         self,
@@ -114,7 +119,7 @@ class Lock:
         wait trying to acquire the lock.
         """
         sleep = self.sleep
-        token = b(uuid.uuid1().hex)
+        token = uuid.uuid1().hex
         if blocking is None:
             blocking = self.blocking
         if blocking_timeout is None:
@@ -124,7 +129,7 @@ class Lock:
             stop_trying_at = mod_time.time() + blocking_timeout
         while True:
             if await self.do_acquire(token):
-                self.local.set(token)
+                self.local.set(token)  # type: ignore
                 return True
             if not blocking:
                 return False
@@ -138,7 +143,9 @@ class Lock:
             timeout = int(self.timeout * 1000)
         else:
             timeout = None
-        return await self.redis.set(self.name, token, nx=True, px=timeout)
+        return await self.redis.set(
+            self.name, token, condition=PureToken.NX, px=timeout
+        )
 
     async def release(self):
         """Releases the already acquired lock"""
@@ -203,8 +210,8 @@ class LuaLock(Lock):
     and watches.
     """
 
-    lua_release = None
-    lua_extend = None
+    lua_release: Optional[Script] = None
+    lua_extend: Optional[Script] = None
 
     # KEYS[1] - lock name
     # ARGS[1] - token
@@ -250,6 +257,7 @@ class LuaLock(Lock):
             cls.lua_extend = redis.register_script(cls.LUA_EXTEND_SCRIPT)
 
     async def do_release(self, expected_token):
+        assert self.lua_release
         if not bool(
             await self.lua_release.execute(
                 keys=[self.name], args=[expected_token], client=self.redis
@@ -258,6 +266,7 @@ class LuaLock(Lock):
             raise LockError("Cannot release a lock that's no longer owned")
 
     async def do_extend(self, additional_time):
+        assert self.lua_extend
         additional_time = int(additional_time * 1000)
         if not bool(
             await self.lua_extend.execute(
@@ -311,7 +320,7 @@ class ClusterLock(LuaLock):
         conn_kwargs["readonly"] = True
         for node in slave_nodes:
             try:
-                # todo: a little bit dirty here, try to reuse StrictRedis later
+                # todo: a little bit dirty here, try to reuse Redis later
                 # todo: it may be optimized by using a new connection pool
                 conn = ClusterConnection(
                     host=node["host"], port=node["port"], **conn_kwargs
@@ -361,7 +370,7 @@ class ClusterLock(LuaLock):
                     if check_finished_at > stop_trying_at:
                         await self.do_release(token)
                         return False
-                    self.local.set(token)
+                    self.local.set(token)  # type: ignore
                     # validity time is considered to be the
                     # initial validity time minus the time elapsed during check
                     await self.do_extend(lock_acquired_at - check_finished_at)

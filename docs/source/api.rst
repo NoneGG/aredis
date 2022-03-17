@@ -4,14 +4,20 @@ API Documentation
 
 Clients
 ^^^^^^^
+Redis
+-----
 .. autoclass::
-   StrictRedis
+   Redis
 
+Cluster
+-------
 .. autoclass::
-   StrictRedisCluster
+   RedisCluster
 
+
+Sentinel
+--------
 .. currentmodule:: coredis.sentinel
-
 .. autoclass::
    Sentinel
 
@@ -24,12 +30,50 @@ Connection Classes
 
 Connection Pools
 ^^^^^^^^^^^^^^^^
-.. autoclass:: BlockingConnectionPool
 .. autoclass:: ConnectionPool
+.. autoclass:: BlockingConnectionPool
+
+Cluster
+-------
 .. autoclass:: ClusterConnectionPool
 
 .. currentmodule:: coredis.sentinel
 .. autoclass:: SentinelConnectionPool
+
+Command Builders
+^^^^^^^^^^^^^^^^
+
+BitField Operations
+-------------------
+
+.. autoclass:: coredis.commands.builders.bitfield.BitFieldOperation
+   :no-inherited-members:
+
+PubSub
+------
+.. autoclass:: coredis.commands.builders.pubsub.PubSub
+   :no-inherited-members:
+
+Scripting
+---------
+.. autoclass:: coredis.commands.builders.script.Script
+   :no-inherited-members:
+
+Transactions
+------------
+
+.. autoclass:: coredis.commands.builders.pipeline.Pipeline
+   :no-inherited-members:
+
+.. autoclass:: coredis.commands.builders.pipeline.ClusterPipeline
+   :no-inherited-members:
+
+
+Response Types
+^^^^^^^^^^^^^^
+.. automodule:: coredis.response.types
+   :no-inherited-members:
+   :undoc-members:
 
 Utility Classes
 ^^^^^^^^^^^^^^^
@@ -37,7 +81,9 @@ Utility Classes
 .. currentmodule:: coredis
 
 .. autoclass::
-   BitFieldOperation
+   NodeFlag
+.. autoclass::
+   PureToken
 
 Exceptions
 ^^^^^^^^^^

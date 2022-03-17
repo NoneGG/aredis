@@ -6,7 +6,7 @@ for new messages. Creating a `PubSub` object is easy.
 
 .. code-block:: python
 
-    r = coredis.StrictRedis(...)
+    r = coredis.Redis(...)
     p = r.pubsub()
 
 Once a `PubSub` instance is created, channels and patterns can be subscribed

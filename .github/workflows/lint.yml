@@ -38,6 +38,10 @@ jobs:
     - name: Check imports
       run: |
         isort -c --profile=black coredis tests
+    - name: Check types
+      run: |
+        pyright coredis
+        mypy coredis
     - name: Check docs
       run: |
         make generate-compatibility-docs

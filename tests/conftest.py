@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import asyncio
-import datetime
 import os
 import platform
 import socket
+import time
 
 import pytest
 import redis
@@ -23,16 +23,21 @@ def uvloop():
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
-async def check_test_constraints(request, client):
+async def get_version(client):
     if client not in REDIS_VERSIONS:
-        if isinstance(client, coredis.StrictRedisCluster):
-            info = list((await client.info()).values()).pop()
-            REDIS_VERSIONS[client] = version.parse(info["redis_version"])
+        if isinstance(client, coredis.RedisCluster):
+            await client
+            node = list(client.primaries).pop()
+            REDIS_VERSIONS[client] = version.parse((await node.info())["redis_version"])
         else:
             REDIS_VERSIONS[client] = version.parse(
                 (await client.info())["redis_version"]
             )
+    return REDIS_VERSIONS[client]
 
+
+async def check_test_constraints(request, client):
+    await get_version(client)
     for marker in request.node.iter_markers():
         if marker.name == "min_server_version" and marker.args:
             if REDIS_VERSIONS[client] < version.parse(marker.args[0]):
@@ -42,20 +47,31 @@ async def check_test_constraints(request, client):
             if REDIS_VERSIONS[client] > version.parse(marker.args[0]):
                 return pytest.skip(f"Skipped for versions > {marker.args[0]}")
 
-        if marker.name == "nocluster" and isinstance(
-            client, coredis.StrictRedisCluster
-        ):
+        if marker.name == "nocluster" and isinstance(client, coredis.RedisCluster):
             return pytest.skip("Skipped for redis cluster")
 
         if marker.name == "clusteronly" and not isinstance(
-            client, coredis.StrictRedisCluster
+            client, coredis.RedisCluster
         ):
             return pytest.skip("Skipped for non redis cluster")
+        if (
+            marker.name == "os"
+            and not marker.args[0].lower() == platform.system().lower()
+        ):
+            return pytest.skip(f"Skipped for {platform.system()}")
+
+
+async def set_default_test_config(client):
+    await get_version(client)
+    await client.config_set({"maxmemory-policy": "noeviction"})
+    await client.config_set({"latency-monitor-threshold": 10})
+    if REDIS_VERSIONS[client] >= version.parse("6.0.0"):
+        await client.acl_log(reset=True)
 
 
 def check_redis_cluster_ready(host, port):
     try:
-        return len(redis.Redis(host, 7000).cluster("slots")) == 3
+        return redis.Redis(host, port).cluster("info")["cluster_state"] == "ok"
     except Exception:
         return False
 
@@ -110,7 +126,7 @@ def redis_uds_server(docker_services):
     if platform.system().lower() == "darwin":
         pytest.skip("Fixture not supported on OSX")
     docker_services.start("redis-uds")
-    yield "/tmp/limits.redis.sock"
+    yield "/tmp/coredis.redis.sock"
 
 
 @pytest.fixture(scope="session")
@@ -129,6 +145,8 @@ def redis_ssl_server(docker_services):
 def redis_cluster_server(docker_services):
     docker_services.start("redis-cluster-init")
     docker_services.wait_for_service("redis-cluster-6", 7005, check_redis_cluster_ready)
+    if os.environ.get("CI") == "True":
+        time.sleep(5)
     yield
 
 
@@ -151,10 +169,10 @@ def redis_sentinel_auth_server(docker_services):
 
 @pytest.fixture
 async def redis_basic(redis_basic_server, request):
-    client = coredis.StrictRedis("localhost", 6379)
+    client = coredis.Redis("localhost", 6379, decode_responses=True)
     await check_test_constraints(request, client)
     await client.flushall()
-    await client.config_set("maxmemory-policy", "noeviction")
+    await set_default_test_config(client)
 
     return client
 
@@ -167,44 +185,47 @@ async def redis_ssl(redis_ssl_server, request):
         "&ssl_certfile=./tests/tls/client.crt"
         "&ssl_ca_certs=./tests/tls/ca.crt"
     )
-    client = coredis.StrictRedis.from_url(storage_url)
+    client = coredis.Redis.from_url(storage_url, decode_responses=True)
     await check_test_constraints(request, client)
     await client.flushall()
-    await client.config_set("maxmemory-policy", "noeviction")
-
+    await set_default_test_config(client)
     return client
 
 
 @pytest.fixture
 async def redis_auth(redis_auth_server, request):
-    client = coredis.StrictRedis.from_url(
-        f"redis://:sekret@{redis_auth_server[0]}:{redis_auth_server[1]}"
+    client = coredis.Redis.from_url(
+        f"redis://:sekret@{redis_auth_server[0]}:{redis_auth_server[1]}",
+        decode_responses=True,
     )
     await check_test_constraints(request, client)
     await client.flushall()
-    await client.config_set("maxmemory-policy", "noeviction")
-
+    await set_default_test_config(client)
     return client
 
 
 @pytest.fixture
 async def redis_uds(redis_uds_server, request):
-    client = coredis.StrictRedis.from_url(f"unix://{redis_uds_server}")
+    client = coredis.Redis.from_url(f"unix://{redis_uds_server}", decode_responses=True)
     await check_test_constraints(request, client)
     await client.flushall()
-    await client.config_set("maxmemory-policy", "noeviction")
+    await set_default_test_config(client)
 
     return client
 
 
 @pytest.fixture
 async def redis_cluster(redis_cluster_server, request):
-    cluster = coredis.StrictRedisCluster("localhost", 7000, stream_timeout=10)
+    cluster = coredis.RedisCluster(
+        "localhost", 7000, stream_timeout=10, decode_responses=True
+    )
     await check_test_constraints(request, cluster)
+    await cluster
     await cluster.flushall()
     await cluster.flushdb()
-    await cluster.config_set("maxmemory-policy", "noeviction")
 
+    for primary in cluster.primaries:
+        await set_default_test_config(primary)
     yield cluster
 
     cluster.connection_pool.disconnect()
@@ -215,6 +236,7 @@ async def redis_sentinel(redis_sentinel_server, request):
     sentinel = coredis.sentinel.Sentinel(
         [("localhost", 26379)],
         sentinel_kwargs={},
+        decode_responses=True,
     )
     master = sentinel.master_for("localhost-redis-sentinel")
     await check_test_constraints(request, master)
@@ -229,6 +251,7 @@ async def redis_sentinel_auth(redis_sentinel_auth_server, request):
         [("localhost", 36379)],
         sentinel_kwargs={"password": "sekret"},
         password="sekret",
+        decode_responses=True,
     )
     master = sentinel.master_for("localhost-redis-sentinel")
     await check_test_constraints(request, master)
@@ -260,13 +283,11 @@ def targets(*targets):
 @pytest.fixture
 def redis_server_time():
     async def _get_server_time(client):
-        if isinstance(client, coredis.StrictRedisCluster):
-            client_times = await client.time()
-            seconds, milliseconds = list(client_times.values())[0]
-        elif isinstance(client, coredis.StrictRedis):
-            seconds, milliseconds = await client.time()
-        timestamp = float("%s.%s" % (seconds, milliseconds))
-
-        return datetime.datetime.fromtimestamp(timestamp)
+        if isinstance(client, coredis.RedisCluster):
+            await client
+            node = list(client.primaries).pop()
+            return await node.time()
+        elif isinstance(client, coredis.Redis):
+            return await client.time()
 
     return _get_server_time

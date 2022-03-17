@@ -1,9 +1,6 @@
-import binascii
-
 import pytest
 
-from coredis import ReadOnlyError, RedisError
-from coredis.utils import b
+from coredis import CommandSyntaxError, ReadOnlyError, RedisError
 from tests.conftest import targets
 
 
@@ -27,66 +24,68 @@ class TestBitmap:
         assert await client.bitcount("a", 2, -1) == 3
         assert await client.bitcount("a", -2, -1) == 2
         assert await client.bitcount("a", 1, 1) == 1
+        with pytest.raises(CommandSyntaxError):
+            await client.bitcount("a", 1)
 
     @pytest.mark.nocluster
     async def test_bitop_not_empty_string(self, client):
         await client.set("a", "")
-        await client.bitop("not", "r", "a")
+        await client.bitop("a", operation="not", destkey="r")
         assert await client.get("r") is None
 
     @pytest.mark.nocluster
     async def test_bitop_not(self, client):
-        test_str = b("\xAA\x00\xFF\x55")
+        test_str = b"\xAA\x00\xFF\x55"
         correct = ~0xAA00FF55 & 0xFFFFFFFF
         await client.set("a", test_str)
-        await client.bitop("not", "r", "a")
-        assert int(binascii.hexlify(await client.get("r")), 16) == correct
+        await client.bitop("a", operation="not", destkey="r")
+        assert (await client.bitfield("r").get("i32", 0).exc()) == [correct]
 
     @pytest.mark.nocluster
     async def test_bitop_not_in_place(self, client):
-        test_str = b("\xAA\x00\xFF\x55")
+        test_str = b"\xAA\x00\xFF\x55"
         correct = ~0xAA00FF55 & 0xFFFFFFFF
         await client.set("a", test_str)
-        await client.bitop("not", "a", "a")
-        assert int(binascii.hexlify(await client.get("a")), 16) == correct
+        await client.bitop("a", operation="not", destkey="a")
+        assert (await client.bitfield("a").get("i32", 0).exc()) == [correct]
 
     @pytest.mark.nocluster
     async def test_bitop_single_string(self, client):
-        test_str = b("\x01\x02\xFF")
+        test_str = "\x01\x02\xFF"
         await client.set("a", test_str)
-        await client.bitop("and", "res1", "a")
-        await client.bitop("or", "res2", "a")
-        await client.bitop("xor", "res3", "a")
+        await client.bitop("a", operation="and", destkey="res1")
+        await client.bitop("a", operation="or", destkey="res2")
+        await client.bitop("a", operation="xor", destkey="res3")
         assert await client.get("res1") == test_str
         assert await client.get("res2") == test_str
         assert await client.get("res3") == test_str
 
     @pytest.mark.nocluster
     async def test_bitop_string_operands(self, client):
-        await client.set("a", b("\x01\x02\xFF\xFF"))
-        await client.set("b", b("\x01\x02\xFF"))
-        await client.bitop("and", "res1", "a", "b")
-        await client.bitop("or", "res2", "a", "b")
-        await client.bitop("xor", "res3", "a", "b")
-        assert int(binascii.hexlify(await client.get("res1")), 16) == 0x0102FF00
-        assert int(binascii.hexlify(await client.get("res2")), 16) == 0x0102FFFF
-        assert int(binascii.hexlify(await client.get("res3")), 16) == 0x000000FF
+        await client.set("a", b"\x01\x02\xFF\xFF")
+        await client.set("b", b"\x01\x02\xFF")
+        await client.bitop("a", "b", operation="and", destkey="res1")
+        await client.bitop("a", "b", operation="or", destkey="res2")
+        await client.bitop("a", "b", operation="xor", destkey="res3")
+        assert (await client.bitfield("res1").get("i32", 0).exc()) == [0x0102FF00]
+        assert (await client.bitfield("res2").get("i32", 0).exc()) == [0x0102FFFF]
+        assert (await client.bitfield("res3").get("i32", 0).exc()) == [0x000000FF]
 
     async def test_bitpos(self, client):
         key = "key:bitpos"
-        await client.set(key, b("\xff\xf0\x00"))
+        await client.set(key, b"\xff\xf0\x00")
         assert await client.bitpos(key, 0) == 12
         assert await client.bitpos(key, 0, 2, -1) == 16
         assert await client.bitpos(key, 0, -2, -1) == 12
-        await client.set(key, b("\x00\xff\xf0"))
+        await client.set(key, b"\x00\xff\xf0")
         assert await client.bitpos(key, 1, 0) == 8
         assert await client.bitpos(key, 1, 1) == 8
-        await client.set(key, b("\x00\x00\x00"))
+        await client.set(key, b"\x00\x00\x00")
         assert await client.bitpos(key, 1) == -1
 
     async def test_bitpos_wrong_arguments(self, client):
         key = "key:bitpos:wrong:args"
-        await client.set(key, b("\xff\xf0\x00"))
+        await client.set(key, b"\xff\xf0\x00")
         with pytest.raises(RedisError):
             await client.bitpos(key, 0, end=1) == 12
         with pytest.raises(RedisError):
@@ -99,13 +98,13 @@ class TestBitmap:
 
     async def test_bitfield_get(self, client):
         key = "key:bitfield:get"
-        await client.set(key, "\x00d")
+        await client.set(key, b"\x00d")
         assert [100] == await client.bitfield(key).get("i8", "#1").exc()
 
     @pytest.mark.min_server_version("6.2.0")
     async def test_bitfield_ro_get(self, client):
         key = "key:bitfield_ro:get"
-        await client.set(key, "\x00d")
+        await client.set(key, b"\x00d")
         assert [100] == await client.bitfield_ro(key).get("i8", "#1").exc()
 
     @pytest.mark.min_server_version("6.2.0")
@@ -123,7 +122,7 @@ class TestBitmap:
     async def test_bitfield_incrby(self, client):
         key = "key:bitfield:incrby"
         await client.bitfield(key).incrby("u2", 10, 1).exc()
-        assert await client.get(key) == b"\x00\x10"
+        assert await client.get(key) == "\x00\x10"
         # overflow
         await client.delete(key)
         assert [-128] == await client.bitfield(key).incrby("i8", 0, 128).exc()

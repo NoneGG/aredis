@@ -116,6 +116,10 @@ setup(
     description="Python async client for Redis key-value store",
     long_description=long_description,
     url="https://github.com/alisaifee/coredis",
+    project_urls={
+        "Source": "https://github.com/alisaifee/coredis",
+        "Documentation": "https://coredis.readthedocs.org",
+    },
     author=__author__,
     author_email=__email__,
     maintainer=__author__,
@@ -123,6 +127,9 @@ setup(
     keywords=["Redis", "key-value store", "asyncio"],
     license="MIT",
     packages=["coredis", "coredis.commands"],
+    package_data={
+        "coredis": ["py.typed"],
+    },
     python_requires=">=3.8",
     install_requires=get_requirements("main.txt"),
     extras_require={"hiredis": ["hiredis>=0.2.0"]},

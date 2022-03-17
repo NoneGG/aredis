@@ -33,7 +33,7 @@ def parse_args():
 
 async def run():
     args = parse_args()
-    r = coredis.StrictRedis()
+    r = coredis.Redis()
     await r.flushall()
     await set_str(conn=r, num=args.n, pipeline_size=args.P, data_size=args.s)
     await set_int(conn=r, num=args.n, pipeline_size=args.P, data_size=args.s)
@@ -49,9 +49,9 @@ async def run():
 def timer(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        start = time.clock()
+        start = time.time()
         ret = await func(*args, **kwargs)
-        duration = time.clock() - start
+        duration = time.time() - start
         if 'num' in kwargs:
             count = kwargs['num']
         else:
@@ -87,7 +87,7 @@ async def set_int(conn, num, pipeline_size, data_size):
         conn = await conn.pipeline()
 
     format_str = '{:0<%d}' % data_size
-    set_data = int(format_str.format('1'))
+    set_data = str(int(format_str.format('1')))
     for i in range(num):
         await conn.set('set_int:%d' % i, set_data)
         if pipeline_size > 1 and i % pipeline_size == 0:
@@ -149,7 +149,7 @@ async def lpush(conn, num, pipeline_size, data_size):
         conn = await conn.pipeline()
 
     format_str = '{:0<%d}' % data_size
-    set_data = int(format_str.format('1'))
+    set_data = str(int(format_str.format('1')))
     for i in range(num):
         await conn.lpush('lpush_key', set_data)
         if pipeline_size > 1 and i % pipeline_size == 0:

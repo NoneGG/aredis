@@ -5,6 +5,7 @@ import asyncio
 import asyncio_redis
 import aioredis
 import redis
+import redis.asyncio
 import coredis
 
 
@@ -14,7 +15,7 @@ NUM = 10000
 
 async def test_coredis(i):
     start = time.time()
-    client = coredis.StrictRedis(host=HOST)
+    client = coredis.Redis(host=HOST)
     res = None
     for i in range(i):
         res = await client.keys('*')
@@ -35,23 +36,31 @@ async def test_asyncio_redis(i):
 
 def test_conn(i):
     start = time.time()
-    client = redis.StrictRedis(host=HOST)
+    client = redis.Redis(host=HOST)
     res = None
     for i in range(i):
         res = client.keys('*')
     print(time.time() - start)
     return res
 
+async def test_redis_py_asyncio(i, loop):
+    start = time.time()
+    r = redis.asyncio.Redis()
+    val = None
+    for i in range(i):
+        val = await r.keys('*')
+    print(time.time() - start)
+    r.close()
+    return val
 
 async def test_aioredis(i, loop):
     start = time.time()
-    redis = await aioredis.create_redis((HOST, 6379), loop=loop)
+    redis = await aioredis.Redis()
     val = None
     for i in range(i):
         val = await redis.keys('*')
     print(time.time() - start)
     redis.close()
-    await redis.wait_closed()
     return val
 
 
@@ -65,4 +74,6 @@ if __name__ == '__main__':
     print(test_conn(NUM))
     print('aioredis')
     print(loop.run_until_complete(test_aioredis(NUM, loop)))
+    print('redis-py-asyncio')
+    print(loop.run_until_complete(test_redis_py_asyncio(NUM, loop)))
 

@@ -1,12 +1,12 @@
 import asyncio
 import pickle
 import time
+from collections import OrderedDict
 
 import pytest
 
 import coredis
 from coredis.exceptions import ConnectionError
-from coredis.utils import b
 from tests.conftest import targets
 
 
@@ -30,9 +30,9 @@ async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False)
 def make_message(type, channel, data, pattern=None):
     return {
         "type": type,
-        "pattern": pattern and pattern.encode("utf-8") or None,
-        "channel": channel.encode("utf-8"),
-        "data": data.encode("utf-8") if isinstance(data, str) else data,
+        "pattern": pattern,
+        "channel": channel,
+        "data": data,
     }
 
 
@@ -119,7 +119,7 @@ class TestPubSubSubscribeUnsubscribe:
         for i, message in enumerate(messages):
             assert message["type"] == sub_type
             assert message["data"] == i + 1
-            channel = message["channel"].decode("utf-8")
+            channel = message["channel"]
             unique_channels.add(channel)
 
         assert len(unique_channels) == len(keys)
@@ -275,7 +275,7 @@ class TestPubSubMessages:
     async def test_published_pickled_obj_to_channel(self, client):
         p = client.pubsub(ignore_subscribe_messages=True)
         await p.subscribe("foo")
-        msg = pickle.dumps(Exception())
+        msg = pickle.dumps(Exception(), protocol=0).decode("utf-8")
         # if other tests failed, subscriber may not be cleared
         assert await client.publish("foo", msg) >= 1
 
@@ -289,7 +289,7 @@ class TestPubSubMessages:
         await p.subscribe("foo")
         await p.psubscribe("f*")
         # 1 to pattern, 1 to channel
-        msg = pickle.dumps(Exception())
+        msg = pickle.dumps(Exception(), protocol=0).decode("utf-8")
         assert await client.publish("foo", msg) >= 2
 
         message1 = await wait_for_message(p)
@@ -362,7 +362,7 @@ class TestPubSubMessages:
 @pytest.mark.asyncio()
 class TestPubSubRedisDown:
     async def test_channel_subscribe(self):
-        client = coredis.StrictRedis(host="localhost", port=9999)
+        client = coredis.Redis(host="localhost", port=9999)
         p = client.pubsub()
         with pytest.raises(ConnectionError):
             await p.subscribe("foo")
@@ -375,7 +375,7 @@ class TestPubSubPubSubSubcommands:
         p = client.pubsub(ignore_subscribe_messages=True)
         await p.subscribe("foo", "bar", "baz", "quux")
         channels = sorted(await client.pubsub_channels())
-        assert channels == [b("bar"), b("baz"), b("foo"), b("quux")]
+        assert channels == ["bar", "baz", "foo", "quux"]
         await p.unsubscribe()
 
     async def test_pubsub_numsub(self, client):
@@ -386,8 +386,8 @@ class TestPubSubPubSubSubcommands:
         p3 = client.pubsub(ignore_subscribe_messages=True)
         await p3.subscribe("baz")
 
-        channels = [(b("foo"), 1), (b("bar"), 2), (b("baz"), 3)]
-        assert channels == await client.pubsub_numsub("foo", "bar", "baz")
+        channels = OrderedDict({"foo": 1, "bar": 2, "baz": 3})
+        assert channels == await client.pubsub_numsub(("foo", "bar", "baz"))
         await p1.unsubscribe()
         await p2.unsubscribe()
         await p3.unsubscribe()

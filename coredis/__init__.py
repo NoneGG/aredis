@@ -1,8 +1,16 @@
-from coredis.client import StrictRedis, StrictRedisCluster
-from coredis.commands.strings import BitFieldOperation
+"""
+coredis
+-------
+
+coredis is an async redis client with support for redis server,
+cluster & sentinel.
+"""
+
+from coredis.client import Redis, RedisCluster
 from coredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
 from coredis.exceptions import (
     AskError,
+    AuthenticationError,
     AuthenticationFailureError,
     AuthenticationRequiredError,
     AuthorizationError,
@@ -29,13 +37,14 @@ from coredis.exceptions import (
     WatchError,
 )
 from coredis.pool import BlockingConnectionPool, ClusterConnectionPool, ConnectionPool
+from coredis.tokens import PureToken
+from coredis.utils import NodeFlag
 
 from . import _version
 
 __all__ = [
-    "StrictRedis",
-    "StrictRedisCluster",
-    "BitFieldOperation",
+    "Redis",
+    "RedisCluster",
     "Connection",
     "UnixDomainSocketConnection",
     "ClusterConnection",
@@ -43,6 +52,7 @@ __all__ = [
     "ConnectionPool",
     "ClusterConnectionPool",
     "AskError",
+    "AuthenticationError",
     "AuthenticationFailureError",
     "AuthenticationRequiredError",
     "AuthorizationError",
@@ -58,17 +68,22 @@ __all__ = [
     "InvalidResponse",
     "LockError",
     "MovedError",
+    "NodeFlag",
     "NoScriptError",
     "PubSubError",
+    "PureToken",
     "ReadOnlyError",
     "RedisClusterException",
     "RedisError",
     "ResponseError",
-    "SerializeError",
     "TimeoutError",
     "TryAgainError",
     "WatchError",
 ]
+
+# For backward compatibility
+StrictRedis = Redis
+StrictRedisCluster = RedisCluster
 
 
 __version__ = _version.get_versions()["version"]

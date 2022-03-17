@@ -42,7 +42,7 @@ class SentinelTestCluster:
             "is_master": True,
             "is_sdown": False,
             "is_odown": False,
-            "num-other-sentinels": 0,
+            "num_other_sentinels": 0,
         }
         self.service_name = service_name
         self.slaves = []
@@ -64,11 +64,11 @@ class SentinelTestCluster:
 @pytest.fixture()
 def cluster(request):
     def teardown():
-        coredis.sentinel.StrictRedis = saved_StrictRedis
+        coredis.sentinel.Redis = saved_Redis
 
     cluster = SentinelTestCluster()
-    saved_StrictRedis = coredis.sentinel.StrictRedis
-    coredis.sentinel.StrictRedis = cluster.client
+    saved_Redis = coredis.sentinel.Redis
+    coredis.sentinel.Redis = cluster.client
     request.addfinalizer(teardown)
 
     return cluster
@@ -117,7 +117,7 @@ async def test_master_min_other_sentinels(cluster):
     # min_other_sentinels
     with pytest.raises(MasterNotFoundError):
         await sentinel.discover_master("localhost-redis-sentinel")
-    cluster.master["num-other-sentinels"] = 2
+    cluster.master["num_other_sentinels"] = 2
     address = await sentinel.discover_master("localhost-redis-sentinel")
     assert address == ("127.0.0.1", 6379)
 

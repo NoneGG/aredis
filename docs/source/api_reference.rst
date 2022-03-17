@@ -1,69 +1,109 @@
 API Reference
 =============
 
-The connection part is rewritten to make client async, and most API is ported from redis-py.
-So most API and usage are the same as redis-py.
-If you use redis-py in your code, just use `async/await` syntax with your code.
-`for more examples <https://github.com/alisaifee/coredis/tree/master/examples>`_
+**TODO**
 
-The `official Redis command documentation <http://redis.io/commands>`_ does a
-great job of explaining each command in detail. coredis only shift StrictRedis
-class from redis-py that implement these commands. The StrictRedis class attempts to adhere
-to the official command syntax. There are a few exceptions:
+Typing
+^^^^^^
+**coredis** provides type hints for the public API. These are tested using
+both :pypi:`mypy` and :pypi:`pyright`.
 
-* **SELECT**: Not implemented. See the explanation in the Thread Safety section
-  below.
-* **DEL**: 'del' is a reserved keyword in the Python syntax. Therefore coredis
-  uses 'delete' instead.
-* **CONFIG GET|SET**: These are implemented separately as config_get or config_set.
-* **MULTI/EXEC**: These are implemented as part of the Pipeline class. The
-  pipeline is wrapped with the MULTI and EXEC statements by default when it
-  is executed, which can be disabled by specifying transaction=False.
-  See more about Pipelines below.
-* **SUBSCRIBE/LISTEN**: Similar to pipelines, PubSub is implemented as a separate
-  class as it places the underlying connection in a state where it can't
-  execute non-pubsub commands. Calling the pubsub method from the Redis client
-  will return a PubSub instance where you can subscribe to channels and listen
-  for messages. You can only call PUBLISH from the Redis client.
-* **SCAN/SSCAN/HSCAN/ZSCAN**: The \*SCAN commands are implemented as they
-  exist in the Redis documentation.
-  In addition, each command has an equivilant iterator method.
-  These are purely for convenience so the user doesn't have to keep
-  track of the cursor while iterating. (Use Python 3.6 and the scan_iter/sscan_iter/hscan_iter/zscan_iter
-  methods for this behavior. **iter functions are not supported in Python 3.5**)
+The :class:`Redis` and :class:`RedisCluster` clients are Generic types constrained
+by :class:`AnyStr`. The constructors and ``from_url`` factory methods infer
+the appropriate specialization automatically.
 
-Loop
-^^^^
+Without decoding:
 
-The event loop can be set with the loop keyword argugment. If no loop is given
-the default event loop will be
+.. code-block::
 
-**warning**
+    client = coredis.Redis(
+        "localhost", 6379, db=0, decode_responses=False, encoding="utf-8"
+    )
+    await client.set("string", 1)
+    await client.lpush("list", 1)
+    await client.hset("hash", {"a": 1})
+    await client.sadd("set", "a")
+    await client.zadd("sset", {"a": 1.0, "b": 2.0})
 
-**asyncio.AbstractEventLoop** is actually not thread safe and asyncio uses **BaseDefaultEventLoopPolicy** as default
-event policy(which create new event loop instead of sharing event loop between threads,
-being thread safe to some degree) So the StricRedis is still thread safe if your code works with default event loop.
-But if you customize event loop yourself, please make sure your event loop is thread safe(maybe you should customize
-on the base of **BaseDefaultEventLoopPolicy** instead of **AbstractEventLoop**)
+    str_response = await client.get("string")
+    list_response_ = await client.lrange("list", 0, 1)
+    hash_response = await client.hgetall("hash")
+    set_response = await client.smembers("set")
+    sorted_set_members_only_response = await client.zrange("sset", -1, 1)
 
-Detailed discussion about the problem is in `issue20 <https://github.com/alisaifee/coredis/pull/20#issuecomment-285088890>`_
+    reveal_locals()
+    # note: Revealed local types are:
+    # note:     client: coredis.client.Redis[builtins.bytes]
+    # note:     hash_response: builtins.dict*[builtins.bytes*, builtins.bytes*]
+    # note:     list_response_: builtins.list*[builtins.bytes*]
+    # note:     set_response: builtins.set*[builtins.bytes*]
+    # note:     sorted_set_members_only_response: builtins.tuple*[builtins.bytes*, ...]
+    # note:     str_response: builtins.bytes*
 
-.. code-block:: python
+With decoding:
 
+.. code-block::
+
+    client = coredis.Redis(
+        "localhost", 6379, db=0, decode_responses=True, encoding="utf-8"
+    )
+    await client.set("string", 1)
+    await client.lpush("list", 1)
+    await client.hset("hash", {"a": 1})
+    await client.sadd("set", "a")
+    await client.zadd("sset", {"a": 1.0, "b": 2.0})
+
+    str_response = await client.get("string")
+    list_response_ = await client.lrange("list", 0, 1)
+    hash_response = await client.hgetall("hash")
+    set_response = await client.smembers("set")
+    sorted_set_members_only_response = await client.zrange("sset", -1, 1)
+
+    reveal_locals()
+    # note: Revealed local types are:
+    # note:     client: coredis.client.Redis[builtins.str]
+    # note:     hash_response: builtins.dict*[builtins.str*, builtins.str*]
+    # note:     list_response_: builtins.list*[builtins.str*]
+    # note:     set_response: builtins.set*[builtins.str*]
+    # note:     sorted_set_members_only_response: builtins.tuple*[builtins.str*, ...]
+    # note:     str_response: builtins.str*
+
+=====================
+Runtime Type checking
+=====================
+
+.. danger:: Experimental feature
+
+**coredis** optionally wraps all command methods with :pypi:`beartype` decorators to help
+detect errors during testing (or if you are b(ea)rave enough, always).
+
+This can be enabled by installing :pypi:`beartype` and setting the :data:`COREDIS_RUNTIME_CHECKS`
+environment variable.
+
+As an example:
+
+.. code-block:: bash
+
+    $ COREDIS_RUNTIME_CHECKS=1 python -c "
     import coredis
     import asyncio
-    loop = asyncio.get_event_loop()
-    r = coredis.StrictRedis(host='localhost', port=6379, db=0, loop=loop)
+    asyncio.new_event_loop().run_until_complete(coredis.Redis().set(1,1))
+    """
+    Traceback (most recent call last):
+      File "<@beartype(coredis.commands.core.CoreCommands.set) at 0x10c403130>", line 33, in set
+    beartype.roar.BeartypeCallHintParamViolation: @beartyped coroutine CoreCommands.set() parameter key=1 violates type hint typing.Union[str, bytes], as 1 not str or bytes.
+
 
 Decoding
 ^^^^^^^^
 
-Param **encoding** and **decode_responses** are now used to support response encoding.
+Param :paramref:`~coredis.Redis.encoding` and :paramref:`~coredis.Redis.decode_responses`
+are used to support response encoding.
 
-**encoding** is used for specifying with which encoding you want responses to be decoded.
-**decode_responses** is used for tell the client whether responses should be decoded.
+``encoding`` is used for specifying with which encoding you want responses to be decoded.
+``decode_responses`` is used for tell the client whether responses should be decoded.
 
-If decode_responses is set to True and no encoding is specified, client will use 'utf-8' by default.
+If ``decode_responses`` is set to ``True`` and no encoding is specified, client will use ``utf-8`` by default.
 
 Connections
 ^^^^^^^^^^^
@@ -79,7 +119,7 @@ commented out by default.
 
 .. code-block:: python
 
-    r = redis.StrictRedis(unix_socket_path='/tmp/redis.sock')
+    r = coredis.Redis(unix_socket_path='/tmp/redis.sock')
 
 You can create your own Connection subclasses as well. This may be useful if
 you want to control the socket behavior within an async framework. To
@@ -90,7 +130,7 @@ specified during initialization.
 
 .. code-block:: python
 
-    pool = redis.ConnectionPool(connection_class=YourConnectionClass,
+    pool = coredis.ConnectionPool(connection_class=YourConnectionClass,
                                     your_arg='...', ...)
 
 Parsers
@@ -127,40 +167,4 @@ or
 Response Callbacks
 ^^^^^^^^^^^^^^^^^^
 
-The client class uses a set of callbacks to cast Redis responses to the
-appropriate Python type. There are a number of these callbacks defined on
-the Redis client class in a dictionary called RESPONSE_CALLBACKS.
-
-Custom callbacks can be added on a per-instance basis using the
-set_response_callback method. This method accepts two arguments: a command
-name and the callback. Callbacks added in this manner are only valid on the
-instance the callback is added to. If you want to define or override a callback
-globally, you should make a subclass of the Redis client and add your callback
-to its REDIS_CALLBACKS class dictionary.
-
-Response callbacks take at least one parameter: the response from the Redis
-server. Keyword arguments may also be accepted in order to further control
-how to interpret the response. These keyword arguments are specified during the
-command's call to execute_command. The ZRANGE implementation demonstrates the
-use of response callback keyword arguments with its "withscores" argument.
-
-Thread Safety
-^^^^^^^^^^^^^
-
-Redis client instances can safely be shared between threads. Internally,
-connection instances are only retrieved from the connection pool during
-command execution, and returned to the pool directly after. Command execution
-never modifies state on the client instance.
-
-However, there is one caveat: the Redis SELECT command. The SELECT command
-allows you to switch the database currently in use by the connection. That
-database remains selected until another is selected or until the connection is
-closed. This creates an issue in that connections could be returned to the pool
-that are connected to a different database.
-
-As a result, coredis does not implement the SELECT command on client
-instances. If you use multiple Redis databases within the same application, you
-should create a separate client instance (and possibly a separate connection
-pool) for each database.
-
-**It is not safe to pass PubSub or Pipeline objects between threads.**
+**TODO**

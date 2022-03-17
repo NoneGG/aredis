@@ -29,7 +29,7 @@ operations).
     slave.get('foo')
     # 'bar'
 
-The master and slave objects are normal StrictRedis instances with their
+The master and slave objects are normal Redis instances with their
 connection pool bound to the Sentinel instance. When a Sentinel backed client
 attempts to establish a connection, it first queries the Sentinel servers to
 determine an appropriate host to connect to. If no server is found,

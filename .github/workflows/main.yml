@@ -53,6 +53,7 @@ jobs:
     - name: Tests
       env:
         COREDIS_UVLOOP: "{{matrix.uvloop}}"
+        CI: "True"
       run: |
         eval "export ${{ matrix.service_version }}"
         pytest --cov-report=xml --cov-branch
