@@ -2735,39 +2735,6 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("SSCAN", *pieces)
 
-    @versionadded(version="3.0.0")
-    @redis_command("BZMPOP", version_introduced="7.0.0", group=CommandGroup.SORTED_SET)
-    async def bzmpop(
-        self,
-        keys: Iterable[KeyT],
-        timeout: Union[int, float],
-        where: Literal[PureToken.MIN, PureToken.MAX],
-        count: Optional[int] = None,
-    ) -> Optional[Tuple[AnyStr, ...]]:
-        """
-        Remove and return members with scores in a sorted set or block until one is available
-
-
-
-        :param keys:
-        :param timeout:
-        :param numkeys:
-        :param where:
-        :param count:
-
-
-        :return:
-
-        * A ```None``` when no element could be popped.
-        * A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
-
-        """
-        pieces: CommandArgList = [timeout, len(list(keys)), where.value]
-        pieces.extend(keys)
-        if count is not None:
-            pieces.append(count)
-        return await self.execute_command("BZMPOP", *pieces)
-
     @redis_command(
         "BZPOPMAX",
         group=CommandGroup.SORTED_SET,
