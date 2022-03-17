@@ -1,10 +1,10 @@
+import asyncio
 import datetime
 import time
 
 import pytest
 
-from coredis import DataError, ResponseError
-from coredis.utils import b
+from coredis import PureToken, ResponseError
 from tests.conftest import targets
 
 
@@ -13,76 +13,41 @@ from tests.conftest import targets
 class TestGeneric:
     async def test_sort_basic(self, client):
         await client.rpush("a", "3", "2", "1", "4")
-        assert await client.sort("a") == [b("1"), b("2"), b("3"), b("4")]
+        assert await client.sort("a") == ("1", "2", "3", "4")
 
     async def test_sort_limited(self, client):
         await client.rpush("a", "3", "2", "1", "4")
-        assert await client.sort("a", start=1, num=2) == [b("2"), b("3")]
+        assert await client.sort("a", offset=1, count=2) == ("2", "3")
 
     async def test_sort_by(self, client):
-        await client.set("score:1", 8)
-        await client.set("score:2", 3)
-        await client.set("score:3", 5)
+        await client.set("score:1", "8")
+        await client.set("score:2", "3")
+        await client.set("score:3", "5")
         await client.rpush("a", "3", "2", "1")
-        assert await client.sort("a", by="score:*") == [b("2"), b("3"), b("1")]
+        assert await client.sort("a", by="score:*") == ("2", "3", "1")
 
     async def test_sort_get(self, client):
         await client.set("user:1", "u1")
         await client.set("user:2", "u2")
         await client.set("user:3", "u3")
         await client.rpush("a", "2", "3", "1")
-        assert await client.sort("a", get="user:*") == [b("u1"), b("u2"), b("u3")]
+        assert await client.sort("a", gets=["user:*"]) == ("u1", "u2", "u3")
 
     async def test_sort_get_multi(self, client):
         await client.set("user:1", "u1")
         await client.set("user:2", "u2")
         await client.set("user:3", "u3")
         await client.rpush("a", "2", "3", "1")
-        assert await client.sort("a", get=("user:*", "#")) == [
-            b("u1"),
-            b("1"),
-            b("u2"),
-            b("2"),
-            b("u3"),
-            b("3"),
-        ]
+        assert await client.sort("a", gets=("user:*", "#")) == (
+            "u1",
+            "1",
+            "u2",
+            "2",
+            "u3",
+            "3",
+        )
 
-    async def test_sort_get_groups_two(self, client):
-        await client.set("user:1", "u1")
-        await client.set("user:2", "u2")
-        await client.set("user:3", "u3")
-        await client.rpush("a", "2", "3", "1")
-        assert await client.sort("a", get=("user:*", "#"), groups=True) == [
-            (b("u1"), b("1")),
-            (b("u2"), b("2")),
-            (b("u3"), b("3")),
-        ]
-
-    async def test_sort_groups_string_get(self, client):
-        await client.set("user:1", "u1")
-        await client.set("user:2", "u2")
-        await client.set("user:3", "u3")
-        await client.rpush("a", "2", "3", "1")
-        with pytest.raises(DataError):
-            await client.sort("a", get="user:*", groups=True)
-
-    async def test_sort_groups_just_one_get(self, client):
-        await client.set("user:1", "u1")
-        await client.set("user:2", "u2")
-        await client.set("user:3", "u3")
-        await client.rpush("a", "2", "3", "1")
-        with pytest.raises(DataError):
-            await client.sort("a", get=["user:*"], groups=True)
-
-    async def test_sort_groups_no_get(self, client):
-        await client.set("user:1", "u1")
-        await client.set("user:2", "u2")
-        await client.set("user:3", "u3")
-        await client.rpush("a", "2", "3", "1")
-        with pytest.raises(DataError):
-            await client.sort("a", groups=True)
-
-    async def test_sort_groups_three_gets(self, client):
+    async def test_sort_three_gets(self, client):
         await client.set("user:1", "u1")
         await client.set("user:2", "u2")
         await client.set("user:3", "u3")
@@ -90,30 +55,36 @@ class TestGeneric:
         await client.set("door:2", "d2")
         await client.set("door:3", "d3")
         await client.rpush("a", "2", "3", "1")
-        assert await client.sort("a", get=("user:*", "door:*", "#"), groups=True) == [
-            (b("u1"), b("d1"), b("1")),
-            (b("u2"), b("d2"), b("2")),
-            (b("u3"), b("d3"), b("3")),
-        ]
+        assert await client.sort("a", gets=["user:*", "door:*", "#"]) == (
+            "u1",
+            "d1",
+            "1",
+            "u2",
+            "d2",
+            "2",
+            "u3",
+            "d3",
+            "3",
+        )
 
     async def test_sort_desc(self, client):
         await client.rpush("a", "2", "3", "1")
-        assert await client.sort("a", desc=True) == [b("3"), b("2"), b("1")]
+        assert await client.sort("a", order=PureToken.DESC) == ("3", "2", "1")
 
     async def test_sort_alpha(self, client):
         await client.rpush("a", "e", "c", "b", "d", "a")
-        assert await client.sort("a", alpha=True) == [
-            b("a"),
-            b("b"),
-            b("c"),
-            b("d"),
-            b("e"),
-        ]
+        assert await client.sort("a", alpha=True) == (
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+        )
 
     async def test_sort_store(self, client):
         await client.rpush("a", "2", "3", "1")
         assert await client.sort("a", store="sorted_values") == 3
-        assert await client.lrange("sorted_values", 0, -1) == [b("1"), b("2"), b("3")]
+        assert await client.lrange("sorted_values", 0, -1) == ["1", "2", "3"]
 
     async def test_sort_all_options(self, client):
         await client.set("user:1:username", "zeus")
@@ -137,20 +108,20 @@ class TestGeneric:
         await client.rpush("gods", "5", "8", "3", "1", "2", "7", "6", "4")
         num = await client.sort(
             "gods",
-            start=2,
-            num=4,
+            offset=2,
+            count=4,
             by="user:*:username",
-            get="user:*:favorite_drink",
-            desc=True,
+            gets=["user:*:favorite_drink"],
+            order=PureToken.DESC,
             alpha=True,
             store="sorted",
         )
         assert num == 4
         assert await client.lrange("sorted", 0, 10) == [
-            b("vodka"),
-            b("milk"),
-            b("gin"),
-            b("apple juice"),
+            "vodka",
+            "milk",
+            "gin",
+            "apple juice",
         ]
 
     async def test_delete(self, client):
@@ -165,12 +136,26 @@ class TestGeneric:
         assert await client.get("a") is None
         assert await client.get("b") is None
 
-    async def test_dump_and_restore(self, client):
+    async def test_dump_and_restore_with_freq(self, client):
+        await client.config_set({"maxmemory-policy": "allkeys-lfu"})
         await client.set("a", "foo")
+        freq = await client.object_freq("a")
         dumped = await client.dump("a")
         await client.delete("a")
-        await client.restore("a", 0, dumped)
-        assert await client.get("a") == b("foo")
+        await client.restore("a", 0, dumped, freq=freq)
+        assert await client.get("a") == "foo"
+        freq_now = await client.object_freq("a")
+        assert freq + 1 == freq_now
+
+    async def test_dump_and_restore_with_idle_time(self, client):
+        await client.set("a", "foo")
+        await asyncio.sleep(1)
+        idle = await client.object_idletime("a")
+        dumped = await client.dump("a")
+        await client.delete("a")
+        await client.restore("a", 0, dumped, idletime=idle)
+        new_idle = await client.object_idletime("a")
+        assert idle == new_idle
 
     async def test_dump_and_restore_and_replace(self, client):
         await client.set("a", "bar")
@@ -179,41 +164,83 @@ class TestGeneric:
             await client.restore("a", 0, dumped)
 
         await client.restore("a", 0, dumped, replace=True)
-        assert await client.get("a") == b("bar")
+        assert await client.get("a") == "bar"
 
     @pytest.mark.nocluster
+    async def test_migrate_single_key(self, client, redis_auth):
+        auth_connection = await redis_auth.connection_pool.get_connection()
+        await client.set("a", "1")
+        assert not await client.migrate(
+            ["b"], "172.17.0.1", auth_connection.port, 0, 100
+        )
+        with pytest.raises(ResponseError):
+            assert await client.migrate(
+                ["a"], "172.17.0.1", auth_connection.port, 0, 100
+            )
+        assert await client.migrate(
+            ["a"], "172.17.0.1", auth_connection.port, 0, 100, auth="sekret"
+        )
+        assert await redis_auth.get("a") == "1"
+
+    @pytest.mark.nocluster
+    async def test_migrate_multiple_keys(self, client, redis_auth):
+        auth_connection = await redis_auth.connection_pool.get_connection()
+        await client.set("a", "1")
+        await client.set("c", "2")
+        assert not await client.migrate(
+            ["d", "b"], "172.17.0.1", auth_connection.port, 0, 100
+        )
+        assert await client.migrate(
+            ["a", "c"], "172.17.0.1", auth_connection.port, 0, 100, auth="sekret"
+        )
+
+        assert await redis_auth.get("a") == "1"
+        assert await redis_auth.get("c") == "2"
+
+    @pytest.mark.min_server_version("6.2.0")
+    async def test_copy(self, client):
+        await client.set("a{foo}", "foo")
+        await client.set("c{foo}", "bar")
+        assert await client.copy("x{foo}", "y{foo}") is False
+        assert True == (await client.copy("a{foo}", "b{foo}"))
+        assert await client.get("b{foo}") == "foo"
+        assert False == (await client.copy("a{foo}", "c{foo}", replace=False))
+        assert await client.get("c{foo}") == "bar"
+        assert True == (await client.copy("a{foo}", "c{foo}", replace=True))
+        assert await client.get("c{foo}") == "foo"
+
     async def test_object(self, client):
         await client.set("a", "foo")
         assert isinstance(await client.object("refcount", "a"), int)
         assert isinstance(await client.object("idletime", "a"), int)
-        assert await client.object("encoding", "a") in (b("raw"), b("embstr"))
+        assert await client.object("encoding", "a") in ("raw", "embstr")
         assert await client.object("idletime", "invalid-key") is None
 
     @pytest.mark.max_server_version("6.2.0")
     async def test_object_encoding(self, client):
         await client.set("a", "foo")
-        await client.hset("b", "foo", 1)
-        assert await client.object_encoding("a") == b"embstr"
-        assert await client.object_encoding("b") == b"ziplist"
+        await client.hset("b", {"foo": "1"})
+        assert await client.object_encoding("a") == "embstr"
+        assert await client.object_encoding("b") == "ziplist"
 
     @pytest.mark.min_server_version("6.9.0")
     async def test_object_encoding_listpack(self, client):
         await client.set("a", "foo")
-        await client.hset("b", "foo", 1)
-        assert await client.object_encoding("a") == b"embstr"
-        assert await client.object_encoding("b") == b"listpack"
+        await client.hset("b", {"foo": "1"})
+        assert await client.object_encoding("a") == "embstr"
+        assert await client.object_encoding("b") == "listpack"
 
     async def test_object_freq(self, client):
         await client.set("a", "foo")
         with pytest.raises(ResponseError):
             await client.object_freq("a"),
-        await client.config_set("maxmemory-policy", "allkeys-lfu")
+        await client.config_set({"maxmemory-policy": "allkeys-lfu"})
         assert isinstance(await client.object_freq("a"), int)
 
     async def test_object_idletime(self, client):
         await client.set("a", "foo")
         assert isinstance(await client.object_idletime("a"), int)
-        await client.config_set("maxmemory-policy", "allkeys-lfu")
+        await client.config_set({"maxmemory-policy": "allkeys-lfu"})
         with pytest.raises(ResponseError):
             await client.object_idletime("a"),
 
@@ -252,14 +279,14 @@ class TestGeneric:
         assert 0 < await client.ttl("a") <= 61
 
     async def test_keys(self, client):
-        assert await client.keys() == []
-        keys_with_underscores = {b("test_a"), b("test_b")}
-        keys = keys_with_underscores.union({b("testc")})
+        assert await client.keys() == set()
+        keys_with_underscores = {"test_a", "test_b"}
+        keys = keys_with_underscores | {"testc"}
 
         for key in keys:
-            await client.set(key, 1)
-        assert set(await client.keys(pattern="test_*")) == keys_with_underscores
-        assert set(await client.keys(pattern="test*")) == keys
+            await client.set(key, "1")
+        assert await client.keys(pattern="test_*") == keys_with_underscores
+        assert await client.keys(pattern="test*") == keys
 
     async def test_pexpire(self, client):
         assert not await client.pexpire("a", 60000)
@@ -290,48 +317,48 @@ class TestGeneric:
         assert await client.randomkey() is None
 
         for key in ("a", "b", "c"):
-            await client.set(key, 1)
-        assert await client.randomkey() in (b("a"), b("b"), b("c"))
+            await client.set(key, "1")
+        assert await client.randomkey() in ("a", "b", "c")
 
     async def test_rename(self, client):
-        await client.set("a", 1)
+        await client.set("a", "1")
         assert await client.rename("a", "b")
         assert await client.get("a") is None
-        assert await client.get("b") == b("1")
+        assert await client.get("b") == "1"
 
     async def test_renamenx(self, client):
-        await client.set("a", 1)
-        await client.set("b", 2)
+        await client.set("a", "1")
+        await client.set("b", "2")
         assert not await client.renamenx("a", "b")
-        assert await client.get("a") == b("1")
-        assert await client.get("b") == b("2")
+        assert await client.get("a") == "1"
+        assert await client.get("b") == "2"
 
     async def test_type(self, client):
-        assert await client.type("a") == b("none")
+        assert await client.type("a") == "none"
         await client.set("a", "1")
-        assert await client.type("a") == b("string")
+        assert await client.type("a") == "string"
         await client.delete("a")
         await client.lpush("a", "1")
-        assert await client.type("a") == b("list")
+        assert await client.type("a") == "list"
         await client.delete("a")
         await client.sadd("a", "1")
-        assert await client.type("a") == b("set")
+        assert await client.type("a") == "set"
         await client.delete("a")
-        await client.zadd("a", **{"1": 1})
-        assert await client.type("a") == b("zset")
+        await client.zadd("a", {"1": "1"})
+        assert await client.type("a") == "zset"
 
     async def test_touch(self, client):
         keys = ["a{foo}", "b{foo}", "c{foo}", "d{foo}"]
 
         for index, key in enumerate(keys):
-            await client.set(key, index)
-        assert await client.touch(keys) == len(keys)
+            await client.set(key, str(index))
+        assert await client.touch(*keys) == len(keys)
 
     async def test_unlink(self, client):
         keys = ["a{foo}", "b{foo}", "c{foo}", "d{foo}"]
 
         for index, key in enumerate(keys):
-            await client.set(key, index)
+            await client.set(key, str(index))
         await client.unlink(*keys)
 
         for key in keys:
@@ -339,22 +366,22 @@ class TestGeneric:
 
     @pytest.mark.nocluster
     async def test_scan(self, client):
-        await client.set("a", 1)
-        await client.set("b", 2)
-        await client.set("c", 3)
+        await client.set("a", "1")
+        await client.set("b", "2")
+        await client.set("c", "3")
         cursor, keys = await client.scan()
         assert cursor == 0
-        assert set(keys) == set([b("a"), b("b"), b("c")])
+        assert set(keys) == set(["a", "b", "c"])
         _, keys = await client.scan(match="a")
-        assert set(keys) == set([b("a")])
+        assert set(keys) == set(["a"])
 
     async def test_scan_iter(self, client):
-        await client.set("a", 1)
-        await client.set("b", 2)
-        await client.set("c", 3)
+        await client.set("a", "1")
+        await client.set("b", "2")
+        await client.set("c", "3")
         keys = set()
         async for key in client.scan_iter():
             keys.add(key)
-        assert keys == set([b("a"), b("b"), b("c")])
+        assert keys == set(["a", "b", "c"])
         async for key in client.scan_iter(match="a"):
-            assert key == b("a")
+            assert key == "a"

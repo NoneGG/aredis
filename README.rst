@@ -22,11 +22,6 @@ coredis
 
 coredis is an async redis client with support for redis server, cluster & sentinel.
 
-The library was forked from `aredis <https://github.com/NoneGG/aredis>`_ which is
-now unmaintained. If you are looking for a drop in replacement head on over to
-the `2.x <https://github.com/alisaifee/coredis/tree/2.x>`_ branch which is
-backward compatible with the last release of ``aredis``.
-
 
 Installation
 ------------
@@ -53,10 +48,10 @@ Single Node client
 .. code-block:: python
 
     import asyncio
-    from coredis import StrictRedis
+    from coredis import Redis
 
     async def example():
-        client = StrictRedis(host='127.0.0.1', port=6379, db=0)
+        client = Redis(host='127.0.0.1', port=6379, db=0)
         await client.flushdb()
         await client.set('foo', 1)
         assert await client.exists('foo') is True
@@ -69,7 +64,7 @@ Single Node client
         await asyncio.sleep(1)
         assert not await client.exists('foo')
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(example())
 
 Cluster client
@@ -78,10 +73,10 @@ Cluster client
 .. code-block:: python
 
     import asyncio
-    from coredis import StrictRedisCluster
+    from coredis import RedisCluster
 
     async def example():
-        client = StrictRedisCluster(host='172.17.0.2', port=7001)
+        client = RedisCluster(host='172.17.0.2', port=7001)
         await client.flushdb()
         await client.set('foo', 1)
         await client.lpush('a', 1)
@@ -90,7 +85,7 @@ Cluster client
         await client.rpoplpush('a', 'b')
         assert await client.rpop('b') == b'1'
 
-   loop = asyncio.get_event_loop()
+   loop = asyncio.new_event_loop()
    loop.run_until_complete(example())
    # {(10923, 16383): [{'host': b'172.17.0.2', 'node_id': b'332f41962b33fa44bbc5e88f205e71276a9d64f4', 'server_type': 'master', 'port': 7002},
    # {'host': b'172.17.0.2', 'node_id': b'c02deb8726cdd412d956f0b9464a88812ef34f03', 'server_type': 'slave', 'port': 7005}],
@@ -107,6 +102,5 @@ Links
 * `Documentation (Stable) <http://coredis.readthedocs.org/en/stable>`_
 * `Documentation (Latest) <http://coredis.readthedocs.org/en/latest>`_
 * `Changelog <http://coredis.readthedocs.org/en/stable/release_notes.html>`_
-* `aredis <https://github.com/NoneGG/aredis>`_
 
 .. _Command compatibility: https://coredis.readthedocs.io/en/stable/compatibility.html

@@ -10,7 +10,7 @@ import time
 import pytest
 
 # rediscluster imports
-from coredis import StrictRedis, StrictRedisCluster
+from coredis import Redis, RedisCluster
 
 
 async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False):
@@ -33,9 +33,9 @@ async def wait_for_message(pubsub, timeout=0.5, ignore_subscribe_messages=False)
 def make_message(type, channel, data, pattern=None):
     return {
         "type": type,
-        "pattern": pattern and pattern.encode("utf-8") or None,
-        "channel": channel.encode("utf-8"),
-        "data": data.encode("utf-8") if isinstance(data, str) else data,
+        "pattern": pattern,
+        "channel": channel,
+        "data": data,
     }
 
 
@@ -121,8 +121,7 @@ class TestPubSubSubscribeUnsubscribe:
         for i, message in enumerate(messages):
             assert message["type"] == sub_type
             assert message["data"] == i + 1
-            assert isinstance(message["channel"], bytes)
-            channel = message["channel"].decode("utf-8")
+            channel = message["channel"]
             unique_channels.add(channel)
 
         assert len(unique_channels) == len(keys)
@@ -241,12 +240,12 @@ class TestPubSubMessages:
     Bug: Currently in cluster mode publish command will behave different then in
          standard/non cluster mode. See (docs/Pubsub.md) for details.
 
-         Currently StrictRedis instances will be used to test pubsub because they
+         Currently Redis instances will be used to test pubsub because they
          are easier to work with.
     """
 
     def get_strict_redis_node(self, port, host="127.0.0.1"):
-        return StrictRedis(port=port, host=host)
+        return Redis(port=port, host=host, decode_responses=True)
 
     def setup_method(self, *args):
         self.message = None
@@ -373,7 +372,7 @@ def test_pubsub_thread_publish():
     """
     startup_nodes = [{"host": "127.0.0.1", "port": "7000"}]
 
-    r = StrictRedisCluster(
+    r = RedisCluster(
         startup_nodes=startup_nodes,
         max_connections=16,
         max_connections_per_node=16,

@@ -6,7 +6,9 @@ import ssl
 import sys
 import time
 import warnings
+from abc import ABC, abstractmethod
 from io import BytesIO
+from typing import Callable, Dict, Literal, Optional, Type, Union, cast
 
 from coredis.exceptions import (
     AskError,
@@ -32,7 +34,7 @@ from coredis.utils import b, nativestr
 try:
     import hiredis
 
-    HIREDIS_AVAILABLE = True
+    HIREDIS_AVAILABLE = False
 except ImportError:
     HIREDIS_AVAILABLE = False
 
@@ -55,6 +57,7 @@ class SocketBuffer:
         self._stream = stream_reader
         self.read_size = read_size
         self._buffer = BytesIO()
+        self._sock = None
         # number of bytes written to the buffer from the socket
         self.bytes_written = 0
         # number of bytes read from the buffer
@@ -66,6 +69,7 @@ class SocketBuffer:
 
     async def _read_from_socket(self, length=None):
         buf = self._buffer
+        assert buf
         buf.seek(self.bytes_written)
         marker = 0
 
@@ -87,9 +91,14 @@ class SocketBuffer:
                 break
         except socket.error:
             e = sys.exc_info()[1]
-            raise ConnectionError("Error while reading from socket: %s" % (e.args,))
+            if e:
+                raise ConnectionError("Error while reading from socket: %s" % (e.args,))
+            else:
+                raise
 
     async def read(self, length):
+        assert self._buffer
+
         length = length + 2  # make sure to read the \r\n terminator
         # make sure we've read enough data from the socket
 
@@ -110,6 +119,7 @@ class SocketBuffer:
 
     async def readline(self):
         buf = self._buffer
+        assert buf
         buf.seek(self.bytes_read)
         data = buf.readline()
 
@@ -130,6 +140,7 @@ class SocketBuffer:
         return data[:-2]
 
     def purge(self):
+        assert self._buffer
         self._buffer.seek(0)
         self._buffer.truncate()
         self.bytes_written = 0
@@ -138,7 +149,8 @@ class SocketBuffer:
     def close(self):
         try:
             self.purge()
-            self._buffer.close()
+            if self._buffer:
+                self._buffer.close()
         except Exception:
             # redis-py issue #633 suggests the purge/close somehow raised a
             # BadFileDescriptor error. Perhaps the client ran out of
@@ -150,7 +162,7 @@ class SocketBuffer:
         self._sock = None
 
 
-class BaseParser:
+class BaseParser(ABC):
     """Plain Python parsing class"""
 
     EXCEPTION_CLASSES = {
@@ -180,9 +192,25 @@ class BaseParser:
             if isinstance(exception_class, dict):
                 exception_class = exception_class.get(response, ResponseError)
 
-            return exception_class(response)
+            return cast(Callable, exception_class)(response)
 
         return ResponseError(response)
+
+    @abstractmethod
+    async def read_response(self, decode: Optional[bool] = None):
+        pass
+
+    @abstractmethod
+    def can_read(self) -> bool:
+        pass
+
+    @abstractmethod
+    def on_connect(self, connection):
+        pass
+
+    @abstractmethod
+    def on_disconnect(self):
+        pass
 
 
 class PythonParser(BaseParser):
@@ -220,7 +248,7 @@ class PythonParser(BaseParser):
     def can_read(self):
         return self._buffer and bool(self._buffer.length)
 
-    async def read_response(self):
+    async def read_response(self, decode: Optional[bool] = None):
         if not self._buffer:
             raise ConnectionError("Socket closed on remote end")
         response = await self._buffer.readline()
@@ -230,7 +258,7 @@ class PythonParser(BaseParser):
 
         byte, response = chr(response[0]), response[1:]
 
-        if byte not in ("-", "+", ":", "$", "*"):
+        if byte not in ("-", "+", ":", "$", "*", "%", "~", ",", "_", "#"):
             raise InvalidResponse("Protocol Error: %s, %s" % (str(byte), str(response)))
 
         # server returned an error
@@ -247,6 +275,7 @@ class PythonParser(BaseParser):
             # inside a pipeline response. the connection's read_response()
             # and/or the pipeline's execute() will raise this error if
             # necessary, so just return the exception instance here.
+
             return error
         # single value
         elif byte == "+":
@@ -254,6 +283,15 @@ class PythonParser(BaseParser):
         # int value
         elif byte == ":":
             response = int(response)
+        # double
+        elif byte == ",":
+            return float(response)
+        # None
+        elif byte == "_":
+            return None
+        # Bool
+        elif byte == "#":
+            return response[0] == b"t"
         # bulk response
         elif byte == "$":
             length = int(response)
@@ -270,11 +308,29 @@ class PythonParser(BaseParser):
             response = []
 
             for i in range(length):
-                response.append(await self.read_response())
-
-        if isinstance(response, bytes) and self.encoding:
+                response.append(await self.read_response(decode=decode))
+        # map response
+        elif byte == "%":
+            length = int(response)
+            if length == -1:
+                return {}
+            response = {}
+            for i in range(length):
+                key = await self.read_response(decode=decode)
+                value = await self.read_response(decode=decode)
+                response[key] = value
+        # set
+        elif byte == "~":
+            length = int(response)
+            response = set()
+            for i in range(length):
+                response.add(await self.read_response(decode=decode))
+            return response
+        need_decode = self.encoding
+        if decode is not None:
+            need_decode = decode
+        if isinstance(response, bytes) and need_decode and self.encoding:
             response = response.decode(self.encoding)
-
         return response
 
 
@@ -286,7 +342,9 @@ class HiredisParser(BaseParser):
             raise RedisError("Hiredis is not installed")
         self._stream = None
         self._reader = None
+        self._raw_reader = None
         self._read_size = read_size
+        self._next_response: Union[str, bytes, Literal[False]] = False
 
     def __del__(self):
         try:
@@ -310,9 +368,10 @@ class HiredisParser(BaseParser):
             "replyError": ResponseError,
         }
 
+        self._raw_reader = hiredis.Reader(**kwargs)  # type: ignore
         if connection.decode_responses:
             kwargs["encoding"] = connection.encoding
-        self._reader = hiredis.Reader(**kwargs)
+        self._reader = hiredis.Reader(**kwargs)  # type: ignore
         self._next_response = False
 
     def on_disconnect(self):
@@ -321,7 +380,7 @@ class HiredisParser(BaseParser):
         self._reader = None
         self._next_response = False
 
-    async def read_response(self):
+    async def read_response(self, decode: Optional[bool] = None):
         if not self._stream:
             raise ConnectionError("Socket closed on remote end")
 
@@ -332,8 +391,10 @@ class HiredisParser(BaseParser):
             self._next_response = False
 
             return response
+        cur_reader = self._reader if decode is not False else self._raw_reader
+        assert cur_reader
 
-        response = self._reader.gets()
+        response = cur_reader.gets()
 
         while response is False:
             try:
@@ -344,14 +405,16 @@ class HiredisParser(BaseParser):
                 raise
             except Exception:
                 e = sys.exc_info()[1]
-                raise ConnectionError(
-                    "Error {} while reading from stream: {}".format(type(e), e.args)
-                )
+                if e:
+                    raise ConnectionError(
+                        "Error {} while reading from stream: {}".format(type(e), e.args)
+                    )
+                raise
 
             if not buffer:
                 raise ConnectionError("Socket closed on remote end")
-            self._reader.feed(buffer)
-            response = self._reader.gets()
+            cur_reader.feed(buffer)
+            response = cur_reader.gets()
 
         if isinstance(response, ResponseError):
             response = self.parse_error(response.args[0])
@@ -359,6 +422,7 @@ class HiredisParser(BaseParser):
         return response
 
 
+DefaultParser: Type[BaseParser]
 if HIREDIS_AVAILABLE:
     DefaultParser = HiredisParser
 else:
@@ -414,10 +478,11 @@ class BaseConnection:
         client_name=None,
         loop=None,
     ):
-        self._parser = parser_class(reader_read_size)
+        self._parser: BaseParser = parser_class(reader_read_size)
         self._stream_timeout = stream_timeout
         self._reader = None
         self._writer = None
+        self.username = None
         self.password = ""
         self.db = ""
         self.pid = os.getpid()
@@ -453,6 +518,7 @@ class BaseConnection:
 
     async def can_read(self):
         """Checks for data that can be read"""
+        assert self._parser
 
         if not self.is_connected:
             await self.connect()
@@ -473,10 +539,6 @@ class BaseConnection:
 
         for callback in self._connect_callbacks:
             task = callback(self)
-            # typing.Awaitable is not available in Python3.5
-            # so use inspect.isawaitable instead
-            # according to issue https://github.com/alisaifee/coredis/issues/77
-
             if inspect.isawaitable(task):
                 await task
 
@@ -493,7 +555,6 @@ class BaseConnection:
 
     async def on_connect(self):
         self._parser.on_connect(self)
-
         if self.username or self.password:
             if self.username and self.password:
                 await self.send_command("AUTH", self.username, self.password)
@@ -518,10 +579,12 @@ class BaseConnection:
 
         self.last_active_at = time.time()
 
-    async def read_response(self):
+    async def read_response(self, decode: Optional[bool] = None):
         try:
             response = await exec_with_timeout(
-                self._parser.read_response(), self._stream_timeout, loop=self.loop
+                self._parser.read_response(decode=decode),
+                self._stream_timeout,
+                loop=self.loop,
             )
             self.last_active_at = time.time()
         except TimeoutError:
@@ -539,6 +602,7 @@ class BaseConnection:
 
         if not self._writer:
             await self.connect()
+            assert self._writer
         try:
             if isinstance(command, str):
                 command = [command]
@@ -549,18 +613,17 @@ class BaseConnection:
         except Exception:
             e = sys.exc_info()[1]
             self.disconnect()
-
-            if len(e.args) == 1:
-                errno, errmsg = "UNKNOWN", e.args[0]
+            if e:
+                if len(e.args) == 1:
+                    errno, errmsg = "UNKNOWN", e.args[0]
+                else:
+                    errno = e.args[0]
+                    errmsg = e.args[1]
+                raise ConnectionError(
+                    "Error %s while writing to socket. %s." % (errno, errmsg)
+                )
             else:
-                errno = e.args[0]
-                errmsg = e.args[1]
-            raise ConnectionError(
-                "Error %s while writing to socket. %s." % (errno, errmsg)
-            )
-        except Exception:
-            self.disconnect()
-            raise
+                raise
 
     async def send_command(self, *args):
         if not self.is_connected:
@@ -590,7 +653,8 @@ class BaseConnection:
         """Disconnects from the Redis server"""
         self._parser.on_disconnect()
         try:
-            self._writer.close()
+            if self._writer:
+                self._writer.close()
         except Exception:
             pass
         self._reader = None
@@ -778,6 +842,7 @@ class UnixDomainSocketConnection(BaseConnection):
 class ClusterConnection(Connection):
     "Manages TCP communication to and from a Redis server"
     description = "ClusterConnection<host={host},port={port}>"
+    node: Dict
 
     def __init__(self, *args, **kwargs):
         self.readonly = kwargs.pop("readonly", False)

@@ -96,7 +96,7 @@ class TestConnectionPool:
 
     @pytest.mark.asyncio()
     async def test_connection_idle_check(self, event_loop):
-        rs = coredis.StrictRedis(
+        rs = coredis.Redis(
             host="127.0.0.1",
             port=6379,
             db=0,
@@ -197,7 +197,7 @@ class TestBlockingConnectionPool:
 
     @pytest.mark.asyncio()
     async def test_connection_idle_check(self, event_loop):
-        rs = coredis.StrictRedis(
+        rs = coredis.Redis(
             host="127.0.0.1",
             port=6379,
             db=0,
@@ -414,12 +414,13 @@ class TestConnectionPoolURLParsing:
         }
 
     def test_client_creates_connection_pool(self):
-        r = coredis.StrictRedis.from_url("redis://myhost")
+        r = coredis.Redis.from_url("redis://myhost")
         assert r.connection_pool.connection_class == coredis.Connection
         assert r.connection_pool.connection_kwargs == {
             "host": "myhost",
             "port": 6379,
             "db": 0,
+            "decode_responses": False,
             "username": None,
             "password": None,
         }
@@ -576,7 +577,7 @@ class TestConnection:
         """
         # this assumes the Redis server being tested against doesn't have
         # 9999 databases ;)
-        bad_connection = coredis.StrictRedis(db=9999, loop=event_loop)
+        bad_connection = coredis.Redis(db=9999, loop=event_loop)
         # an error should be raised on connect
         with pytest.raises(RedisError):
             await bad_connection.info()
@@ -590,7 +591,7 @@ class TestConnection:
         If Redis raises a LOADING error, the connection should be
         disconnected and a BusyLoadingError raised
         """
-        client = coredis.StrictRedis(loop=event_loop)
+        client = coredis.Redis(loop=event_loop)
         with pytest.raises(BusyLoadingError):
             await client.execute_command("DEBUG", "ERROR", "LOADING fake message")
         pool = client.connection_pool
@@ -603,7 +604,7 @@ class TestConnection:
         BusyLoadingErrors should raise from Pipelines that execute a
         command immediately, like WATCH does.
         """
-        client = coredis.StrictRedis(loop=event_loop)
+        client = coredis.Redis(loop=event_loop)
         pipe = await client.pipeline()
         with pytest.raises(BusyLoadingError):
             await pipe.immediate_execute_command(
@@ -619,7 +620,7 @@ class TestConnection:
         BusyLoadingErrors should be raised from a pipeline execution
         regardless of the raise_on_error flag.
         """
-        client = coredis.StrictRedis(loop=event_loop)
+        client = coredis.Redis(loop=event_loop)
         pipe = await client.pipeline()
         await pipe.execute_command("DEBUG", "ERROR", "LOADING fake message")
         with pytest.raises(RedisError):
@@ -634,12 +635,12 @@ class TestConnection:
     @pytest.mark.max_server_version("6.2.0")
     async def test_read_only_error(self, event_loop):
         "READONLY errors get turned in ReadOnlyError exceptions"
-        client = coredis.StrictRedis(loop=event_loop)
+        client = coredis.Redis(loop=event_loop)
         with pytest.raises(ReadOnlyError):
             await client.execute_command("DEBUG", "ERROR", "READONLY blah blah")
 
     def test_connect_from_url_tcp(self):
-        connection = coredis.StrictRedis.from_url("redis://localhost")
+        connection = coredis.Redis.from_url("redis://localhost")
         pool = connection.connection_pool
 
         assert re.match("(.*)<(.*)<(.*)>>", repr(pool)).groups() == (
@@ -649,7 +650,7 @@ class TestConnection:
         )
 
     def test_connect_from_url_unix(self):
-        connection = coredis.StrictRedis.from_url("unix:///path/to/socket")
+        connection = coredis.Redis.from_url("unix:///path/to/socket")
         pool = connection.connection_pool
 
         assert re.match("(.*)<(.*)<(.*)>>", repr(pool)).groups() == (

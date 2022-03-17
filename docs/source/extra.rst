@@ -56,7 +56,7 @@ There are two kinds of `Lock class` available for now, you can also make your ow
 .. code-block:: python
 
     async def example():
-        client = coredis.StrictRedis()
+        client = coredis.Redis()
         await client.flushall()
         lock = client.lock('lalala')
         print(await lock.acquire())
@@ -115,7 +115,7 @@ Cluster Lock
 .. code-block:: python
 
     async def example():
-        client = coredis.StrictRedis()
+        client = coredis.Redis()
         await client.flushall()
         lock = client.lock('lalala', lock_class=ClusterLock, timeout=1)
         print(await lock.acquire())

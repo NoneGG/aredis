@@ -1,13 +1,17 @@
 -r test.txt
 autoflake8
 black==22.1.0
+click
 contextvars
 flake8
 hiredis
 inflect
 isort
 mypy==0.941
+jinja2
+pyright==1.1.229
 requests
+redis
 twine
 uvloop
 wheel

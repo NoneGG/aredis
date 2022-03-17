@@ -3,9 +3,6 @@ from coredis.lock import Lock, LuaLock
 
 
 class ExtraCommandMixin:
-
-    RESPONSE_CALLBACKS = {}
-
     def lock(
         self,
         name,
@@ -59,7 +56,7 @@ class ExtraCommandMixin:
         """
 
         if lock_class is None:
-            if self._use_lua_lock is None:
+            if self._use_lua_lock is None:  # type: ignore
                 # the first time .lock() is called, determine if we can use
                 # Lua by attempting to register the necessary scripts
                 try:

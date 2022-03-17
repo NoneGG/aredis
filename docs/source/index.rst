@@ -25,6 +25,19 @@ coredis
 
 coredis is an async redis client with support for redis server, cluster & sentinel.
 
+The API attempts to maintain compliance with the `Redis command documentation <https://redis.io/commands>`__.
+
+- Arguments retain naming from redis as much as possible
+- Optional variadic arguments are mapped to ``*args`` or ``**kwargs``
+- Pure tokens used as flags are mapped to boolean arguments
+- `One of` arguments accepting pure tokens are collapsed and accept a :class:`~coredis.PureToken`
+- Responses are mapped as closely from redis <-> python types as possible.
+
+.. warning:: This inherently means that the API will not map exactly to the :pypi:`redis-py`
+   implementation in most cases.
+
+For more details see :ref:`api_reference:api reference`
+
 Installation
 ------------
 
@@ -49,10 +62,10 @@ Single Node client
 .. code-block:: python
 
     import asyncio
-    from coredis import StrictRedis
+    from coredis import Redis
 
     async def example():
-        client = StrictRedis(host='127.0.0.1', port=6379, db=0)
+        client = Redis(host='127.0.0.1', port=6379, db=0)
         await client.flushdb()
         await client.set('foo', 1)
         assert await client.exists('foo') is True
@@ -65,7 +78,7 @@ Single Node client
         await asyncio.sleep(1)
         assert not await client.exists('foo')
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(example())
 
 Cluster client
@@ -74,10 +87,10 @@ Cluster client
 .. code-block:: python
 
     import asyncio
-    from coredis import StrictRedisCluster
+    from coredis import RedisCluster
 
     async def example():
-        client = StrictRedisCluster(host='172.17.0.2', port=7001)
+        client = RedisCluster(host='172.17.0.2', port=7001)
         await client.flushdb()
         await client.set('foo', 1)
         await client.lpush('a', 1)
@@ -86,7 +99,7 @@ Cluster client
         await client.rpoplpush('a', 'b')
         assert await client.rpop('b') == b'1'
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(example())
 
     # {(10923, 16383): [{'host': b'172.17.0.2', 'node_id': b'332f41962b33fa44bbc5e88f205e71276a9d64f4', 'server_type': 'master', 'port': 7002},
@@ -103,8 +116,8 @@ coredis is tested against redis versions ``5.0.x``, ``6.0.x`` & ``6.2.x``.
 
 hiredis and uvloop can make coredis faster, but it is up to you whether to install them or not.
 
-- :pypi:`hiredis` >= `0.2.0`. Older versions might work but is not tested.
-- :pypi:`uvloop` >= `0.8.0`. Older versions might work but is not tested.
+- :pypi:`hiredis` >= `2.0.0`.
+- :pypi:`uvloop` >= `0.15.0`.
 
 
 Supported python versions
@@ -115,17 +128,13 @@ Supported python versions
 - 3.10
 
 
-The API (mostly) follows :doc:`redis-py <redis-py:index>`. For a full mapping
-of redis commands to API methods refer to the :ref:`compatibility:command compatibilty`
-section.
-
 .. toctree::
     :maxdepth: 2
     :hidden:
 
+    api_reference
     api
     compatibility
-    api_reference
     pubsub
     sentinel
     scripting
@@ -133,5 +142,5 @@ section.
     extra
     release_notes
     testing
-    authors
+    history
 

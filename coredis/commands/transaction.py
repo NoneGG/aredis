@@ -1,26 +1,23 @@
 import asyncio
-import warnings
+from abc import ABC
+from typing import AnyStr
 
 from coredis.exceptions import WatchError
-from coredis.utils import bool_ok, string_keys_to_dict
 
+from ..typing import SupportsPipeline, ValueT
 from . import CommandMixin
 
 
-class TransactionCommandMixin(CommandMixin):
-
-    RESPONSE_CALLBACKS = string_keys_to_dict("WATCH UNWATCH", bool_ok)
-
-    async def transaction(self, func, *watches, **kwargs):
+class TransactionCommandMixin(CommandMixin[AnyStr], ABC):
+    async def transaction(self: SupportsPipeline, func, *watches: ValueT, **kwargs):
         """
         Convenience method for executing the callable `func` as a transaction
         while watching all keys specified in `watches`. The 'func' callable
         should expect a single argument which is a Pipeline object.
         """
-        shard_hint = kwargs.pop("shard_hint", None)
         value_from_callable = kwargs.pop("value_from_callable", False)
         watch_delay = kwargs.pop("watch_delay", None)
-        async with await self.pipeline(True, shard_hint) as pipe:
+        async with await self.pipeline(True) as pipe:
             while True:
                 try:
                     if watches:
@@ -33,21 +30,9 @@ class TransactionCommandMixin(CommandMixin):
                         await asyncio.sleep(watch_delay)
                     continue
 
-    async def watch(self, *keys):
-        """
-        Watches the values at keys ``keys``, or None if the key doesn't exist
-        """
-        warnings.warn(DeprecationWarning("Call WATCH from a Pipeline object"))
 
-    async def unwatch(self):
-        """
-        Unwatches the value at key ``name``, or None of the key doesn't exist
-        """
-        warnings.warn(DeprecationWarning("Call UNWATCH from a Pipeline object"))
-
-
-class ClusterTransactionCommandMixin(TransactionCommandMixin):
-    async def transaction(self, func, *watches, **kwargs):
+class ClusterTransactionCommandMixin(TransactionCommandMixin[AnyStr], ABC):
+    async def transaction(self: SupportsPipeline, func, *watches: ValueT, **kwargs):
         """
         Convenience method for executing the callable `func` as a transaction
         while watching all keys specified in `watches`. The 'func' callable
@@ -56,10 +41,9 @@ class ClusterTransactionCommandMixin(TransactionCommandMixin):
         cluster transaction can only be run with commands in the same node,
         otherwise error will be raised.
         """
-        shard_hint = kwargs.pop("shard_hint", None)
         value_from_callable = kwargs.pop("value_from_callable", False)
         watch_delay = kwargs.pop("watch_delay", None)
-        async with await self.pipeline(True, shard_hint, watches=watches) as pipe:
+        async with await self.pipeline(True, watches=watches) as pipe:
             while True:
                 try:
                     func_value = await func(pipe)

@@ -54,6 +54,7 @@ services:
   redis-cluster-2:
     image: "redis:${REDIS_VERSION:-latest}"
     command: redis-server --port 7001 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    depends_on: [redis-cluster-1]
     ports:
       - '7001:7001'
       - '17001:17001'
@@ -66,6 +67,7 @@ services:
   redis-cluster-4:
     image: "redis:${REDIS_VERSION:-latest}"
     command: redis-server --port 7003 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    depends_on: [redis-cluster-3]
     ports:
       - '7003:7003'
       - '17003:17003'
@@ -78,6 +80,7 @@ services:
   redis-cluster-6:
     image: "redis:${REDIS_VERSION:-latest}"
     command: redis-server --port 7005 --protected-mode no --cluster-enabled yes --loglevel verbose --cluster-announce-ip ${HOST_IP}
+    depends_on: [redis-cluster-5]
     ports:
       - '7005:7005'
       - '17005:17005'
@@ -104,7 +107,7 @@ services:
       - ./tests/tls:/tls
   redis-uds:
     image: "redis:${REDIS_VERSION:-latest}"
-    command: sh -c "test ${HOST_OS} = \"Darwin\" && exit || redis-server --port 0 --unixsocket /sockets/limits.redis.sock --unixsocketperm 777"
+    command: sh -c "test ${HOST_OS} = \"Darwin\" && exit || redis-server --port 0 --unixsocket /sockets/coredis.redis.sock --unixsocketperm 777"
     volumes:
       - type: bind
         source: /tmp/

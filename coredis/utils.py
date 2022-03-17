@@ -1,7 +1,27 @@
-import sys
+import datetime
+import enum
+import time
 from functools import wraps
+from typing import (
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from coredis.exceptions import ClusterDownError, RedisClusterException
+from coredis.typing import OrderedDict
+
+T = TypeVar("T")
+U = TypeVar("U")
+V = TypeVar("V")
+W = TypeVar("W")
 
 _C_EXTENSION_SPEEDUP = False
 try:
@@ -12,44 +32,56 @@ except Exception:
     pass
 
 
-def b(x):
+def b(x) -> bytes:
     return x.encode("latin-1") if not isinstance(x, bytes) else x
 
 
-def nativestr(x):
+def defaultvalue(value: Optional[T], default: T) -> T:
+    return default if value is None else value
+
+
+def nativestr(x) -> str:
     return x if isinstance(x, str) else x.decode("utf-8", "replace")
 
 
-def iteritems(x):
-    return iter(x.items())
+def string_if_bytes(
+    x: Union[List[Union[str, bytes]], Union[str, bytes]]
+) -> Union[List[str], str]:
+    if isinstance(x, list):
+        return [string_if_bytes(y) for y in x]  # type:ignore
+
+    return x.decode("utf-8", "replace") if isinstance(x, bytes) else x
 
 
-def iterkeys(x):
-    return iter(x.keys())
+def normalized_seconds(value: Union[int, datetime.timedelta]) -> int:
+    if isinstance(value, datetime.timedelta):
+        value = value.seconds + value.days * 24 * 3600
+
+    return value
 
 
-def itervalues(x):
-    return iter(x.values())
+def normalized_milliseconds(value: Union[int, datetime.timedelta]) -> int:
+    if isinstance(value, datetime.timedelta):
+        ms = int(value.microseconds / 1000)
+        value = (value.seconds + value.days * 24 * 3600) * 1000 + ms
+
+    return value
 
 
-def ban_python_version_lt(min_version):
-    min_version = tuple(map(int, min_version.split(".")))
+def normalized_time_seconds(value: Union[int, datetime.datetime]) -> int:
+    if isinstance(value, datetime.datetime):
+        s = int(value.microsecond / 1000000)
+        value = int(time.mktime(value.timetuple())) + s
 
-    def decorator(func):
-        @wraps(func)
-        def _inner(*args, **kwargs):
-            if sys.version_info[:2] < min_version:
-                raise EnvironmentError(
-                    "{} not supported in Python version less than {}".format(
-                        func.__name__, min_version
-                    )
-                )
-            else:
-                return func(*args, **kwargs)
+    return value
 
-        return _inner
 
-    return decorator
+def normalized_time_milliseconds(value: Union[int, datetime.datetime]) -> int:
+    if isinstance(value, datetime.datetime):
+        ms = int(value.microsecond / 1000)
+        value = int(time.mktime(value.timetuple())) * 1000 + ms
+
+    return value
 
 
 class dummy:
@@ -68,7 +100,21 @@ class dummy:
 
 
 # ++++++++++ response callbacks ++++++++++++++
-def string_keys_to_dict(key_string, callback):
+def iteritems(x: Mapping[T, U]) -> Iterator[Tuple[T, U]]:
+    return iter(x.items())
+
+
+def iterkeys(x: Mapping[T, T]) -> Iterator[T]:
+    return iter(x.keys())
+
+
+def itervalues(x: Mapping[T, T]) -> Iterator[T]:
+    return iter(x.values())
+
+
+def string_keys_to_dict(
+    key_string: str, callback: Callable[..., T]
+) -> Dict[str, Callable[..., T]]:
     return dict.fromkeys(key_string.split(), callback)
 
 
@@ -86,6 +132,13 @@ def dict_merge(*dicts):
 
 
 def bool_ok(response):
+    return nativestr(response) == "OK"
+
+
+def bool_ok_or_int(response):
+    if type(response) == int:
+        return response
+
     return nativestr(response) == "OK"
 
 
@@ -114,11 +167,46 @@ def int_or_none(response):
     return int(response)
 
 
-def pairs_to_dict(response):
-    """Creates a dict given a list of key/value pairs"""
+def pairs_to_dict(response: Union[Dict[T, T], Tuple[T, ...]]) -> Dict[T, T]:
+    """Creates a dict given a flat list of key/value pairs"""
     it = iter(response)
-
     return dict(zip(it, it))
+
+
+def pairs_to_ordered_dict(response: Tuple[T, ...]) -> OrderedDict[T, T]:
+    """Creates a dict given a flat list of key/value pairs"""
+    it = iter(response)
+    return OrderedDict(zip(it, it))
+
+
+def triples_to_dict(response: Iterable[Tuple[T, U, V]]) -> Dict[T, Tuple[U, V]]:
+    return {k[0]: (k[1], k[2]) for k in response}
+
+
+def quadruples_to_dict(
+    response: Iterable[Tuple[T, U, V, W]]
+) -> Dict[T, Tuple[U, V, W]]:
+    return {k[0]: (k[1], k[2], k[3]) for k in response}
+
+
+def tuples_to_flat_list(nested_list):
+    return [item for sublist in nested_list for item in sublist]
+
+
+def dict_to_flat_list(mapping: Dict[T, U], reverse=False) -> List[Union[T, U]]:
+    e1: List[Union[T, U]] = list(mapping.keys())
+    e2: List[Union[T, U]] = list(mapping.values())
+
+    ret: List[Union[T, U]] = []
+
+    if reverse:
+        e1, e2 = e2, e1
+
+    for idx, e in enumerate(e1):
+        ret.append(e)
+        ret.append(e2[idx])
+
+    return ret
 
 
 # ++++++++++ result callbacks (cluster)++++++++++++++
@@ -482,9 +570,10 @@ if not _C_EXTENSION_SPEEDUP:
     hash_slot = _hash_slot  # noqa: F811
 
 
-class NodeFlag:
+class NodeFlag(enum.Enum):
     BLOCKED = "blocked"
-    ALL_NODES = "all-nodes"
-    ALL_MASTERS = "all-masters"
+    ALL = "all"
+    PRIMARIES = "primaries"
+    REPLICAS = "replicas"
     RANDOM = "random"
     SLOT_ID = "slot-id"

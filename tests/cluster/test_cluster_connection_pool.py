@@ -7,15 +7,10 @@ import os
 import pytest
 from mock import Mock, patch
 
-from coredis import StrictRedis
+from coredis import Redis
 from coredis.connection import ClusterConnection, Connection, UnixDomainSocketConnection
 from coredis.exceptions import RedisClusterException
 from coredis.pool import ClusterConnectionPool, ConnectionPool
-
-
-@pytest.fixture(autouse=True)
-def setup(redis_cluster):
-    pass
 
 
 class DummyConnection:
@@ -98,7 +93,7 @@ class TestConnectionPool:
     @pytest.mark.asyncio()
     async def test_max_connections_default_setting(self):
         pool = await self.get_pool(max_connections=None)
-        assert pool.max_connections == 2 ** 31
+        assert pool.max_connections == 2**31
 
     @pytest.mark.asyncio()
     async def test_reuse_previously_released_connection(self):
@@ -214,15 +209,14 @@ class TestConnectionPool:
             }
         )
         name = conn.node["name"]
-        assert len(pool._in_use_connections[name]) == 1
-        # not ket could be found in dict for now
-        assert not pool._available_connections
+        assert len(pool._cluster_in_use_connections[name]) == 1
+        assert not pool._cluster_available_connections
         pool.release(conn)
-        assert len(pool._in_use_connections[name]) == 0
-        assert len(pool._available_connections[name]) == 1
+        assert len(pool._cluster_in_use_connections[name]) == 0
+        assert len(pool._cluster_available_connections[name]) == 1
         await asyncio.sleep(0.21)
-        assert len(pool._in_use_connections[name]) == 0
-        assert len(pool._available_connections[name]) == 0
+        assert len(pool._cluster_in_use_connections[name]) == 0
+        assert len(pool._cluster_available_connections[name]) == 0
         last_active_at = conn.last_active_at
         assert last_active_at == conn.last_active_at
         assert conn._writer is None and conn._reader is None
@@ -399,12 +393,13 @@ class TestConnectionPoolURLParsing:
         }
 
     def test_client_creates_connection_pool(self):
-        r = StrictRedis.from_url("redis://myhost")
+        r = Redis.from_url("redis://myhost")
         assert r.connection_pool.connection_class == Connection
         assert r.connection_pool.connection_kwargs == {
             "host": "myhost",
             "port": 6379,
             "db": 0,
+            "decode_responses": False,
             "username": None,
             "password": None,
         }

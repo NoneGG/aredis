@@ -9,6 +9,8 @@ sys.path.insert(0, os.path.abspath("./"))
 
 import coredis
 import coredis.sentinel
+import coredis.typing
+from numbers import Number
 
 from theme_config import *
 
@@ -50,8 +52,11 @@ version, _ = release, part = coredis.__version__.split("+")
 html_title = f"{project} <small><b style='color: var(--color-brand-primary)'>{{{release}}}</b></small>"
 try:
     ahead = int(part.rsplit(".")[0])
+
     if ahead > 0:
-        html_theme_options["announcement"] = f"""
+        html_theme_options[
+            "announcement"
+        ] = f"""
         This is a development version. The documentation for the latest version: <b>{release}</b> can be found <a href="/en/stable">here</a>
         """
         html_title = f"{project} <small><b style='color: var(--color-brand-primary)'>{{dev}}</b></small>"
@@ -87,6 +92,6 @@ texinfo_documents = [
     ),
 ]
 intersphinx_mapping = {
-    "https://docs.python.org/": None,
+    "python": ("https://docs.python.org/3", None),
     "redis-py": ("https://redis-py.readthedocs.io/en/latest/", None),
 }

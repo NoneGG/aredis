@@ -2,7 +2,7 @@ import socket
 
 import pytest
 
-from coredis import Connection
+from coredis import Connection, UnixDomainSocketConnection
 
 
 @pytest.mark.asyncio()
@@ -20,6 +20,7 @@ async def test_connect_tcp(event_loop, redis_basic):
 
 
 @pytest.mark.asyncio()
+@pytest.mark.os("linux")
 async def test_connect_tcp_keepalive_options(event_loop, redis_basic):
     conn = Connection(
         loop=event_loop,
@@ -56,18 +57,15 @@ async def test_connect_tcp_wrong_socket_opt_raises(event_loop, option, redis_bas
 
 # only test during dev
 # @pytest.mark.asyncio()
-# async def test_connect_unix_socket(event_loop):
-#     # to run this test case you should change your redis configuration
-#     # unixsocket /var/run/redis/redis.sock
-#     # unixsocketperm 777
-#     path = '/var/run/redis/redis.sock'
-#     conn = UnixDomainSocketConnection(path, event_loop)
-#     await conn.connect()
-#     assert conn.path == path
-#     assert str(conn) == 'UnixDomainSocketConnection<path={},db=0>'.format(path)
-#     await conn.send_command('PING')
-#     res = await conn.read_response()
-#     assert res == b'PONG'
-#     assert (conn._reader is not None) and (conn._writer is not None)
-#     conn.disconnect()
-#     assert (conn._reader is None) and (conn._writer is None)
+async def test_connect_unix_socket(redis_uds):
+    path = "/tmp/coredis.redis.sock"
+    conn = UnixDomainSocketConnection(path)
+    await conn.connect()
+    assert conn.path == path
+    assert str(conn) == "UnixDomainSocketConnection<path={},db=0>".format(path)
+    await conn.send_command("PING")
+    res = await conn.read_response()
+    assert res == b"PONG"
+    assert (conn._reader is not None) and (conn._writer is not None)
+    conn.disconnect()
+    assert (conn._reader is None) and (conn._writer is None)

@@ -2,7 +2,7 @@ import os
 import random
 import weakref
 
-from coredis import StrictRedis
+from coredis import Redis
 from coredis.connection import Connection
 from coredis.exceptions import (
     ConnectionError,
@@ -57,9 +57,11 @@ class SentinelManagedConnection(Connection):
                     continue
             raise SlaveNotFoundError  # Never be here
 
-    async def read_response(self):
+    async def read_response(self, decode=False):
         try:
-            return await super(SentinelManagedConnection, self).read_response()
+            return await super(SentinelManagedConnection, self).read_response(
+                decode=decode
+            )
         except ReadOnlyError:
             if self.connection_pool.is_master:
                 # When talking to a master, a ReadOnlyError when likely
@@ -135,7 +137,7 @@ class SentinelConnectionPool(ConnectionPool):
         if self.pid != os.getpid():
             self.disconnect()
             self.reset()
-            self.__init__(
+            SentinelConnectionPool(
                 self.service_name,
                 self.sentinel_manager,
                 is_master=self.is_master,
@@ -196,7 +198,7 @@ class Sentinel:
         self.sentinel_kwargs = sentinel_kwargs
 
         self.sentinels = [
-            StrictRedis(hostname, port, **self.sentinel_kwargs)
+            Redis(hostname, port, **self.sentinel_kwargs)
             for hostname, port in sentinels
         ]
         self.min_other_sentinels = min_other_sentinels
@@ -219,7 +221,7 @@ class Sentinel:
         if not state["is_master"] or state["is_sdown"] or state["is_odown"]:
             return False
         # Check if our sentinel doesn't see other nodes
-        if state["num-other-sentinels"] < self.min_other_sentinels:
+        if state["num_other_sentinels"] < self.min_other_sentinels:
             return False
         return True
 
@@ -270,7 +272,7 @@ class Sentinel:
     def master_for(
         self,
         service_name,
-        redis_class=StrictRedis,
+        redis_class=Redis,
         connection_pool_class=SentinelConnectionPool,
         **kwargs
     ):
@@ -283,7 +285,7 @@ class Sentinel:
         NOTE: If the master's address has changed, any cached connections to
         the old master are closed.
 
-        By default clients will be a redis.StrictRedis instance. Specify a
+        By default clients will be a redis.Redis instance. Specify a
         different class to the ``redis_class`` argument if you desire
         something different.
 
@@ -306,7 +308,7 @@ class Sentinel:
     def slave_for(
         self,
         service_name,
-        redis_class=StrictRedis,
+        redis_class=Redis,
         connection_pool_class=SentinelConnectionPool,
         **kwargs
     ):
@@ -316,7 +318,7 @@ class Sentinel:
         A SentinelConnectionPool class is used to retrive the slave's
         address before establishing a new connection.
 
-        By default clients will be a redis.StrictRedis instance. Specify a
+        By default clients will be a redis.Redis instance. Specify a
         different class to the ``redis_class`` argument if you desire
         something different.
 
