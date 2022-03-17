@@ -231,6 +231,7 @@ ARGUMENT_OPTIONALITY = {
     "XRANGE": {"start": True, "end": True},
     "XREVRANGE": {"start": True, "end": True},
 }
+ARGUMENT_VARIADICITY = {"SORT": {"gets": False}}
 REDIS_ARGUMENT_FORCED_ORDER = {
     "SETEX": ["key", "value", "seconds"],
     "ZINCRBY": ["key", "member", "increment"],
@@ -683,7 +684,9 @@ def is_deprecated(command, kls):
 
 
 def sanitized(x, command=None):
-    cleansed_name = x.lower().replace("-", "_").replace(":", "_")
+    cleansed_name = (
+        x.lower().strip().replace("-", "_").replace(":", "_").replace(" ", "_")
+    )
 
     if command:
         override = REDIS_ARGUMENT_NAME_OVERRIDES.get(command["name"], {}).get(
@@ -712,6 +715,15 @@ def skip_arg(argument, command):
         return True
 
     return False
+
+
+def relevant_min_version(v, min=True):
+    if not v:
+        return False
+    if min:
+        return version.parse(v) > MIN_SUPPORTED_VERSION
+    else:
+        return version.parse(v) <= MAX_SUPPORTED_VERSION
 
 
 def get_type(arg, command):
@@ -748,12 +760,20 @@ def get_type_annotation(arg, command, parent=None, default=None):
 
 
 def get_argument(
-    arg, parent, command, arg_type=inspect.Parameter.KEYWORD_ONLY, multiple=False
+    arg,
+    parent,
+    command,
+    arg_type=inspect.Parameter.KEYWORD_ONLY,
+    multiple=False,
+    num_multiples=0,
 ):
     if skip_arg(arg, command):
-        return [[], []]
+        return [[], [], {}]
+    min_version = arg.get("since", None)
+
     param_list = []
     decorators = []
+    version_mapping = {}
 
     if arg["type"] == "block":
         if arg.get("multiple") or all(
@@ -774,7 +794,9 @@ def get_argument(
             else:
                 child_args = arg["arguments"]
             child_types = [get_type(child, command) for child in child_args]
-
+            for c in child_args:
+                if relevant_min_version(c.get("since", None)):
+                    version_mapping[c["name"]] = c.get("since", None)
             if arg_type_override := REDIS_ARGUMENT_TYPE_OVERRIDES.get(
                 command["name"], {}
             ).get(name):
@@ -803,6 +825,8 @@ def get_argument(
             param_list.append(
                 inspect.Parameter(name, arg_type, annotation=annotation, **extra)
             )
+            if relevant_min_version(arg.get("since", None)):
+                version_mapping[name] = arg.get("since", None)
 
         else:
             plist_d = []
@@ -810,10 +834,11 @@ def get_argument(
             for child in sorted(
                 arg["arguments"], key=lambda v: int(v.get("optional") == True)
             ):
-                plist, declist = get_argument(
-                    child, arg, command, arg_type, arg.get("multiple")
+                plist, declist, vmap = get_argument(
+                    child, arg, command, arg_type, arg.get("multiple"), num_multiples
                 )
                 param_list.extend(plist)
+                version_mapping.update(vmap)
 
                 if not child.get("optional"):
                     plist_d.extend(plist)
@@ -848,14 +873,18 @@ def get_argument(
                     **extra_params,
                 )
             )
+            if relevant_min_version(arg.get("since", None)):
+                version_mapping[syn_name] = arg.get("since", None)
         else:
             plist_d = []
 
             for child in arg["arguments"]:
-                plist, declist = get_argument(child, arg, command, arg_type, multiple)
+                plist, declist, vmap = get_argument(
+                    child, arg, command, arg_type, multiple, num_multiples
+                )
                 param_list.extend(plist)
                 plist_d.extend(plist)
-
+                version_mapping.update(vmap)
             if len(plist_d) > 1:
                 mutually_exclusive_params = ",".join(["'%s'" % p.name for p in plist_d])
                 decorators.append(
@@ -896,8 +925,12 @@ def get_argument(
 
             if not inflection_engine.singular_noun(name):
                 name = inflection_engine.plural(name)
-            is_variadic = not arg.get("optional")
-
+            is_variadic = arg.get("optional") and num_multiples <= 1
+            forced_variadicity = ARGUMENT_VARIADICITY.get(command["name"], {}).get(
+                name, None
+            )
+            if forced_variadicity is not None:
+                is_variadic = forced_variadicity
             if not is_variadic:
                 if (
                     default := ARGUMENT_DEFAULTS.get(command["name"], {}).get(name)
@@ -919,14 +952,18 @@ def get_argument(
             extra_params["default"] = ARGUMENT_DEFAULTS.get(command["name"], {}).get(
                 name, extra_params.get("default")
             )
-
         param_list.append(
             inspect.Parameter(
                 name, arg_type, annotation=type_annotation, **extra_params
             )
         )
-
-    return [param_list, decorators]
+        if relevant_min_version(min_version):
+            version_mapping[name] = min_version
+        else:
+            if parent:
+                if relevant_min_version(parent.get("since", None)):
+                    version_mapping[name] = parent.get("since")
+    return [param_list, decorators, version_mapping]
 
 
 def is_arg_optional(arg, command):
@@ -949,9 +986,11 @@ def get_command_spec(command):
     decorators = []
     forced_order = REDIS_ARGUMENT_FORCED_ORDER.get(command["name"], [])
     mapping = {}
+    version_mapping = {}
     arg_names = [k["name"] for k in arguments]
     history = command.get("history", [])
     extra_version_info = {}
+    num_multiples = len([k for k in arguments if k.get("multiple")])
     for arg_name in arg_names:
         for version, entry in history:
             if "`%s`" % arg_name in entry and "added" in entry.lower():
@@ -963,28 +1002,32 @@ def get_command_spec(command):
 
     for k in arguments:
         if not is_arg_optional(k, command) and not k.get("multiple"):
-            plist, dlist = get_argument(
+            plist, dlist, vmap = get_argument(
                 k,
                 None,
                 command,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                num_multiples=num_multiples,
             )
             mapping[k["name"]] = (k, plist)
             recommended_signature.extend(plist)
             decorators.extend(dlist)
+            version_mapping.update(vmap)
 
     for k in arguments:
         if not is_arg_optional(k, command) and k.get("multiple"):
-            plist, dlist = get_argument(
+            plist, dlist, vmap = get_argument(
                 k,
                 None,
                 command,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 True,
+                num_multiples=num_multiples,
             )
             mapping[k["name"]] = (k, plist)
             recommended_signature.extend(plist)
             decorators.extend(dlist)
+            version_mapping.update(vmap)
 
     var_args = [
         k.name
@@ -1000,7 +1043,7 @@ def get_command_spec(command):
             else recommended_signature.index(r),
         )
 
-    if not var_args or "keys" in var_args:
+    if not var_args:  # or "keys" in var_args:
         recommended_signature = sorted(
             recommended_signature,
             key=lambda r: -5
@@ -1021,15 +1064,6 @@ def get_command_spec(command):
                 n = inspect.Parameter(
                     k.name,
                     inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                    default=k.default,
-                    annotation=k.annotation,
-                )
-                recommended_signature.remove(k)
-                recommended_signature.insert(idx, n)
-            elif k.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD:
-                n = inspect.Parameter(
-                    k.name,
-                    inspect.Parameter.KEYWORD_ONLY,
                     default=k.default,
                     annotation=k.annotation,
                 )
@@ -1070,12 +1104,18 @@ def get_command_spec(command):
 
     for k in sorted(arguments, key=lambda r: -1 if r["type"] == "oneof" else 0):
         if is_arg_optional(k, command) and k.get("multiple"):
-            plist, dlist = get_argument(
-                k, None, command, inspect.Parameter.KEYWORD_ONLY, True
+            plist, dlist, vmap = get_argument(
+                k,
+                None,
+                command,
+                inspect.Parameter.KEYWORD_ONLY,
+                True,
+                num_multiples=num_multiples,
             )
             mapping[k["name"]] = (k, plist)
             recommended_signature.extend(plist)
             decorators.extend(dlist)
+            version_mapping.update(vmap)
 
     remaining = [
         k for k in arguments if is_arg_optional(k, command) and not k.get("multiple")
@@ -1085,10 +1125,11 @@ def get_command_spec(command):
     for k in remaining:
         if skip_arg(k, command):
             continue
-        plist, dlist = get_argument(k, None, command)
+        plist, dlist, vmap = get_argument(k, None, command, num_multiples=num_multiples)
         mapping[k["name"]] = (k, plist)
         remaining_signature.extend(plist)
         decorators.extend(dlist)
+        version_mapping.update(vmap)
 
     if not forced_order:
         remaining_signature = sorted(
@@ -1110,7 +1151,7 @@ def get_command_spec(command):
             annotation=recommended_signature[-1].annotation,
         )
 
-    return recommended_signature, decorators, mapping
+    return recommended_signature, decorators, mapping, version_mapping
 
 
 def generate_method_details(kls, method, debug):
@@ -1121,7 +1162,7 @@ def generate_method_details(kls, method, debug):
         return method_details
     name = MAPPING.get(
         method["name"],
-        method["name"].lower().replace(" ", "_").replace("-", "_"),
+        method["name"].strip().lower().replace(" ", "_").replace("-", "_"),
     )
     method_details["name"] = name
     method_details["redis_method"] = method
@@ -1141,8 +1182,11 @@ def generate_method_details(kls, method, debug):
 
         if recommended_return:
             return_summary = recommended_return[1]
-        rec_params, rec_decorators, arg_mapping = get_command_spec(method)
+        rec_params, rec_decorators, arg_mapping, version_mapping = get_command_spec(
+            method
+        )
         method_details["arg_mapping"] = arg_mapping
+        method_details["arg_version_mapping"] = version_mapping
         method_details["rec_decorators"] = rec_decorators
         method_details["rec_params"] = rec_params
         try:
@@ -1230,14 +1274,12 @@ def generate_compatibility_section(
      {%- if method["deprecation_info"][0] and method["deprecation_info"][0] >= MIN_SUPPORTED_VERSION -%}
      , version_deprecated="{{method["command"].get("deprecated_since")}}"
      {%- endif -%}, group=CommandGroup.{{method["command"]["group"].upper().replace(" ", "_").replace("-", "_")}}
-     {%- if len(method["arg_mapping"]) > 0 -%}
+     {%- if len(method["arg_version_mapping"]) > 0 -%}
      {% set argument_with_version = {} %}
-     {%- for name, arg  in method["arg_mapping"].items() -%}
-     {%- for param in arg[1] -%}
-     {%- if arg[0].get("since") and version_parse(arg[0].get("since")) >= MIN_SUPPORTED_VERSION -%}
-     {% set _ = argument_with_version.update({param.name: {"version_introduced": arg[0].get("since")}}) %}
+     {%- for name, ver  in method["arg_version_mapping"].items() -%}
+     {%- if ver and version_parse(ver) >= MIN_SUPPORTED_VERSION -%}
+     {% set _ = argument_with_version.update({name: {"version_introduced": ver}}) %}
      {%- endif -%}
-     {%- endfor -%}
      {%- endfor -%}
      {% if method["readonly"] %}, readonly=True{% endif -%}
      {% if argument_with_version %}, arguments={{ argument_with_version }}{% endif %}
@@ -1473,7 +1515,6 @@ def generate_compatibility_section(
                 and find_method(parent_kls, sanitized(method["name"])) == located
             ):
                 continue
-
             if located:
                 version_added = VERSIONADDED_DOC.findall(located.__doc__)
                 version_added = (version_added and version_added[0][0]) or ""
@@ -1507,6 +1548,15 @@ def generate_compatibility_section(
                                 and command_details.readonly
                                 == method_details["readonly"]
                             )
+                            arg_version_valid = command_details and len(
+                                command_details.arguments
+                            ) == len(
+                                [
+                                    k
+                                    for k in method_details["arg_version_mapping"]
+                                    if method_details["arg_version_mapping"][k]
+                                ]
+                            )
                             if (
                                 src.find("@redis_command") >= 0
                                 and src.find(method["name"]) >= 0
@@ -1515,6 +1565,7 @@ def generate_compatibility_section(
                                 == method_details["readonly"]
                                 and version_introduced_valid
                                 and version_deprecated_valid
+                                and arg_version_valid
                             ):
                                 method_details["full_match"] = True
                             else:
@@ -1527,6 +1578,8 @@ def generate_compatibility_section(
                                     if not version_deprecated_valid
                                     else "Readonly flag mismatch"
                                     if not readonly_valid
+                                    else "Argument version mismatch"
+                                    if not arg_version_valid
                                     else "unknown"
                                 )
                         elif (
@@ -1535,7 +1588,7 @@ def generate_compatibility_section(
                             recommended_return = read_command_docs(
                                 method["name"], method["group"]
                             )
-                            recommendation = "- Missing return type."
+                            method_details["mismatch_reason"] = "Missing return type."
                             if recommended_return:
                                 new_sig = inspect.Signature(
                                     [
@@ -1548,6 +1601,7 @@ def generate_compatibility_section(
                                     return_annotation=recommended_return[0],
                                 )
                         else:
+                            method_details["mismatch_reason"] = "Arg mismatch"
                             diff_minus = [
                                 str(k)
                                 for k, v in method_details[
