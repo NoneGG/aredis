@@ -197,3 +197,27 @@ class SlowLogInfo(TypedDict):
     start_time: int
     duration: int
     command: Tuple[Union[bytes, str], ...]
+
+
+class LCSMatch(NamedTuple):
+    """
+    An instance of an LCS match
+    """
+
+    #: Start/end offset of the first string
+    first: Tuple[int, int]
+    #: Start/end offset of the second string
+    second: Tuple[int, int]
+    #: Length of the match
+    length: Optional[int]
+
+
+class LCSResult(NamedTuple):
+    """
+    Results from `LCS <https://redis.io/commands/lcs>`__
+    """
+
+    #: matches
+    matches: Tuple[LCSMatch, ...]
+    #: Length of longest match
+    length: int

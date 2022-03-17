@@ -33,6 +33,8 @@ from coredis.response.types import (
     Command,
     GeoCoordinates,
     GeoSearchResult,
+    LCSMatch,
+    LCSResult,
     RoleInfo,
     ScoredMember,
     ScoredMembers,
@@ -167,6 +169,7 @@ REDIS_RETURN_OVERRIDES = {
     "KEYS": Set[AnyStr],
     "LASTSAVE": datetime.datetime,
     "LATENCY LATEST": Dict[AnyStr, Tuple[int, int, int]],
+    "LCS": Union[AnyStr, int, LCSResult],
     "LPOS": Optional[Union[int, List[int]]],
     "MEMORY STATS": Dict[AnyStr, Union[AnyStr, int, float]],
     "MGET": Tuple[Optional[AnyStr], ...],
@@ -1449,14 +1452,14 @@ def generate_compatibility_section(
          {% if arg[0].get("multiple") -%}
   
          if {{arg[1][0].name}}:
-             pieces.extend({{param.name}})
+            pieces.extend({{param.name}})
          {% else -%}
   
          if {{param.name}}{% if arg[0].get("type") != "pure-token" %} is not None{%endif%}:
-         {%- if arg[0].get("token") %}
-             pieces.append({{arg[0].get("token")}})
+         {%- if arg[0].get("token")  and arg[0].get("type") == "oneof" %}
+            pieces.append({{param.name}}.value)
          {%- else %}
-             pieces.append({{param.name}})
+            pieces.extend(["{{arg[0].get("token")}}", {{param.name}}])
          {% endif -%}
          {% endif -%}
          {% endif -%}

@@ -93,6 +93,27 @@ class TestString:
         with pytest.raises(CommandSyntaxError):
             await client.getex("a", ex=1, px=1)
 
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_lcs(self, client):
+        await client.mset({"a{fu}": "abcdefg", "b{fu}": "abdefg"})
+        assert await client.lcs("a{fu}", "b{fu}") == "abdefg"
+        assert await client.lcs("a{fu}", "b{fu}", len_=True) == 6
+        assert (await client.lcs("a{fu}", "b{fu}", idx=True)).matches == (
+            ((3, 6), (2, 5), None),
+            ((0, 1), (0, 1), None),
+        )
+        match = await client.lcs("a{fu}", "b{fu}", idx=True, withmatchlen=True)
+        assert match.matches == (
+            ((3, 6), (2, 5), 4),
+            ((0, 1), (0, 1), 2),
+        )
+        assert match.length == 6
+        match = await client.lcs(
+            "a{fu}", "b{fu}", idx=True, minmatchlen=4, withmatchlen=True
+        )
+        assert match.matches == (((3, 6), (2, 5), 4),)
+        assert match.length == 6
+
     async def test_mget(self, client):
         assert await client.mget(["a", "b"]) == (None, None)
         await client.set("a", "1")

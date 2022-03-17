@@ -81,11 +81,13 @@ from coredis.response.callbacks.streams import (
     StreamRangeCallback,
     XInfoCallback,
 )
+from coredis.response.callbacks.strings import LCSCallback, StringSetCallback
 from coredis.response.types import (
     ClientInfo,
     Command,
     GeoCoordinates,
     GeoSearchResult,
+    LCSResult,
     RoleInfo,
     ScoredMember,
     ScoredMembers,
@@ -117,7 +119,6 @@ from coredis.validators import (
     mutually_inclusive_parameters,
 )
 
-from ..response.callbacks.strings import StringSetCallback
 from .builders.bitfield import BitFieldOperation
 
 
@@ -290,6 +291,82 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
 
         return await self.execute_command("INCRBYFLOAT", key, increment)
+
+    @overload
+    async def lcs(
+        self,
+        key1: Union[str, bytes],
+        key2: Union[str, bytes],
+    ) -> AnyStr:
+        ...
+
+    @overload
+    async def lcs(
+        self, key1: Union[str, bytes], key2: Union[str, bytes], len_: Literal[True]
+    ) -> int:
+        ...
+
+    @overload
+    async def lcs(
+        self,
+        key1: Union[str, bytes],
+        key2: Union[str, bytes],
+        idx: Literal[True],
+        len_: Optional[bool] = ...,
+        minmatchlen: Optional[int] = ...,
+        withmatchlen: Optional[bool] = ...,
+    ) -> LCSResult:
+        ...
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "LCS",
+        version_introduced="7.0.0",
+        group=CommandGroup.STRING,
+        readonly=True,
+        response_callback=LCSCallback(),
+    )
+    async def lcs(
+        self,
+        key1: Union[str, bytes],
+        key2: Union[str, bytes],
+        *,
+        len_: Optional[bool] = None,
+        idx: Optional[bool] = None,
+        minmatchlen: Optional[int] = None,
+        withmatchlen: Optional[bool] = None,
+    ) -> Union[AnyStr, int, LCSResult]:
+        """
+        Find the longest common substring
+
+        :return: The matched string if no other arguments are given.
+         The returned values vary depending on different arguments.
+
+         - If ``len_`` is provided the length of the longest match
+         - If ``idx`` is ``True`` all the matches with the start/end positions
+           of both keys. Optionally, if ``withmatchlen`` is ``True`` each match
+           will contain the length of the match.
+
+        """
+        pieces: CommandArgList = [key1, key2]
+        if len_ is not None:
+            pieces.append(PureToken.LEN.value)
+        if idx is not None:
+            pieces.append(PureToken.IDX.value)
+        if minmatchlen is not None:
+            pieces.extend(["MINMATCHLEN", minmatchlen])
+        if withmatchlen is not None:
+            pieces.append(PureToken.WITHMATCHLEN.value)
+        return await self.execute_command(
+            "LCS",
+            *pieces,
+            **{
+                "len": len_,
+                "idx": idx,
+                "minmatchlen": minmatchlen,
+                "withmatchlen": withmatchlen,
+            },
+        )
 
     @redis_command(
         "MGET",
