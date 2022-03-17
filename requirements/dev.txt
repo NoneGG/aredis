@@ -6,7 +6,7 @@ flake8
 hiredis
 inflect
 isort
-mypy==0.940
+mypy==0.941
 requests
 twine
 uvloop
