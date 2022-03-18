@@ -1712,19 +1712,17 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "PFADD", group=CommandGroup.HYPERLOGLOG, response_callback=BoolCallback()
     )
-    async def pfadd(
-        self, key: KeyT, elements: Optional[Iterable[ValueT]] = None
-    ) -> bool:
+    async def pfadd(self, key: KeyT, *elements: ValueT) -> bool:
 
         """
         Adds the specified elements to the specified HyperLogLog.
 
         :return: Whether atleast 1 HyperLogLog internal register was altered
         """
-        pieces: CommandArgList = []
+        pieces: CommandArgList = [key]
         if elements:
             pieces.extend(elements)
-        return await self.execute_command("PFADD", key, *pieces)
+        return await self.execute_command("PFADD", *pieces)
 
     @redis_command(
         "PFCOUNT",
