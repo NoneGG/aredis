@@ -73,13 +73,13 @@ class ScoredMember(NamedTuple):
 
 class GeoCoordinates(NamedTuple):
     """
-    A latitude/longitude pair identifying a location
+    A longitude/latitude pair identifying a location
     """
 
-    #: Latitude
-    latitude: float
     #: Longitude
     longitude: float
+    #: Latitude
+    latitude: float
 
 
 ScoredMembers: TypeAlias = Tuple[ScoredMember, ...]
