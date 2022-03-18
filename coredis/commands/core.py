@@ -1815,9 +1815,19 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("EXISTS", *keys)
 
     @redis_command(
-        "EXPIRE", group=CommandGroup.GENERIC, response_callback=BoolCallback()
+        "EXPIRE",
+        group=CommandGroup.GENERIC,
+        arguments={"condition": {"version_introduced": "7.0.0"}},
+        response_callback=BoolCallback(),
     )
-    async def expire(self, key: KeyT, seconds: Union[int, datetime.timedelta]) -> bool:
+    async def expire(
+        self,
+        key: KeyT,
+        seconds: Union[int, datetime.timedelta],
+        condition: Optional[
+            Literal[PureToken.NX, PureToken.XX, PureToken.GT, PureToken.LT]
+        ] = None,
+    ) -> bool:
         """
         Set a key's time to live in seconds
 
@@ -1827,15 +1837,24 @@ class CoreCommands(CommandMixin[AnyStr]):
          e.g. key doesn't exist, or operation skipped due to the provided arguments.
         """
 
-        return await self.execute_command("EXPIRE", key, normalized_seconds(seconds))
+        pieces: CommandArgList = [key, normalized_seconds(seconds)]
+        if condition is not None:
+            pieces.append(condition.value)
+        return await self.execute_command("EXPIRE", *pieces)
 
     @redis_command(
-        "EXPIREAT", group=CommandGroup.GENERIC, response_callback=BoolCallback()
+        "EXPIREAT",
+        group=CommandGroup.GENERIC,
+        response_callback=BoolCallback(),
+        arguments={"condition": {"version_introduced": "7.0.0"}},
     )
     async def expireat(
         self,
         key: KeyT,
         unix_time_seconds: Union[int, datetime.datetime],
+        condition: Optional[
+            Literal[PureToken.NX, PureToken.XX, PureToken.GT, PureToken.LT]
+        ] = None,
     ) -> bool:
         """
         Set the expiration for a key to a specific time
@@ -1846,9 +1865,11 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         """
 
-        return await self.execute_command(
-            "EXPIREAT", key, normalized_time_seconds(unix_time_seconds)
-        )
+        pieces: CommandArgList = [key, normalized_time_seconds(unix_time_seconds)]
+        if condition is not None:
+            pieces.append(condition.value)
+        return await self.execute_command("EXPIREAT", *pieces)
+
 
     @redis_command(
         "KEYS",
@@ -2000,10 +2021,18 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("PERSIST", key)
 
     @redis_command(
-        "PEXPIRE", group=CommandGroup.GENERIC, response_callback=BoolCallback()
+        "PEXPIRE",
+        group=CommandGroup.GENERIC,
+        arguments={"condition": {"version_introduced": "7.0.0"}},
+        response_callback=BoolCallback(),
     )
     async def pexpire(
-        self, key: KeyT, milliseconds: Union[int, datetime.timedelta]
+        self,
+        key: KeyT,
+        milliseconds: Union[int, datetime.timedelta],
+        condition: Optional[
+            Literal[PureToken.NX, PureToken.XX, PureToken.GT, PureToken.LT]
+        ] = None,
     ) -> bool:
         """
         Set a key's time to live in milliseconds
@@ -2011,18 +2040,24 @@ class CoreCommands(CommandMixin[AnyStr]):
         :return: if the timeout was set or not.
          e.g. key doesn't exist, or operation skipped due to the provided arguments.
         """
-
-        return await self.execute_command(
-            "PEXPIRE", key, normalized_milliseconds(milliseconds)
-        )
+        pieces: CommandArgList = [key, normalized_milliseconds(milliseconds)]
+        if condition is not None:
+            pieces.append(condition.value)
+        return await self.execute_command("PEXPIRE", *pieces)
 
     @redis_command(
-        "PEXPIREAT", group=CommandGroup.GENERIC, response_callback=BoolCallback()
+        "PEXPIREAT",
+        group=CommandGroup.GENERIC,
+        arguments={"condition": {"version_introduced": "7.0.0"}},
+        response_callback=BoolCallback(),
     )
     async def pexpireat(
         self,
         key: KeyT,
         unix_time_milliseconds: Union[int, datetime.datetime],
+        condition: Optional[
+            Literal[PureToken.NX, PureToken.XX, PureToken.GT, PureToken.LT]
+        ] = None,
     ) -> bool:
         """
         Set the expiration for a key as a UNIX timestamp specified in milliseconds
@@ -2031,9 +2066,14 @@ class CoreCommands(CommandMixin[AnyStr]):
          e.g. key doesn't exist, or operation skipped due to the provided arguments.
         """
 
-        return await self.execute_command(
-            "PEXPIREAT", key, normalized_time_milliseconds(unix_time_milliseconds)
-        )
+        pieces: CommandArgList = [
+            key,
+            normalized_time_milliseconds(unix_time_milliseconds),
+        ]
+        if condition is not None:
+            pieces.append(condition.value)
+        return await self.execute_command("PEXPIREAT", *pieces)
+
 
     @redis_command("PTTL", readonly=True, group=CommandGroup.GENERIC)
     async def pttl(self, key: KeyT) -> int:
