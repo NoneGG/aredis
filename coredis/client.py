@@ -958,16 +958,16 @@ class Redis(
         There are several ways to specify a database number. The parse function
         will return the first specified option:
 
-            1. A ``db`` querystring option, e.g. ``redis://localhost?db=0``
-            2. If using the redis:// scheme, the path argument of the url, e.g.
-               ``redis://localhost/0``
-            3. The ``db`` argument to this function.
+        1. A ``db`` querystring option, e.g. ``redis://localhost?db=0``
+        2. If using the redis:// scheme, the path argument of the url, e.g.
+           ``redis://localhost/0``
+        3. The ``db`` argument to this function.
 
-        If none of these options are specified, db=0 is used.
+        If none of these options are specified, ``db=0`` is used.
 
 
         Any additional querystring arguments and keyword arguments will be
-        passed along to the :class:`ConnectionPool` class's initializer. In the case
+        passed along to the :class:`ConnectionPool` initializer. In the case
         of conflicting arguments, querystring arguments always win.
         """
         connection_pool: ConnectionPool = ConnectionPool.from_url(
