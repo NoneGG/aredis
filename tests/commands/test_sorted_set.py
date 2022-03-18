@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from coredis import CommandSyntaxError, DataError, PureToken
@@ -638,6 +640,45 @@ class TestSortedSet:
             ("a3", 20),
             ("a1", 23),
         )
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_zmpop(self, client):
+        await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
+        await client.zadd("b{foo}", dict(a1=4, a2=5, a3=6))
+        result = await client.zmpop(["a{foo}", "b{foo}"], PureToken.MIN)
+        assert result[0] == "a{foo}"
+        assert result[1] == (("a1", 1.0),)
+        result = await client.zmpop(["a{foo}", "b{foo}"], PureToken.MAX, count=2)
+        assert result[0] == "a{foo}"
+        assert result[1] == (("a3", 3.0), ("a2", 2.0))
+        result = await client.zmpop(["a{foo}", "b{foo}"], PureToken.MAX)
+        assert result[0] == "b{foo}"
+        assert result[1] == (("a3", 6.0),)
+
+    @pytest.mark.min_server_version("6.9.0")
+    @pytest.mark.nocluster
+    async def test_bzmpop(self, client):
+        await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
+        await client.zadd("b{foo}", dict(a1=4, a2=5, a3=6))
+        result = await client.bzmpop(["a{foo}", "b{foo}"], 1, PureToken.MIN)
+        assert result[0] == "a{foo}"
+        assert result[1] == (("a1", 1.0),)
+        result = await client.bzmpop(["a{foo}", "b{foo}"], 1, PureToken.MAX, count=2)
+        assert result[0] == "a{foo}"
+        assert result[1] == (("a3", 3.0), ("a2", 2.0))
+        result = await client.bzmpop(["a{foo}", "b{foo}"], 1, PureToken.MAX)
+        assert result[0] == "b{foo}"
+        assert result[1] == (("a3", 6.0),)
+        assert await client.bzmpop(["a{foo}"], 1, PureToken.MAX) is None
+
+        async def _delayadd():
+            await asyncio.sleep(0.1)
+            return await client.zadd("a{foo}", dict(a1=42))
+
+        result = await asyncio.gather(
+            client.bzmpop(["a{foo}"], 1, PureToken.MIN), _delayadd()
+        )
+        assert result[0][1] == (("a1", 42.0),)
 
     @pytest.mark.min_server_version("6.1.240")
     async def test_zmscore(self, client):

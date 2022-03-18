@@ -36,6 +36,16 @@ class ZSetScorePairCallback(ParametrizedCallback):
         return tuple(ScoredMember(*v) for v in zip(it, map(float, it)))
 
 
+class ZMPopCallback(SimpleCallback):
+    def transform(self, response: Any) -> Optional[Tuple[AnyStr, ScoredMembers]]:
+        if response:
+            return (
+                response[0],
+                tuple(ScoredMember(v[0], float(v[1])) for v in response[1]),
+            )
+        return None
+
+
 class ZMScoreCallback(SimpleCallback):
     def transform(self, response: Any) -> Tuple[Optional[float], ...]:
         return tuple(float(score) if score is not None else None for score in response)

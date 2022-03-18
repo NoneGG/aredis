@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from coredis import PureToken
@@ -30,6 +32,20 @@ class TestList:
         assert await client.blpop(["b{foo}", "a{foo}"], timeout=1) is None
         await client.rpush("c{foo}", ["1"])
         assert await client.blpop(["c{foo}"], timeout=1) == ["c{foo}", "1"]
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_lmpop(self, client):
+        await client.rpush("a{foo}", [1, 2, 3])
+        await client.rpush("b{foo}", [4, 5, 6])
+        result = await client.lmpop(["a{foo}", "b{foo}"], PureToken.LEFT)
+        assert result[0] == "a{foo}"
+        assert result[1] == ["1"]
+        result = await client.lmpop(["a{foo}", "b{foo}"], PureToken.LEFT, count=2)
+        assert result[0] == "a{foo}"
+        assert result[1] == ["2", "3"]
+        result = await client.lmpop(["a{foo}", "b{foo}"], PureToken.RIGHT)
+        assert result[0] == "b{foo}"
+        assert result[1] == ["6"]
 
     async def test_brpop(self, client):
         await client.rpush("a{foo}", ["1", "2"])
@@ -215,6 +231,30 @@ class TestList:
         await client.rpush("a{foo}", ["one", "two", "three", "four"])
         assert await client.lmove("a{foo}", "b{foo}", PureToken.LEFT, PureToken.RIGHT)
         assert await client.lmove("a{foo}", "b{foo}", PureToken.RIGHT, PureToken.LEFT)
+
+    @pytest.mark.min_server_version("6.9.0")
+    @pytest.mark.nocluster
+    async def test_blmpop(self, client):
+        await client.rpush("a{foo}", [1, 2, 3])
+        await client.rpush("b{foo}", [4, 5, 6])
+        result = await client.blmpop(["a{foo}", "b{foo}"], 1, PureToken.LEFT)
+        assert result[0] == "a{foo}"
+        assert result[1] == ["1"]
+        result = await client.blmpop(["a{foo}", "b{foo}"], 1, PureToken.LEFT, count=2)
+        assert result[0] == "a{foo}"
+        assert result[1] == ["2", "3"]
+        result = await client.blmpop(["a{foo}", "b{foo}"], 1, PureToken.RIGHT)
+        assert result[0] == "b{foo}"
+        assert result[1] == ["6"]
+
+        async def _delayadd():
+            await asyncio.sleep(0.1)
+            return await client.rpush("a{foo}", ["42"])
+
+        result = await asyncio.gather(
+            client.blmpop(["a{foo}"], 1, PureToken.LEFT), _delayadd()
+        )
+        assert result[0][1] == ["42"]
 
     @pytest.mark.min_server_version("6.2.0")
     async def test_blmove(self, client):

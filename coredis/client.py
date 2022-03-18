@@ -1299,12 +1299,26 @@ class RedisCluster(
             key = args[idx]
         elif command in ("XGROUP", "XINFO"):
             key = args[2]
-        elif command in ("ZINTER", "ZDIFF", "ZUNION"):
-            keys = args[2 : args[1] + 1]
+        elif command in (
+            "LMPOP",
+            "SINTERCARD",
+            "ZINTER",
+            "ZINTERCARD",
+            "ZMPOP",
+            "ZDIFF",
+            "ZUNION",
+        ):
+            keys = args[2 : args[1] + 2]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
 
             return slots.pop()
-        elif command in ("ZINTERSTORE", "ZDIFFSTORE", "ZUNIONSTORE"):
+        elif command in (
+            "BLMPOP",
+            "BZMPOP",
+            "ZINTERSTORE",
+            "ZDIFFSTORE",
+            "ZUNIONSTORE",
+        ):
             keys = args[3 : args[2] + 3]
             slots = {self.connection_pool.nodes.keyslot(key) for key in keys}
 

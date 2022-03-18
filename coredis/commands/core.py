@@ -67,6 +67,7 @@ from coredis.response.callbacks.sorted_set import (
     BZPopCallback,
     ZAddCallback,
     ZMembersOrScoredMembers,
+    ZMPopCallback,
     ZMScoreCallback,
     ZRandMemberCallback,
     ZScanCallback,
@@ -2364,6 +2365,31 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("BLMOVE", *params)
 
+    @versionadded(version="3.0.0")
+    @redis_command("BLMPOP", version_introduced="7.0.0", group=CommandGroup.LIST)
+    async def blmpop(
+        self,
+        keys: Iterable[KeyT],
+        timeout: Union[int, float],
+        where: Literal[PureToken.LEFT, PureToken.RIGHT],
+        count: Optional[int] = None,
+    ) -> Optional[List[AnyStr]]:
+        """
+        Pop elements from the first non empty list, or block until one is available
+
+        :return:
+
+         - A ```None``` when no element could be popped, and timeout is reached.
+         - A two-element array with the first element being the name of the key
+           from which elements were popped, and the second element is an array of elements.
+
+        """
+        _keys: List[KeyT] = list(keys)
+        pieces = [timeout, len(_keys), *_keys, where.value]
+        if count is not None:
+            pieces.extend(["COUNT", count])
+        return await self.execute_command("BLMPOP", *pieces)
+
     @redis_command("BLPOP", group=CommandGroup.LIST)
     async def blpop(
         self, keys: Iterable[KeyT], timeout: Union[int, float]
@@ -2464,11 +2490,33 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("LMOVE", *params)
 
+    @versionadded(version="3.0.0")
+    @redis_command("LMPOP", version_introduced="7.0.0", group=CommandGroup.LIST)
+    async def lmpop(
+        self,
+        keys: Iterable[Union[str, bytes]],
+        where: Literal[PureToken.LEFT, PureToken.RIGHT],
+        count: Optional[int] = None,
+    ) -> Optional[List[AnyStr]]:
+        """
+        Pop elements from the first non empty list
+
+        :return:
+
+         - A ```None``` when no element could be popped.
+         - A two-element array with the first element being the name of the key
+           from which elements were popped, and the second element is an array of elements.
+        """
+        _keys: List[KeyT] = list(keys)
+        pieces = [len(_keys), *_keys, where.value]
+        if count is not None:
+            pieces.extend(["COUNT", count])
+        return await self.execute_command("LMPOP", *pieces)
+
     @redis_command(
         "LPOP",
         group=CommandGroup.LIST,
         arguments={"count": {"version_introduced": "6.2.0"}},
-        # response_callback=item_or_list
     )
     async def lpop(
         self, key: KeyT, count: Optional[int] = None
@@ -2890,6 +2938,34 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("SSCAN", *pieces)
 
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "BZMPOP",
+        version_introduced="7.0.0",
+        group=CommandGroup.SORTED_SET,
+        response_callback=ZMPopCallback(),
+    )
+    async def bzmpop(
+        self,
+        keys: Iterable[KeyT],
+        timeout: Union[int, float],
+        where: Literal[PureToken.MIN, PureToken.MAX],
+        count: Optional[int] = None,
+    ) -> Optional[Tuple[AnyStr, ScoredMembers]]:
+        """
+        Remove and return members with scores in a sorted set or block until one is available
+
+        :return:
+
+        * A ```None``` when no element could be popped.
+        * A tuple of (name of key, popped (member, score) pairs)
+        """
+        _keys: List[KeyT] = list(keys)
+        pieces: CommandArgList = [timeout, len(_keys), *_keys, where.value]
+        if count is not None:
+            pieces.extend(["COUNT", count])
+        return await self.execute_command("BZMPOP", *pieces)
+
     @redis_command(
         "BZPOPMAX",
         group=CommandGroup.SORTED_SET,
@@ -3117,6 +3193,30 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
 
         return await self.execute_command("ZLEXCOUNT", key, min_, max_)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "ZMPOP",
+        version_introduced="7.0.0",
+        group=CommandGroup.SORTED_SET,
+        response_callback=ZMPopCallback(),
+    )
+    async def zmpop(
+        self,
+        keys: Iterable[KeyT],
+        where: Literal[PureToken.MIN, PureToken.MAX],
+        count: Optional[int] = None,
+    ) -> Optional[Tuple[AnyStr, ScoredMembers]]:
+        """
+        Remove and return members with scores in a sorted set
+
+        :return: A tuple of (name of key, popped (member, score) pairs)
+        """
+        _keys: List[KeyT] = list(keys)
+        pieces: CommandArgList = [len(_keys), *_keys, where.value]
+        if count is not None:
+            pieces.extend(["COUNT", count])
+        return await self.execute_command("ZMPOP", *pieces)
 
     @redis_command(
         "ZMSCORE",
@@ -4102,8 +4202,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         Changes (or acquires) ownership of a message in a consumer group, as
         if the message was delivered to the specified consumer.
-
-        :return:
         """
         pieces: CommandArgList = [
             key,
