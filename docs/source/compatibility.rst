@@ -176,6 +176,24 @@ Increment the float value of a key by the given amount
 
 
 
+LCS
+***
+
+Find longest common substring
+
+- Documentation: `LCS <https://redis.io/commands/lcs>`_
+- Implementation: :meth:`~coredis.Redis.lcs`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 MGET
 ****
 
@@ -314,16 +332,6 @@ Get a substring of the string stored at a key
 
 
 
-
-
-LCS [X]
-*******
-
-Find longest common substring
-
-- Documentation: `LCS <https://redis.io/commands/lcs>`_
- 
-- Not Implemented
 
 
 
@@ -692,6 +700,24 @@ Pop an element from a list, push it to another list and return it; or block unti
 
 
 
+BLMPOP
+******
+
+Pop elements from a list, or block until one is available
+
+- Documentation: `BLMPOP <https://redis.io/commands/blmpop>`_
+- Implementation: :meth:`~coredis.Redis.blmpop`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 BLPOP
 *****
 
@@ -789,6 +815,24 @@ Pop an element from a list, push it to another list and return it
 - New in redis: 6.2.0
 
 
+
+
+
+
+
+LMPOP
+*****
+
+Pop elements from a list
+
+- Documentation: `LMPOP <https://redis.io/commands/lmpop>`_
+- Implementation: :meth:`~coredis.Redis.lmpop`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
 
 
 
@@ -964,26 +1008,6 @@ Append an element to a list, only if the list exists
 
 
 
-
-
-BLMPOP [X]
-**********
-
-Pop elements from a list, or block until one is available
-
-- Documentation: `BLMPOP <https://redis.io/commands/blmpop>`_
- 
-- Not Implemented
-
-
-LMPOP [X]
-*********
-
-Pop elements from a list
-
-- Documentation: `LMPOP <https://redis.io/commands/lmpop>`_
- 
-- Not Implemented
 
 
 
@@ -1238,6 +1262,24 @@ Sorted-Set
 
 
 
+BZMPOP
+******
+
+Remove and return members with scores in a sorted set or block until one is available
+
+- Documentation: `BZMPOP <https://redis.io/commands/bzmpop>`_
+- Implementation: :meth:`~coredis.Redis.bzmpop`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 BZPOPMAX
 ********
 
@@ -1393,6 +1435,24 @@ Count the number of members in a sorted set between a given lexicographical rang
 - Implementation: :meth:`~coredis.Redis.zlexcount`
 
 
+
+
+
+
+
+ZMPOP
+*****
+
+Remove and return members with scores in a sorted set
+
+- Documentation: `ZMPOP <https://redis.io/commands/zmpop>`_
+- Implementation: :meth:`~coredis.Redis.zmpop`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
 
 
 
@@ -1710,32 +1770,12 @@ Add multiple sorted sets and store the resulting sorted set in a new key
 
 
 
-BZMPOP [X]
-**********
-
-Remove and return members with scores in a sorted set or block until one is available
-
-- Documentation: `BZMPOP <https://redis.io/commands/bzmpop>`_
- 
-- Not Implemented
-
-
 ZINTERCARD [X]
 **************
 
 Intersect multiple sorted sets and return the cardinality of the result
 
 - Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
- 
-- Not Implemented
-
-
-ZMPOP [X]
-*********
-
-Remove and return members with scores in a sorted set
-
-- Documentation: `ZMPOP <https://redis.io/commands/zmpop>`_
  
 - Not Implemented
 
@@ -1831,6 +1871,24 @@ Set the expiration for a key as a UNIX timestamp
 - Implementation: :meth:`~coredis.Redis.expireat`
 
 
+
+
+
+
+
+EXPIRETIME
+**********
+
+Get the expiration Unix timestamp for a key
+
+- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
+- Implementation: :meth:`~coredis.Redis.expiretime`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
 
 
 
@@ -1973,6 +2031,24 @@ Set the expiration for a key as a UNIX timestamp specified in milliseconds
 - Implementation: :meth:`~coredis.Redis.pexpireat`
 
 
+
+
+
+
+
+PEXPIRETIME
+***********
+
+Get the expiration Unix timestamp for a key in milliseconds
+
+- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
+- Implementation: :meth:`~coredis.Redis.pexpiretime`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
 
 
 
@@ -2144,26 +2220,6 @@ Wait for the synchronous replication of all the write commands sent in the conte
 
 
 
-
-
-EXPIRETIME [X]
-**************
-
-Get the expiration Unix timestamp for a key
-
-- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
- 
-- Not Implemented
-
-
-PEXPIRETIME [X]
-***************
-
-Get the expiration Unix timestamp for a key in milliseconds
-
-- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
- 
-- Not Implemented
 
 
 SORT_RO [X]
@@ -4763,16 +4819,6 @@ Set the string value of a key
 
 
 
-LCS [X]
-*******
-
-Find longest common substring
-
-- Documentation: `LCS <https://redis.io/commands/lcs>`_
- 
-- Not Implemented
-
-
 
 
 
@@ -4815,26 +4861,6 @@ Remove the last element in a list, prepend it to another list and return it
 
 
 
-
-
-BLMPOP [X]
-**********
-
-Pop elements from a list, or block until one is available
-
-- Documentation: `BLMPOP <https://redis.io/commands/blmpop>`_
- 
-- Not Implemented
-
-
-LMPOP [X]
-*********
-
-Pop elements from a list
-
-- Documentation: `LMPOP <https://redis.io/commands/lmpop>`_
- 
-- Not Implemented
 
 
 
@@ -4961,32 +4987,12 @@ Sorted-Set
 
 
 
-BZMPOP [X]
-**********
-
-Remove and return members with scores in a sorted set or block until one is available
-
-- Documentation: `BZMPOP <https://redis.io/commands/bzmpop>`_
- 
-- Not Implemented
-
-
 ZINTERCARD [X]
 **************
 
 Intersect multiple sorted sets and return the cardinality of the result
 
 - Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
- 
-- Not Implemented
-
-
-ZMPOP [X]
-*********
-
-Remove and return members with scores in a sorted set
-
-- Documentation: `ZMPOP <https://redis.io/commands/zmpop>`_
  
 - Not Implemented
 
@@ -5067,26 +5073,6 @@ Determine the type stored at key
 
 
 
-
-
-EXPIRETIME [X]
-**************
-
-Get the expiration Unix timestamp for a key
-
-- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
- 
-- Not Implemented
-
-
-PEXPIRETIME [X]
-***************
-
-Get the expiration Unix timestamp for a key in milliseconds
-
-- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
- 
-- Not Implemented
 
 
 SORT_RO [X]
