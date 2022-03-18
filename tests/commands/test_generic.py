@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from coredis import PureToken, ResponseError
+from coredis import DataError, NoKeyError, PureToken, ResponseError
 from tests.conftest import targets
 
 
@@ -274,6 +274,21 @@ class TestGeneric:
         assert await client.expireat("a", expire_at_seconds)
         assert 0 < await client.ttl("a") <= 61
 
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_expiretime(self, client):
+        now = datetime.datetime.utcnow()
+        await client.set("a", "foo")
+        await client.set("b", "foo")
+
+        with pytest.raises(NoKeyError):
+            await client.expiretime("c")
+        with pytest.raises(DataError):
+            await client.expiretime("b")
+        set_time = datetime.datetime(now.year + 1, now.month, 1, 0, 0, 1, 1000)
+        await client.pexpireat("a", set_time)
+        expire_time = await client.expiretime("a")
+        assert set_time.replace(microsecond=0) == expire_time
+
     async def test_keys(self, client):
         assert await client.keys() == set()
         keys_with_underscores = {"test_a", "test_b"}
@@ -308,6 +323,21 @@ class TestGeneric:
         expire_at_seconds = int(time.mktime(expire_at.timetuple())) * 1000
         assert await client.pexpireat("a", expire_at_seconds)
         assert 0 < await client.pttl("a") <= 61000
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_pexpiretime(self, client):
+        now = datetime.datetime.utcnow()
+        await client.set("a", "foo")
+        await client.set("b", "foo")
+
+        with pytest.raises(NoKeyError):
+            await client.expiretime("c")
+        with pytest.raises(DataError):
+            await client.expiretime("b")
+        set_time = datetime.datetime(now.year + 1, now.month, 1, 0, 0, 1, 1000)
+        await client.pexpireat("a", set_time)
+        expire_time = await client.pexpiretime("a")
+        assert set_time == expire_time
 
     async def test_randomkey(self, client):
         assert await client.randomkey() is None

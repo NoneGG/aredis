@@ -133,6 +133,8 @@ General Exceptions
    :no-inherited-members:
 .. autoexception:: LockError
    :no-inherited-members:
+.. autoexception:: NoKeyError
+   :no-inherited-members:
 .. autoexception:: NoScriptError
    :no-inherited-members:
 .. autoexception:: PubSubError

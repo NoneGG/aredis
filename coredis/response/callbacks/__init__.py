@@ -81,9 +81,12 @@ class ListCallback(PrimitiveCallback[List]):
         return list(response)
 
 
-class DateTimeCallback(SimpleCallback):
-    def transform(self, response: Any) -> datetime.datetime:
-        return datetime.datetime.fromtimestamp(response)
+class DateTimeCallback(ParametrizedCallback):
+    def transform(self, response: Any, **kwargs: Any) -> datetime.datetime:
+        ts = response
+        if kwargs.get("unit") == "milliseconds":
+            ts = ts / 1000.0
+        return datetime.datetime.fromtimestamp(ts)
 
 
 class DictCallback(PrimitiveCallback[Dict]):

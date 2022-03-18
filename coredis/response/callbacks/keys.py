@@ -1,6 +1,12 @@
+from datetime import datetime
 from typing import Any, AnyStr, Tuple, Union
 
-from coredis.response.callbacks import ParametrizedCallback, SimpleCallback
+from coredis.exceptions import DataError, NoKeyError, RedisError
+from coredis.response.callbacks import (
+    DateTimeCallback,
+    ParametrizedCallback,
+    SimpleCallback,
+)
 from coredis.utils import int_or_none
 
 
@@ -27,3 +33,16 @@ class ScanCallback(SimpleCallback):
     def transform(self, response: Any) -> Tuple[int, Tuple[AnyStr, ...]]:
         cursor, r = response
         return int(cursor), tuple(r)
+
+
+class ExpiryCallback(DateTimeCallback):
+    def transform(self, response: Any, **kwargs: Any) -> datetime:
+        if response > 0:
+            return super(ExpiryCallback, self).transform(response, **kwargs)
+        else:
+            if response == -2:
+                raise NoKeyError()
+            elif response == -1:
+                raise DataError()
+            else:
+                raise RedisError()

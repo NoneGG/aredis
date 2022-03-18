@@ -39,6 +39,10 @@ class DataError(RedisError):
     pass
 
 
+class NoKeyError(RedisError):
+    pass
+
+
 class PubSubError(RedisError):
     pass
 

@@ -51,7 +51,7 @@ from coredis.response.callbacks.hash import (
     HRandFieldCallback,
     HScanCallback,
 )
-from coredis.response.callbacks.keys import ScanCallback, SortCallback
+from coredis.response.callbacks.keys import ExpiryCallback, ScanCallback, SortCallback
 from coredis.response.callbacks.server import (
     ClientInfoCallback,
     ClientListCallback,
@@ -1870,6 +1870,26 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(condition.value)
         return await self.execute_command("EXPIREAT", *pieces)
 
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "EXPIRETIME",
+        version_introduced="7.0.0",
+        group=CommandGroup.GENERIC,
+        response_callback=ExpiryCallback(),
+        readonly=True,
+    )
+    async def expiretime(self, key: Union[str, bytes]) -> datetime.datetime:
+        """
+        Get the expiration Unix timestamp for a key
+
+        :return: Expiration Unix timestamp in seconds, or a negative value in
+         order to signal an error.
+
+         * The command returns ``-1`` if the key exists but has no associated expiration time.
+         * The command returns ``-2`` if the key does not exist.
+
+        """
+        return await self.execute_command("EXPIRETIME", key)
 
     @redis_command(
         "KEYS",
@@ -2074,6 +2094,26 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(condition.value)
         return await self.execute_command("PEXPIREAT", *pieces)
 
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "PEXPIRETIME",
+        version_introduced="7.0.0",
+        group=CommandGroup.GENERIC,
+        response_callback=ExpiryCallback(),
+        readonly=True,
+    )
+    async def pexpiretime(self, key: Union[str, bytes]) -> datetime.datetime:
+        """
+        Get the expiration Unix timestamp for a key in milliseconds
+
+        :return: Expiration Unix timestamp in milliseconds, or a negative value
+         in order to signal an error
+
+         * The command returns ``-1`` if the key exists but has no associated expiration time.
+         * The command returns ``-2`` if the key does not exist.
+
+        """
+        return await self.execute_command("PEXPIRETIME", key, unit="milliseconds")
 
     @redis_command("PTTL", readonly=True, group=CommandGroup.GENERIC)
     async def pttl(self, key: KeyT) -> int:
