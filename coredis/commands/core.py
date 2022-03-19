@@ -4287,6 +4287,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("XINFO GROUPS", key)
 
+    @mutually_inclusive_parameters("count", leaders=["full"])
     @redis_command(
         "XINFO STREAM",
         readonly=True,
@@ -4294,16 +4295,20 @@ class CoreCommands(CommandMixin[AnyStr]):
         response_callback=StreamInfoCallback(),
     )
     async def xinfo_stream(
-        self, key: KeyT, count: Optional[int] = None, full: Optional[bool] = None
+        self, key: KeyT, full: Optional[bool] = None, count: Optional[int] = None
     ) -> StreamInfo:
         """
         Get information about the stream stored at :paramref:`key`
+
+        :param full: If specified the return will contained extended information
+         about the stream (see :class:`StreamInfo`).
+        :param count: restrict the number of `entries` returned when using :paramref:`full`
         """
         pieces: CommandArgList = []
         if full:
             pieces.append("FULL")
-        if count is not None:
-            pieces.extend(["COUNT", count])
+            if count is not None:
+                pieces.extend(["COUNT", count])
         return await self.execute_command("XINFO STREAM", key, *pieces, full=full)
 
     @redis_command(

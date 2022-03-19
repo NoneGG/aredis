@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Set
 
 
 class RedisError(Exception):
@@ -10,8 +10,8 @@ class CommandSyntaxError(RedisError):
     Raised when a redis command is called with an invalid syntax
     """
 
-    def __init__(self, arguments: Sequence[str], message: str):
-        self.arguments: Sequence[str] = arguments
+    def __init__(self, arguments: Set[str], message: str):
+        self.arguments: Set[str] = arguments
         super().__init__(message)
 
 

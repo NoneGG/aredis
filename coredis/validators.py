@@ -1,15 +1,6 @@
 import functools
 import inspect
-from typing import (
-    Any,
-    Callable,
-    Coroutine,
-    Iterable,
-    Optional,
-    Sequence,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Coroutine, Iterable, Optional, Set, TypeVar, Union
 
 from coredis.typing import ParamSpec
 
@@ -20,20 +11,29 @@ P = ParamSpec("P")
 
 
 class MutuallyExclusiveParametersError(CommandSyntaxError):
-    def __init__(self, arguments: Sequence[str], details: Optional[str]):
+    def __init__(self, arguments: Set[str], details: Optional[str]):
         message = (
-            f"[{','.join(arguments)}] are mutually exclusive."
+            f"The [{','.join(arguments)}] parameters are mutually exclusive."
             f"{' '+details if details else ''}"
         )
         super().__init__(arguments, message)
 
 
 class MutuallyInclusiveParametersMissing(CommandSyntaxError):
-    def __init__(self, arguments: Sequence[str], details: Optional[str]):
-        message = (
-            f"[{','.join(arguments)}] are mutually inclusive and must be provided together."
-            f"{' '+details if details else ''}"
-        )
+    def __init__(self, arguments: Set[str], leaders: Set[str], details: Optional[str]):
+
+        if leaders:
+            message = (
+                f"The [{','.join(arguments)}] parameters(s)"
+                " must be provided together with [{','.join(leaders)}]."
+                f"{' ' + details if details else ''}"
+            )
+        else:
+            message = (
+                f"The [{','.join(arguments)}] parameters are mutually"
+                " inclusive and must be provided together."
+                f"{' '+details if details else ''}"
+            )
         super().__init__(arguments, message)
 
 
@@ -54,12 +54,12 @@ def mutually_exclusive_parameters(
         @functools.wraps(func)
         async def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
             call_args = sig.bind(*args, **kwargs)
-            params = [
+            params = set(
                 k
                 for k in primary
                 if not call_args.arguments.get(k)
                 == getattr(sig.parameters.get(k), "default")
-            ]
+            )
 
             if params:
                 for group in secondary:
@@ -67,7 +67,7 @@ def mutually_exclusive_parameters(
                         if not call_args.arguments.get(k) == getattr(
                             sig.parameters.get(k), "default"
                         ):
-                            params.append(k)
+                            params.add(k)
 
                             break
 
@@ -82,10 +82,15 @@ def mutually_exclusive_parameters(
 
 
 def mutually_inclusive_parameters(
-    *inclusive_params: str, details: Optional[str] = None
+    *inclusive_params: str,
+    leaders: Optional[Iterable[str]] = None,
+    details: Optional[str] = None,
 ) -> Callable[
     [Callable[P, Coroutine[Any, Any, R]]], Callable[P, Coroutine[Any, Any, R]]
 ]:
+    _leaders = set(leaders or [])
+    _inclusive_params = set(inclusive_params)
+
     def wrapper(
         func: Callable[P, Coroutine[Any, Any, R]]
     ) -> Callable[P, Coroutine[Any, Any, R]]:
@@ -94,15 +99,20 @@ def mutually_inclusive_parameters(
         @functools.wraps(func)
         async def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
             call_args = sig.bind(*args, **kwargs)
-            params = [
+            params = set(
                 k
-                for k in inclusive_params
+                for k in _inclusive_params | _leaders
                 if not call_args.arguments.get(k)
                 == getattr(sig.parameters.get(k), "default")
-            ]
-
-            if params and len(params) != len(inclusive_params):
-                raise MutuallyInclusiveParametersMissing(inclusive_params, details)
+            )
+            if _leaders and _leaders & params != _leaders and len(params) > 0:
+                raise MutuallyInclusiveParametersMissing(
+                    _inclusive_params, _leaders, details
+                )
+            elif not _leaders and params and len(params) != len(_inclusive_params):
+                raise MutuallyInclusiveParametersMissing(
+                    _inclusive_params, _leaders, details
+                )
             return await func(*args, **kwargs)
 
         return wrapped
