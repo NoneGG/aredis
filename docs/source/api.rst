@@ -6,39 +6,45 @@ Clients
 ^^^^^^^
 Redis
 -----
-.. autoclass::
-   Redis
-
+.. autoclass:: Redis
+   :class-doc-from: both
 Cluster
 -------
-.. autoclass::
-   RedisCluster
+.. autoclass:: RedisCluster
+   :class-doc-from: both
 
 
 Sentinel
 --------
 .. currentmodule:: coredis.sentinel
-.. autoclass::
-   Sentinel
+.. autoclass:: Sentinel
+   :class-doc-from: both
 
 Connection Classes
 ^^^^^^^^^^^^^^^^^^
 .. currentmodule:: coredis
 .. autoclass:: Connection
+   :class-doc-from: both
 .. autoclass:: UnixDomainSocketConnection
+   :class-doc-from: both
 .. autoclass:: ClusterConnection
+   :class-doc-from: both
 
 Connection Pools
 ^^^^^^^^^^^^^^^^
 .. autoclass:: ConnectionPool
+   :class-doc-from: both
 .. autoclass:: BlockingConnectionPool
+   :class-doc-from: both
 
 Cluster
 -------
 .. autoclass:: ClusterConnectionPool
+   :class-doc-from: both
 
 .. currentmodule:: coredis.sentinel
 .. autoclass:: SentinelConnectionPool
+   :class-doc-from: both
 
 Command Builders
 ^^^^^^^^^^^^^^^^
@@ -48,32 +54,38 @@ BitField Operations
 
 .. autoclass:: coredis.commands.builders.bitfield.BitFieldOperation
    :no-inherited-members:
+   :class-doc-from: both
 
 PubSub
 ------
 .. autoclass:: coredis.commands.builders.pubsub.PubSub
    :no-inherited-members:
+   :class-doc-from: both
 
 Scripting
 ---------
 .. autoclass:: coredis.commands.builders.script.Script
    :no-inherited-members:
+   :class-doc-from: both
 
 Transactions
 ------------
 
 .. autoclass:: coredis.commands.builders.pipeline.Pipeline
    :no-inherited-members:
+   :class-doc-from: both
 
 .. autoclass:: coredis.commands.builders.pipeline.ClusterPipeline
    :no-inherited-members:
+   :class-doc-from: both
 
 
 Response Types
 ^^^^^^^^^^^^^^
 .. automodule:: coredis.response.types
    :no-inherited-members:
-   :undoc-members:
+   :show-inheritance:
+
 
 Utility Classes
 ^^^^^^^^^^^^^^^

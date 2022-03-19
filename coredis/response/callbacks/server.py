@@ -21,6 +21,8 @@ class SlowlogCallback(ParametrizedCallback):
                 start_time=int(item[1]),
                 duration=int(item[2]),
                 command=item[3],
+                client_addr=item[4],
+                client_name=item[5],
             )
             for item in response
         )
@@ -139,21 +141,21 @@ class RoleCallback(SimpleCallback):
         def _parse_slave(response):
             host, port, status, offset = response[1:]
 
-            return {
-                "role": role,
-                "host": host,
-                "port": port,
-                "status": status,
-                "offset": offset,
-            }
+            return dict(
+                role=role,
+                host=host,
+                port=port,
+                status=status,
+                offset=offset,
+            )
 
         def _parse_sentinel(response):
-            return {"role": role, "masters": response[1:]}
+            return RoleInfo(role=role, masters=response[1:])
 
         parser = {
             "master": _parse_master,
             "slave": _parse_slave,
             "sentinel": _parse_sentinel,
         }[role]
-
+        print(response)
         return RoleInfo(**parser(response))  # type: ignore

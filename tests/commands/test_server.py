@@ -75,7 +75,7 @@ class TestServer:
         unicode_string = "3456abcd3421"
         await client.get(unicode_string)
         slowlog = await client.slowlog_get()
-        commands = [log["command"] for log in slowlog]
+        commands = [log.command for log in slowlog]
 
         get_command = ["GET", unicode_string]
         assert get_command in commands
@@ -87,8 +87,8 @@ class TestServer:
         assert commands.index(get_command) < commands.index(["SLOWLOG", "RESET"])
 
         # make sure other attributes are typed correctly
-        assert isinstance(slowlog[0]["start_time"], int)
-        assert isinstance(slowlog[0]["duration"], int)
+        assert isinstance(slowlog[0].start_time, int)
+        assert isinstance(slowlog[0].duration, int)
         await self.cleanup(client, sl_v, length_v)
 
     async def test_slowlog_get_limit(self, client):
@@ -97,7 +97,7 @@ class TestServer:
         await client.get("foo")
         await client.get("bar")
         slowlog = await client.slowlog_get(1)
-        commands = [log["command"] for log in slowlog]
+        commands = [log.command for log in slowlog]
         assert ["GET", "foo"] not in commands
         assert ["GET", "bar"] in commands
         await self.cleanup(client, sl_v, length_v)
@@ -170,4 +170,4 @@ class TestServer:
 
     async def test_role(self, client):
         role_info = await client.role()
-        assert role_info["role"] == "master"
+        assert role_info.role == "master"

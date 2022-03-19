@@ -334,11 +334,23 @@ class TestStreams:
             "test_stream", field_values={"k1": "v1", "k2": "1"}, identifier="1"
         )
         xinfo = await client.xinfo_stream("test_stream")
-        assert xinfo["first_entry"] == ("1-0", {"k1": "v1", "k2": "1"})
-        assert xinfo["last_entry"] == ("1-0", {"k1": "v1", "k2": "1"})
+        assert xinfo["first-entry"] == ("1-0", {"k1": "v1", "k2": "1"})
+        assert xinfo["last-entry"] == ("1-0", {"k1": "v1", "k2": "1"})
         assert await client.xadd(
             "test_stream", field_values={"k1": "v2", "k2": "2"}, identifier="1-1"
         )
         xinfo = await client.xinfo_stream("test_stream")
-        assert xinfo["first_entry"] == ("1-0", {"k1": "v1", "k2": "1"})
-        assert xinfo["last_entry"] == ("1-1", {"k1": "v2", "k2": "2"})
+        assert xinfo["first-entry"] == ("1-0", {"k1": "v1", "k2": "1"})
+        assert xinfo["last-entry"] == ("1-1", {"k1": "v2", "k2": "2"})
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_xinfo_stream_full(self, client):
+        assert await client.xadd(
+            "test_stream", field_values={"k1": "v1", "k2": "1"}, identifier="1"
+        )
+        assert await client.xadd(
+            "test_stream", field_values={"k1": "v2", "k2": "2"}, identifier="1-1"
+        )
+        xinfo_full = await client.xinfo_stream("test_stream", full=True)
+        assert xinfo_full["entries"][0].identifier == "1-0"
+        assert xinfo_full["entries"][1].identifier == "1-1"

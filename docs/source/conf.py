@@ -67,7 +67,7 @@ except:
     pass
 
 add_module_names = False
-autoclass_content = "both"
+autoclass_content = "class"
 autodoc_typehints_format = "short"
 
 autosectionlabel_maxdepth = 2

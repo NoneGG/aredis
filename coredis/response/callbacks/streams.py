@@ -80,27 +80,45 @@ class XInfoCallback(SimpleCallback):
         return tuple(pairs_to_dict(row) for row in response)
 
 
-class StreamInfoCallback(SimpleCallback):
-    def transform(self, response: Any) -> StreamInfo:
+class StreamInfoCallback(ParametrizedCallback):
+    def transform(self, response: Any, **options: Any) -> StreamInfo:
         res = pairs_to_dict(response)
-        k1 = "first-entry"
-        kn = "last-entry"
-        e1, en = None, None
+        if not options.get("full"):
 
-        if res[k1] and len(res[k1]) > 0:
-            e1 = StreamEntry(res[k1][0], pairs_to_ordered_dict(res[k1][1]))
-            res.pop(k1)
+            k1 = "first-entry"
+            kn = "last-entry"
+            e1, en = None, None
 
-        if res[kn] and len(res[kn]) > 0:
-            en = StreamEntry(res[kn][0], pairs_to_ordered_dict(res[kn][1]))
-            res.pop(kn)
-        res.update(first_entry=e1, last_entry=en)
-        return StreamInfo(
-            first_entry=e1,
-            last_entry=en,
-            length=res["length"],
-            radix_tree_keys=res["radix-tree-keys"],
-            radix_tree_nodes=res["radix-tree-nodes"],
-            groups=res["groups"],
-            last_generated_id=res["last-generated-id"],
-        )
+            if res[k1] and len(res[k1]) > 0:
+                e1 = StreamEntry(res[k1][0], pairs_to_ordered_dict(res[k1][1]))
+                res.pop(k1)
+
+            if res[kn] and len(res[kn]) > 0:
+                en = StreamEntry(res[kn][0], pairs_to_ordered_dict(res[kn][1]))
+                res.pop(kn)
+            res.update({"first-entry": e1, "last-entry": en})
+        else:
+            res.update({"groups": pairs_to_dict(res.get("groups"))})
+            res.update(
+                {
+                    "entries": tuple(
+                        StreamEntry(k[0], pairs_to_ordered_dict(k[1]))
+                        for k in res.get("entries", [])
+                    )
+                }
+            )
+        stream_info: StreamInfo = {
+            "first-entry": res.get("first-entry"),
+            "last-entry": res.get("last-entry"),
+            "length": res["length"],
+            "radix-tree-keys": res["radix-tree-keys"],
+            "radix-tree-nodes": res["radix-tree-nodes"],
+            "groups": res["groups"],
+            "last-generated-id": res["last-generated-id"],
+            "max-deleted-entry-id": res.get("max-deleted-entry-id"),
+            "entries-added": res.get("entries-added"),
+            "recorded-first-entry-id": res.get("recorded-first-entry-id"),
+            "entries-read": res.get("entries-read"),
+            "entries": res.get("entries"),
+        }
+        return stream_info

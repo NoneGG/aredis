@@ -4293,15 +4293,18 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.STREAM,
         response_callback=StreamInfoCallback(),
     )
-    async def xinfo_stream(self, key: KeyT, count: Optional[int] = None) -> StreamInfo:
+    async def xinfo_stream(
+        self, key: KeyT, count: Optional[int] = None, full: Optional[bool] = None
+    ) -> StreamInfo:
         """
         Get information about the stream stored at :paramref:`key`
         """
-        pieces = []
+        pieces: CommandArgList = []
+        if full:
+            pieces.append("FULL")
         if count is not None:
             pieces.extend(["COUNT", count])
-
-        return await self.execute_command("XINFO STREAM", key, *pieces)
+        return await self.execute_command("XINFO STREAM", key, *pieces, full=full)
 
     @redis_command(
         "XCLAIM", group=CommandGroup.STREAM, response_callback=ClaimCallback()
