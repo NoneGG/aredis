@@ -2255,6 +2255,45 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("SORT", *pieces, **options)
 
+    @mutually_inclusive_parameters("offset", "count")
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "SORT_RO",
+        version_introduced="7.0.0",
+        group=CommandGroup.GENERIC,
+        response_callback=SortCallback(),
+        readonly=True,
+    )
+    async def sort_ro(
+        self,
+        key: KeyT,
+        gets: Optional[Iterable[ValueT]] = None,
+        by: Optional[ValueT] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
+        order: Optional[Literal[PureToken.ASC, PureToken.DESC]] = None,
+        alpha: Optional[bool] = None,
+    ) -> Tuple[AnyStr, ...]:
+        """
+        Sort the elements in a list, set or sorted set. Read-only variant of SORT.
+
+
+        :return: sorted elements.
+
+        """
+        pieces: CommandArgList = [key]
+        if by is not None:
+            pieces.extend(["BY", by])
+        if offset is not None and count is not None:
+            pieces.extend(["LIMIT", offset, count])
+        for g in gets or []:
+            pieces.extend(["GET", g])
+        if order:
+            pieces.append(order.value)
+        if alpha is not None:
+            pieces.append("ALPHA")
+        return await self.execute_command("SORT_RO", *pieces)
+
     @redis_command("TOUCH", group=CommandGroup.GENERIC)
     async def touch(self, keys: Iterable[KeyT]) -> int:
         """
