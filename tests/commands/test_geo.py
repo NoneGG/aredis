@@ -66,7 +66,7 @@ class TestGeo:
         )
 
     async def test_geopos_no_value(self, client):
-        assert await client.geopos("barcelona", "place1", "place2") == (None, None)
+        assert await client.geopos("barcelona", ["place1", "place2"]) == (None, None)
 
     async def test_geopos(self, client):
         values = [
@@ -79,10 +79,13 @@ class TestGeo:
         ]
         await client.geoadd("barcelona", values)
         # redis uses 52 bits precision, hereby small errors may be introduced.
-        assert await client.geopos("barcelona", "place1", "place2") == (
+        locations = await client.geopos("barcelona", ["place1", "place2"])
+        assert locations == (
             (2.19093829393386841, 41.43379028184083523),
             (2.18737632036209106, 41.40634178640635099),
         )
+        assert locations[0].longitude == 2.1909382939338684
+        assert locations[0].latitude == 41.4337902818408352
 
     @pytest.mark.min_server_version("6.2.0")
     @pytest.mark.nocluster
@@ -301,6 +304,10 @@ class TestGeo:
         with pytest.raises(DataError):
             assert await client.geosearch("barcelona", member="Paris")
         # specifying radius and width and height
+        with pytest.raises(CommandSyntaxError):
+            assert await client.geosearch(
+                "barcelona", member="Paris", radius=3, width=2, height=1
+            )
         with pytest.raises(CommandSyntaxError):
             assert await client.geosearch(
                 "barcelona", member="Paris", radius=3, width=2, height=1

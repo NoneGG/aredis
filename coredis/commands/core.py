@@ -1034,10 +1034,20 @@ class CoreCommands(CommandMixin[AnyStr]):
         change: Optional[bool] = None,
     ) -> int:
         """
-        Add the specified geospatial items to the specified key identified
-        by the ``key`` argument. The Geospatial items are given as ordered
-        members of the ``values`` argument, each item or place is formed by
-        the triad latitude, longitude and name."""
+        Add one or more geospatial items in the geospatial index represented
+        using a sorted set
+
+        :return: Number of elements added. If ``change`` is ``True`` the return
+         is the number of elements that were changed.
+
+        """
+        pieces: CommandArgList = [key]
+        if condition is not None:
+            pieces.append(condition.value)
+        if change is not None:
+            pieces.append(PureToken.CHANGE.value)
+
+        pieces.extend(tuples_to_flat_list(longitude_latitude_members))
 
         return await self.execute_command(
             "GEOADD", key, *tuples_to_flat_list(longitude_latitude_members)
@@ -1059,10 +1069,9 @@ class CoreCommands(CommandMixin[AnyStr]):
         ] = None,
     ) -> Optional[float]:
         """
-        Return the distance between ``place1`` and ``place2`` members of the
-        ``key`` key.
-        The units must be one of the following : m, km mi, ft. By async default
-        meters are used.
+        Returns the distance between two members of a geospatial index
+
+        :return:  Distance in the unit specified by :paramref:`unit`
         """
         pieces: CommandArgList = [key, member1, member2]
 
@@ -1079,8 +1088,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def geohash(self, key: KeyT, members: Iterable[ValueT]) -> Tuple[AnyStr, ...]:
         """
-        Return the geo hash string for each item of ``values`` members of
-        the specified key identified by the ``key`` argument.
+        Returns members of a geospatial index as standard geohash strings
         """
 
         return await self.execute_command("GEOHASH", key, *members)
@@ -1092,12 +1100,13 @@ class CoreCommands(CommandMixin[AnyStr]):
         response_callback=GeoCoordinatessCallback(),
     )
     async def geopos(
-        self, key: KeyT, *members: ValueT
+        self, key: KeyT, members: Iterable[ValueT]
     ) -> Tuple[Optional[GeoCoordinates], ...]:
         """
-        Return the positions of each item of ``values`` as members of
-        the specified key identified by the ``key`` argument. Each position
-        is represented by the pairs lon and lat.
+        Returns longitude and latitude of members of a geospatial index
+
+        :return: pairs of longitude/latitudes. Missing members are represented
+         by ``None`` entries.
         """
 
         return await self.execute_command("GEOPOS", key, *members)
@@ -1214,8 +1223,20 @@ class CoreCommands(CommandMixin[AnyStr]):
         store: Optional[KeyT] = None,
         storedist: Optional[KeyT] = None,
     ) -> Union[int, Tuple[Union[AnyStr, GeoSearchResult], ...]]:
-        """ """
+        """
+        Query a geospatial index to fetch members within the borders of the area
+        specified with center location at :paramref:`longitude` and :paramref:`latitude`
+        and the maximum distance from the center (:paramref:`radius`).
 
+
+        :return:
+         - If no ``with{coord,dist,hash}`` options are provided the return
+           is simply the names of places matched (optionally ordered if `order` is provided).
+         - If any of the ``with{coord,dist,hash}`` options are set each result entry contains
+           `(name, distance, geohash, coordinate pair)``
+         - If a key for ``store`` or ``storedist`` is provided, the return is the count of places
+           stored.
+        """
         return await self._georadiusgeneric(
             "GEORADIUS",
             key,
@@ -1255,10 +1276,17 @@ class CoreCommands(CommandMixin[AnyStr]):
         storedist: Optional[KeyT] = None,
     ) -> Union[int, Tuple[Union[AnyStr, GeoSearchResult], ...]]:
         """
-        This command is exactly like ``georadius`` with the sole difference
-        that instead of taking, as the center of the area to query, a longitude
-        and latitude value, it takes the name of a member already existing
-        inside the geospatial index represented by the sorted set.
+        This command is exactly like :meth:`~Redis.georadius` with the sole difference
+        that instead of searching from a coordinate, it searches from a member
+        already existing in the index.
+
+        :return:
+         - If no ``with{coord,dist,hash}`` options are provided the return
+           is simply the names of places matched (optionally ordered if `order` is provided).
+         - If any of the ``with{coord,dist,hash}`` options are set each result entry contains
+           `(name, distance, geohash, coordinate pair)``
+         - If a key for ``store`` or ``storedist`` is provided, the return is the count of places
+           stored.
         """
 
         return await self._georadiusgeneric(
@@ -1346,7 +1374,16 @@ class CoreCommands(CommandMixin[AnyStr]):
         withdist: Optional[bool] = None,
         withhash: Optional[bool] = None,
     ) -> Union[int, Tuple[Union[AnyStr, GeoSearchResult], ...]]:
-        """ """
+        """
+
+        :return:
+         - If no ``with{coord,dist,hash}`` options are provided the return
+           is simply the names of places matched (optionally ordered if `order` is provided).
+         - If any of the ``with{coord,dist,hash}`` options are set each result entry contains
+           `(name, distance, geohash, coordinate pair)``
+         - If a key for ``store`` or ``storedist`` is provided, the return is the count of places
+           stored.
+        """
 
         return await self._geosearchgeneric(
             "GEOSEARCH",
