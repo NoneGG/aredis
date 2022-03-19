@@ -1088,6 +1088,24 @@ Intersect multiple sets
 
 
 
+SINTERCARD
+**********
+
+Intersect multiple sets and return the cardinality of the result
+
+- Documentation: `SINTERCARD <https://redis.io/commands/sintercard>`_
+- Implementation: :meth:`~coredis.Redis.sintercard`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 SINTERSTORE
 ***********
 
@@ -1244,16 +1262,6 @@ Add multiple sets and store the resulting set in a key
 
 
 
-SINTERCARD [X]
-**************
-
-Intersect multiple sets and return the cardinality of the result
-
-- Documentation: `SINTERCARD <https://redis.io/commands/sintercard>`_
- 
-- Not Implemented
-
-
 
 
 
@@ -1407,6 +1415,24 @@ Intersect multiple sorted sets
 - New in redis: 6.2.0
 
 
+
+
+
+
+
+ZINTERCARD
+**********
+
+Intersect multiple sorted sets and return the cardinality of the result
+
+- Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
+- Implementation: :meth:`~coredis.Redis.zintercard`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
 
 
 
@@ -1768,16 +1794,6 @@ Add multiple sorted sets and store the resulting sorted set in a new key
 
 
 
-
-
-ZINTERCARD [X]
-**************
-
-Intersect multiple sorted sets and return the cardinality of the result
-
-- Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
- 
-- Not Implemented
 
 
 
@@ -2152,6 +2168,24 @@ Sort the elements in a list, set or sorted set
 
 
 
+SORT_RO
+*******
+
+Sort the elements in a list, set or sorted set. Read-only variant of SORT.
+
+- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
+- Implementation: :meth:`~coredis.Redis.sort_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 TOUCH
 *****
 
@@ -2220,16 +2254,6 @@ Wait for the synchronous replication of all the write commands sent in the conte
 
 
 
-
-
-SORT_RO [X]
-***********
-
-Sort the elements in a list, set or sorted set. Read-only variant of SORT.
-
-- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
- 
-- Not Implemented
 
 
 
@@ -2376,6 +2400,42 @@ Execute a Lua script server side
 
 
 
+EVALSHA_RO
+**********
+
+Execute a read-only Lua script server side
+
+- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
+- Implementation: :meth:`~coredis.Redis.evalsha_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+EVAL_RO
+*******
+
+Execute a read-only Lua script server side
+
+- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
+- Implementation: :meth:`~coredis.Redis.eval_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 SCRIPT DEBUG
 ************
 
@@ -2446,26 +2506,6 @@ Load the specified Lua script into the script cache.
 
 
 
-
-
-EVALSHA_RO [X]
-**************
-
-Execute a read-only Lua script server side
-
-- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
- 
-- Not Implemented
-
-
-EVAL_RO [X]
-***********
-
-Execute a read-only Lua script server side
-
-- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
- 
-- Not Implemented
 
 
 FCALL [X]
@@ -3194,6 +3234,24 @@ Remove the specified ACL users and the associated rules
 
 
 
+ACL DRYRUN
+**********
+
+Returns whether the user can execute the given command without executing the command.
+
+- Documentation: `ACL DRYRUN <https://redis.io/commands/acl-dryrun>`_
+- Implementation: :meth:`~coredis.Redis.acl_dryrun`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 ACL GENPASS
 ***********
 
@@ -3910,16 +3968,6 @@ Return the current server time
 
 
 
-
-
-ACL DRYRUN [X]
-**************
-
-Returns whether the user can execute the given command without executing the command.
-
-- Documentation: `ACL DRYRUN <https://redis.io/commands/acl-dryrun>`_
- 
-- Not Implemented
 
 
 COMMAND DOCS [X]
@@ -4969,32 +5017,6 @@ Add multiple sets and store the resulting set in a key
 
 
 
-SINTERCARD [X]
-**************
-
-Intersect multiple sets and return the cardinality of the result
-
-- Documentation: `SINTERCARD <https://redis.io/commands/sintercard>`_
- 
-- Not Implemented
-
-
-
-
-
-Sorted-Set
-----------
-
-
-
-ZINTERCARD [X]
-**************
-
-Intersect multiple sorted sets and return the cardinality of the result
-
-- Documentation: `ZINTERCARD <https://redis.io/commands/zintercard>`_
- 
-- Not Implemented
 
 
 
@@ -5073,16 +5095,6 @@ Determine the type stored at key
 
 
 
-
-
-SORT_RO [X]
-***********
-
-Sort the elements in a list, set or sorted set. Read-only variant of SORT.
-
-- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
- 
-- Not Implemented
 
 
 
@@ -5165,26 +5177,6 @@ Execute a Lua script server side
 
 
 
-
-
-EVALSHA_RO [X]
-**************
-
-Execute a read-only Lua script server side
-
-- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
- 
-- Not Implemented
-
-
-EVAL_RO [X]
-***********
-
-Execute a read-only Lua script server side
-
-- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
- 
-- Not Implemented
 
 
 FCALL [X]
@@ -5395,16 +5387,6 @@ Stop listening for messages posted to the given channels
 Server
 ------
 
-
-
-ACL DRYRUN [X]
-**************
-
-Returns whether the user can execute the given command without executing the command.
-
-- Documentation: `ACL DRYRUN <https://redis.io/commands/acl-dryrun>`_
- 
-- Not Implemented
 
 
 COMMAND DOCS [X]

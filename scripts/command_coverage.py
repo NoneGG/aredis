@@ -93,6 +93,7 @@ REDIS_ARGUMENT_NAME_OVERRIDES = {
     "GEOSEARCH": {"bybox": "width", "byradius": "radius", "frommember": "member"},
     "GEOSEARCHSTORE": {"bybox": "width", "byradius": "radius", "frommember": "member"},
     "SORT": {"sorting": "alpha"},
+    "SORT_RO": {"sorting": "alpha"},
     "SCRIPT FLUSH": {"async": "sync_type"},
     "ZADD": {"score_member": "member_score"},
 }
@@ -118,13 +119,19 @@ REDIS_ARGUMENT_TYPE_OVERRIDES = {
     "ZRANGESTORE": {"min": Union[int, ValueT], "max": Union[int, ValueT]},
 }
 IGNORED_ARGUMENTS = {
+    "BZMPOP": ["numkeys"],
     "EVAL": ["numkeys"],
+    "EVAL_RO": ["numkeys"],
     "EVALSHA": ["numkeys"],
+    "EVALSHA_RO": ["numkeys"],
     "MIGRATE": ["key_or_empty_string"],
+    "SINTERCARD": ["numkeys"],
     "ZDIFF": ["numkeys"],
     "ZDIFFSTORE": ["numkeys"],
     "ZINTER": ["numkeys"],
+    "ZINTERCARD": ["numkeys"],
     "ZINTERSTORE": ["numkeys"],
+    "ZMPOP": ["numkeys"],
     "ZUNION": ["numkeys"],
     "ZUNIONSTORE": ["numkeys"],
     "XADD": ["auto_id"],
@@ -140,6 +147,7 @@ REDIS_RETURN_OVERRIDES = {
     "BGSAVE": bool,
     "BZPOPMAX": Optional[Tuple[AnyStr, AnyStr, float]],
     "BZPOPMIN": Optional[Tuple[AnyStr, AnyStr, float]],
+    "BZMPOP": Optional[Tuple[AnyStr, ScoredMembers]],
     "CLIENT LIST": Tuple[ClientInfo, ...],
     "CLIENT INFO": ClientInfo,
     "CLIENT TRACKINGINFO": Dict[AnyStr, AnyStr],
@@ -155,6 +163,7 @@ REDIS_RETURN_OVERRIDES = {
     "DUMP": bytes,
     "EXPIRE": bool,
     "EXPIREAT": bool,
+    "EXPIRETIME": datetime.datetime,
     "GEODIST": Optional[float],
     "GEOPOS": Tuple[Optional[GeoCoordinates], ...],
     "GEOSEARCH": Union[int, Tuple[Union[AnyStr, GeoSearchResult], ...]],
@@ -177,6 +186,7 @@ REDIS_RETURN_OVERRIDES = {
     "PFADD": bool,
     "PERSIST": bool,
     "PSETEX": bool,
+    "PEXPIRETIME": datetime.datetime,
     "PUBSUB NUMSUB": OrderedDict[AnyStr, int],
     "RPOPLPUSH": Optional[AnyStr],
     "RESET": None,
@@ -204,6 +214,7 @@ REDIS_RETURN_OVERRIDES = {
     "XREAD": Optional[Dict[AnyStr, Tuple[StreamEntry, ...]]],
     "ZDIFF": Tuple[Union[AnyStr, ScoredMember], ...],
     "ZINTER": Tuple[Union[AnyStr, ScoredMember], ...],
+    "ZMPOP": Optional[Tuple[AnyStr, ScoredMembers]],
     "ZPOPMAX": Union[ScoredMember, ScoredMembers],
     "ZPOPMIN": Union[ScoredMember, ScoredMembers],
     "ZRANDMEMBER": Optional[Union[AnyStr, List[AnyStr], ScoredMembers]],
@@ -225,6 +236,8 @@ ARGUMENT_DEFAULTS_NON_OPTIONAL = {
     "KEYS": {"pattern": "*"},
 }
 ARGUMENT_OPTIONALITY = {
+    "EVAL_RO": {"key": True, "arg": True},
+    "EVALSHA_RO": {"key": True, "arg": True},
     "MIGRATE": {"keys": False},
     "XADD": {"id_or_auto": True},
     "SCAN": {"cursor": True},
@@ -234,10 +247,14 @@ ARGUMENT_OPTIONALITY = {
     "XRANGE": {"start": True, "end": True},
     "XREVRANGE": {"start": True, "end": True},
 }
-ARGUMENT_VARIADICITY = {"SORT": {"gets": False}}
+ARGUMENT_VARIADICITY = {"SORT": {"gets": False}, "SORT_RO": {"gets": False}}
 REDIS_ARGUMENT_FORCED_ORDER = {
     "SETEX": ["key", "value", "seconds"],
     "ZINCRBY": ["key", "member", "increment"],
+    "EVALSHA": ["sha1", "keys", "args"],
+    "EVALSHA_RO": ["sha1", "keys", "args"],
+    "EVAL": ["script", "keys", "args"],
+    "EVAL_RO": ["script", "keys", "args"],
     "CLIENT KILL": [
         "ip_port",
         "identifier",
@@ -526,6 +543,9 @@ def read_command_docs(command, group):
                         or rtypes.get("bulk-string", "").find("a double") >= 0
                     ):
                         mapped_types["bulk-string"] = float
+                    if rtypes.get("bulk-string", "").lower().find("an error") >= 0:
+                        mapped_types.pop("bulk-string")
+                        rtypes.pop("bulk-string")
 
                 rtype = (
                     Optional[Union[tuple(mapped_types.values())]]
@@ -1046,7 +1066,7 @@ def get_command_spec(command):
             else recommended_signature.index(r),
         )
 
-    if not var_args:  # or "keys" in var_args:
+    if not var_args and not forced_order:
         recommended_signature = sorted(
             recommended_signature,
             key=lambda r: -5
@@ -1073,7 +1093,7 @@ def get_command_spec(command):
                 recommended_signature.remove(k)
                 recommended_signature.insert(idx, n)
 
-    elif {"key"} & {r.name for r in recommended_signature}:
+    elif {"key"} & {r.name for r in recommended_signature} and not forced_order:
         new_recommended_signature = sorted(
             recommended_signature,
             key=lambda r: -1 if r.name in ["key"] else recommended_signature.index(r),
