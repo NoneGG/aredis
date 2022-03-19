@@ -13,6 +13,7 @@ from typing import (
     Optional,
     Set,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -43,8 +44,14 @@ class ParametrizedCallback(ABC):
 
 
 class SimpleStringCallback(SimpleCallback):
+    def __init__(self, raise_on_error: Optional[Type[Exception]] = None):
+        self.raise_on_error = raise_on_error
+
     def transform(self, response: Any) -> Any:
-        return response and nativestr(response) == "OK"
+        success = response and nativestr(response) == "OK"
+        if not success and self.raise_on_error:
+            raise self.raise_on_error(response)
+        return success
 
 
 class PrimitiveCallback(SimpleCallback, Generic[R]):

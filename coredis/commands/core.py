@@ -23,7 +23,7 @@ from coredis.commands import (
     CommandMixin,
     redis_command,
 )
-from coredis.exceptions import DataError, RedisError
+from coredis.exceptions import AuthorizationError, DataError, RedisError
 from coredis.response.callbacks import (
     BoolCallback,
     BoolsCallback,
@@ -5474,6 +5474,24 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
 
         return await self.execute_command("ACL DELUSER", *usernames)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "ACL DRYRUN",
+        version_introduced="7.0.0",
+        group=CommandGroup.SERVER,
+        response_callback=SimpleStringCallback(AuthorizationError),
+    )
+    async def acl_dryrun(
+        self, username: ValueT, command: ValueT, *args: ValueT
+    ) -> bool:
+        """
+        Returns whether the user can execute the given command without executing the command.
+        """
+        pieces = [username, command]
+        if args:
+            pieces.extend(args)
+        return await self.execute_command("ACL DRYRUN", *pieces)
 
     @versionadded(version="3.0.0")
     @redis_command(

@@ -1,7 +1,13 @@
 import pytest
 
-from coredis import AuthenticationError
+from coredis import AuthenticationError, AuthorizationError
 from tests.conftest import targets
+
+
+@pytest.fixture(autouse=True, scope="function")
+async def teardown(client):
+    yield
+    await client.acl_deluser(["test_user"])
 
 
 @targets("redis_basic", "redis_auth", "redis_cluster")
@@ -11,6 +17,14 @@ class TestACL:
     async def test_acl_cat(self, client):
         assert {"keyspace"} & set(await client.acl_cat())
         assert {"keys"} & set(await client.acl_cat("keyspace"))
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_acl_dryrun(self, client):
+
+        await client.acl_setuser("test_user", "+set", "~*")
+        assert await client.acl_dryrun("test_user", "set", "foo", "bar")
+        with pytest.raises(AuthorizationError):
+            await client.acl_dryrun("test_user", "get", "foo", "bar")
 
     async def test_acl_list(self, client):
         assert "user default" in (await client.acl_list())[0]
