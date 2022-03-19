@@ -1,7 +1,7 @@
 import enum
 
 
-class PureToken(enum.Enum):
+class PureToken(str, enum.Enum):
     """
     Enum for using pure-tokens with the redis api.
     """

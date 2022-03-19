@@ -119,6 +119,8 @@ REDIS_ARGUMENT_TYPE_OVERRIDES = {
     "ZRANGESTORE": {"min": Union[int, ValueT], "max": Union[int, ValueT]},
 }
 IGNORED_ARGUMENTS = {
+    "LMPOP": ["numkeys"],
+    "BLMPOP": ["numkeys"],
     "BZMPOP": ["numkeys"],
     "EVAL": ["numkeys"],
     "EVAL_RO": ["numkeys"],
@@ -1720,7 +1722,7 @@ def token_enum(ctx, path):
 import enum
 
 
-class PureToken(enum.Enum):
+class PureToken(str, enum.Enum):
     \"\"\"
     Enum for using pure-tokens with the redis api.
     \"\"\"

@@ -233,7 +233,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(normalized_time_milliseconds(pxat))
 
         if persist:
-            pieces.append("PERSIST")
+            pieces.append(PureToken.PERSIST)
 
         return await self.execute_command("GETEX", key, *pieces)
 
@@ -351,13 +351,13 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         pieces: CommandArgList = [key1, key2]
         if len_ is not None:
-            pieces.append(PureToken.LEN.value)
+            pieces.append(PureToken.LEN)
         if idx is not None:
-            pieces.append(PureToken.IDX.value)
+            pieces.append(PureToken.IDX)
         if minmatchlen is not None:
             pieces.extend(["MINMATCHLEN", minmatchlen])
         if withmatchlen is not None:
-            pieces.append(PureToken.WITHMATCHLEN.value)
+            pieces.append(PureToken.WITHMATCHLEN)
         return await self.execute_command(
             "LCS",
             *pieces,
@@ -480,9 +480,9 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append("PXAT")
             pieces.append(normalized_time_seconds(pxat))
         if keepttl:
-            pieces.append(PureToken.KEEPTTL.value)
+            pieces.append(PureToken.KEEPTTL)
         if get:
-            pieces.append(PureToken.GET.value)
+            pieces.append(PureToken.GET)
 
         if condition:
             pieces.append(condition.value)
@@ -852,7 +852,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if node is not None:
             pieces.extend(["NODE", node])
         if stable is not None:
-            pieces.append(PureToken.STABLE.value)
+            pieces.append(PureToken.STABLE)
         return await self.execute_command("CLUSTER SETSLOT", slot, *pieces)
 
     async def cluster_get_keys_in_slot(self, slot_id, count):
@@ -1045,7 +1045,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if condition is not None:
             pieces.append(condition.value)
         if change is not None:
-            pieces.append(PureToken.CHANGE.value)
+            pieces.append(PureToken.CHANGE)
 
         pieces.extend(tuples_to_flat_list(longitude_latitude_members))
 
@@ -1315,9 +1315,9 @@ class CoreCommands(CommandMixin[AnyStr]):
             raise DataError("``any`` can't be provided without ``count``")
 
         for arg_name, byte_repr in (
-            ("withdist", "WITHDIST"),
-            ("withcoord", "WITHCOORD"),
-            ("withhash", "WITHHASH"),
+            ("withdist", PureToken.WITHDIST),
+            ("withcoord", PureToken.WITHCOORD),
+            ("withhash", PureToken.WITHHASH),
         ):
             if kwargs[arg_name]:
                 pieces.append(byte_repr)
@@ -1326,7 +1326,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["COUNT", kwargs["count"]])
 
             if kwargs["any_"]:
-                pieces.append("ANY")
+                pieces.append(PureToken.ANY)
 
         if kwargs["order"]:
             pieces.append(kwargs["order"].value)
@@ -1512,17 +1512,17 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["COUNT", kwargs["count"]])
 
             if kwargs["any_"]:
-                pieces.append(PureToken.ANY.value)
+                pieces.append(PureToken.ANY)
         elif kwargs["any_"]:
             raise DataError("GEOSEARCH ``any`` can't be provided " "without count")
 
         # other properties
 
         for arg_name, byte_repr in (
-            ("withdist", PureToken.WITHDIST.value),
-            ("withcoord", PureToken.WITHCOORD.value),
-            ("withhash", PureToken.WITHHASH.value),
-            ("storedist", PureToken.STOREDIST.value),
+            ("withdist", PureToken.WITHDIST),
+            ("withcoord", PureToken.WITHCOORD),
+            ("withhash", PureToken.WITHHASH),
+            ("storedist", PureToken.STOREDIST),
         ):
             if kwargs[arg_name]:
                 pieces.append(byte_repr)
@@ -1742,7 +1742,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             params.append(count)
 
         if withvalues:
-            params.append("WITHVALUES")
+            params.append(PureToken.WITHVALUES)
             options["withvalues"] = True
 
         return await self.execute_command("HRANDFIELD", key, *params, **options)
@@ -1813,7 +1813,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["DB", db])
 
         if replace:
-            pieces.append("REPLACE")
+            pieces.append(PureToken.REPLACE)
 
         return await self.execute_command("COPY", source, destination, *pieces)
 
@@ -1985,10 +1985,10 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if copy:
-            pieces.append("COPY")
+            pieces.append(PureToken.COPY)
 
         if replace:
-            pieces.append("REPLACE")
+            pieces.append(PureToken.REPLACE)
 
         if auth:
             pieces.append("AUTH")
@@ -2227,10 +2227,10 @@ class CoreCommands(CommandMixin[AnyStr]):
         params = [key, ttl, serialized_value]
 
         if replace:
-            params.append("REPLACE")
+            params.append(PureToken.REPLACE)
 
         if absttl:
-            params.append("ABSTTL")
+            params.append(PureToken.ABSTTL)
 
         if idletime is not None:
             params.extend(["IDLETIME", normalized_milliseconds(idletime)])
@@ -2283,7 +2283,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(order.value)
 
         if alpha is not None:
-            pieces.append("ALPHA")
+            pieces.append(PureToken.SORTING)
 
         if store is not None:
             pieces.append("STORE")
@@ -2328,7 +2328,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if order:
             pieces.append(order.value)
         if alpha is not None:
-            pieces.append("ALPHA")
+            pieces.append(PureToken.SORTING)
         return await self.execute_command("SORT_RO", *pieces)
 
     @redis_command("TOUCH", group=CommandGroup.GENERIC)
@@ -3140,10 +3140,10 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if change is not None:
-            pieces.append("CH")
+            pieces.append(PureToken.CHANGE)
 
         if increment is not None:
-            pieces.append("INCR")
+            pieces.append(PureToken.INCREMENT)
 
         if condition:
             pieces.append(condition.value)
@@ -3201,7 +3201,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces = [len(list(keys)), *keys]
 
         if withscores:
-            pieces.append("WITHSCORES")
+            pieces.append(PureToken.WITHSCORES)
 
         return await self.execute_command("ZDIFF", *pieces, withscores=withscores)
 
@@ -3429,7 +3429,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             options["count"] = count
 
         if withscores:
-            params.append("WITHSCORES")
+            params.append(PureToken.WITHSCORES)
             options["withscores"] = True
         return await self.execute_command("ZRANDMEMBER", key, *params, **options)
 
@@ -3565,7 +3565,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend([b("LIMIT"), offset, count])
 
         if withscores:
-            pieces.append(b("WITHSCORES"))
+            pieces.append(PureToken.WITHSCORES)
         options = {"withscores": withscores}
 
         return await self.execute_command("ZRANGEBYSCORE", *pieces, **options)
@@ -3691,7 +3691,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces = ["ZREVRANGE", key, start, stop]
 
         if withscores:
-            pieces.append("WITHSCORES")
+            pieces.append(PureToken.WITHSCORES)
         options = {"withscores": withscores}
 
         return await self.execute_command(*pieces, **options)
@@ -3757,7 +3757,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["LIMIT", offset, count])
 
         if withscores:
-            pieces.append("WITHSCORES")
+            pieces.append(PureToken.WITHSCORES)
         options = {"withscores": withscores}
 
         return await self.execute_command("ZREVRANGEBYSCORE", *pieces, **options)
@@ -3889,7 +3889,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if options - VALID_ZADD_OPTIONS:
             raise RedisError("ZADD only takes XX, NX, CH, or INCR")
 
-        if "NX" in options and "XX" in options:
+        if PureToken.NX in options and PureToken.XX in options:
             raise RedisError("ZADD only takes one of XX or NX")
         pieces = list(options)
         members: List[ValueT] = []
@@ -3942,13 +3942,13 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(sortby.value)
 
         if rev is not None:
-            pieces.append("REV")
+            pieces.append(PureToken.REV)
 
         if offset is not None and count is not None:
             pieces.extend(["LIMIT", offset, count])
 
         if withscores:
-            pieces.append("WITHSCORES")
+            pieces.append(PureToken.WITHSCORES)
         options = {"withscores": withscores}
 
         return await self.execute_command(*pieces, **options)
@@ -3977,7 +3977,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(aggregate.value)
 
         if withscores is not None:
-            pieces.append(b("WITHSCORES"))
+            pieces.append(PureToken.WITHSCORES)
             options = {"withscores": True}
         return await self.execute_command(*pieces, **options)
 
@@ -4029,7 +4029,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         pieces: CommandArgList = []
         if nomkstream is not None:
-            pieces.append(PureToken.NOMKSTREAM.value)
+            pieces.append(PureToken.NOMKSTREAM)
 
         if trim_strategy == PureToken.MAXLEN:
             pieces.append(trim_strategy.value)
@@ -4043,7 +4043,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if limit is not None:
             pieces.extend(["LIMIT", limit])
 
-        pieces.append(identifier or PureToken.AUTO_ID.value)
+        pieces.append(identifier or PureToken.AUTO_ID)
 
         for kv in field_values.items():
             pieces.extend(list(kv))
@@ -4346,9 +4346,9 @@ class CoreCommands(CommandMixin[AnyStr]):
         if retrycount is not None:
             pieces.extend(["RETRYCOUNT", retrycount])
         if force is not None:
-            pieces.append(PureToken.FORCE.value)
+            pieces.append(PureToken.FORCE)
         if justid is not None:
-            pieces.append(PureToken.JUSTID.value)
+            pieces.append(PureToken.JUSTID)
         return await self.execute_command("XCLAIM", *pieces, justid=justid)
 
     @redis_command(
@@ -4368,9 +4368,9 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         Create a consumer group.
         """
-        pieces: CommandArgList = [key, groupname, identifier or PureToken.NEW_ID.value]
+        pieces: CommandArgList = [key, groupname, identifier or PureToken.NEW_ID]
         if mkstream is not None:
-            pieces.append(PureToken.MKSTREAM.value)
+            pieces.append(PureToken.MKSTREAM)
         if entriesread is not None:
             pieces.extend(["ENTRIESREAD", entriesread])
 
@@ -4409,7 +4409,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         Set a consumer group to an arbitrary last delivered ID value.
         """
         return await self.execute_command(
-            "XGROUP SETID", key, groupname, identifier or PureToken.NEW_ID.value
+            "XGROUP SETID", key, groupname, identifier or PureToken.NEW_ID
         )
 
     @redis_command("XGROUP DESTROY", group=CommandGroup.STREAM)
@@ -4477,7 +4477,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["COUNT", count])
 
         if justid is not None:
-            pieces.append(PureToken.JUSTID.value)
+            pieces.append(PureToken.JUSTID)
 
         return await self.execute_command("XAUTOCLAIM", *pieces, justid=justid)
 
@@ -4509,7 +4509,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             raise RedisError("Both start and end must be specified")
 
         if index_unit is not None:
-            params.append(index_unit.value)
+            params.append(index_unit)
         return await self.execute_command("BITCOUNT", *params)
 
     def bitfield(self, key: KeyT) -> BitFieldOperation:
@@ -4600,7 +4600,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             raise RedisError("start argument is not set, when end is specified")
 
         if end_index_unit is not None:
-            params.append(end_index_unit.value)
+            params.append(end_index_unit)
 
         return await self.execute_command("BITPOS", *params)
 
@@ -4832,7 +4832,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if sync_type:
-            pieces = [sync_type.value]
+            pieces = [sync_type]
 
         return await self.execute_command("SCRIPT FLUSH", *pieces)
 
@@ -4912,7 +4912,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         Instruct the server about tracking or not keys in the next request
         """
-        pieces = [mode.value]
+        pieces = [mode]
         return await self.execute_command("CLIENT CACHING", *pieces)
 
     @redis_command(
@@ -4955,7 +4955,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["ID", identifier])
 
         if type_:
-            pieces.extend(["TYPE", type_.value])
+            pieces.extend(["TYPE", type_])
 
         if user:
             pieces.extend(["USER", user])
@@ -4998,7 +4998,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if type_:
-            pieces.extend(["TYPE", type_.value])
+            pieces.extend(["TYPE", type_])
 
         if identifiers is not None:
             pieces.append("ID")
@@ -5053,7 +5053,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         pieces: CommandArgList = [timeout]
         if mode is not None:
-            pieces.append(mode.value)
+            pieces.append(mode)
         return await self.execute_command("CLIENT PAUSE", *pieces)
 
     @versionadded(version="3.0.0")
@@ -5087,7 +5087,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = [client_id]
 
         if timeout_error is not None:
-            pieces.append(timeout_error.value)
+            pieces.append(timeout_error)
 
         return await self.execute_command("CLIENT UNBLOCK", *pieces)
 
@@ -5145,7 +5145,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         Instruct the server whether to reply to commands
         """
 
-        return await self.execute_command("CLIENT REPLY", mode.value)
+        return await self.execute_command("CLIENT REPLY", mode)
 
     @versionadded(version="3.0.0")
     @redis_command(
@@ -5172,7 +5172,7 @@ class CoreCommands(CommandMixin[AnyStr]):
          tracking mode was successfully disabled.
         """
 
-        pieces: CommandArgList = [status.value]
+        pieces: CommandArgList = [status]
 
         if prefixes:
             pieces.extend(prefixes)
@@ -5181,16 +5181,16 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(["REDIRECT", redirect])
 
         if bcast is not None:
-            pieces.append(PureToken.BCAST.value)
+            pieces.append(PureToken.BCAST)
 
         if optin is not None:
-            pieces.append(PureToken.OPTIN.value)
+            pieces.append(PureToken.OPTIN)
 
         if optout is not None:
-            pieces.append(PureToken.OPTOUT.value)
+            pieces.append(PureToken.OPTOUT)
 
         if noloop is not None:
-            pieces.append(PureToken.NOLOOP.value)
+            pieces.append(PureToken.NOLOOP)
 
         return await self.execute_command("CLIENT TRACKING", *pieces)
 
@@ -5255,9 +5255,9 @@ class CoreCommands(CommandMixin[AnyStr]):
         if host and port:
             pieces.extend(["TO", host, port])
             if force is not None:
-                pieces.append(PureToken.FORCE.value)
+                pieces.append(PureToken.FORCE)
         if abort:
-            pieces.append(PureToken.ABORT.value)
+            pieces.append(PureToken.ABORT)
         if timeout is not None:
             pieces.append(normalized_milliseconds(timeout))
         return await self.execute_command("FAILOVER", *pieces)
@@ -5279,7 +5279,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if async_:
-            pieces.append(async_.value)
+            pieces.append(async_)
 
         return await self.execute_command("FLUSHALL", *pieces)
 
@@ -5300,7 +5300,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if async_:
-            pieces.append(async_.value)
+            pieces.append(async_)
 
         return await self.execute_command("FLUSHDB", *pieces)
 
@@ -5491,7 +5491,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = []
 
         if nosave_save:
-            pieces.append(nosave_save.value)
+            pieces.append(nosave_save)
         try:
             await self.execute_command("SHUTDOWN", *pieces)
         except ConnectionError:
@@ -5767,7 +5767,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(count)
 
         if reset is not None:
-            pieces.append("RESET")
+            pieces.append(PureToken.RESET)
         return await self.execute_command("ACL LOG", *pieces, reset=reset)
 
     @versionadded(version="3.0.0")
