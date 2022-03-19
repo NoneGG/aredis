@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 
 from coredis import PureToken
@@ -348,16 +346,14 @@ class TestStreams:
 
     @pytest.mark.min_server_version("6.9.0")
     async def test_xinfo_stream_full(self, client):
-        await asyncio.gather(
-            client.xadd(
-                "test_stream", field_values={"k1": "v1", "k2": "1"}, identifier="1"
-            ),
-            client.xadd(
-                "test_stream", field_values={"k1": "v2", "k2": "2"}, identifier="1-1"
-            ),
-            client.xadd(
-                "test_stream", field_values={"k1": "v2", "k2": "2"}, identifier="1-2"
-            ),
+        await client.xadd(
+            "test_stream", field_values={"k1": "v1", "k2": "1"}, identifier="1"
+        )
+        await client.xadd(
+            "test_stream", field_values={"k1": "v2", "k2": "2"}, identifier="1-1"
+        )
+        await client.xadd(
+            "test_stream", field_values={"k1": "v2", "k2": "2"}, identifier="1-2"
         )
         xinfo_full = await client.xinfo_stream("test_stream", full=True)
         assert xinfo_full["entries"][0].identifier == "1-0"
