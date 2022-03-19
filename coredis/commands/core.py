@@ -4671,6 +4671,20 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.extend(channels)
         return await self.execute_command("PUBSUB NUMSUB", *pieces)
 
+    async def _eval(
+        self,
+        command: str,
+        script: ValueT,
+        keys: Optional[Iterable[KeyT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        _keys: List[KeyT] = list(keys) if keys else []
+        pieces: CommandArgList = [script, len(_keys), *_keys]
+        if args:
+            pieces.extend(args)
+
+        return await self.execute_command(command, *pieces)
+
     @redis_command(
         "EVAL",
         group=CommandGroup.SCRIPTING,
@@ -4683,21 +4697,41 @@ class CoreCommands(CommandMixin[AnyStr]):
     ) -> Any:
         """
         Execute the Lua ``script``, specifying the ``numkeys`` the script
-        will touch and the key names and argument values in ``keys_and_args``.
-        Returns the result of the script.
+        will touch and the key names and argument values in ``keys`` and ``args``.
 
-        In practice, use the object returned by ``register_script``. This
-        function exists purely for Redis API completion.
+        :return: The result of the script as redis returns it
         """
-        num_keys = 0
-        pieces: CommandArgList = []
-        if keys:
-            pieces.extend(list(keys))
-            num_keys = len(pieces)
+        return await self._eval("EVAL", script, keys, args)
+
+    @versionadded(version="3.0.0")
+    @redis_command("EVAL_RO", version_introduced="7.0.0", group=CommandGroup.SCRIPTING)
+    async def eval_ro(
+        self,
+        script: Union[str, bytes, int, float],
+        keys: Optional[Iterable[KeyT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        """
+        Read-only variant of :meth:`~Redis.eval`that cannot execute commands
+        that modify data.
+
+        :return: The result of the script as redis returns it
+        """
+        return await self._eval("EVAL_RO", script, keys, args)
+
+    async def _evalsha(
+        self,
+        command: str,
+        sha1: ValueT,
+        keys: Optional[Iterable[KeyT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        _keys: List[KeyT] = list(keys) if keys else []
+        pieces: CommandArgList = [sha1, len(_keys), *_keys]
         if args:
             pieces.extend(args)
 
-        return await self.execute_command("EVAL", script, num_keys, *pieces)
+        return await self.execute_command(command, *pieces)
 
     @redis_command("EVALSHA", group=CommandGroup.SCRIPTING)
     async def evalsha(
@@ -4707,24 +4741,29 @@ class CoreCommands(CommandMixin[AnyStr]):
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
         """
-        Use the ``sha`` to execute a Lua script already registered via EVAL
-        or SCRIPT LOAD. Specify the ``numkeys`` the script will touch and the
-        key names and argument values in ``keys_and_args``. Returns the result
-        of the script.
+        Evaluate a script from the server's cache by its :paramred:``sha1`` digest.
 
-        In practice, use the object returned by ``register_script``. This
-        function exists purely for Redis API completion.
+        :return: The result of the script as redis returns it
         """
+        return await self._evalsha("EVALSHA", sha1, keys, args)
 
-        num_keys = 0
-        pieces: CommandArgList = []
-        if keys:
-            pieces.extend(list(keys))
-            num_keys = len(pieces)
-        if args:
-            pieces.extend(args)
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "EVALSHA_RO", version_introduced="7.0.0", group=CommandGroup.SCRIPTING
+    )
+    async def evalsha_ro(
+        self,
+        sha1: ValueT,
+        keys: Optional[Iterable[KeyT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        """
+        Read-only variant of :meth:`~Redis.evalsha`that cannot execute commands
+        that modify data.
 
-        return await self.execute_command("EVALSHA", sha1, num_keys, *pieces)
+        :return: The result of the script as redis returns it
+        """
+        return self._evalsha("EVALSHA_RO", sha1, keys, args)
 
     @versionadded(version="3.0.0")
     @redis_command(

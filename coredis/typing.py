@@ -74,6 +74,14 @@ class SupportsScript(Protocol):
     ) -> Any:
         ...
 
+    async def evalsha_ro(
+        self,
+        sha1: ValueT,
+        keys: Optional[Iterable[ValueT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        ...
+
     async def script_load(self, script: ValueT) -> AnyStr:
         ...
 
