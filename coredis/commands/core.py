@@ -2807,6 +2807,28 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return await self.execute_command("SINTERSTORE", destination, *keys)
 
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "SINTERCARD", version_introduced="7.0.0", group=CommandGroup.SET, readonly=True
+    )
+    async def sintercard(
+        self,
+        keys: Iterable[Union[str, bytes]],
+        limit: Optional[int] = None,
+    ) -> int:
+        """
+        Intersect multiple sets and return the cardinality of the result
+
+        :return: The number of elements in the resulting intersection.
+        """
+        _keys: List[KeyT] = list(keys)
+
+        pieces: CommandArgList = [len(_keys), *_keys]
+
+        if limit is not None:
+            pieces.extend(["LIMIT", limit])
+        return await self.execute_command("SINTERCARD", *pieces)
+
     @redis_command(
         "SISMEMBER",
         readonly=True,
@@ -3222,6 +3244,28 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self._zaggregate(
             "ZINTERSTORE", keys, destination, weights, aggregate
         )
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "ZINTERCARD",
+        version_introduced="7.0.0",
+        group=CommandGroup.SORTED_SET,
+        readonly=True,
+    )
+    async def zintercard(
+        self, keys: Iterable[KeyT], limit: Optional[int] = None
+    ) -> int:
+        """
+        Intersect multiple sorted sets and return the cardinality of the result
+
+        :return: The number of elements in the resulting intersection.
+
+        """
+        _keys: List[KeyT] = list(keys)
+        pieces = [len(_keys), *_keys]
+        if limit is not None:
+            pieces.extend(["LIMIT", limit])
+        return await self.execute_command("ZINTERCARD", *pieces)
 
     @redis_command("ZLEXCOUNT", readonly=True, group=CommandGroup.SORTED_SET)
     async def zlexcount(self, key: KeyT, min_: ValueT, max_: ValueT) -> int:

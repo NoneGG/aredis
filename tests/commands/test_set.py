@@ -43,6 +43,15 @@ class TestSet:
         assert await client.sinterstore(["a", "b"], destination="c") == 2
         assert await client.smembers("c") == set(["2", "3"])
 
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_sintercard(self, client):
+        await client.sadd("a{fu}", ["1", "2", "3", "4"])
+        await client.sadd("b{fu}", ["3", "4", "5", "6"])
+        assert await client.sintercard(["a{fu}", "c{fu}"]) == 0
+        assert await client.sintercard(["a{fu}"]) == 4
+        assert await client.sintercard(["a{fu}", "b{fu}"]) == 2
+        assert await client.sintercard(["a{fu}", "b{fu}"], limit=1) == 1
+
     async def test_sismember(self, client):
         await client.sadd("a", ["1", "2", "3"])
         assert await client.sismember("a", "1")

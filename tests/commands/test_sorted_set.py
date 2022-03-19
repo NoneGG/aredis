@@ -221,6 +221,14 @@ class TestSortedSet:
             ("a1", 23),
         )
 
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_zintercard(self, client):
+        await client.zadd("a{foo}", dict(a1=1, a2=1, a3=1))
+        await client.zadd("b{foo}", dict(a3=2, a4=2, a5=2))
+        assert await client.zintercard(["a{foo}", "c{foo}"]) == 0
+        assert await client.zintercard(["a{foo}"]) == 3
+        assert await client.zintercard(["a{foo}", "b{foo}"]) == 1
+
     @pytest.mark.min_server_version("4.9.0")
     async def test_zpopmax(self, client):
         await client.zadd("a{foo}", dict(a1=1, a2=2, a3=3))
