@@ -146,7 +146,7 @@ def redis_cluster_server(docker_services):
     docker_services.start("redis-cluster-init")
     docker_services.wait_for_service("redis-cluster-6", 7005, check_redis_cluster_ready)
     if os.environ.get("CI") == "True":
-        time.sleep(5)
+        time.sleep(10)
     yield
 
 
