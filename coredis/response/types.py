@@ -109,8 +109,10 @@ class GeoSearchResult(NamedTuple):
 #: - ``flags``: See `<https://redis.io/commands/command#flags>`__
 #: - ``first-key``: This value identifies the position of the command's first key name argumen
 #: - ``last-key``: This value identifies the position of the command's last key name argument
-#: - ``step``: This value is the step, or increment, between the first key and last key values where the keys are.
-#: - ``acl-categories``: This is an array of simple strings that are the ACL categories to which the command belongs
+#: - ``step``: This value is the step, or increment, between the first key and last key values
+#:   where the keys are.
+#: - ``acl-categories``: This is an array of simple strings that are the ACL categories to which
+#:   the command belongs
 #: - ``tips``: Helpful information about the command
 #: - ``key-specification``: This is an array consisting of the command's key specifications
 #: - ``sub-commands``: This is an array containing all of the command's subcommands, if any
