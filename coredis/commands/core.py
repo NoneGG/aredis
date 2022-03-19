@@ -4345,6 +4345,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
     @redis_command(
         "XGROUP CREATE",
+        arguments={"entriesread": {"version_introduced": "7.0.0"}},
         group=CommandGroup.STREAM,
         response_callback=SimpleStringCallback(),
     )
@@ -4354,6 +4355,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         groupname: ValueT,
         identifier: Optional[ValueT] = None,
         mkstream: Optional[bool] = None,
+        entriesread: Optional[int] = None,
     ) -> bool:
         """
         Create a consumer group.
@@ -4361,6 +4363,8 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = [key, groupname, identifier or PureToken.NEW_ID.value]
         if mkstream is not None:
             pieces.append(PureToken.MKSTREAM.value)
+        if entriesread is not None:
+            pieces.extend(["ENTRIESREAD", entriesread])
 
         return await self.execute_command("XGROUP CREATE", *pieces)
 
