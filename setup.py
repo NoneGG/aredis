@@ -124,7 +124,7 @@ setup(
     },
     python_requires=">=3.8",
     install_requires=get_requirements("main.txt"),
-    extras_require={"hiredis": ["hiredis>=0.2.0"]},
+    extras_require={"hiredis": ["hiredis>=2.0.0"]},
     cmdclass=versioneer.get_cmdclass({"build_ext": custom_build_ext}),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
