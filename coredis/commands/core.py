@@ -1850,7 +1850,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         "EXISTS",
         readonly=True,
         group=CommandGroup.GENERIC,
-        response_callback=BoolCallback(),
     )
     async def exists(self, keys: Iterable[KeyT]) -> int:
         """
