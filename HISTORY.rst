@@ -9,7 +9,7 @@ Release Date: 2022-03-21
 
 * Bug Fix
 
-  * Ensure all submodules are included in package
+  * Ensure all submodules are included in package (:issue:`23`)
   * Fix conversation of datetime object to pxat value for set command
 
 * Chores

@@ -33,10 +33,11 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
-    "sphinxext.opengraph",
-    "sphinx_copybutton",
     "sphinx.ext.viewcode",
+    "sphinx_copybutton",
+    "sphinx_issues",
     "sphinx_paramlinks",
+    "sphinxext.opengraph",
 ]
 
 autodoc_default_options = {
@@ -74,6 +75,10 @@ autosectionlabel_maxdepth = 2
 autosectionlabel_prefix_document = True
 
 extlinks = {"pypi": ("https://pypi.org/project/%s", "%s")}
+
+
+issues_github_path = "alisaifee/coredis"
+
 
 htmlhelp_basename = "coredisdoc"
 latex_elements = {}
