@@ -245,9 +245,11 @@ class TestGeneric:
         assert await client.object_refcount("a") == 1
 
     async def test_exists(self, client):
-        assert not await client.exists("a")
-        await client.set("a", "foo")
-        assert await client.exists("a")
+        assert not await client.exists(["a{foo}"])
+        await client.set("a{foo}", "foo")
+        assert await client.exists(["a{foo}"]) == 1
+        await client.set("b{foo}", "foo")
+        assert await client.exists(["a{foo}", "b{foo}", "c{foo}"]) == 2
 
     async def test_expire(self, client):
         assert not await client.expire("a", 10)
