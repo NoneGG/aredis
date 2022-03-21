@@ -1,4 +1,8 @@
-from typing import Dict, NamedTuple, Optional, Tuple, TypedDict, Union
+import dataclasses
+import datetime
+import re
+import shlex
+from typing import Dict, Literal, NamedTuple, Optional, Tuple, TypedDict, Union
 
 from typing_extensions import OrderedDict, TypeAlias
 
@@ -242,3 +246,54 @@ class LCSResult(NamedTuple):
     matches: Tuple[LCSMatch, ...]
     #: Length of longest match
     length: int
+
+
+@dataclasses.dataclass
+class MonitorResult:
+    """
+    Details of issued commands received by the client when
+    listening with the `MONITOR <https://redis.io/commands/monitor>`__
+    command
+    """
+
+    EXPR = re.compile(r"\[(\d+) (.*?)\] (.*)$")
+
+    #: Time command was received
+    time: datetime.datetime
+    #: db number
+    db: int
+    #: (host, port) or path if the server is listening on a unix domain socket
+    client_addr: Optional[Union[Tuple[str, int], str]]
+    #: The type of the client that send the command
+    client_type: Literal["tcp", "unix", "lua"]
+    #: The name of the command
+    command: str
+    #: Arguments passed to the command
+    args: Optional[Tuple[str, ...]]
+
+    @classmethod
+    def parse_response_string(cls, response: str) -> "MonitorResult":
+        command_time, command_data = response.split(" ", 1)
+        match = cls.EXPR.match(command_data)
+        assert match
+        db_id, client_info, command = match.groups()
+        command = shlex.split(command)
+        client_addr = None
+        client_type: Literal["tcp", "unix", "lua"]
+        if client_info == "lua":
+            client_type = "lua"
+        elif client_info.startswith("unix"):
+            client_type = "unix"
+            client_addr = client_info[5:]
+        else:
+            host, port = client_info.rsplit(":", 1)
+            client_addr = (host, int(port))
+            client_type = "tcp"
+        return cls(
+            time=datetime.datetime.fromtimestamp(float(command_time)),
+            db=int(db_id),
+            client_addr=client_addr,
+            client_type=client_type,
+            command=command[0],
+            args=tuple(command[1:]),
+        )

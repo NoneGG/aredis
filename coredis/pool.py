@@ -252,7 +252,7 @@ class ConnectionPool:
                 self.disconnect()
                 self.reset()
 
-    async def get_connection(self, *args, **kwargs):
+    async def get_connection(self, *args, **kwargs) -> Connection:
         """Gets a connection from the pool"""
         self._checkpid()
         try:
@@ -381,7 +381,7 @@ class BlockingConnectionPool(ConnectionPool):
 
         super(BlockingConnectionPool, self).reset()
 
-    async def get_connection(self, *args, **kwargs):
+    async def get_connection(self, *args, **kwargs) -> Connection:
         """Gets a connection from the pool"""
         self._checkpid()
 

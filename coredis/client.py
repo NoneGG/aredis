@@ -23,6 +23,7 @@ from typing import (
 )
 
 from coredis.commands import ClusterCommandConfig, CommandGroup, redis_command
+from coredis.commands.builders.monitor import Monitor
 from coredis.commands.core import CoreCommands
 from coredis.commands.extra import ExtraCommandMixin
 from coredis.commands.sentinel import SentinelCommands
@@ -132,6 +133,9 @@ class NodeProxy:
 
 
 class RedisConnection:
+    encoding: str
+    decode_responses: bool
+
     def __init__(
         self,
         host: Optional[str] = "localhost",
@@ -195,6 +199,8 @@ class RedisConnection:
                     kwargs["ssl_context"] = ssl_context
             connection_pool = ConnectionPool(**kwargs)
         self.connection_pool = connection_pool
+        self.encoding = encoding
+        self.decode_responses = decode_responses
 
     def __await__(self):
         async def closure():
@@ -1006,6 +1012,15 @@ class Redis(
             return await self.parse_response(connection, command, **options)
         finally:
             pool.release(connection)
+
+    def monitor(self) -> Monitor:
+        """
+        Return an instance of a :class:`~coredis.commands.builders.monitor.Monitor`
+
+        The monitor can be used as an async iterator or individual commands
+        can be fetched via :meth:`~coredis.commands.builders.monitor.Monitor.get_command`.
+        """
+        return Monitor(self)
 
     def pubsub(self, **kwargs):
         """

@@ -11,6 +11,466 @@ Redis Client
 
 
 
+Generic
+-------
+
+
+
+COPY
+****
+
+Copy a key
+
+- Documentation: `COPY <https://redis.io/commands/copy>`_
+- Implementation: :meth:`~coredis.Redis.copy`
+
+- New in redis: 6.2.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+DEL
+***
+
+Delete a key
+
+- Documentation: `DEL <https://redis.io/commands/del>`_
+- Implementation: :meth:`~coredis.Redis.delete`
+
+
+
+
+
+
+
+DUMP
+****
+
+Return a serialized version of the value stored at the specified key.
+
+- Documentation: `DUMP <https://redis.io/commands/dump>`_
+- Implementation: :meth:`~coredis.Redis.dump`
+
+
+
+
+
+
+
+EXISTS
+******
+
+Determine if a key exists
+
+- Documentation: `EXISTS <https://redis.io/commands/exists>`_
+- Implementation: :meth:`~coredis.Redis.exists`
+
+
+
+
+
+
+
+EXPIRE
+******
+
+Set a key's time to live in seconds
+
+- Documentation: `EXPIRE <https://redis.io/commands/expire>`_
+- Implementation: :meth:`~coredis.Redis.expire`
+
+
+
+
+
+
+
+EXPIREAT
+********
+
+Set the expiration for a key as a UNIX timestamp
+
+- Documentation: `EXPIREAT <https://redis.io/commands/expireat>`_
+- Implementation: :meth:`~coredis.Redis.expireat`
+
+
+
+
+
+
+
+EXPIRETIME
+**********
+
+Get the expiration Unix timestamp for a key
+
+- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
+- Implementation: :meth:`~coredis.Redis.expiretime`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+KEYS
+****
+
+Find all keys matching the given pattern
+
+- Documentation: `KEYS <https://redis.io/commands/keys>`_
+- Implementation: :meth:`~coredis.Redis.keys`
+
+
+
+
+
+
+
+MIGRATE
+*******
+
+Atomically transfer a key from a Redis instance to another one.
+
+- Documentation: `MIGRATE <https://redis.io/commands/migrate>`_
+- Implementation: :meth:`~coredis.Redis.migrate`
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+MOVE
+****
+
+Move a key to another database
+
+- Documentation: `MOVE <https://redis.io/commands/move>`_
+- Implementation: :meth:`~coredis.Redis.move`
+
+
+
+
+
+
+
+OBJECT ENCODING
+***************
+
+Inspect the internal encoding of a Redis object
+
+- Documentation: `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
+- Implementation: :meth:`~coredis.Redis.object_encoding`
+
+
+
+
+
+
+
+OBJECT FREQ
+***********
+
+Get the logarithmic access frequency counter of a Redis object
+
+- Documentation: `OBJECT FREQ <https://redis.io/commands/object-freq>`_
+- Implementation: :meth:`~coredis.Redis.object_freq`
+
+
+
+
+
+
+
+OBJECT IDLETIME
+***************
+
+Get the time since a Redis object was last accessed
+
+- Documentation: `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
+- Implementation: :meth:`~coredis.Redis.object_idletime`
+
+
+
+
+
+
+
+OBJECT REFCOUNT
+***************
+
+Get the number of references to the value of the key
+
+- Documentation: `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
+- Implementation: :meth:`~coredis.Redis.object_refcount`
+
+
+
+
+
+
+
+PERSIST
+*******
+
+Remove the expiration from a key
+
+- Documentation: `PERSIST <https://redis.io/commands/persist>`_
+- Implementation: :meth:`~coredis.Redis.persist`
+
+
+
+
+
+
+
+PEXPIRE
+*******
+
+Set a key's time to live in milliseconds
+
+- Documentation: `PEXPIRE <https://redis.io/commands/pexpire>`_
+- Implementation: :meth:`~coredis.Redis.pexpire`
+
+
+
+
+
+
+
+PEXPIREAT
+*********
+
+Set the expiration for a key as a UNIX timestamp specified in milliseconds
+
+- Documentation: `PEXPIREAT <https://redis.io/commands/pexpireat>`_
+- Implementation: :meth:`~coredis.Redis.pexpireat`
+
+
+
+
+
+
+
+PEXPIRETIME
+***********
+
+Get the expiration Unix timestamp for a key in milliseconds
+
+- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
+- Implementation: :meth:`~coredis.Redis.pexpiretime`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+PTTL
+****
+
+Get the time to live for a key in milliseconds
+
+- Documentation: `PTTL <https://redis.io/commands/pttl>`_
+- Implementation: :meth:`~coredis.Redis.pttl`
+
+
+
+
+
+
+
+RANDOMKEY
+*********
+
+Return a random key from the keyspace
+
+- Documentation: `RANDOMKEY <https://redis.io/commands/randomkey>`_
+- Implementation: :meth:`~coredis.Redis.randomkey`
+
+
+
+
+
+
+
+RENAME
+******
+
+Rename a key
+
+- Documentation: `RENAME <https://redis.io/commands/rename>`_
+- Implementation: :meth:`~coredis.Redis.rename`
+
+
+
+
+
+
+
+RENAMENX
+********
+
+Rename a key, only if the new key does not exist
+
+- Documentation: `RENAMENX <https://redis.io/commands/renamenx>`_
+- Implementation: :meth:`~coredis.Redis.renamenx`
+
+
+
+
+
+
+
+RESTORE
+*******
+
+Create a key using the provided serialized value, previously obtained using DUMP.
+
+- Documentation: `RESTORE <https://redis.io/commands/restore>`_
+- Implementation: :meth:`~coredis.Redis.restore`
+
+
+
+
+
+
+
+SCAN
+****
+
+Incrementally iterate the keys space
+
+- Documentation: `SCAN <https://redis.io/commands/scan>`_
+- Implementation: :meth:`~coredis.Redis.scan`
+
+
+
+
+
+
+
+SORT
+****
+
+Sort the elements in a list, set or sorted set
+
+- Documentation: `SORT <https://redis.io/commands/sort>`_
+- Implementation: :meth:`~coredis.Redis.sort`
+
+
+
+
+
+
+
+SORT_RO
+*******
+
+Sort the elements in a list, set or sorted set. Read-only variant of SORT.
+
+- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
+- Implementation: :meth:`~coredis.Redis.sort_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+TOUCH
+*****
+
+Alters the last access time of a key(s). Returns the number of existing keys specified.
+
+- Documentation: `TOUCH <https://redis.io/commands/touch>`_
+- Implementation: :meth:`~coredis.Redis.touch`
+
+
+
+
+
+
+
+TTL
+***
+
+Get the time to live for a key in seconds
+
+- Documentation: `TTL <https://redis.io/commands/ttl>`_
+- Implementation: :meth:`~coredis.Redis.ttl`
+
+
+
+
+
+
+
+TYPE
+****
+
+Determine the type stored at key
+
+- Documentation: `TYPE <https://redis.io/commands/type>`_
+- Implementation: :meth:`~coredis.Redis.type`
+
+
+
+
+
+
+
+UNLINK
+******
+
+Delete a key asynchronously in another thread. Otherwise it is just as DEL, but non blocking.
+
+- Documentation: `UNLINK <https://redis.io/commands/unlink>`_
+- Implementation: :meth:`~coredis.Redis.unlink`
+
+
+
+
+
+
+
+WAIT
+****
+
+Wait for the synchronous replication of all the write commands sent in the context of the current connection
+
+- Documentation: `WAIT <https://redis.io/commands/wait>`_
+- Implementation: :meth:`~coredis.Redis.wait`
+
+
+
+
+
+
+
+
+
+
 String
 ------
 
@@ -1799,466 +2259,6 @@ Add multiple sorted sets and store the resulting sorted set in a new key
 
 
 
-Generic
--------
-
-
-
-COPY
-****
-
-Copy a key
-
-- Documentation: `COPY <https://redis.io/commands/copy>`_
-- Implementation: :meth:`~coredis.Redis.copy`
-
-- New in redis: 6.2.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-DEL
-***
-
-Delete a key
-
-- Documentation: `DEL <https://redis.io/commands/del>`_
-- Implementation: :meth:`~coredis.Redis.delete`
-
-
-
-
-
-
-
-DUMP
-****
-
-Return a serialized version of the value stored at the specified key.
-
-- Documentation: `DUMP <https://redis.io/commands/dump>`_
-- Implementation: :meth:`~coredis.Redis.dump`
-
-
-
-
-
-
-
-EXISTS
-******
-
-Determine if a key exists
-
-- Documentation: `EXISTS <https://redis.io/commands/exists>`_
-- Implementation: :meth:`~coredis.Redis.exists`
-
-
-
-
-
-
-
-EXPIRE
-******
-
-Set a key's time to live in seconds
-
-- Documentation: `EXPIRE <https://redis.io/commands/expire>`_
-- Implementation: :meth:`~coredis.Redis.expire`
-
-
-
-
-
-
-
-EXPIREAT
-********
-
-Set the expiration for a key as a UNIX timestamp
-
-- Documentation: `EXPIREAT <https://redis.io/commands/expireat>`_
-- Implementation: :meth:`~coredis.Redis.expireat`
-
-
-
-
-
-
-
-EXPIRETIME
-**********
-
-Get the expiration Unix timestamp for a key
-
-- Documentation: `EXPIRETIME <https://redis.io/commands/expiretime>`_
-- Implementation: :meth:`~coredis.Redis.expiretime`
-
-- New in redis: 7.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-KEYS
-****
-
-Find all keys matching the given pattern
-
-- Documentation: `KEYS <https://redis.io/commands/keys>`_
-- Implementation: :meth:`~coredis.Redis.keys`
-
-
-
-
-
-
-
-MIGRATE
-*******
-
-Atomically transfer a key from a Redis instance to another one.
-
-- Documentation: `MIGRATE <https://redis.io/commands/migrate>`_
-- Implementation: :meth:`~coredis.Redis.migrate`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-MOVE
-****
-
-Move a key to another database
-
-- Documentation: `MOVE <https://redis.io/commands/move>`_
-- Implementation: :meth:`~coredis.Redis.move`
-
-
-
-
-
-
-
-OBJECT ENCODING
-***************
-
-Inspect the internal encoding of a Redis object
-
-- Documentation: `OBJECT ENCODING <https://redis.io/commands/object-encoding>`_
-- Implementation: :meth:`~coredis.Redis.object_encoding`
-
-
-
-
-
-
-
-OBJECT FREQ
-***********
-
-Get the logarithmic access frequency counter of a Redis object
-
-- Documentation: `OBJECT FREQ <https://redis.io/commands/object-freq>`_
-- Implementation: :meth:`~coredis.Redis.object_freq`
-
-
-
-
-
-
-
-OBJECT IDLETIME
-***************
-
-Get the time since a Redis object was last accessed
-
-- Documentation: `OBJECT IDLETIME <https://redis.io/commands/object-idletime>`_
-- Implementation: :meth:`~coredis.Redis.object_idletime`
-
-
-
-
-
-
-
-OBJECT REFCOUNT
-***************
-
-Get the number of references to the value of the key
-
-- Documentation: `OBJECT REFCOUNT <https://redis.io/commands/object-refcount>`_
-- Implementation: :meth:`~coredis.Redis.object_refcount`
-
-
-
-
-
-
-
-PERSIST
-*******
-
-Remove the expiration from a key
-
-- Documentation: `PERSIST <https://redis.io/commands/persist>`_
-- Implementation: :meth:`~coredis.Redis.persist`
-
-
-
-
-
-
-
-PEXPIRE
-*******
-
-Set a key's time to live in milliseconds
-
-- Documentation: `PEXPIRE <https://redis.io/commands/pexpire>`_
-- Implementation: :meth:`~coredis.Redis.pexpire`
-
-
-
-
-
-
-
-PEXPIREAT
-*********
-
-Set the expiration for a key as a UNIX timestamp specified in milliseconds
-
-- Documentation: `PEXPIREAT <https://redis.io/commands/pexpireat>`_
-- Implementation: :meth:`~coredis.Redis.pexpireat`
-
-
-
-
-
-
-
-PEXPIRETIME
-***********
-
-Get the expiration Unix timestamp for a key in milliseconds
-
-- Documentation: `PEXPIRETIME <https://redis.io/commands/pexpiretime>`_
-- Implementation: :meth:`~coredis.Redis.pexpiretime`
-
-- New in redis: 7.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-PTTL
-****
-
-Get the time to live for a key in milliseconds
-
-- Documentation: `PTTL <https://redis.io/commands/pttl>`_
-- Implementation: :meth:`~coredis.Redis.pttl`
-
-
-
-
-
-
-
-RANDOMKEY
-*********
-
-Return a random key from the keyspace
-
-- Documentation: `RANDOMKEY <https://redis.io/commands/randomkey>`_
-- Implementation: :meth:`~coredis.Redis.randomkey`
-
-
-
-
-
-
-
-RENAME
-******
-
-Rename a key
-
-- Documentation: `RENAME <https://redis.io/commands/rename>`_
-- Implementation: :meth:`~coredis.Redis.rename`
-
-
-
-
-
-
-
-RENAMENX
-********
-
-Rename a key, only if the new key does not exist
-
-- Documentation: `RENAMENX <https://redis.io/commands/renamenx>`_
-- Implementation: :meth:`~coredis.Redis.renamenx`
-
-
-
-
-
-
-
-RESTORE
-*******
-
-Create a key using the provided serialized value, previously obtained using DUMP.
-
-- Documentation: `RESTORE <https://redis.io/commands/restore>`_
-- Implementation: :meth:`~coredis.Redis.restore`
-
-
-
-
-
-
-
-SCAN
-****
-
-Incrementally iterate the keys space
-
-- Documentation: `SCAN <https://redis.io/commands/scan>`_
-- Implementation: :meth:`~coredis.Redis.scan`
-
-
-
-
-
-
-
-SORT
-****
-
-Sort the elements in a list, set or sorted set
-
-- Documentation: `SORT <https://redis.io/commands/sort>`_
-- Implementation: :meth:`~coredis.Redis.sort`
-
-
-
-
-
-
-
-SORT_RO
-*******
-
-Sort the elements in a list, set or sorted set. Read-only variant of SORT.
-
-- Documentation: `SORT_RO <https://redis.io/commands/sort_ro>`_
-- Implementation: :meth:`~coredis.Redis.sort_ro`
-
-- New in redis: 7.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-TOUCH
-*****
-
-Alters the last access time of a key(s). Returns the number of existing keys specified.
-
-- Documentation: `TOUCH <https://redis.io/commands/touch>`_
-- Implementation: :meth:`~coredis.Redis.touch`
-
-
-
-
-
-
-
-TTL
-***
-
-Get the time to live for a key in seconds
-
-- Documentation: `TTL <https://redis.io/commands/ttl>`_
-- Implementation: :meth:`~coredis.Redis.ttl`
-
-
-
-
-
-
-
-TYPE
-****
-
-Determine the type stored at key
-
-- Documentation: `TYPE <https://redis.io/commands/type>`_
-- Implementation: :meth:`~coredis.Redis.type`
-
-
-
-
-
-
-
-UNLINK
-******
-
-Delete a key asynchronously in another thread. Otherwise it is just as DEL, but non blocking.
-
-- Documentation: `UNLINK <https://redis.io/commands/unlink>`_
-- Implementation: :meth:`~coredis.Redis.unlink`
-
-
-
-
-
-
-
-WAIT
-****
-
-Wait for the synchronous replication of all the write commands sent in the context of the current connection
-
-- Documentation: `WAIT <https://redis.io/commands/wait>`_
-- Implementation: :meth:`~coredis.Redis.wait`
-
-
-
-
-
-
-
-
-
-
 Hyperloglog
 -----------
 
@@ -2304,308 +2304,6 @@ Merge N different HyperLogLogs into a single one.
 
 
 
-
-
-
-
-
-Transactions
-------------
-
-
-
-DISCARD [X]
-***********
-
-Discard all commands issued after MULTI
-
-- Documentation: `DISCARD <https://redis.io/commands/discard>`_
- 
-- Not Implemented
-
-
-EXEC [X]
-********
-
-Execute all commands issued after MULTI
-
-- Documentation: `EXEC <https://redis.io/commands/exec>`_
- 
-- Not Implemented
-
-
-MULTI [X]
-*********
-
-Mark the start of a transaction block
-
-- Documentation: `MULTI <https://redis.io/commands/multi>`_
- 
-- Not Implemented
-
-
-UNWATCH [X]
-***********
-
-Forget about all watched keys
-
-- Documentation: `UNWATCH <https://redis.io/commands/unwatch>`_
- 
-- Not Implemented
-
-
-WATCH [X]
-*********
-
-Watch the given keys to determine execution of the MULTI/EXEC block
-
-- Documentation: `WATCH <https://redis.io/commands/watch>`_
- 
-- Not Implemented
-
-
-
-
-
-Scripting
----------
-
-
-
-EVAL
-****
-
-Execute a Lua script server side
-
-- Documentation: `EVAL <https://redis.io/commands/eval>`_
-- Implementation: :meth:`~coredis.Redis.eval`
-
-
-
-
-
-
-
-EVALSHA
-*******
-
-Execute a Lua script server side
-
-- Documentation: `EVALSHA <https://redis.io/commands/evalsha>`_
-- Implementation: :meth:`~coredis.Redis.evalsha`
-
-
-
-
-
-
-
-EVALSHA_RO
-**********
-
-Execute a read-only Lua script server side
-
-- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
-- Implementation: :meth:`~coredis.Redis.evalsha_ro`
-
-- New in redis: 7.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-EVAL_RO
-*******
-
-Execute a read-only Lua script server side
-
-- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
-- Implementation: :meth:`~coredis.Redis.eval_ro`
-
-- New in redis: 7.0.0
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-SCRIPT DEBUG
-************
-
-Set the debug mode for executed scripts.
-
-- Documentation: `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
-- Implementation: :meth:`~coredis.Redis.script_debug`
-
-
-
-- .. versionadded:: 3.0.0
-
-
-
-
-
-SCRIPT EXISTS
-*************
-
-Check existence of scripts in the script cache.
-
-- Documentation: `SCRIPT EXISTS <https://redis.io/commands/script-exists>`_
-- Implementation: :meth:`~coredis.Redis.script_exists`
-
-
-
-
-
-
-
-SCRIPT FLUSH
-************
-
-Remove all the scripts from the script cache.
-
-- Documentation: `SCRIPT FLUSH <https://redis.io/commands/script-flush>`_
-- Implementation: :meth:`~coredis.Redis.script_flush`
-
-
-
-
-
-
-
-SCRIPT KILL
-***********
-
-Kill the script currently in execution.
-
-- Documentation: `SCRIPT KILL <https://redis.io/commands/script-kill>`_
-- Implementation: :meth:`~coredis.Redis.script_kill`
-
-
-
-
-
-
-
-SCRIPT LOAD
-***********
-
-Load the specified Lua script into the script cache.
-
-- Documentation: `SCRIPT LOAD <https://redis.io/commands/script-load>`_
-- Implementation: :meth:`~coredis.Redis.script_load`
-
-
-
-
-
-
-
-FCALL [X]
-*********
-
-Invoke a function
-
-- Documentation: `FCALL <https://redis.io/commands/fcall>`_
- 
-- Not Implemented
-
-
-FCALL_RO [X]
-************
-
-Invoke a read-only function
-
-- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
- 
-- Not Implemented
-
-
-FUNCTION DELETE [X]
-*******************
-
-Delete a function by name
-
-- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
- 
-- Not Implemented
-
-
-FUNCTION DUMP [X]
-*****************
-
-Dump all functions into a serialized binary payload
-
-- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
- 
-- Not Implemented
-
-
-FUNCTION FLUSH [X]
-******************
-
-Deleting all functions
-
-- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
- 
-- Not Implemented
-
-
-FUNCTION KILL [X]
-*****************
-
-Kill the function currently in execution.
-
-- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
- 
-- Not Implemented
-
-
-FUNCTION LIST [X]
-*****************
-
-List information about all the functions
-
-- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
- 
-- Not Implemented
-
-
-FUNCTION LOAD [X]
-*****************
-
-Create a function with the given arguments (name, code, description)
-
-- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
- 
-- Not Implemented
-
-
-FUNCTION RESTORE [X]
-********************
-
-Restore all the functions on the given payload
-
-- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
- 
-- Not Implemented
-
-
-FUNCTION STATS [X]
-******************
-
-Return information about the function currently running (name, description, duration)
-
-- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
- 
-- Not Implemented
 
 
 
@@ -2734,160 +2432,6 @@ Query a sorted set representing a geospatial index to fetch members inside an ar
 
 
 
-
-
-
-
-
-Pubsub
-------
-
-
-
-PUBLISH
-*******
-
-Post a message to a channel
-
-- Documentation: `PUBLISH <https://redis.io/commands/publish>`_
-- Implementation: :meth:`~coredis.Redis.publish`
-
-
-
-
-
-
-
-PUBSUB CHANNELS
-***************
-
-List active channels
-
-- Documentation: `PUBSUB CHANNELS <https://redis.io/commands/pubsub-channels>`_
-- Implementation: :meth:`~coredis.Redis.pubsub_channels`
-
-
-
-
-
-
-
-PUBSUB NUMPAT
-*************
-
-Get the count of unique patterns pattern subscriptions
-
-- Documentation: `PUBSUB NUMPAT <https://redis.io/commands/pubsub-numpat>`_
-- Implementation: :meth:`~coredis.Redis.pubsub_numpat`
-
-
-
-
-
-
-
-PUBSUB NUMSUB
-*************
-
-Get the count of subscribers for channels
-
-- Documentation: `PUBSUB NUMSUB <https://redis.io/commands/pubsub-numsub>`_
-- Implementation: :meth:`~coredis.Redis.pubsub_numsub`
-
-
-
-
-
-
-
-PSUBSCRIBE [X]
-**************
-
-Listen for messages published to channels matching the given patterns
-
-- Documentation: `PSUBSCRIBE <https://redis.io/commands/psubscribe>`_
- 
-- Not Implemented
-
-
-PUBSUB SHARDCHANNELS [X]
-************************
-
-List active shard channels
-
-- Documentation: `PUBSUB SHARDCHANNELS <https://redis.io/commands/pubsub-shardchannels>`_
- 
-- Not Implemented
-
-
-PUBSUB SHARDNUMSUB [X]
-**********************
-
-Get the count of subscribers for shard channels
-
-- Documentation: `PUBSUB SHARDNUMSUB <https://redis.io/commands/pubsub-shardnumsub>`_
- 
-- Not Implemented
-
-
-PUNSUBSCRIBE [X]
-****************
-
-Stop listening for messages posted to channels matching the given patterns
-
-- Documentation: `PUNSUBSCRIBE <https://redis.io/commands/punsubscribe>`_
- 
-- Not Implemented
-
-
-SPUBLISH [X]
-************
-
-Post a message to a shard channel
-
-- Documentation: `SPUBLISH <https://redis.io/commands/spublish>`_
- 
-- Not Implemented
-
-
-SSUBSCRIBE [X]
-**************
-
-Listen for messages published to the given shard channels
-
-- Documentation: `SSUBSCRIBE <https://redis.io/commands/ssubscribe>`_
- 
-- Not Implemented
-
-
-SUBSCRIBE [X]
-*************
-
-Listen for messages published to the given channels
-
-- Documentation: `SUBSCRIBE <https://redis.io/commands/subscribe>`_
- 
-- Not Implemented
-
-
-SUNSUBSCRIBE [X]
-****************
-
-Stop listening for messages posted to the given shard channels
-
-- Documentation: `SUNSUBSCRIBE <https://redis.io/commands/sunsubscribe>`_
- 
-- Not Implemented
-
-
-UNSUBSCRIBE [X]
-***************
-
-Stop listening for messages posted to the given channels
-
-- Documentation: `UNSUBSCRIBE <https://redis.io/commands/unsubscribe>`_
- 
-- Not Implemented
 
 
 
@@ -3188,6 +2732,462 @@ Trims the stream to (approximately if '~' is passed) a certain size
 
 
 
+
+
+
+
+
+Scripting
+---------
+
+
+
+EVAL
+****
+
+Execute a Lua script server side
+
+- Documentation: `EVAL <https://redis.io/commands/eval>`_
+- Implementation: :meth:`~coredis.Redis.eval`
+
+
+
+
+
+
+
+EVALSHA
+*******
+
+Execute a Lua script server side
+
+- Documentation: `EVALSHA <https://redis.io/commands/evalsha>`_
+- Implementation: :meth:`~coredis.Redis.evalsha`
+
+
+
+
+
+
+
+EVALSHA_RO
+**********
+
+Execute a read-only Lua script server side
+
+- Documentation: `EVALSHA_RO <https://redis.io/commands/evalsha_ro>`_
+- Implementation: :meth:`~coredis.Redis.evalsha_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+EVAL_RO
+*******
+
+Execute a read-only Lua script server side
+
+- Documentation: `EVAL_RO <https://redis.io/commands/eval_ro>`_
+- Implementation: :meth:`~coredis.Redis.eval_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+SCRIPT DEBUG
+************
+
+Set the debug mode for executed scripts.
+
+- Documentation: `SCRIPT DEBUG <https://redis.io/commands/script-debug>`_
+- Implementation: :meth:`~coredis.Redis.script_debug`
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+SCRIPT EXISTS
+*************
+
+Check existence of scripts in the script cache.
+
+- Documentation: `SCRIPT EXISTS <https://redis.io/commands/script-exists>`_
+- Implementation: :meth:`~coredis.Redis.script_exists`
+
+
+
+
+
+
+
+SCRIPT FLUSH
+************
+
+Remove all the scripts from the script cache.
+
+- Documentation: `SCRIPT FLUSH <https://redis.io/commands/script-flush>`_
+- Implementation: :meth:`~coredis.Redis.script_flush`
+
+
+
+
+
+
+
+SCRIPT KILL
+***********
+
+Kill the script currently in execution.
+
+- Documentation: `SCRIPT KILL <https://redis.io/commands/script-kill>`_
+- Implementation: :meth:`~coredis.Redis.script_kill`
+
+
+
+
+
+
+
+SCRIPT LOAD
+***********
+
+Load the specified Lua script into the script cache.
+
+- Documentation: `SCRIPT LOAD <https://redis.io/commands/script-load>`_
+- Implementation: :meth:`~coredis.Redis.script_load`
+
+
+
+
+
+
+
+FCALL [X]
+*********
+
+Invoke a function
+
+- Documentation: `FCALL <https://redis.io/commands/fcall>`_
+ 
+- Not Implemented
+
+
+FCALL_RO [X]
+************
+
+Invoke a read-only function
+
+- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
+ 
+- Not Implemented
+
+
+FUNCTION DELETE [X]
+*******************
+
+Delete a function by name
+
+- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
+ 
+- Not Implemented
+
+
+FUNCTION DUMP [X]
+*****************
+
+Dump all functions into a serialized binary payload
+
+- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
+ 
+- Not Implemented
+
+
+FUNCTION FLUSH [X]
+******************
+
+Deleting all functions
+
+- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
+ 
+- Not Implemented
+
+
+FUNCTION KILL [X]
+*****************
+
+Kill the function currently in execution.
+
+- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
+ 
+- Not Implemented
+
+
+FUNCTION LIST [X]
+*****************
+
+List information about all the functions
+
+- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
+ 
+- Not Implemented
+
+
+FUNCTION LOAD [X]
+*****************
+
+Create a function with the given arguments (name, code, description)
+
+- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
+ 
+- Not Implemented
+
+
+FUNCTION RESTORE [X]
+********************
+
+Restore all the functions on the given payload
+
+- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
+ 
+- Not Implemented
+
+
+FUNCTION STATS [X]
+******************
+
+Return information about the function currently running (name, description, duration)
+
+- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
+ 
+- Not Implemented
+
+
+
+
+
+Pubsub
+------
+
+
+
+PUBLISH
+*******
+
+Post a message to a channel
+
+- Documentation: `PUBLISH <https://redis.io/commands/publish>`_
+- Implementation: :meth:`~coredis.Redis.publish`
+
+
+
+
+
+
+
+PUBSUB CHANNELS
+***************
+
+List active channels
+
+- Documentation: `PUBSUB CHANNELS <https://redis.io/commands/pubsub-channels>`_
+- Implementation: :meth:`~coredis.Redis.pubsub_channels`
+
+
+
+
+
+
+
+PUBSUB NUMPAT
+*************
+
+Get the count of unique patterns pattern subscriptions
+
+- Documentation: `PUBSUB NUMPAT <https://redis.io/commands/pubsub-numpat>`_
+- Implementation: :meth:`~coredis.Redis.pubsub_numpat`
+
+
+
+
+
+
+
+PUBSUB NUMSUB
+*************
+
+Get the count of subscribers for channels
+
+- Documentation: `PUBSUB NUMSUB <https://redis.io/commands/pubsub-numsub>`_
+- Implementation: :meth:`~coredis.Redis.pubsub_numsub`
+
+
+
+
+
+
+
+PSUBSCRIBE [X]
+**************
+
+Listen for messages published to channels matching the given patterns
+
+- Documentation: `PSUBSCRIBE <https://redis.io/commands/psubscribe>`_
+ 
+- Not Implemented
+
+
+PUBSUB SHARDCHANNELS [X]
+************************
+
+List active shard channels
+
+- Documentation: `PUBSUB SHARDCHANNELS <https://redis.io/commands/pubsub-shardchannels>`_
+ 
+- Not Implemented
+
+
+PUBSUB SHARDNUMSUB [X]
+**********************
+
+Get the count of subscribers for shard channels
+
+- Documentation: `PUBSUB SHARDNUMSUB <https://redis.io/commands/pubsub-shardnumsub>`_
+ 
+- Not Implemented
+
+
+PUNSUBSCRIBE [X]
+****************
+
+Stop listening for messages posted to channels matching the given patterns
+
+- Documentation: `PUNSUBSCRIBE <https://redis.io/commands/punsubscribe>`_
+ 
+- Not Implemented
+
+
+SPUBLISH [X]
+************
+
+Post a message to a shard channel
+
+- Documentation: `SPUBLISH <https://redis.io/commands/spublish>`_
+ 
+- Not Implemented
+
+
+SSUBSCRIBE [X]
+**************
+
+Listen for messages published to the given shard channels
+
+- Documentation: `SSUBSCRIBE <https://redis.io/commands/ssubscribe>`_
+ 
+- Not Implemented
+
+
+SUBSCRIBE [X]
+*************
+
+Listen for messages published to the given channels
+
+- Documentation: `SUBSCRIBE <https://redis.io/commands/subscribe>`_
+ 
+- Not Implemented
+
+
+SUNSUBSCRIBE [X]
+****************
+
+Stop listening for messages posted to the given shard channels
+
+- Documentation: `SUNSUBSCRIBE <https://redis.io/commands/sunsubscribe>`_
+ 
+- Not Implemented
+
+
+UNSUBSCRIBE [X]
+***************
+
+Stop listening for messages posted to the given channels
+
+- Documentation: `UNSUBSCRIBE <https://redis.io/commands/unsubscribe>`_
+ 
+- Not Implemented
+
+
+
+
+
+Transactions
+------------
+
+
+
+DISCARD [X]
+***********
+
+Discard all commands issued after MULTI
+
+- Documentation: `DISCARD <https://redis.io/commands/discard>`_
+ 
+- Not Implemented
+
+
+EXEC [X]
+********
+
+Execute all commands issued after MULTI
+
+- Documentation: `EXEC <https://redis.io/commands/exec>`_
+ 
+- Not Implemented
+
+
+MULTI [X]
+*********
+
+Mark the start of a transaction block
+
+- Documentation: `MULTI <https://redis.io/commands/multi>`_
+ 
+- Not Implemented
+
+
+UNWATCH [X]
+***********
+
+Forget about all watched keys
+
+- Documentation: `UNWATCH <https://redis.io/commands/unwatch>`_
+ 
+- Not Implemented
+
+
+WATCH [X]
+*********
+
+Watch the given keys to determine execution of the MULTI/EXEC block
+
+- Documentation: `WATCH <https://redis.io/commands/watch>`_
+ 
+- Not Implemented
 
 
 
@@ -3824,6 +3824,20 @@ Estimate the memory usage of a key
 
 
 
+MONITOR
+*******
+
+Listen for all requests received by the server in real time
+
+- Documentation: `MONITOR <https://redis.io/commands/monitor>`_
+- Implementation: :meth:`~coredis.Redis.monitor`
+
+
+
+
+
+
+
 REPLICAOF
 *********
 
@@ -4036,16 +4050,6 @@ MODULE UNLOAD [X]
 Unload a module
 
 - Documentation: `MODULE UNLOAD <https://redis.io/commands/module-unload>`_
- 
-- Not Implemented
-
-
-MONITOR [X]
-***********
-
-Listen for all requests received by the server in real time
-
-- Documentation: `MONITOR <https://redis.io/commands/monitor>`_
  
 - Not Implemented
 
@@ -4806,6 +4810,84 @@ Redis Cluster Client
 
 
 
+Generic
+-------
+
+
+
+DEL
+***
+
+Delete a key
+
+- Documentation: `DEL <https://redis.io/commands/del>`_
+- Implementation: :meth:`~coredis.RedisCluster.delete`
+
+
+
+
+
+
+
+RENAME
+******
+
+Rename a key
+
+- Documentation: `RENAME <https://redis.io/commands/rename>`_
+- Implementation: :meth:`~coredis.RedisCluster.rename`
+
+
+
+
+
+
+
+RENAMENX
+********
+
+Rename a key, only if the new key does not exist
+
+- Documentation: `RENAMENX <https://redis.io/commands/renamenx>`_
+- Implementation: :meth:`~coredis.RedisCluster.renamenx`
+
+
+
+
+
+
+
+SORT
+****
+
+Sort the elements in a list, set or sorted set
+
+- Documentation: `SORT <https://redis.io/commands/sort>`_
+- Implementation: :meth:`~coredis.RedisCluster.sort`
+
+
+
+
+
+
+
+TYPE
+****
+
+Determine the type stored at key
+
+- Documentation: `TYPE <https://redis.io/commands/type>`_
+- Implementation: :meth:`~coredis.RedisCluster.type`
+
+
+
+
+
+
+
+
+
+
 String
 ------
 
@@ -5022,139 +5104,7 @@ Add multiple sets and store the resulting set in a key
 
 
 
-Generic
--------
 
-
-
-DEL
-***
-
-Delete a key
-
-- Documentation: `DEL <https://redis.io/commands/del>`_
-- Implementation: :meth:`~coredis.RedisCluster.delete`
-
-
-
-
-
-
-
-RENAME
-******
-
-Rename a key
-
-- Documentation: `RENAME <https://redis.io/commands/rename>`_
-- Implementation: :meth:`~coredis.RedisCluster.rename`
-
-
-
-
-
-
-
-RENAMENX
-********
-
-Rename a key, only if the new key does not exist
-
-- Documentation: `RENAMENX <https://redis.io/commands/renamenx>`_
-- Implementation: :meth:`~coredis.RedisCluster.renamenx`
-
-
-
-
-
-
-
-SORT
-****
-
-Sort the elements in a list, set or sorted set
-
-- Documentation: `SORT <https://redis.io/commands/sort>`_
-- Implementation: :meth:`~coredis.RedisCluster.sort`
-
-
-
-
-
-
-
-TYPE
-****
-
-Determine the type stored at key
-
-- Documentation: `TYPE <https://redis.io/commands/type>`_
-- Implementation: :meth:`~coredis.RedisCluster.type`
-
-
-
-
-
-
-
-
-
-
-
-
-Transactions
-------------
-
-
-
-DISCARD [X]
-***********
-
-Discard all commands issued after MULTI
-
-- Documentation: `DISCARD <https://redis.io/commands/discard>`_
- 
-- Not Implemented
-
-
-EXEC [X]
-********
-
-Execute all commands issued after MULTI
-
-- Documentation: `EXEC <https://redis.io/commands/exec>`_
- 
-- Not Implemented
-
-
-MULTI [X]
-*********
-
-Mark the start of a transaction block
-
-- Documentation: `MULTI <https://redis.io/commands/multi>`_
- 
-- Not Implemented
-
-
-UNWATCH [X]
-***********
-
-Forget about all watched keys
-
-- Documentation: `UNWATCH <https://redis.io/commands/unwatch>`_
- 
-- Not Implemented
-
-
-WATCH [X]
-*********
-
-Watch the given keys to determine execution of the MULTI/EXEC block
-
-- Documentation: `WATCH <https://redis.io/commands/watch>`_
- 
-- Not Implemented
 
 
 
@@ -5282,8 +5232,6 @@ Return information about the function currently running (name, description, dura
 
 
 
-
-
 Pubsub
 ------
 
@@ -5379,6 +5327,62 @@ Stop listening for messages posted to the given channels
 - Not Implemented
 
 
+
+
+
+Transactions
+------------
+
+
+
+DISCARD [X]
+***********
+
+Discard all commands issued after MULTI
+
+- Documentation: `DISCARD <https://redis.io/commands/discard>`_
+ 
+- Not Implemented
+
+
+EXEC [X]
+********
+
+Execute all commands issued after MULTI
+
+- Documentation: `EXEC <https://redis.io/commands/exec>`_
+ 
+- Not Implemented
+
+
+MULTI [X]
+*********
+
+Mark the start of a transaction block
+
+- Documentation: `MULTI <https://redis.io/commands/multi>`_
+ 
+- Not Implemented
+
+
+UNWATCH [X]
+***********
+
+Forget about all watched keys
+
+- Documentation: `UNWATCH <https://redis.io/commands/unwatch>`_
+ 
+- Not Implemented
+
+
+WATCH [X]
+*********
+
+Watch the given keys to determine execution of the MULTI/EXEC block
+
+- Documentation: `WATCH <https://redis.io/commands/watch>`_
+ 
+- Not Implemented
 
 
 

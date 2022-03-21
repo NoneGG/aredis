@@ -8,6 +8,7 @@ Redis
 -----
 .. autoclass:: Redis
    :class-doc-from: both
+
 Cluster
 -------
 .. autoclass:: RedisCluster
@@ -79,6 +80,10 @@ Transactions
    :no-inherited-members:
    :class-doc-from: both
 
+Monitor
+-------
+.. autoclass:: coredis.commands.builders.monitor.Monitor
+
 
 Response Types
 ^^^^^^^^^^^^^^
@@ -92,10 +97,18 @@ Utility Classes
 
 .. currentmodule:: coredis
 
-.. autoclass::
-   NodeFlag
-.. autoclass::
-   PureToken
+.. autoclass:: NodeFlag
+   :no-inherited-members:
+   :show-inheritance:
+.. autoclass:: PureToken
+   :no-inherited-members:
+   :show-inheritance:
+.. autoclass:: coredis.commands.builders.pubsub.PubSubWorkerThread
+   :no-inherited-members:
+   :show-inheritance:
+.. autoclass:: coredis.commands.builders.monitor.MonitorThread
+   :no-inherited-members:
+   :show-inheritance:
 
 Exceptions
 ^^^^^^^^^^

@@ -1,8 +1,16 @@
 import asyncio
 import threading
+from asyncio import CancelledError
+from concurrent.futures import Future
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
 from coredis.exceptions import ConnectionError, PubSubError, TimeoutError
 from coredis.utils import iteritems, iterkeys, list_or_args, nativestr
+
+if TYPE_CHECKING:
+    import coredis.client
+    import coredis.connection
+    import coredis.pool
 
 
 class PubSub:
@@ -17,10 +25,14 @@ class PubSub:
     PUBLISH_MESSAGE_TYPES = ("message", "pmessage")
     UNSUBSCRIBE_MESSAGE_TYPES = ("unsubscribe", "punsubscribe")
 
-    def __init__(self, connection_pool, ignore_subscribe_messages=False):
+    def __init__(
+        self,
+        connection_pool: "coredis.pool.ConnectionPool",
+        ignore_subscribe_messages=False,
+    ):
         self.connection_pool = connection_pool
         self.ignore_subscribe_messages = ignore_subscribe_messages
-        self.connection = None
+        self.connection: Optional["coredis.connection.Connection"] = None
         self.reset()
 
     async def _ensure_encoding(self):
@@ -55,7 +67,7 @@ class PubSub:
     def close(self):
         self.reset()
 
-    async def on_connect(self, connection):
+    async def on_connect(self, _):
         """Re-subscribe to any channels and patterns previously subscribed to"""
 
         if self.channels:
@@ -90,7 +102,7 @@ class PubSub:
         return value
 
     @property
-    def subscribed(self):
+    def subscribed(self) -> bool:
         """Indicates if there are subscriptions to any channels or patterns"""
 
         return bool(self.channels or self.patterns)
@@ -107,8 +119,8 @@ class PubSub:
         if self.connection is None:
             self.connection = await self.connection_pool.get_connection()
             self.connection.register_connect_callback(self.on_connect)
-        connection = self.connection
-        await self._execute(connection, connection.send_command, *args)
+        assert self.connection
+        await self._execute(self.connection, self.connection.send_command, *args)
 
     async def _execute(self, connection, command, *args):
         try:
@@ -136,7 +148,7 @@ class PubSub:
 
             return await command(*args)
 
-    async def parse_response(self, block=True, timeout=0):
+    async def parse_response(self, block=True, timeout: Union[int, float] = 0):
         """Parses the response from a publish/subscribe command"""
         connection = self.connection
 
@@ -189,7 +201,6 @@ class PubSub:
 
         if args:
             args = list_or_args(args[0], args[1:])
-
         return await self.execute_command("PUNSUBSCRIBE", *args)
 
     async def subscribe(self, *args, **kwargs):
@@ -239,7 +250,9 @@ class PubSub:
         if self.subscribed:
             return self.handle_message(await self.parse_response(block=True))
 
-    async def get_message(self, ignore_subscribe_messages=False, timeout=0):
+    async def get_message(
+        self, ignore_subscribe_messages=False, timeout: Union[int, float] = 0
+    ):
         """
         Gets the next message if one is available, otherwise None.
 
@@ -254,7 +267,9 @@ class PubSub:
 
         return None
 
-    def handle_message(self, response, ignore_subscribe_messages=False):
+    def handle_message(
+        self, response, ignore_subscribe_messages=False
+    ) -> Optional[Dict]:
         """
         Parses a pub/sub message. If the channel or pattern was subscribed to
         with a message handler, the handler is invoked instead of a parsed
@@ -278,10 +293,7 @@ class PubSub:
             }
 
         # if this is an unsubscribe message, remove it from memory
-
         if message_type in self.UNSUBSCRIBE_MESSAGE_TYPES:
-            subscribed_dict = None
-
             if message_type == "punsubscribe":
                 subscribed_dict = self.patterns
             else:
@@ -292,9 +304,6 @@ class PubSub:
                 pass
 
         if message_type in self.PUBLISH_MESSAGE_TYPES:
-            # if there's a message handler, invoke it
-            handler = None
-
             if message_type == "pmessage":
                 handler = self.patterns.get(message["pattern"], None)
             else:
@@ -302,7 +311,6 @@ class PubSub:
 
             if handler:
                 handler(message)
-
                 return None
         else:
             # this is a subscribe/unsubscribe message. ignore if we don't
@@ -313,7 +321,14 @@ class PubSub:
 
         return message
 
-    def run_in_thread(self, daemon=False, poll_timeout=1.0):
+    def run_in_thread(self, poll_timeout=1.0) -> "PubSubWorkerThread":
+        """
+        Run the listeners in a thread. For each message received on a
+        subscribed channel or pattern the registered handlers will be invoked.
+
+        To stop listening invoke :meth:`PubSubWorkerThread.stop` on the returned
+        instead of :class:`PubSubWorkerThread`.
+        """
         for channel, handler in iteritems(self.channels):
             if handler is None:
                 raise PubSubError(
@@ -325,55 +340,46 @@ class PubSub:
                 raise PubSubError(
                     "Pattern: '{}' has no handler registered".format(pattern)
                 )
-        thread = PubSubWorkerThread(self, daemon=daemon, poll_timeout=poll_timeout)
+        thread = PubSubWorkerThread(
+            self, poll_timeout=poll_timeout, loop=asyncio.get_running_loop()
+        )
         thread.start()
 
         return thread
 
 
 class PubSubWorkerThread(threading.Thread):
-    def __init__(self, pubsub, daemon=False, poll_timeout=1.0):
+    def __init__(
+        self, pubsub: "PubSub", loop: asyncio.events.AbstractEventLoop, poll_timeout=1.0
+    ):
         super(PubSubWorkerThread, self).__init__()
-        self.daemon = daemon
-        self.pubsub = pubsub
-        self.poll_timeout = poll_timeout
+        self._pubsub = pubsub
+        self._poll_timeout = poll_timeout
         self._running = False
-        # Make sure we have the current thread loop before we
-        # fork into the new thread. If not loop has been set on the connection
-        # pool use the current default event loop.
-        self.loop = pubsub.connection_pool.loop or asyncio.get_event_loop()
+        self._loop = loop or asyncio.get_running_loop()
+        self._future: Optional[Future[None]] = None
 
     async def _run(self):
-        pubsub = self.pubsub
-
-        while pubsub.subscribed:
-            await pubsub.get_message(
-                ignore_subscribe_messages=True, timeout=self.poll_timeout
-            )
-        pubsub.close()
-        self._running = False
+        pubsub = self._pubsub
+        try:
+            while pubsub.subscribed:
+                await pubsub.get_message(
+                    ignore_subscribe_messages=True, timeout=self._poll_timeout
+                )
+        except CancelledError:
+            await asyncio.gather(pubsub.unsubscribe(), pubsub.punsubscribe())
+            pubsub.close()
+            self._running = False
 
     def run(self):
         if self._running:
             return
         self._running = True
-        future = asyncio.run_coroutine_threadsafe(self._run(), self.loop)
-
-        return future.result()
+        self._future = asyncio.run_coroutine_threadsafe(self._run(), self._loop)
 
     def stop(self):
-        # stopping simply unsubscribes from all channels and patterns.
-        # the unsubscribe responses that are generated will short circuit
-        # the loop in run(), calling pubsub.close() to clean up the connection
-
-        if self.loop:
-            unsubscribed = asyncio.run_coroutine_threadsafe(
-                self.pubsub.unsubscribe(), self.loop
-            )
-            punsubscribed = asyncio.run_coroutine_threadsafe(
-                self.pubsub.punsubscribe(), self.loop
-            )
-            asyncio.wait([unsubscribed, punsubscribed], loop=self.loop)  # type: ignore
+        if self._future:
+            self._future.cancel()
 
 
 class ClusterPubSub(PubSub):
@@ -402,5 +408,6 @@ class ClusterPubSub(PubSub):
             # register a callback that re-subscribes to any channels we
             # were listening to when we were disconnected
             self.connection.register_connect_callback(self.on_connect)
-        connection = self.connection
-        await self._execute(connection, connection.send_command, *args)
+
+        assert self.connection
+        await self._execute(self.connection, self.connection.send_command, *args)
