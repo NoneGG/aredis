@@ -13,6 +13,9 @@ class TestMonitor:
         response = await asyncio.gather(monitor.get_command(), client.get("test"))
         assert response[0].command == "GET"
         assert response[0].args == ("test",)
+        response = await asyncio.gather(monitor.get_command(), client.get("test2"))
+        assert response[0].command == "GET"
+        assert response[0].args == ("test2",)
 
     async def test_iterator(self, client):
         async def delayed():
@@ -30,16 +33,11 @@ class TestMonitor:
         assert results[1][0].command == "GET"
         assert results[1][0].args == ("test",)
 
-    async def test_threaded_listener(self, client):
-        results = []
-
-        def handler(command):
-            results.append(command)
-
+    async def test_threaded_listener(self, client, mocker):
         monitor = client.monitor()
-        thread = monitor.run_in_thread(handler)
+        thread = monitor.run_in_thread(lambda cmd: None)
         await asyncio.sleep(0.01)
-        await client.get("test")
-        assert len(results) == 1
-        assert results[0].args == ("test",)
+        send_command = mocker.spy(monitor.connection, "send_command")
         thread.stop()
+        await asyncio.sleep(0.01)
+        send_command.assert_called_with("RESET")

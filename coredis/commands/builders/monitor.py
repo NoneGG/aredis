@@ -74,12 +74,6 @@ class Monitor:
         """
         return await self.__stop_monitoring()
 
-    def reset(self):
-        """
-        Clear all flags/connections held by the monitor
-        """
-        self.__reset()
-
     def run_in_thread(
         self, response_handler=Callable[[MonitorResult], None], loop=None
     ) -> "MonitorThread":
@@ -108,15 +102,15 @@ class Monitor:
         assert self.connection
         await self.connection.send_command("MONITOR")
         response = nativestr(await self.connection.read_response())
-        if not response == "OK":
-            raise RedisError(f"Failed to start {response}")
+        if not response == "OK":  # noqa
+            raise RedisError(f"Failed to start MONITOR {response}")
         self.monitoring = True
 
     async def __stop_monitoring(self):
         if self.connection:
             await self.connection.send_command("RESET")
             response = await self.connection.read_response()
-            if not nativestr(response) == "RESET":
+            if not nativestr(response) == "RESET":  # noqa
                 raise RedisError("Failed to reset connection")
         self.__reset()
 
