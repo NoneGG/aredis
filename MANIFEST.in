@@ -3,6 +3,7 @@ include README.rst
 include HISTORY.rst
 exclude __pycache__
 recursive-exclude benchmarks *
+recursive-exclude examples *
 recursive-exclude tests *
 recursive-include requirements *.txt
 include versioneer.py
