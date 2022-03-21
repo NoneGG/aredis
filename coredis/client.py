@@ -248,7 +248,10 @@ class AbstractRedis(
     """
 
     async def scan_iter(
-        self, match: Optional[ValueT] = None, count: Optional[int] = None
+        self,
+        match: Optional[ValueT] = None,
+        count: Optional[int] = None,
+        type_: Optional[ValueT] = None,
     ):
         """
         Make an iterator using the SCAN command so that the client doesn't
@@ -257,7 +260,9 @@ class AbstractRedis(
         cursor = None
 
         while cursor != 0:
-            cursor, data = await self.scan(cursor=cursor, match=match, count=count)
+            cursor, data = await self.scan(
+                cursor=cursor, match=match, count=count, type_=type_
+            )
 
             for item in data:
                 yield item
@@ -1544,7 +1549,10 @@ class RedisCluster(
         )
 
     async def scan_iter(
-        self, match: Optional[ValueT] = None, count: Optional[int] = None
+        self,
+        match: Optional[ValueT] = None,
+        count: Optional[int] = None,
+        type_: Optional[ValueT] = None,
     ):
         for node in self.primaries:
             cursor = "0"
@@ -1557,6 +1565,10 @@ class RedisCluster(
 
                 if count is not None:
                     pieces.extend(["COUNT", count])
+
+                if type_ is not None:
+                    pieces.extend(["TYPE", type_])
+
                 response = await node.execute_command("SCAN", *pieces)
                 cursor, data = response
 
