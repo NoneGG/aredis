@@ -3,6 +3,21 @@
 Changelog
 =========
 
+v3.0.1
+------
+Release Date: 2022-03-21
+
+* Bug Fix
+
+  * Ensure all submodules are included in package
+  * Fix conversation of datetime object to pxat value for set command
+
+* Chores
+
+  * Re-add examples folder
+  * Tweak type hints
+  * Make ``scan_iter`` arguments consistent with ``scan``
+
 v3.0.0
 ---------
 Release Date: 2022-03-20
@@ -399,6 +414,7 @@ v1.0.1
 * fix bug of `PubSub.run_in_thread`
 * add more examples
 * change `Script.register` to `Script.execute`
+
 
 
 
