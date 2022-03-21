@@ -891,8 +891,8 @@ class Redis(
         ssl_ca_certs: Optional[str] = None,
         max_connections: Optional[int] = None,
         retry_on_timeout: bool = False,
-        max_idle_time: int = 0,
-        idle_check_interval: int = 1,
+        max_idle_time: float = 0,
+        idle_check_interval: float = 1,
         client_name: Optional[str] = None,
         **kwargs,
     ):
