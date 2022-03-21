@@ -158,7 +158,7 @@ class RedisConnection:
         max_connections: Optional[int] = None,
         retry_on_timeout: bool = False,
         max_idle_time: int = 0,
-        idle_check_interval: int = 1,
+        idle_check_interval: float = 1,
         client_name: Optional[str] = None,
         **kwargs,
     ):
@@ -827,8 +827,8 @@ class Redis(
         ssl_ca_certs: Optional[str] = ...,
         max_connections: Optional[int] = ...,
         retry_on_timeout: bool = ...,
-        max_idle_time: int = ...,
-        idle_check_interval: int = ...,
+        max_idle_time: float = ...,
+        idle_check_interval: float = ...,
         client_name: Optional[str] = ...,
         **kwargs,
     ):
@@ -857,8 +857,8 @@ class Redis(
         ssl_ca_certs: Optional[str] = ...,
         max_connections: Optional[int] = ...,
         retry_on_timeout: bool = ...,
-        max_idle_time: int = ...,
-        idle_check_interval: int = ...,
+        max_idle_time: float = ...,
+        idle_check_interval: float = ...,
         client_name: Optional[str] = ...,
         **kwargs,
     ):
