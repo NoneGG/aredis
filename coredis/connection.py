@@ -34,7 +34,7 @@ from coredis.utils import b, nativestr
 try:
     import hiredis
 
-    HIREDIS_AVAILABLE = False
+    HIREDIS_AVAILABLE = True
 except ImportError:
     HIREDIS_AVAILABLE = False
 
