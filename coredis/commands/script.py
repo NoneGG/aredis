@@ -27,7 +27,7 @@ class Script:
         client: Optional[SupportsScript] = None,
     ):
         """Executes the script, passing any required ``args``"""
-        from coredis.commands.builders.pipeline import BasePipeline
+        from coredis.commands.pipeline import BasePipeline
 
         if client is None:
             client = self.registered_client

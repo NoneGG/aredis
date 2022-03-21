@@ -5,7 +5,7 @@ import uuid
 import warnings
 from typing import Optional, Union
 
-from coredis.commands.builders.script import Script
+from coredis.commands.script import Script
 from coredis.connection import ClusterConnection
 from coredis.exceptions import LockError, WatchError
 from coredis.tokens import PureToken

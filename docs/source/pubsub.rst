@@ -1,8 +1,8 @@
 Publish / Subscribe
 ===================
 
-coredis includes a :class:`~coredis.commands.builders.pubsub.PubSub` class
-that subscribes to channels and listens for new messages. Creating a :class:`~coredis.commands.builders.pubsub.PubSub` instance
+coredis includes a :class:`~coredis.commands.pubsub.PubSub` class
+that subscribes to channels and listens for new messages. Creating a :class:`~coredis.commands.pubsub.PubSub` instance
 can be done through the :meth:`~coredis.Redis.pubsub` or :meth:`~coredis.RedisCluster.pubsub` methods.
 
 .. code-block:: python
@@ -10,7 +10,7 @@ can be done through the :meth:`~coredis.Redis.pubsub` or :meth:`~coredis.RedisCl
     r = coredis.Redis(...)
     p = r.pubsub()
 
-Once a :class:`~coredis.commands.builders.pubsub.PubSub` instance is created,
+Once a :class:`~coredis.commands.pubsub.PubSub` instance is created,
 channels and patterns can be subscribed to.
 
 .. code-block:: python
@@ -18,8 +18,8 @@ channels and patterns can be subscribed to.
     await p.subscribe('my-first-channel', 'my-second-channel', ...)
     await p.psubscribe('my-*', ...)
 
-The :class:`~coredis.commands.builders.pubsub.PubSub` instance is now subscribed to those channels/patterns. The
-subscription confirmations can be seen by reading messages from the :class:`~coredis.commands.builders.pubsub.PubSub`
+The :class:`~coredis.commands.pubsub.PubSub` instance is now subscribed to those channels/patterns. The
+subscription confirmations can be seen by reading messages from the :class:`~coredis.commands.pubsub.PubSub`
 instance.
 
 .. code-block:: python
@@ -31,7 +31,7 @@ instance.
     await p.get_message()
     # {'pattern': None, 'type': 'psubscribe', 'channel': 'my-*', 'data': 3L}
 
-Every message read from a :class:`~coredis.commands.builders.pubsub.PubSub` instance
+Every message read from a :class:`~coredis.commands.pubsub.PubSub` instance
 will be a dictionary with the following keys.
 
 type

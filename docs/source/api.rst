@@ -53,36 +53,36 @@ Command Builders
 BitField Operations
 -------------------
 
-.. autoclass:: coredis.commands.builders.bitfield.BitFieldOperation
+.. autoclass:: coredis.commands.bitfield.BitFieldOperation
    :no-inherited-members:
    :class-doc-from: both
 
 PubSub
 ------
-.. autoclass:: coredis.commands.builders.pubsub.PubSub
+.. autoclass:: coredis.commands.pubsub.PubSub
    :no-inherited-members:
    :class-doc-from: both
 
 Scripting
 ---------
-.. autoclass:: coredis.commands.builders.script.Script
+.. autoclass:: coredis.commands.script.Script
    :no-inherited-members:
    :class-doc-from: both
 
 Transactions
 ------------
 
-.. autoclass:: coredis.commands.builders.pipeline.Pipeline
+.. autoclass:: coredis.commands.pipeline.Pipeline
    :no-inherited-members:
    :class-doc-from: both
 
-.. autoclass:: coredis.commands.builders.pipeline.ClusterPipeline
+.. autoclass:: coredis.commands.pipeline.ClusterPipeline
    :no-inherited-members:
    :class-doc-from: both
 
 Monitor
 -------
-.. autoclass:: coredis.commands.builders.monitor.Monitor
+.. autoclass:: coredis.commands.monitor.Monitor
 
 
 Response Types
@@ -103,10 +103,10 @@ Utility Classes
 .. autoclass:: PureToken
    :no-inherited-members:
    :show-inheritance:
-.. autoclass:: coredis.commands.builders.pubsub.PubSubWorkerThread
+.. autoclass:: coredis.commands.pubsub.PubSubWorkerThread
    :no-inherited-members:
    :show-inheritance:
-.. autoclass:: coredis.commands.builders.monitor.MonitorThread
+.. autoclass:: coredis.commands.monitor.MonitorThread
    :no-inherited-members:
    :show-inheritance:
 

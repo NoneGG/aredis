@@ -23,7 +23,7 @@ from typing import (
 )
 
 from coredis.commands import ClusterCommandConfig, CommandGroup, redis_command
-from coredis.commands.builders.monitor import Monitor
+from coredis.commands.monitor import Monitor
 from coredis.commands.core import CoreCommands
 from coredis.commands.extra import ExtraCommandMixin
 from coredis.commands.sentinel import SentinelCommands
@@ -1015,10 +1015,10 @@ class Redis(
 
     def monitor(self) -> Monitor:
         """
-        Return an instance of a :class:`~coredis.commands.builders.monitor.Monitor`
+        Return an instance of a :class:`~coredis.commands.monitor.Monitor`
 
         The monitor can be used as an async iterator or individual commands
-        can be fetched via :meth:`~coredis.commands.builders.monitor.Monitor.get_command`.
+        can be fetched via :meth:`~coredis.commands.monitor.Monitor.get_command`.
         """
         return Monitor(self)
 
@@ -1028,7 +1028,7 @@ class Redis(
         subscribe to channels and listen for messages that get published to
         them.
         """
-        from coredis.commands.builders.pubsub import PubSub
+        from coredis.commands.pubsub import PubSub
 
         return PubSub(self.connection_pool, **kwargs)
 
@@ -1044,7 +1044,7 @@ class Redis(
         atomic, pipelines are useful for reducing the back-and-forth overhead
         between the client and server.
         """
-        from coredis.commands.builders.pipeline import Pipeline
+        from coredis.commands.pipeline import Pipeline
 
         pipeline = Pipeline(self.connection_pool, self.response_callbacks, transaction)
         await pipeline.reset()
@@ -1513,7 +1513,7 @@ class RedisCluster(
         return self._merge_result(command, res, **kwargs)
 
     def pubsub(self, **kwargs):
-        from coredis.commands.builders.pubsub import ClusterPubSub
+        from coredis.commands.pubsub import ClusterPubSub
 
         return ClusterPubSub(self.connection_pool, **kwargs)
 
@@ -1532,7 +1532,7 @@ class RedisCluster(
         """
         await self.connection_pool.initialize()
 
-        from coredis.commands.builders.pipeline import ClusterPipeline
+        from coredis.commands.pipeline import ClusterPipeline
 
         return ClusterPipeline(
             connection_pool=self.connection_pool,

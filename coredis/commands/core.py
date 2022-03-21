@@ -120,7 +120,7 @@ from coredis.validators import (
     mutually_inclusive_parameters,
 )
 
-from .builders.bitfield import BitFieldOperation
+from coredis.commands.bitfield import BitFieldOperation
 
 
 class CoreCommands(CommandMixin[AnyStr]):
@@ -4874,7 +4874,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         dealing with scripts, keys, and shas. This is the preferred way of
         working with Lua scripts.
         """
-        from coredis.commands.builders.script import Script
+        from coredis.commands.script import Script
 
         return Script(self, script)  # type: ignore
 
