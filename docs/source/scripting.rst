@@ -14,7 +14,7 @@ The following trivial LUA script accepts two parameters: the name of a key and
 a multiplier value. The script fetches the value stored in the key, multiplies
 it with the multiplier value and returns the result.
 
-.. code-block:: pycon
+.. code-block:: python
 
     r = coredis.Redis()
     lua = """

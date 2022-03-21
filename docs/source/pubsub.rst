@@ -1,24 +1,25 @@
 Publish / Subscribe
 ===================
 
-coredis includes a `PubSub` object that subscribes to channels and listens
-for new messages. Creating a `PubSub` object is easy.
+coredis includes a :class:`~coredis.commands.builders.pubsub.PubSub` class
+that subscribes to channels and listens for new messages. Creating a :class:`~coredis.commands.builders.pubsub.PubSub` instance
+can be done through the :meth:`~coredis.Redis.pubsub` or :meth:`~coredis.RedisCluster.pubsub` methods.
 
 .. code-block:: python
 
     r = coredis.Redis(...)
     p = r.pubsub()
 
-Once a `PubSub` instance is created, channels and patterns can be subscribed
-to.
+Once a :class:`~coredis.commands.builders.pubsub.PubSub` instance is created,
+channels and patterns can be subscribed to.
 
 .. code-block:: python
 
     await p.subscribe('my-first-channel', 'my-second-channel', ...)
     await p.psubscribe('my-*', ...)
 
-The `PubSub` instance is now subscribed to those channels/patterns. The
-subscription confirmations can be seen by reading messages from the `PubSub`
+The :class:`~coredis.commands.builders.pubsub.PubSub` instance is now subscribed to those channels/patterns. The
+subscription confirmations can be seen by reading messages from the :class:`~coredis.commands.builders.pubsub.PubSub`
 instance.
 
 .. code-block:: python
@@ -30,19 +31,26 @@ instance.
     await p.get_message()
     # {'pattern': None, 'type': 'psubscribe', 'channel': 'my-*', 'data': 3L}
 
-Every message read from a `PubSub` instance will be a dictionary with the
-following keys.
+Every message read from a :class:`~coredis.commands.builders.pubsub.PubSub` instance
+will be a dictionary with the following keys.
 
-* **type**: One of the following: 'subscribe', 'unsubscribe', 'psubscribe',
-  'punsubscribe', 'message', 'pmessage'
-* **channel**: The channel [un]subscribed to or the channel a message was
-  published to
-* **pattern**: The pattern that matched a published message's channel. Will be
-  `None` in all cases except for 'pmessage' types.
-* **data**: The message data. With [un]subscribe messages, this value will be
-  the number of channels and patterns the connection is currently subscribed
-  to. With [p]message messages, this value will be the actual published
-  message.
+type
+   One of the following: ``subscribe``, ``unsubscribe``, ``psubscribe``,
+   ``punsubscribe``, ``message``, ``pmessage``
+
+channel
+   The channel [un]subscribed to or the channel a message was
+   published to
+
+pattern
+   The pattern that matched a published message's channel. Will be
+   ``None`` in all cases except for 'pmessage' types.
+
+data
+   The message data. With [un]subscribe messages, this value will be
+   the number of channels and patterns the connection is currently subscribed
+   to. With [p]message messages, this value will be the actual published
+   message.
 
 Let's send a message now.
 
@@ -81,7 +89,7 @@ with its value being the callback function.
 
 When a message is read on a channel or pattern with a message handler, the
 message dictionary is created and passed to the message handler. In this case,
-a `None` value is returned from get_message() since the message was already
+a ``None`` value is returned from get_message() since the message was already
 handled.
 
 .. code-block:: python
@@ -185,7 +193,7 @@ cannot be delivered. When you're finished with a PubSub object, call its
 The PUBSUB set of subcommands CHANNELS, NUMSUB and NUMPAT are also
 supported:
 
-.. code-block:: pycon
+.. code-block:: python
 
     await r.pubsub_channels()
     # ['foo', 'bar']

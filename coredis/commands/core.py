@@ -4704,8 +4704,8 @@ class CoreCommands(CommandMixin[AnyStr]):
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
         """
-        Execute the Lua ``script``, specifying the ``numkeys`` the script
-        will touch and the key names and argument values in ``keys`` and ``args``.
+        Execute the Lua :paramref:`script` with the key names and argument values
+        in :paramref:`keys` and :paramref:`args`.
 
         :return: The result of the script as redis returns it
         """
@@ -4720,7 +4720,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
         """
-        Read-only variant of :meth:`~Redis.eval`that cannot execute commands
+        Read-only variant of :meth:`~Redis.eval` that cannot execute commands
         that modify data.
 
         :return: The result of the script as redis returns it
@@ -4749,7 +4749,9 @@ class CoreCommands(CommandMixin[AnyStr]):
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
         """
-        Evaluate a script from the server's cache by its :paramred:``sha1`` digest.
+        Execute the Lua script cached by it's :paramref:`sha` ref with the
+        key names and argument values in :paramref:`keys` and :paramref:`args`.
+        Evaluate a script from the server's cache by its :paramref:``sha1`` digest.
 
         :return: The result of the script as redis returns it
         """
@@ -4766,7 +4768,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
         """
-        Read-only variant of :meth:`~Redis.evalsha`that cannot execute commands
+        Read-only variant of :meth:`~Redis.evalsha` that cannot execute commands
         that modify data.
 
         :return: The result of the script as redis returns it

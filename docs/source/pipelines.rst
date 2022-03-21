@@ -11,10 +11,11 @@ Pipelines are quite simple to use:
 
 .. code-block:: python
 
-    async with await client.pipeline() as pipe:
-        await pipe.delete('bar')
-        await pipe.set('bar', 'foo')
-        await pipe.execute()  # needs to be called explicitly
+    async def example(client):
+        async with await client.pipeline() as pipe:
+            await pipe.delete(['bar'])
+            await pipe.set('bar', 'foo')
+            await pipe.execute()  # needs to be called explicitly
 
 
 Here are more examples:
@@ -32,7 +33,7 @@ Here are more examples:
             await pipe.keys('*')
             res = await pipe.execute()
             # results should be in order corresponding to your command
-            assert res == [True, True, True, [b'bar', b'foo']]
+            assert res == (True, True, True, set([b'bar', b'foo']))
 
 For ease of use, all commands being buffered into the pipeline return the
 pipeline object itself. Which enable you to use it like the example provided.
@@ -49,14 +50,14 @@ off transactions.
 A common issue occurs when requiring atomic transactions but needing to
 retrieve values in Redis prior for use within the transaction. For instance,
 let's assume that the INCR command didn't exist and we need to build an atomic
-version of INCR in Python.
+version of ``INCR`` in Python.
 
 The completely naive implementation could GET the value, increment it in
-Python, and SET the new value back. However, this is not atomic because
+Python, and ``SET`` the new value back. However, this is not atomic because
 multiple clients could be doing this at the same time, each getting the same
-value from GET.
+value from ``GET``.
 
-Enter the WATCH command. WATCH provides the ability to monitor one or more keys
+Enter the ``WATCH`` command. ``WATCH`` provides the ability to monitor one or more keys
 prior to starting a transaction. If any of those keys change prior the
 execution of that transaction, the entire transaction will be canceled and a
 WatchError will be raised. To implement our own client-side INCR command, we
@@ -92,9 +93,9 @@ could do something like this:
 Note that, because the Pipeline must bind to a single connection for the
 duration of a WATCH, care must be taken to ensure that the connection is
 returned to the connection pool by calling the reset() method. If the
-Pipeline is used as a context manager (as in the example above) reset()
+Pipeline is used as a context manager (as in the example above) :meth:`~coredis.Pipeline.reset`
 will be called automatically. Of course you can do this the manual way by
-explicitly calling reset():
+explicitly calling :meth:`~coredis.Pipeline.reset`:
 
 .. code-block:: python
 
@@ -114,7 +115,7 @@ explicitly calling reset():
 A convenience method named "transaction" exists for handling all the
 boilerplate of handling and retrying watch errors. It takes a callable that
 should expect a single parameter, a pipeline object, and any number of keys to
-be WATCHed. Our client-side INCR command above can be written like this,
+be ``WATCH``ed. Our client-side ``INCR`` command above can be written like this,
 which is much easier to read:
 
 .. code-block:: python
