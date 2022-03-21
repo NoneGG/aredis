@@ -7,17 +7,9 @@ __author__ = "Ali-Akber Saifee"
 __email__ = "ali@indydevs.org"
 __copyright__ = "Copyright 2022, Ali-Akber Saifee"
 
-try:
-    from setuptools import setup
-    from setuptools.command.build_ext import build_ext
-    from setuptools.extension import Extension
-
-
-except ImportError:
-
-    from distutils.command.build_ext import build_ext
-    from distutils.core import Extension, setup
-
+from setuptools import setup, find_packages
+from setuptools.command.build_ext import build_ext
+from setuptools.extension import Extension
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -126,7 +118,7 @@ setup(
     maintainer_email=__email__,
     keywords=["Redis", "key-value store", "asyncio"],
     license="MIT",
-    packages=["coredis", "coredis.commands"],
+    packages=find_packages(exclude=["tests", "benchmarks"]),
     package_data={
         "coredis": ["py.typed"],
     },

@@ -2,9 +2,8 @@ include LICENSE
 include README.rst
 include HISTORY.rst
 exclude __pycache__
-exclude benchmarks
-recursive-include tests *
+recursive-exclude benchmarks *
+recursive-exclude tests *
 recursive-include requirements *.txt
-recursive-exclude tests *.pyc
 include versioneer.py
 include coredis/_version.py
