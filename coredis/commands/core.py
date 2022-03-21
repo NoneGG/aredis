@@ -494,7 +494,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(PureToken.GET)
 
         if condition:
-            pieces.append(condition.value)
+            pieces.append(condition)
 
         return await self.execute_command("SET", *pieces, get=get)
 
@@ -677,7 +677,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         pieces: CommandArgList = []
         if options is not None:
-            pieces.append(options.value)
+            pieces.append(options)
         return await self.execute_command("CLUSTER FAILOVER", *pieces)
 
     @versionadded(version="3.0.0")
@@ -806,7 +806,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         pieces: CommandArgList = []
         if hard_soft is not None:
-            pieces.append(hard_soft.value)
+            pieces.append(hard_soft)
         return await self.execute_command("CLUSTER RESET", *pieces)
 
     @redis_command(
@@ -1052,7 +1052,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         pieces: CommandArgList = [key]
         if condition is not None:
-            pieces.append(condition.value)
+            pieces.append(condition)
         if change is not None:
             pieces.append(PureToken.CHANGE)
 
@@ -1085,7 +1085,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces: CommandArgList = [key, member1, member2]
 
         if unit:
-            pieces.append(unit.value.lower())
+            pieces.append(unit.lower())
 
         return await self.execute_command("GEODIST", *pieces)
 
@@ -1318,7 +1318,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces = list(args)
 
         if kwargs["unit"]:
-            pieces.append(kwargs["unit"].value.lower())
+            pieces.append(kwargs["unit"].lower())
 
         if kwargs["any_"] and kwargs["count"] is None:
             raise DataError("``any`` can't be provided without ``count``")
@@ -1338,7 +1338,7 @@ class CoreCommands(CommandMixin[AnyStr]):
                 pieces.append(PureToken.ANY)
 
         if kwargs["order"]:
-            pieces.append(kwargs["order"].value)
+            pieces.append(kwargs["order"])
 
         if kwargs["store"] and kwargs["storedist"]:
             raise DataError("GEORADIUS store and storedist cant be set" " together")
@@ -1490,7 +1490,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if kwargs["unit"] is None:
             raise DataError("GEOSEARCH must have unit")
 
-        if kwargs["unit"].value.lower() not in ("m", "km", "mi", "ft"):
+        if kwargs["unit"].lower() not in ("m", "km", "mi", "ft"):
             raise DataError("GEOSEARCH invalid unit")
 
         if kwargs["radius"]:
@@ -1498,7 +1498,7 @@ class CoreCommands(CommandMixin[AnyStr]):
                 raise DataError(
                     "GEOSEARCH radius and width or height" " cant be set together"
                 )
-            pieces.extend(["BYRADIUS", kwargs["radius"], kwargs["unit"].value.lower()])
+            pieces.extend(["BYRADIUS", kwargs["radius"], kwargs["unit"].lower()])
 
         if kwargs["width"] and kwargs["height"]:
             pieces.extend(
@@ -1506,14 +1506,14 @@ class CoreCommands(CommandMixin[AnyStr]):
                     "BYBOX",
                     kwargs["width"],
                     kwargs["height"],
-                    kwargs["unit"].value.lower(),
+                    kwargs["unit"].lower(),
                 ]
             )
 
         # sort
 
         if kwargs["order"]:
-            pieces.append(kwargs["order"].value)
+            pieces.append(kwargs["order"])
 
         # count any
 
@@ -1886,7 +1886,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         pieces: CommandArgList = [key, normalized_seconds(seconds)]
         if condition is not None:
-            pieces.append(condition.value)
+            pieces.append(condition)
         return await self.execute_command("EXPIRE", *pieces)
 
     @redis_command(
@@ -1914,7 +1914,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         pieces: CommandArgList = [key, normalized_time_seconds(unix_time_seconds)]
         if condition is not None:
-            pieces.append(condition.value)
+            pieces.append(condition)
         return await self.execute_command("EXPIREAT", *pieces)
 
     @versionadded(version="3.0.0")
@@ -2109,7 +2109,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         pieces: CommandArgList = [key, normalized_milliseconds(milliseconds)]
         if condition is not None:
-            pieces.append(condition.value)
+            pieces.append(condition)
         return await self.execute_command("PEXPIRE", *pieces)
 
     @redis_command(
@@ -2138,7 +2138,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             normalized_time_milliseconds(unix_time_milliseconds),
         ]
         if condition is not None:
-            pieces.append(condition.value)
+            pieces.append(condition)
         return await self.execute_command("PEXPIREAT", *pieces)
 
     @versionadded(version="3.0.0")
@@ -2289,7 +2289,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(g)
 
         if order:
-            pieces.append(order.value)
+            pieces.append(order)
 
         if alpha is not None:
             pieces.append(PureToken.SORTING)
@@ -2335,7 +2335,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         for g in gets or []:
             pieces.extend(["GET", g])
         if order:
-            pieces.append(order.value)
+            pieces.append(order)
         if alpha is not None:
             pieces.append(PureToken.SORTING)
         return await self.execute_command("SORT_RO", *pieces)
@@ -2443,8 +2443,8 @@ class CoreCommands(CommandMixin[AnyStr]):
         params: CommandArgList = [
             source,
             destination,
-            wherefrom.value,
-            whereto.value,
+            wherefrom,
+            whereto,
             timeout,
         ]
 
@@ -2470,7 +2470,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         """
         _keys: List[KeyT] = list(keys)
-        pieces = [timeout, len(_keys), *_keys, where.value]
+        pieces = [timeout, len(_keys), *_keys, where]
         if count is not None:
             pieces.extend(["COUNT", count])
         return await self.execute_command("BLMPOP", *pieces)
@@ -2548,7 +2548,7 @@ class CoreCommands(CommandMixin[AnyStr]):
          the value pivot was not found.
         """
 
-        return await self.execute_command("LINSERT", key, where.value, pivot, element)
+        return await self.execute_command("LINSERT", key, where, pivot, element)
 
     @redis_command("LLEN", readonly=True, group=CommandGroup.LIST)
     async def llen(self, key: KeyT) -> int:
@@ -2571,7 +2571,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         :return: the element being popped and pushed.
         """
-        params = [source, destination, wherefrom.value, whereto.value]
+        params = [source, destination, wherefrom, whereto]
 
         return await self.execute_command("LMOVE", *params)
 
@@ -2593,7 +2593,7 @@ class CoreCommands(CommandMixin[AnyStr]):
            from which elements were popped, and the second element is an array of elements.
         """
         _keys: List[KeyT] = list(keys)
-        pieces = [len(_keys), *_keys, where.value]
+        pieces = [len(_keys), *_keys, where]
         if count is not None:
             pieces.extend(["COUNT", count])
         return await self.execute_command("LMPOP", *pieces)
@@ -3068,7 +3068,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         * A tuple of (name of key, popped (member, score) pairs)
         """
         _keys: List[KeyT] = list(keys)
-        pieces: CommandArgList = [timeout, len(_keys), *_keys, where.value]
+        pieces: CommandArgList = [timeout, len(_keys), *_keys, where]
         if count is not None:
             pieces.extend(["COUNT", count])
         return await self.execute_command("BZMPOP", *pieces)
@@ -3155,10 +3155,10 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(PureToken.INCREMENT)
 
         if condition:
-            pieces.append(condition.value)
+            pieces.append(condition)
 
         if comparison:
-            pieces.append(comparison.value)
+            pieces.append(comparison)
 
         flat_member_scores = dict_to_flat_list(member_scores, reverse=True)
         pieces.extend(flat_member_scores)
@@ -3342,7 +3342,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         :return: A tuple of (name of key, popped (member, score) pairs)
         """
         _keys: List[KeyT] = list(keys)
-        pieces: CommandArgList = [len(_keys), *_keys, where.value]
+        pieces: CommandArgList = [len(_keys), *_keys, where]
         if count is not None:
             pieces.extend(["COUNT", count])
         return await self.execute_command("ZMPOP", *pieces)
@@ -3948,7 +3948,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         pieces.extend([key, start, stop])
 
         if sortby:
-            pieces.append(sortby.value)
+            pieces.append(sortby)
 
         if rev is not None:
             pieces.append(PureToken.REV)
@@ -3983,7 +3983,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         if aggregate:
             pieces.append(b("AGGREGATE"))
-            pieces.append(aggregate.value)
+            pieces.append(aggregate)
 
         if withscores is not None:
             pieces.append(PureToken.WITHSCORES)
@@ -4041,10 +4041,10 @@ class CoreCommands(CommandMixin[AnyStr]):
             pieces.append(PureToken.NOMKSTREAM)
 
         if trim_strategy == PureToken.MAXLEN:
-            pieces.append(trim_strategy.value)
+            pieces.append(trim_strategy)
 
             if trim_operator:
-                pieces.append(trim_operator.value)
+                pieces.append(trim_operator)
 
             if threshold is not None:
                 pieces.append(threshold)
@@ -4248,10 +4248,10 @@ class CoreCommands(CommandMixin[AnyStr]):
         limit: Optional[int] = None,
     ) -> int:
         """ """
-        pieces: CommandArgList = [trim_strategy.value]
+        pieces: CommandArgList = [trim_strategy]
 
         if trim_operator:
-            pieces.append(trim_operator.value)
+            pieces.append(trim_operator)
 
         pieces.append(threshold)
 
@@ -4801,7 +4801,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         Set the debug mode for executed scripts.
         """
 
-        return await self.execute_command("SCRIPT DEBUG", mode.value)
+        return await self.execute_command("SCRIPT DEBUG", mode)
 
     @redis_command(
         "SCRIPT EXISTS",
