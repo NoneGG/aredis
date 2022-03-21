@@ -3,11 +3,118 @@
 Changelog
 =========
 
-v3.0.0rc2
+v3.0.0
 ---------
-Release Date: 2022-03-17
+Release Date: 2022-03-20
+
+* Features:
+
+  * Added type hints to all redis commands
+  * Added support for experimental runtime type checking
+  * Updated APIs upto redis 6.2.0
+  * Added experimental features for redis 7.0.0
+
+* New APIs:
+
+  * Generic:
+
+    * ``Redis.copy``
+    * ``Redis.migrate``
+
+  * String:
+
+    * ``Redis.lcs``
+
+  * List:
+
+    * ``Redis.blmpop``
+    * ``Redis.lmpop``
+
+  * Set:
+
+    * ``Redis.sintercard``
+
+  * Sorted-Set:
+
+    * ``Redis.bzmpop``
+    * ``Redis.zintercard``
+    * ``Redis.zmpop``
+
+  * Scripting:
+
+    * ``Redis.eval_ro``
+    * ``Redis.evalsha_ro``
+    * ``Redis.script_debug``
+    * ``RedisCluster.eval_ro``
+    * ``RedisCluster.evalsha_ro``
+    * ``RedisCluster.script_debug``
+
+  * Stream:
+
+    * ``Redis.xautoclaim``
+    * ``Redis.xgroup_createconsumer``
+    * ``Redis.xgroup_delconsumer``
+    * ``Redis.xgroup_setid``
+
+  * Server:
+
+    * ``Redis.acl_cat``
+    * ``Redis.acl_deluser``
+    * ``Redis.acl_dryrun``
+    * ``Redis.acl_genpass``
+    * ``Redis.acl_getuser``
+    * ``Redis.acl_list``
+    * ``Redis.acl_load``
+    * ``Redis.acl_log``
+    * ``Redis.acl_save``
+    * ``Redis.acl_setuser``
+    * ``Redis.acl_users``
+    * ``Redis.acl_whoami``
+    * ``Redis.command``
+    * ``Redis.command_count``
+    * ``Redis.command_getkeys``
+    * ``Redis.command_info``
+    * ``Redis.failover``
+    * ``Redis.latency_doctor``
+    * ``Redis.latency_graph``
+    * ``Redis.latency_history``
+    * ``Redis.latency_latest``
+    * ``Redis.latency_reset``
+    * ``Redis.memory_doctor``
+    * ``Redis.memory_malloc_stats``
+    * ``Redis.memory_purge``
+    * ``Redis.memory_stats``
+    * ``Redis.memory_usage``
+    * ``Redis.replicaof``
+    * ``Redis.swapdb``
+
+  * Connection:
+
+    * ``Redis.auth``
+    * ``Redis.client_caching``
+    * ``Redis.client_getredir``
+    * ``Redis.client_id``
+    * ``Redis.client_info``
+    * ``Redis.client_reply``
+    * ``Redis.client_tracking``
+    * ``Redis.client_trackinginfo``
+    * ``Redis.client_unblock``
+    * ``Redis.client_unpause``
+    * ``Redis.hello``
+    * ``Redis.reset``
+    * ``Redis.select``
+
+  * Cluster:
+    * ``Redis.asking``
+    * ``Redis.cluster_bumpepoch``
+    * ``Redis.cluster_flushslots``
+    * ``Redis.cluster_getkeysinslot``
+
 
 * Breaking changes:
+
+  * Most redis command API arguments and return types have been
+    refactored to be in sync with the official docs.
 
   * Updated all commands accepting multiple values for an argument
     to use positional var args **only** if the argument is optional.
@@ -54,96 +161,6 @@ Release Date: 2022-03-17
     * ``script_exists`` -> ``*sha1s`` - > ``sha1s: Iterable[ValueT]``
     * ``client_tracking`` -> ``*prefixes`` - > ``prefixes: Iterable[ValueT]``
     * ``info`` -> ``*sections`` - > ``sections: Iterable[ValueT]``
-
-
-v3.0.0rc1
----------
-Release Date: 2022-03-16
-
-* Features:
-
-    * Added type hints to all redis commands
-    * Added support for experimental runtime type checking
-    * Updated APIs upto redis 6.2.0
-
-* Breaking changes:
-
-    * Most redis command API arguments and return types have been
-      refactored to be in sync with the official docs.
-
-* New APIs:
-
-    * Generic:
-
-        * ``Redis.copy``
-        * ``Redis.migrate``
-
-    * Scripting:
-
-        * ``Redis.script_debug``
-
-    * Stream:
-
-        * ``Redis.xautoclaim``
-        * ``Redis.xgroup_createconsumer``
-        * ``Redis.xgroup_delconsumer``
-        * ``Redis.xgroup_setid``
-
-    * Server:
-
-        * ``Redis.acl_cat``
-        * ``Redis.acl_deluser``
-        * ``Redis.acl_genpass``
-        * ``Redis.acl_getuser``
-        * ``Redis.acl_list``
-        * ``Redis.acl_load``
-        * ``Redis.acl_log``
-        * ``Redis.acl_save``
-        * ``Redis.acl_setuser``
-        * ``Redis.acl_users``
-        * ``Redis.acl_whoami``
-        * ``Redis.command``
-        * ``Redis.command_count``
-        * ``Redis.command_getkeys``
-        * ``Redis.command_info``
-        * ``Redis.failover``
-        * ``Redis.latency_doctor``
-        * ``Redis.latency_graph``
-        * ``Redis.latency_history``
-        * ``Redis.latency_latest``
-        * ``Redis.latency_reset``
-        * ``Redis.memory_doctor``
-        * ``Redis.memory_malloc_stats``
-        * ``Redis.memory_purge``
-        * ``Redis.memory_stats``
-        * ``Redis.memory_usage``
-        * ``Redis.replicaof``
-        * ``Redis.swapdb``
-
-    * Connection:
-
-        * ``Redis.auth``
-        * ``Redis.client_caching``
-        * ``Redis.client_getredir``
-        * ``Redis.client_id``
-        * ``Redis.client_info``
-        * ``Redis.client_reply``
-        * ``Redis.client_tracking``
-        * ``Redis.client_trackinginfo``
-        * ``Redis.client_unblock``
-        * ``Redis.client_unpause``
-        * ``Redis.hello``
-        * ``Redis.reset``
-        * ``Redis.select``
-
-    * Cluster:
-
-        * ``Redis.asking``
-        * ``Redis.cluster_bumpepoch``
-        * ``Redis.cluster_flushslots``
-        * ``Redis.cluster_getkeysinslot``
-
-
 
 v2.3.1
 ------
