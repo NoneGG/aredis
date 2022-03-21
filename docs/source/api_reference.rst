@@ -1,8 +1,6 @@
 API Reference
 =============
 
-**TODO**
-
 Typing
 ^^^^^^
 **coredis** provides type hints for the public API. These are tested using
@@ -110,11 +108,13 @@ Connections
 
 ConnectionPools manage a set of Connection instances. coredis ships with two
 types of Connections. The default, Connection, is a normal TCP socket based
-connection. The UnixDomainSocketConnection allows for clients running on the
-same device as the server to connect via a unix domain socket. To use a
-UnixDomainSocketConnection connection, simply pass the unix_socket_path
-argument, which is a string to the unix domain socket file. Additionally, make
-sure the unixsocket parameter is defined in your redis.conf file. It's
+connection. The :class:`~coredis.connection.UnixDomainSocketConnection` allows
+for clients running on the same device as the server to connect via a unix domain socket.
+To use a :class:`~coredis.connection.UnixDomainSocketConnection` connection,
+simply pass the :paramref:`~coredis.Redis.unix_socket_path` argument,
+which is a string to the unix domain socket file.
+
+Additionally, make sure the parameter is defined in your redis.conf file. It's
 commented out by default.
 
 .. code-block:: python
@@ -164,7 +164,3 @@ or
 
     $ easy_install coredis[hiredis]
 
-Response Callbacks
-^^^^^^^^^^^^^^^^^^
-
-**TODO**
