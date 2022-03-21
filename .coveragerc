@@ -9,4 +9,5 @@ exclude_lines =
     noqa
     raise NotImplementedError
     @overload
+    @abstractmethod
     if TYPE_CHECKING

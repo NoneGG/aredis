@@ -50,7 +50,7 @@ def add_runtime_checks(func: Callable[P, R]) -> Callable[P, R]:
 
 
 @runtime_checkable
-class SupportsWatch(Protocol):
+class SupportsWatch(Protocol):  # noqa
     async def __aenter__(self) -> "SupportsWatch":
         ...
 
@@ -65,7 +65,7 @@ class SupportsWatch(Protocol):
 
 
 @runtime_checkable
-class SupportsScript(Protocol):
+class SupportsScript(Protocol):  # noqa
     async def evalsha(
         self,
         sha1: ValueT,
@@ -87,7 +87,7 @@ class SupportsScript(Protocol):
 
 
 @runtime_checkable
-class SupportsPipeline(Protocol):
+class SupportsPipeline(Protocol):  # noqa
     async def pipeline(
         self,
         transaction: Optional[bool] = True,
