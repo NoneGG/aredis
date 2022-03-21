@@ -115,6 +115,8 @@ Dependencies & supported python versions
 ----------------------------------------
 coredis is tested against redis versions ``5.0.x``, ``6.0.x`` & ``6.2.x``.
 
+Support for redis version ``7.0`` is available but experimental.
+
 :pypi:`hiredis` and :pypi:`uvloop` can make coredis faster, but it is up to you whether to install them or not.
 
 coredis is tested against:
