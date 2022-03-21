@@ -277,19 +277,19 @@ REDIS_ARGUMENT_FORCED = {
 READONLY_OVERRIDES = {"TOUCH": False}
 BLOCK_ARGUMENT_FORCED_ORDER = {"ZADD": {"member_scores": ["member", "score"]}}
 STD_GROUPS = [
+    "generic",
     "string",
     "bitmap",
     "hash",
     "list",
     "set",
     "sorted-set",
-    "generic",
     "hyperloglog",
-    "transactions",
-    "scripting",
     "geo",
-    "pubsub",
     "stream",
+    "scripting",
+    "pubsub",
+    "transactions",
 ]
 
 VERSIONADDED_DOC = re.compile("(.. versionadded:: ([\d\.]+))", re.DOTALL)
@@ -798,7 +798,7 @@ def get_argument(
 
     param_list = []
     decorators = []
-    version_mapping = {}
+    meta_mapping = {}
 
     if arg["type"] == "block":
         if arg.get("multiple") or all(
@@ -821,7 +821,9 @@ def get_argument(
             child_types = [get_type(child, command) for child in child_args]
             for c in child_args:
                 if relevant_min_version(c.get("since", None)):
-                    version_mapping[c["name"]] = c.get("since", None)
+                    meta_mapping.setdefault(c["name"], {})["version"] = c.get(
+                        "since", None
+                    )
             if arg_type_override := REDIS_ARGUMENT_TYPE_OVERRIDES.get(
                 command["name"], {}
             ).get(name):
@@ -851,7 +853,7 @@ def get_argument(
                 inspect.Parameter(name, arg_type, annotation=annotation, **extra)
             )
             if relevant_min_version(arg.get("since", None)):
-                version_mapping[name] = arg.get("since", None)
+                meta_mapping.setdefault(name, {})["version"] = arg.get("since", None)
 
         else:
             plist_d = []
@@ -863,7 +865,7 @@ def get_argument(
                     child, arg, command, arg_type, arg.get("multiple"), num_multiples
                 )
                 param_list.extend(plist)
-                version_mapping.update(vmap)
+                meta_mapping.update(vmap)
 
                 if not child.get("optional"):
                     plist_d.extend(plist)
@@ -875,6 +877,7 @@ def get_argument(
                 decorators.append(
                     f"@mutually_inclusive_parameters({mutually_inclusive_params})"
                 )
+
     elif arg["type"] == "oneof":
         extra_params = {}
 
@@ -899,7 +902,9 @@ def get_argument(
                 )
             )
             if relevant_min_version(arg.get("since", None)):
-                version_mapping[syn_name] = arg.get("since", None)
+                meta_mapping.setdefault(syn_name, {})["version"] = arg.get(
+                    "since", None
+                )
         else:
             plist_d = []
 
@@ -909,7 +914,7 @@ def get_argument(
                 )
                 param_list.extend(plist)
                 plist_d.extend(plist)
-                version_mapping.update(vmap)
+                meta_mapping.update(vmap)
             if len(plist_d) > 1:
                 mutually_exclusive_params = ",".join(["'%s'" % p.name for p in plist_d])
                 decorators.append(
@@ -922,7 +927,6 @@ def get_argument(
             else arg["name"],
             command,
         )
-        is_variadic = False
         type_annotation = get_type_annotation(
             arg,
             command,
@@ -977,18 +981,30 @@ def get_argument(
             extra_params["default"] = ARGUMENT_DEFAULTS.get(command["name"], {}).get(
                 name, extra_params.get("default")
             )
+        if relevant_min_version(min_version):
+            meta_mapping.setdefault(name, {})["version"] = min_version
+        else:
+            if parent:
+                if relevant_min_version(parent.get("since", None)):
+                    meta_mapping.setdefault(name, {})["version"] = parent.get("since")
+
+        if not multiple:
+            if parent and parent.get("token"):
+                meta_mapping.setdefault(name, {}).update(
+                    {"prefix_token": parent.get("token")}
+                )
+        else:
+            if arg.get("token"):
+                meta_mapping.setdefault(name, {}).update(
+                    {"prefix_token": arg.get("token")}
+                )
+
         param_list.append(
             inspect.Parameter(
                 name, arg_type, annotation=type_annotation, **extra_params
             )
         )
-        if relevant_min_version(min_version):
-            version_mapping[name] = min_version
-        else:
-            if parent:
-                if relevant_min_version(parent.get("since", None)):
-                    version_mapping[name] = parent.get("since")
-    return [param_list, decorators, version_mapping]
+    return [param_list, decorators, meta_mapping]
 
 
 def is_arg_optional(arg, command):
@@ -1011,8 +1027,9 @@ def get_command_spec(command):
     decorators = []
     forced_order = REDIS_ARGUMENT_FORCED_ORDER.get(command["name"], [])
     mapping = {}
-    version_mapping = {}
+    meta_mapping = {}
     arg_names = [k["name"] for k in arguments]
+    initial_order = [(k["name"], k.get("token", "")) for k in arguments]
     history = command.get("history", [])
     extra_version_info = {}
     num_multiples = len([k for k in arguments if k.get("multiple")])
@@ -1034,10 +1051,10 @@ def get_command_spec(command):
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 num_multiples=num_multiples,
             )
-            mapping[k["name"]] = (k, plist)
+            mapping[(k["name"], k.get("token", ""))] = (k, plist)
             recommended_signature.extend(plist)
             decorators.extend(dlist)
-            version_mapping.update(vmap)
+            meta_mapping.update(vmap)
 
     for k in arguments:
         if not is_arg_optional(k, command) and k.get("multiple"):
@@ -1049,10 +1066,10 @@ def get_command_spec(command):
                 True,
                 num_multiples=num_multiples,
             )
-            mapping[k["name"]] = (k, plist)
+            mapping[(k["name"], k.get("token", ""))] = (k, plist)
             recommended_signature.extend(plist)
             decorators.extend(dlist)
-            version_mapping.update(vmap)
+            meta_mapping.update(vmap)
 
     var_args = [
         k.name
@@ -1137,10 +1154,10 @@ def get_command_spec(command):
                 True,
                 num_multiples=num_multiples,
             )
-            mapping[k["name"]] = (k, plist)
+            mapping[(k["name"], k.get("token", ""))] = (k, plist)
             recommended_signature.extend(plist)
             decorators.extend(dlist)
-            version_mapping.update(vmap)
+            meta_mapping.update(vmap)
 
     remaining = [
         k for k in arguments if is_arg_optional(k, command) and not k.get("multiple")
@@ -1151,10 +1168,10 @@ def get_command_spec(command):
         if skip_arg(k, command):
             continue
         plist, dlist, vmap = get_argument(k, None, command, num_multiples=num_multiples)
-        mapping[k["name"]] = (k, plist)
+        mapping[(k["name"], k.get("token", ""))] = (k, plist)
         remaining_signature.extend(plist)
         decorators.extend(dlist)
-        version_mapping.update(vmap)
+        meta_mapping.update(vmap)
 
     if not forced_order:
         remaining_signature = sorted(
@@ -1176,7 +1193,15 @@ def get_command_spec(command):
             annotation=recommended_signature[-1].annotation,
         )
 
-    return recommended_signature, decorators, mapping, version_mapping
+    mapping = OrderedDict(
+        {
+            k: v
+            for k, v in sorted(
+                mapping.items(), key=lambda tup: initial_order.index(tup[0])
+            )
+        }
+    )
+    return recommended_signature, decorators, mapping, meta_mapping
 
 
 def generate_method_details(kls, method, debug):
@@ -1207,11 +1232,9 @@ def generate_method_details(kls, method, debug):
 
         if recommended_return:
             return_summary = recommended_return[1]
-        rec_params, rec_decorators, arg_mapping, version_mapping = get_command_spec(
-            method
-        )
+        rec_params, rec_decorators, arg_mapping, meta_mapping = get_command_spec(method)
         method_details["arg_mapping"] = arg_mapping
-        method_details["arg_version_mapping"] = version_mapping
+        method_details["arg_meta_mapping"] = meta_mapping
         method_details["rec_decorators"] = rec_decorators
         method_details["rec_params"] = rec_params
         try:
@@ -1299,11 +1322,11 @@ def generate_compatibility_section(
      {%- if method["deprecation_info"][0] and method["deprecation_info"][0] >= MIN_SUPPORTED_VERSION -%}
      , version_deprecated="{{method["command"].get("deprecated_since")}}"
      {%- endif -%}, group=CommandGroup.{{method["command"]["group"].upper().replace(" ", "_").replace("-", "_")}}
-     {%- if len(method["arg_version_mapping"]) > 0 -%}
+     {%- if len(method["arg_meta_mapping"]) > 0 -%}
      {% set argument_with_version = {} %}
-     {%- for name, ver  in method["arg_version_mapping"].items() -%}
-     {%- if ver and version_parse(ver) >= MIN_SUPPORTED_VERSION -%}
-     {% set _ = argument_with_version.update({name: {"version_introduced": ver}}) %}
+     {%- for name, meta  in method["arg_meta_mapping"].items() -%}
+     {%- if meta and meta["version"] and version_parse(meta["version"]) >= MIN_SUPPORTED_VERSION -%}
+     {% set _ = argument_with_version.update({name: {"version_introduced": meta["version"]}}) %}
      {%- endif -%}
      {%- endfor -%}
      {% if method["readonly"] %}, readonly=True{% endif -%}
@@ -1351,44 +1374,54 @@ def generate_compatibility_section(
 
          {% if "execute_command" not in inspect.getclosurevars(implementation).unbound -%}
          {% if len(method["arg_mapping"]) > 0 -%}
-         pieces = []
+         pieces: CommandArgList = []
          {% for name, arg  in method["arg_mapping"].items() -%}
-         # Handle {{name}}
+         
          {% if len(arg[1]) > 0 -%}
-         {% for param in arg[1] -%}
-         {% if not arg[0].get("optional") -%}
-         {% if arg[0].get("multiple") -%}
-         {% if arg[0].get("token") -%}
+         {%- for param in arg[1] -%}
+         {%- if not arg[0].get("optional") %}
+         {%- if arg[0].get("multiple") %}
+         {%- if arg[0].get("token") %}
          pieces.extend(*{{param.name}})
-         {% else -%}
+         {%- else %}
          pieces.extend(*{{param.name}})
-         {% endif -%}
-         {% else -%}
-         {% if arg[0].get("token") -%}
+         {%- endif %}
+         {%- else %}
+         {%- if arg[0].get("token") %}
          pieces.append("{{arg[0].get("token")}}")
          pieces.append({{param.name}})
-         {% else -%}
-         pieces.append({{param.name}})
-         {% endif -%}
-         {% endif -%}
-         {% else -%}
-         {% if arg[0].get("multiple") -%}
-
-         if {{arg[1][0].name}}:
-             pieces.extend({{param.name}})
-         {% else -%}
-
-         if {{param.name}}{% if arg[0].get("type") != "pure-token" %} is not None{%endif%}:
-         {%- if arg[0].get("token") %}
-             pieces.append({{arg[0].get("token")}})
          {%- else %}
+         pieces.append({{param.name}})
+         {%- endif %}
+         {%- endif %}
+         {%- else %}
+         {% if arg[0].get("multiple") -%}
+         if {{param.name}}:
+         {%- if arg[0].get("multiple_token") %}
+             for item in {{param.name}}:
+                 pieces.append("{{arg[0].get("token")}}")
+                 pieces.append(item)
+         {%- else %}
+             pieces.append("{{arg[0].get("token")}}")
+             pieces.extend({{param.name}})
+         {%- endif %}
+         {%- else %}
+         if {{param.name}}{% if arg[0].get("type") != "pure-token" %} is not None{%endif%}:
+         {%- if arg[0].get("token") and arg[0].get("type") != "pure-token" %}
+             pieces.append("{{arg[0].get("token")}}")
+             pieces.extend({{param.name}})
+         {%- else %}
+             {%- if arg[0].get("type") == "oneof" %}
              pieces.append({{param.name}})
-         {% endif -%}
-         {% endif -%}
-         {% endif -%}
-         {% endfor -%}
-         {% endif -%}
-         {% endfor -%}
+             {%- else %}
+             pieces.append(PureToken.{{arg[0].get("token")}})
+             {% endif %}
+         {%- endif %}
+         {%- endif %}
+         {%- endif %}
+         {%- endfor %}
+         {%- endif %}
+         {%- endfor %}
 
          return await self.execute_command("{{method["command"]["name"]}}", *pieces)
          {% else -%}
@@ -1451,7 +1484,7 @@ def generate_compatibility_section(
          \"\"\"
          {% if len(method["arg_mapping"]) > 0 -%}
          pieces = []
-         {% for name, arg  in method["arg_mapping"].items() -%}
+         {%- for name, arg  in method["arg_mapping"].items() %}
          # Handle {{name}}
          {% if len(arg[1]) > 0 -%}
          {% for param in arg[1] -%}
@@ -1463,7 +1496,7 @@ def generate_compatibility_section(
          pieces.extend(*{{param.name}})
          {% endif -%}
          {% else -%}
-         {% if arg[0].get("token") -%}
+         {%- if arg[0].get("token") %}
          pieces.append("{{arg[0].get("token")}}")
          pieces.append({{param.name}})
          {% else -%}
@@ -1471,11 +1504,11 @@ def generate_compatibility_section(
          {% endif -%}
          {% endif -%}
          {% else -%}
-         {% if arg[0].get("multiple") -%}
+         {% if arg[0].get("multiple") %}
   
          if {{arg[1][0].name}}:
             pieces.extend({{param.name}})
-         {% else -%}
+         {% else %}
   
          if {{param.name}}{% if arg[0].get("type") != "pure-token" %} is not None{%endif%}:
          {%- if arg[0].get("token")  and arg[0].get("type") == "oneof" %}
@@ -1484,7 +1517,7 @@ def generate_compatibility_section(
             pieces.extend(["{{arg[0].get("token")}}", {{param.name}}])
          {% endif -%}
          {% endif -%}
-         {% endif -%}
+         {% endif %}
          {% endfor -%}
          {% endif -%}
          {% endfor -%}
@@ -1578,8 +1611,10 @@ def generate_compatibility_section(
                             ) == len(
                                 [
                                     k
-                                    for k in method_details["arg_version_mapping"]
-                                    if method_details["arg_version_mapping"][k]
+                                    for k in method_details["arg_meta_mapping"]
+                                    if method_details["arg_meta_mapping"]
+                                    .get(k, {})
+                                    .get("version")
                                 ]
                             )
                             if (
@@ -1855,45 +1890,46 @@ def generate_implementation(ctx, command, group, expr):
         {%- endfor %}
         {% endif %}
         \"\"\"
-        {% if len(method["arg_mapping"]) > 0 -%}
+        WTF?
+        {% if len(method["arg_mapping"]) > 0 %}
         pieces = []
-        {% for name, arg  in method["arg_mapping"].items() -%}
+        {% for name, arg  in method["arg_mapping"].items() %}
         # Handle {{name}}
-        {% if len(arg[1]) > 0 -%}
-        {% for param in arg[1] -%}
-        {% if not arg[0].get("optional") -%}
-        {% if arg[0].get("multiple") -%}
-        {% if arg[0].get("token") -%}
+        {% if len(arg[1]) > 0 %}
+        {% for param in arg[1] %}
+        {% if not arg[0].get("optional") %}
+        {% if arg[0].get("multiple") %}
+        {% if arg[0].get("token") %}
         pieces.extend(*{{param.name}})
-        {% else -%}
+        {% else %}
         pieces.extend(*{{param.name}})
-        {% endif -%}
-        {% else -%}
-        {% if arg[0].get("token") -%}
+        {% endif %}
+        {% else %}
+        {% if arg[0].get("token") %}
         pieces.append("{{arg[0].get("token")}}")
         pieces.append({{param.name}})
-        {% else -%}
+        {% else %}
         pieces.append({{param.name}})
-        {% endif -%}
-        {% endif -%}
-        {% else -%}
-        {% if arg[0].get("multiple") -%}
+        {% endif %}
+        {% endif %}
+        {% else %}
+        {% if arg[0].get("multiple") %}
 
         if {{arg[1][0].name}}:
             pieces.extend({{param.name}})
-        {% else -%}
+        {% else %}
 
         if {{param.name}}{% if arg[0].get("type") != "pure-token" %} is not None{%endif%}:
-        {%- if arg[0].get("token") %}
+        {% if arg[0].get("token") %}
             pieces.append({{arg[0].get("token")}})
-        {%- else %}
+        {% else %}
             pieces.append({{param.name}})
-        {% endif -%}
-        {% endif -%}
-        {% endif -%}
-        {% endfor -%}
-        {% endif -%}
-        {% endfor -%}
+        {% endif %}
+        {% endif }
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
 
         return await self.execute_command("{{method["command"]["name"]}}", *pieces)
         {% else -%}
