@@ -212,8 +212,12 @@ class TestString:
         assert await client.set("a", "1", get=True) is None
         assert await client.set("a", "2", get=True) == "1"
         assert await client.set("a", "3", condition=PureToken.XX, get=True) == "2"
-        assert await client.set("a", "4", condition=PureToken.NX, get=True) == "3"
-        assert await client.get("a") == "3"
+
+    @pytest.mark.min_server_version("6.9.0")
+    async def test_set_get_nx(self, client):
+        assert await client.set("a", "1")
+        assert await client.set("a", "2", condition=PureToken.NX, get=True) == "1"
+        assert await client.get("a") == "1"
 
     @pytest.mark.min_server_version("6.2.0")
     async def test_set_keepttl(self, client):
