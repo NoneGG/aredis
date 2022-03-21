@@ -23,6 +23,7 @@ from coredis.commands import (
     CommandMixin,
     redis_command,
 )
+from coredis.commands.bitfield import BitFieldOperation
 from coredis.exceptions import AuthorizationError, DataError, RedisError
 from coredis.response.callbacks import (
     BoolCallback,
@@ -119,8 +120,6 @@ from coredis.validators import (
     mutually_exclusive_parameters,
     mutually_inclusive_parameters,
 )
-
-from coredis.commands.bitfield import BitFieldOperation
 
 
 class CoreCommands(CommandMixin[AnyStr]):

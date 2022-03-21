@@ -23,9 +23,9 @@ from typing import (
 )
 
 from coredis.commands import ClusterCommandConfig, CommandGroup, redis_command
-from coredis.commands.monitor import Monitor
 from coredis.commands.core import CoreCommands
 from coredis.commands.extra import ExtraCommandMixin
+from coredis.commands.monitor import Monitor
 from coredis.commands.sentinel import SentinelCommands
 from coredis.commands.transaction import TransactionCommandMixin
 from coredis.connection import Connection, RedisSSLContext, UnixDomainSocketConnection
