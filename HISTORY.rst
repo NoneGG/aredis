@@ -3,6 +3,14 @@
 Changelog
 =========
 
+v3.0.2
+------
+Release Date: 2022-03-21
+
+* Bug Fix
+
+  * Fix incorrect response type for :meth:`coredis.Redis.exists` (:issue:`24`)
+
 v3.0.1
 ------
 Release Date: 2022-03-21
@@ -414,6 +422,7 @@ v1.0.1
 * fix bug of `PubSub.run_in_thread`
 * add more examples
 * change `Script.register` to `Script.execute`
+
 
 
 
