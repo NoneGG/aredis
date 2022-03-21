@@ -85,9 +85,16 @@ class TestString:
         assert await client.ttl("a") == 60
         assert await client.getex("a", px=6000) == "1"
         assert await client.ttl("a") == 6
-        expire_at = await redis_server_time(client) + datetime.timedelta(minutes=1)
+        expire_at = await redis_server_time(client) + datetime.timedelta(
+            minutes=1, microseconds=1000
+        )
         assert await client.getex("a", pxat=expire_at) == "1"
-        assert await client.ttl("a") <= 61
+        assert await client.pttl("a") < 61000
+        expire_at = await redis_server_time(client) + datetime.timedelta(
+            minutes=1, microseconds=1000
+        )
+        assert await client.getex("a", exat=expire_at) == "1"
+        assert await client.pttl("a") < 61000
         assert await client.getex("a", persist=True) == "1"
         assert await client.ttl("a") == -1
         with pytest.raises(CommandSyntaxError):
@@ -187,6 +194,37 @@ class TestString:
         expire_at = datetime.timedelta(seconds=60)
         assert await client.set("a", "1", ex=expire_at)
         assert 0 < await client.ttl("a") <= 60
+
+    @pytest.mark.min_server_version("6.2.0")
+    async def test_set_exat(self, client, redis_server_time):
+        expire_at = await redis_server_time(client) + datetime.timedelta(minutes=1)
+        assert await client.set("a", "1", exat=expire_at)
+        assert 0 < await client.ttl("a") <= 61
+
+    @pytest.mark.min_server_version("6.2.0")
+    async def test_set_pxat(self, client, redis_server_time):
+        expire_at = await redis_server_time(client) + datetime.timedelta(minutes=1)
+        assert await client.set("a", "1", pxat=expire_at)
+        assert 0 < await client.ttl("a") <= 61
+
+    @pytest.mark.min_server_version("6.2.0")
+    async def test_set_get(self, client):
+        assert await client.set("a", "1", get=True) is None
+        assert await client.set("a", "2", get=True) == "1"
+        assert await client.set("a", "3", condition=PureToken.XX, get=True) == "2"
+        assert await client.set("a", "4", condition=PureToken.NX, get=True) == "3"
+        assert await client.get("a") == "3"
+
+    @pytest.mark.min_server_version("6.2.0")
+    async def test_set_keepttl(self, client):
+        assert await client.set("a", "1")
+        assert await client.pttl("a") == -1
+        assert await client.set("a", "1", ex=120)
+        assert await client.pttl("a") > 0
+        assert await client.set("a", "2", keepttl=True)
+        assert await client.pttl("a") > 0
+        assert await client.set("a", "3")
+        assert await client.pttl("a") == -1
 
     async def test_set_multipleoptions(self, client):
         await client.set("a", "val")

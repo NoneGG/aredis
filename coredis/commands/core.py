@@ -455,6 +455,16 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
         Set the string value of a key
 
+        :param ex: Number of seconds to expire in
+        :param px: Number of milliseconds to expire in
+        :param exat: Expiry time with seconds granularity
+        :param pxat: Expiry time with milliseconds granularity
+        :param keepttl: Retain the time to live associated with the key
+        :param condition: Condition to use when setting the key
+        :param get: Return the old string stored at key, or nil if key did not exist.
+         An error is returned and the command is aborted if the value stored at
+         key is not a string.
+
         :return: Whether the operation was performed successfully.
 
          .. warning:: If the command is issued with the ``get`` argument, the old string value
@@ -477,7 +487,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         if pxat is not None:
             pieces.append("PXAT")
-            pieces.append(normalized_time_seconds(pxat))
+            pieces.append(normalized_time_milliseconds(pxat))
         if keepttl:
             pieces.append(PureToken.KEEPTTL)
         if get:
@@ -486,7 +496,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         if condition:
             pieces.append(condition.value)
 
-        return await self.execute_command("SET", *pieces)
+        return await self.execute_command("SET", *pieces, get=get)
 
     @redis_command(
         "SETEX",
