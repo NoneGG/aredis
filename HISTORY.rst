@@ -45,9 +45,6 @@ Release Date: 2022-03-20
     * ``Redis.eval_ro``
     * ``Redis.evalsha_ro``
     * ``Redis.script_debug``
-    * ``RedisCluster.eval_ro``
-    * ``RedisCluster.evalsha_ro``
-    * ``RedisCluster.script_debug``
 
   * Stream:
 
@@ -105,6 +102,7 @@ Release Date: 2022-03-20
     * ``Redis.select``
 
   * Cluster:
+
     * ``Redis.asking``
     * ``Redis.cluster_bumpepoch``
     * ``Redis.cluster_flushslots``
