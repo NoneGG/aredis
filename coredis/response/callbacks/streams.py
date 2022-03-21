@@ -98,7 +98,9 @@ class StreamInfoCallback(ParametrizedCallback):
                 res.pop(kn)
             res.update({"first-entry": e1, "last-entry": en})
         else:
-            res.update({"groups": pairs_to_dict(res.get("groups"))})
+            groups = res.get("groups")
+            if groups:
+                res.update({"groups": pairs_to_dict(groups)})
             res.update(
                 {
                     "entries": tuple(
@@ -115,10 +117,10 @@ class StreamInfoCallback(ParametrizedCallback):
             "radix-tree-nodes": res["radix-tree-nodes"],
             "groups": res["groups"],
             "last-generated-id": res["last-generated-id"],
-            "max-deleted-entry-id": res.get("max-deleted-entry-id"),
-            "entries-added": res.get("entries-added"),
-            "recorded-first-entry-id": res.get("recorded-first-entry-id"),
-            "entries-read": res.get("entries-read"),
+            "max-deleted-entry-id": str(res.get("max-deleted-entry-id")),
+            "entries-added": int(res.get("entries-added", 0)),
+            "recorded-first-entry-id": str(res.get("recorded-first-entry-id")),
+            "entries-read": int(res.get("entries-read", 0)),
             "entries": res.get("entries"),
         }
         return stream_info

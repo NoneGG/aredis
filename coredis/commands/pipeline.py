@@ -314,7 +314,7 @@ class BasePipeline:
         )
         all_cmds = connection.pack_commands([cmd.args for cmd in cmds])
         await connection.send_packed_command(all_cmds)
-        errors = []
+        errors: List[Tuple[int, Optional[BaseException]]] = []
 
         # parse off the response for MULTI
         # NOTE: we need to handle ResponseErrors here and continue
@@ -342,7 +342,7 @@ class BasePipeline:
             if self.explicit_transaction:
                 await self.immediate_execute_command("DISCARD")
 
-            if errors:
+            if errors and errors[0][1]:
                 raise errors[0][1]
             raise
 

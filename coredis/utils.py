@@ -36,7 +36,7 @@ def b(x) -> bytes:
     return x.encode("latin-1") if not isinstance(x, bytes) else x
 
 
-def defaultvalue(value: Optional[T], default: T) -> T:
+def defaultvalue(value: Optional[U], default: T) -> Union[U, T]:
     return default if value is None else value
 
 

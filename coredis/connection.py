@@ -56,7 +56,7 @@ class SocketBuffer:
     def __init__(self, stream_reader, read_size):
         self._stream = stream_reader
         self.read_size = read_size
-        self._buffer = BytesIO()
+        self._buffer: Optional[BytesIO] = BytesIO()
         self._sock = None
         # number of bytes written to the buffer from the socket
         self.bytes_written = 0

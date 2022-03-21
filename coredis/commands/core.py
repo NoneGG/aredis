@@ -4083,7 +4083,6 @@ class CoreCommands(CommandMixin[AnyStr]):
         """
 
         pieces: CommandArgList = [defaultvalue(start, "-"), defaultvalue(end, "+")]
-
         if count is not None:
             pieces.append("COUNT")
             pieces.append(count)

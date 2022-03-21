@@ -395,7 +395,7 @@ class AbstractRedisCluster(AbstractRedis[AnyStr]):
     async def sort(
         self,
         key: KeyT,
-        gets: Iterable[ValueT] = [],
+        gets: Optional[Iterable[ValueT]] = None,
         by: Optional[ValueT] = None,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -915,7 +915,7 @@ class Redis(
             idle_check_interval=idle_check_interval,
             client_name=client_name,
         )
-        self._use_lua_lock = None
+        self._use_lua_lock: Optional[bool] = None
 
     @classmethod
     @overload

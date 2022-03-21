@@ -118,10 +118,10 @@ class ConnectionPool:
                 else:
                     url_options[name] = value[0]
 
-        username = parsed_url.username
-        password = parsed_url.password
-        path = parsed_url.path
-        hostname = parsed_url.hostname
+        username: Optional[str] = parsed_url.username
+        password: Optional[str] = parsed_url.password
+        path: Optional[str] = parsed_url.path
+        hostname: Optional[str] = parsed_url.hostname
 
         if decode_components:
             username = unquote(username) if username else None
