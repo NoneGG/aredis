@@ -53,6 +53,10 @@ from coredis.response.callbacks.hash import (
     HScanCallback,
 )
 from coredis.response.callbacks.keys import ExpiryCallback, ScanCallback, SortCallback
+from coredis.response.callbacks.script import (
+    FunctionListCallback,
+    FunctionStatsCallback,
+)
 from coredis.response.callbacks.server import (
     ClientInfoCallback,
     ClientListCallback,
@@ -90,6 +94,7 @@ from coredis.response.types import (
     GeoCoordinates,
     GeoSearchResult,
     LCSResult,
+    LibraryDefinition,
     RoleInfo,
     ScoredMember,
     ScoredMembers,
@@ -100,7 +105,7 @@ from coredis.response.types import (
     StreamPendingExt,
 )
 from coredis.tokens import PureToken
-from coredis.typing import CommandArgList, KeyT, ValueT
+from coredis.typing import CommandArgList, KeyT, StringT, ValueT
 from coredis.utils import (
     NodeFlag,
     b,
@@ -1071,8 +1076,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def geodist(
         self,
         key: KeyT,
-        member1: ValueT,
-        member2: ValueT,
+        member1: StringT,
+        member2: StringT,
         unit: Optional[
             Literal[PureToken.M, PureToken.KM, PureToken.FT, PureToken.MI]
         ] = None,
@@ -1539,7 +1544,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command(command, *pieces, **kwargs)
 
     @redis_command("HDEL", group=CommandGroup.HASH)
-    async def hdel(self, key: KeyT, fields: Iterable[ValueT]) -> int:
+    async def hdel(self, key: KeyT, fields: Iterable[StringT]) -> int:
         """Deletes ``fields`` from hash ``key``"""
 
         return await self.execute_command("HDEL", key, *fields)
@@ -1550,7 +1555,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.HASH,
         response_callback=BoolCallback(),
     )
-    async def hexists(self, key: KeyT, field: ValueT) -> bool:
+    async def hexists(self, key: KeyT, field: StringT) -> bool:
         """
         Returns a boolean indicating if ``field`` exists within hash ``key``
         """
@@ -1558,7 +1563,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("HEXISTS", key, field)
 
     @redis_command("HGET", readonly=True, group=CommandGroup.HASH)
-    async def hget(self, key: KeyT, field: ValueT) -> Optional[AnyStr]:
+    async def hget(self, key: KeyT, field: StringT) -> Optional[AnyStr]:
         """Returns the value of ``field`` within the hash ``key``"""
 
         return await self.execute_command("HGET", key, field)
@@ -1575,7 +1580,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("HGETALL", key)
 
     @redis_command("HINCRBY", group=CommandGroup.HASH)
-    async def hincrby(self, key: KeyT, field: ValueT, increment: int) -> int:
+    async def hincrby(self, key: KeyT, field: StringT, increment: int) -> int:
         """Increments the value of ``field`` in hash ``key`` by ``increment``"""
 
         return await self.execute_command("HINCRBY", key, field, increment)
@@ -1584,7 +1589,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         "HINCRBYFLOAT", group=CommandGroup.HASH, response_callback=FloatCallback()
     )
     async def hincrbyfloat(
-        self, key: KeyT, field: ValueT, increment: Union[int, float]
+        self, key: KeyT, field: StringT, increment: Union[int, float]
     ) -> float:
         """
         Increments the value of ``field`` in hash ``key`` by floating
@@ -1611,7 +1616,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("HLEN", key)
 
     @redis_command("HSET", group=CommandGroup.HASH)
-    async def hset(self, key: KeyT, field_values: Dict[ValueT, ValueT]) -> int:
+    async def hset(self, key: KeyT, field_values: Dict[StringT, ValueT]) -> int:
         """
         Sets ``field`` to ``value`` within hash ``key``
 
@@ -1621,7 +1626,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("HSET", key, *dict_to_flat_list(field_values))
 
     @redis_command("HSETNX", group=CommandGroup.HASH, response_callback=BoolCallback())
-    async def hsetnx(self, key: KeyT, field: ValueT, value: ValueT) -> bool:
+    async def hsetnx(self, key: KeyT, field: StringT, value: ValueT) -> bool:
         """
         Sets ``field`` to ``value`` within hash ``key`` if ``field`` does not
         exist.
@@ -1636,7 +1641,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.HASH,
         response_callback=SimpleStringCallback(),
     )
-    async def hmset(self, key: KeyT, field_values: Dict[ValueT, ValueT]) -> bool:
+    async def hmset(self, key: KeyT, field_values: Dict[StringT, ValueT]) -> bool:
         """
         Sets key to value within hash ``key`` for each corresponding
         key and value from the ``field_items`` dict.
@@ -1657,7 +1662,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.HASH,
         response_callback=TupleCallback(),
     )
-    async def hmget(self, key: KeyT, fields: Iterable[ValueT]) -> Tuple[AnyStr, ...]:
+    async def hmget(self, key: KeyT, fields: Iterable[StringT]) -> Tuple[AnyStr, ...]:
         """Returns values ordered identically to ``fields``"""
 
         return await self.execute_command("HMGET", key, *fields)
@@ -1687,7 +1692,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         self,
         key: KeyT,
         cursor: Optional[int] = 0,
-        match: Optional[ValueT] = None,
+        match: Optional[StringT] = None,
         count: Optional[int] = None,
     ) -> Tuple[int, Dict[AnyStr, AnyStr]]:
 
@@ -1709,7 +1714,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         return await self.execute_command("HSCAN", *pieces)
 
     @redis_command("HSTRLEN", readonly=True, group=CommandGroup.HASH)
-    async def hstrlen(self, key: KeyT, field: ValueT) -> int:
+    async def hstrlen(self, key: KeyT, field: StringT) -> int:
         """
         Get the length of the value of a hash field
 
@@ -1948,7 +1953,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             pipeline=False,
         ),
     )
-    async def keys(self, pattern: ValueT = "*") -> Set[AnyStr]:
+    async def keys(self, pattern: StringT = "*") -> Set[AnyStr]:
         """
         Find all keys matching the given pattern
 
@@ -1970,16 +1975,16 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def migrate(
         self,
-        host: ValueT,
+        host: StringT,
         port: int,
         destination_db: int,
         timeout: int,
         *keys: KeyT,
         copy: Optional[bool] = None,
         replace: Optional[bool] = None,
-        auth: Optional[ValueT] = None,
-        username: Optional[ValueT] = None,
-        password: Optional[ValueT] = None,
+        auth: Optional[StringT] = None,
+        username: Optional[StringT] = None,
+        password: Optional[StringT] = None,
     ) -> bool:
         """
         Atomically transfer key(s) from a Redis instance to another one.
@@ -2253,8 +2258,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def sort(
         self,
         key: KeyT,
-        gets: Optional[Iterable[ValueT]] = None,
-        by: Optional[ValueT] = None,
+        gets: Optional[Iterable[KeyT]] = None,
+        by: Optional[StringT] = None,
         offset: Optional[int] = None,
         count: Optional[int] = None,
         order: Optional[Literal[PureToken.ASC, PureToken.DESC]] = None,
@@ -2312,8 +2317,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def sort_ro(
         self,
         key: KeyT,
-        gets: Optional[Iterable[ValueT]] = None,
-        by: Optional[ValueT] = None,
+        gets: Optional[Iterable[KeyT]] = None,
+        by: Optional[StringT] = None,
         offset: Optional[int] = None,
         count: Optional[int] = None,
         order: Optional[Literal[PureToken.ASC, PureToken.DESC]] = None,
@@ -2403,9 +2408,9 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def scan(
         self,
         cursor: Optional[int] = 0,
-        match: Optional[ValueT] = None,
+        match: Optional[StringT] = None,
         count: Optional[int] = None,
-        type_: Optional[ValueT] = None,
+        type_: Optional[StringT] = None,
     ) -> Tuple[int, Tuple[AnyStr, ...]]:
         """
         Incrementally iterate the keys space
@@ -3024,7 +3029,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         self,
         key: KeyT,
         cursor: Optional[int] = 0,
-        match: Optional[ValueT] = None,
+        match: Optional[StringT] = None,
         count: Optional[int] = None,
     ) -> Tuple[int, Set[AnyStr]]:
         """
@@ -3126,7 +3131,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def zadd(
         self,
         key: KeyT,
-        member_scores: Dict[ValueT, float],
+        member_scores: Dict[StringT, float],
         condition: Optional[Literal[PureToken.NX, PureToken.XX]] = None,
         comparison: Optional[Literal[PureToken.GT, PureToken.LT]] = None,
         change: Optional[bool] = None,
@@ -3795,7 +3800,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         self,
         key: KeyT,
         cursor: Optional[int] = 0,
-        match: Optional[ValueT] = None,
+        match: Optional[StringT] = None,
         count: Optional[int] = None,
     ) -> Tuple[int, ScoredMembers]:
         """
@@ -3920,7 +3925,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
     async def _zrange(
         self,
-        command: ValueT,
+        command: StringT,
         key: KeyT,
         start: Union[int, ValueT],
         stop: Union[int, ValueT],
@@ -3991,7 +3996,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
     @redis_command("XACK", group=CommandGroup.STREAM)
     async def xack(
-        self, key: KeyT, group: ValueT, identifiers: Iterable[ValueT]
+        self, key: KeyT, group: StringT, identifiers: Iterable[ValueT]
     ) -> int:
         """
         Marks a pending message as correctly processed,
@@ -4015,7 +4020,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def xadd(
         self,
         key: KeyT,
-        field_values: Dict[ValueT, ValueT],
+        field_values: Dict[StringT, ValueT],
         identifier: Optional[ValueT] = None,
         nomkstream: Optional[bool] = None,
         trim_strategy: Optional[Literal[PureToken.MAXLEN, PureToken.MINID]] = None,
@@ -4166,8 +4171,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def xreadgroup(
         self,
-        group: ValueT,
-        consumer: ValueT,
+        group: StringT,
+        consumer: StringT,
         streams: Dict[ValueT, ValueT],
         count: Optional[int] = None,
         block: Optional[Union[int, datetime.timedelta]] = None,
@@ -4208,12 +4213,12 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def xpending(
         self,
         key: KeyT,
-        group: ValueT,
+        group: StringT,
         start: Optional[ValueT] = None,
         end: Optional[ValueT] = None,
         count: Optional[int] = None,
         idle: Optional[int] = None,
-        consumer: Optional[ValueT] = None,
+        consumer: Optional[StringT] = None,
     ) -> Union[Tuple[StreamPendingExt, ...], StreamPending]:
         """
         Return information and entries from a stream consumer group pending
@@ -4272,7 +4277,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         response_callback=XInfoCallback(),
     )
     async def xinfo_consumers(
-        self, key: KeyT, groupname: ValueT
+        self, key: KeyT, groupname: StringT
     ) -> Tuple[Dict[AnyStr, AnyStr], ...]:
         """
         Get list of all consumers that belong to :paramref:`groupname` of the
@@ -4324,8 +4329,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def xclaim(
         self,
         key: KeyT,
-        group: ValueT,
-        consumer: ValueT,
+        group: StringT,
+        consumer: StringT,
         min_idle_time: Union[int, datetime.timedelta],
         identifiers: Iterable[ValueT],
         idle: Optional[int] = None,
@@ -4367,7 +4372,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def xgroup_create(
         self,
         key: KeyT,
-        groupname: ValueT,
+        groupname: StringT,
         identifier: Optional[ValueT] = None,
         mkstream: Optional[bool] = None,
         entriesread: Optional[int] = None,
@@ -4390,7 +4395,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.STREAM,
     )
     async def xgroup_createconsumer(
-        self, key: KeyT, *, groupname: ValueT, consumername: ValueT
+        self, key: KeyT, *, groupname: StringT, consumername: StringT
     ) -> int:
         """
         Create a consumer in a consumer group.
@@ -4409,7 +4414,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def xgroup_setid(
         self,
         key: KeyT,
-        groupname: ValueT,
+        groupname: StringT,
         identifier: Optional[ValueT] = None,
     ) -> bool:
         """
@@ -4420,7 +4425,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         )
 
     @redis_command("XGROUP DESTROY", group=CommandGroup.STREAM)
-    async def xgroup_destroy(self, key: KeyT, groupname: ValueT) -> int:
+    async def xgroup_destroy(self, key: KeyT, groupname: StringT) -> int:
         """
         Destroy a consumer group.
 
@@ -4432,7 +4437,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     @versionadded(version="3.0.0")
     @redis_command("XGROUP DELCONSUMER", group=CommandGroup.STREAM)
     async def xgroup_delconsumer(
-        self, key: KeyT, groupname: ValueT, consumername: ValueT
+        self, key: KeyT, groupname: StringT, consumername: StringT
     ) -> int:
         """
         Delete a consumer from a consumer group.
@@ -4453,8 +4458,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def xautoclaim(
         self,
         key: KeyT,
-        group: ValueT,
-        consumer: ValueT,
+        group: StringT,
+        consumer: StringT,
         min_idle_time: Union[int, datetime.timedelta],
         start: ValueT,
         count: Optional[int] = None,
@@ -4543,7 +4548,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         "BITOP", group=CommandGroup.BITMAP, cluster=ClusterCommandConfig(pipeline=False)
     )
     async def bitop(
-        self, keys: Iterable[KeyT], operation: ValueT, destkey: KeyT
+        self, keys: Iterable[KeyT], operation: StringT, destkey: KeyT
     ) -> int:
         """
         Perform a bitwise operation using ``operation`` between ``keys`` and
@@ -4706,7 +4711,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def eval(
         self,
-        script: ValueT,
+        script: StringT,
         keys: Optional[Iterable[KeyT]] = None,
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
@@ -4722,7 +4727,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command("EVAL_RO", version_introduced="7.0.0", group=CommandGroup.SCRIPTING)
     async def eval_ro(
         self,
-        script: Union[str, bytes, int, float],
+        script: StringT,
         keys: Optional[Iterable[KeyT]] = None,
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
@@ -4737,7 +4742,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def _evalsha(
         self,
         command: str,
-        sha1: ValueT,
+        sha1: StringT,
         keys: Optional[Iterable[KeyT]] = None,
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
@@ -4751,7 +4756,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command("EVALSHA", group=CommandGroup.SCRIPTING)
     async def evalsha(
         self,
-        sha1: ValueT,
+        sha1: StringT,
         keys: Optional[Iterable[KeyT]] = None,
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
@@ -4770,7 +4775,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def evalsha_ro(
         self,
-        sha1: ValueT,
+        sha1: StringT,
         keys: Optional[Iterable[KeyT]] = None,
         args: Optional[Iterable[ValueT]] = None,
     ) -> Any:
@@ -4811,7 +4816,7 @@ class CoreCommands(CommandMixin[AnyStr]):
             combine=lambda res: tuple(all(k) for k in zip(*res.values())),
         ),
     )
-    async def script_exists(self, sha1s: Iterable[ValueT]) -> Tuple[bool, ...]:
+    async def script_exists(self, sha1s: Iterable[StringT]) -> Tuple[bool, ...]:
         """
         Check if a script exists in the script cache by specifying the SHAs of
         each script as ``sha1s``.
@@ -4885,6 +4890,209 @@ class CoreCommands(CommandMixin[AnyStr]):
 
         return Script(self, script)  # type: ignore
 
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FCALL",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+    )
+    async def fcall(
+        self,
+        function: StringT,
+        keys: Optional[Iterable[KeyT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        """
+        Invoke a function
+
+        :return:
+        """
+        _keys: List[KeyT] = list(keys or [])
+        pieces: CommandArgList = [function, len(_keys), *_keys, *(args or [])]
+        return await self.execute_command("FCALL", *pieces)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FCALL_RO",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+    )
+    async def fcall_ro(
+        self,
+        function: StringT,
+        keys: Optional[Iterable[KeyT]] = None,
+        args: Optional[Iterable[ValueT]] = None,
+    ) -> Any:
+        """
+        Invoke a function
+        """
+        _keys: List[KeyT] = list(keys or [])
+        pieces: CommandArgList = [function, len(_keys), *_keys, *(args or [])]
+        return await self.execute_command("FCALL_RO", *pieces)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION DELETE",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=SimpleStringCallback(),
+        cluster=ClusterCommandConfig(
+            flag=NodeFlag.PRIMARIES,
+            combine=lambda res: res and list(res.values()).pop(),
+        ),
+    )
+    async def function_delete(self, library_name: StringT) -> bool:
+        """
+        Delete a library and all its functions.
+        """
+        return await self.execute_command("FUNCTION DELETE", library_name)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION DUMP",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        cluster=ClusterCommandConfig(flag=NodeFlag.RANDOM),
+    )
+    async def function_dump(self) -> bytes:
+        """
+        Dump all functions into a serialized binary payload
+        """
+        return await self.execute_command("FUNCTION DUMP", decode=False)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION FLUSH",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=SimpleStringCallback(),
+        cluster=ClusterCommandConfig(
+            flag=NodeFlag.PRIMARIES, combine=lambda res: all(res)
+        ),
+    )
+    async def function_flush(
+        self, async_: Optional[Literal[PureToken.SYNC, PureToken.ASYNC]] = None
+    ) -> bool:
+        """
+        Delete all functions
+        """
+        pieces = []
+        if async_ is not None:
+            pieces.append(async_)
+
+        return await self.execute_command("FUNCTION FLUSH", *pieces)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION KILL",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=SimpleStringCallback(),
+    )
+    async def function_kill(self) -> bool:
+        """
+        Kill the function currently in execution.
+        """
+        return await self.execute_command("FUNCTION KILL")
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION LIST",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=FunctionListCallback(),
+        cluster=ClusterCommandConfig(flag=NodeFlag.RANDOM),
+    )
+    async def function_list(
+        self, libraryname: Optional[StringT] = None, withcode: Optional[bool] = None
+    ) -> Dict[AnyStr, LibraryDefinition]:
+        """
+        List information about all the functions
+        """
+        pieces = []
+
+        if libraryname is not None:
+            pieces.extend(["LIBRARYNAME", libraryname])
+        if withcode:
+            pieces.append(PureToken.WITHCODE)
+        return await self.execute_command("FUNCTION LIST", *pieces)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION LOAD",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=SimpleStringCallback(),
+        cluster=ClusterCommandConfig(
+            flag=NodeFlag.PRIMARIES,
+            combine=lambda res: res and list(res.values()).pop(),
+        ),
+    )
+    async def function_load(
+        self,
+        engine_name: StringT,
+        library_name: StringT,
+        function_code: StringT,
+        replace: Optional[bool] = None,
+        description: Optional[StringT] = None,
+    ) -> bool:
+        """
+        Create a function with the given arguments (name, code, description)
+        """
+        pieces: CommandArgList = [engine_name, library_name]
+        if replace:
+            pieces.append(PureToken.REPLACE)
+
+        if description is not None:
+            pieces.extend(["DESCRIPTION", description])
+
+        pieces.append(function_code)
+        return await self.execute_command("FUNCTION LOAD", *pieces)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION RESTORE",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=SimpleStringCallback(),
+        cluster=ClusterCommandConfig(
+            flag=NodeFlag.PRIMARIES,
+            combine=lambda res: res and list(res.values()).pop(),
+        ),
+    )
+    async def function_restore(
+        self,
+        serialized_value: bytes,
+        policy: Optional[
+            Literal[PureToken.FLUSH, PureToken.APPEND, PureToken.REPLACE]
+        ] = None,
+    ) -> bool:
+        """
+        Restore all the functions on the given payload
+        :return:
+
+        """
+        pieces: CommandArgList = [serialized_value]
+        if policy is not None:
+            pieces.append(policy)
+        return await self.execute_command("FUNCTION RESTORE", *pieces)
+
+    @versionadded(version="3.0.0")
+    @redis_command(
+        "FUNCTION STATS",
+        version_introduced="7.0.0",
+        group=CommandGroup.SCRIPTING,
+        response_callback=FunctionStatsCallback(),
+        cluster=ClusterCommandConfig(
+            flag=NodeFlag.RANDOM,
+        ),
+    )
+    async def function_stats(self) -> Dict[AnyStr, Union[AnyStr, Dict]]:
+        """
+        Return information about the function currently running
+        """
+        return await self.execute_command("FUNCTION STATS")
+
     @redis_command(
         "BGREWRITEAOF",
         group=CommandGroup.CONNECTION,
@@ -4932,7 +5140,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def client_kill(
         self,
-        ip_port: Optional[ValueT] = None,
+        ip_port: Optional[StringT] = None,
         identifier: Optional[int] = None,
         type_: Optional[
             Literal[
@@ -4943,9 +5151,9 @@ class CoreCommands(CommandMixin[AnyStr]):
                 PureToken.PUBSUB,
             ]
         ] = None,
-        user: Optional[ValueT] = None,
-        addr: Optional[ValueT] = None,
-        laddr: Optional[ValueT] = None,
+        user: Optional[StringT] = None,
+        addr: Optional[StringT] = None,
+        laddr: Optional[StringT] = None,
         skipme: Optional[bool] = None,
     ) -> Union[int, bool]:
         """
@@ -5035,7 +5243,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         response_callback=SimpleStringCallback(),
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def client_setname(self, connection_name: ValueT) -> bool:
+    async def client_setname(self, connection_name: StringT) -> bool:
         """
         Set the current connection name
         :return: If the connection name was successfully set.
@@ -5166,7 +5374,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     async def client_tracking(
         self,
         status: Literal[PureToken.ON, PureToken.OFF],
-        *prefixes: ValueT,
+        *prefixes: StringT,
         redirect: Optional[int] = None,
         bcast: Optional[bool] = None,
         optin: Optional[bool] = None,
@@ -5248,7 +5456,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def failover(
         self,
-        host: Optional[ValueT] = None,
+        host: Optional[StringT] = None,
         port: Optional[int] = None,
         force: Optional[bool] = None,
         abort: Optional[bool] = None,
@@ -5318,7 +5526,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.SERVER,
         response_callback=InfoCallback(),
     )
-    async def info(self, *sections: ValueT) -> Dict[AnyStr, AnyStr]:
+    async def info(self, *sections: StringT) -> Dict[AnyStr, AnyStr]:
         """
         Get information and statistics about the server
 
@@ -5355,7 +5563,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
     @versionadded(version="3.0.0")
     @redis_command("LATENCY GRAPH", group=CommandGroup.SERVER)
-    async def latency_graph(self, event: ValueT) -> AnyStr:
+    async def latency_graph(self, event: StringT) -> AnyStr:
         """
         Return a latency graph for the event.
         """
@@ -5369,7 +5577,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "LATENCY HISTORY", group=CommandGroup.SERVER, response_callback=TupleCallback()
     )
-    async def latency_history(self, event: ValueT) -> Tuple[AnyStr, ...]:
+    async def latency_history(self, event: StringT) -> Tuple[AnyStr, ...]:
         """
         Return timestamp-latency samples for the event.
 
@@ -5397,7 +5605,7 @@ class CoreCommands(CommandMixin[AnyStr]):
 
     @versionadded(version="3.0.0")
     @redis_command("LATENCY RESET", group=CommandGroup.SERVER)
-    async def latency_reset(self, events: Optional[Iterable[ValueT]] = None) -> int:
+    async def latency_reset(self, events: Optional[Iterable[StringT]] = None) -> int:
         """
         Reset latency data for one or more events.
 
@@ -5510,7 +5718,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         raise RedisError("SHUTDOWN seems to have failed.")
 
     @redis_command("SLAVEOF", version_deprecated="5.0.0", group=CommandGroup.SERVER)
-    async def slaveof(self, host: ValueT, port: ValueT) -> bool:
+    async def slaveof(self, host: StringT, port: ValueT) -> bool:
         """
         Sets the server to be a replicated slave of the instance identified
         by the ``host`` and ``port``. If called without arguments, the
@@ -5570,7 +5778,7 @@ class CoreCommands(CommandMixin[AnyStr]):
     @redis_command(
         "REPLICAOF", group=CommandGroup.SERVER, response_callback=SimpleStringCallback()
     )
-    async def replicaof(self, *, host: ValueT, port: ValueT) -> bool:
+    async def replicaof(self, *, host: StringT, port: ValueT) -> bool:
         """
         Make the server a replica of another instance, or promote it as master.
         """
@@ -5619,7 +5827,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         cluster=ClusterCommandConfig(flag=NodeFlag.RANDOM),
     )
     async def acl_cat(
-        self, categoryname: Optional[ValueT] = None
+        self, categoryname: Optional[StringT] = None
     ) -> Tuple[AnyStr, ...]:
         """
         List the ACL categories or the commands inside a category
@@ -5643,7 +5851,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         version_introduced="6.0.0",
         group=CommandGroup.SERVER,
     )
-    async def acl_deluser(self, usernames: Iterable[ValueT]) -> int:
+    async def acl_deluser(self, usernames: Iterable[StringT]) -> int:
         """
         Remove the specified ACL users and the associated rules
 
@@ -5663,12 +5871,12 @@ class CoreCommands(CommandMixin[AnyStr]):
         response_callback=SimpleStringCallback(AuthorizationError),
     )
     async def acl_dryrun(
-        self, username: ValueT, command: ValueT, *args: ValueT
+        self, username: StringT, command: StringT, *args: ValueT
     ) -> bool:
         """
         Returns whether the user can execute the given command without executing the command.
         """
-        pieces = [username, command]
+        pieces: CommandArgList = [username, command]
         if args:
             pieces.extend(args)
         return await self.execute_command("ACL DRYRUN", *pieces)
@@ -5703,7 +5911,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.SERVER,
         response_callback=DictCallback(transform_function=pairs_to_dict),
     )
-    async def acl_getuser(self, username: ValueT) -> Dict[AnyStr, List[AnyStr]]:
+    async def acl_getuser(self, username: StringT) -> Dict[AnyStr, List[AnyStr]]:
         """
         Get the rules for a specific ACL user
 
@@ -5807,8 +6015,8 @@ class CoreCommands(CommandMixin[AnyStr]):
     )
     async def acl_setuser(
         self,
-        username: ValueT,
-        *rules: ValueT,
+        username: StringT,
+        *rules: StringT,
     ) -> bool:
         """
         Modify or create the rules for a specific ACL user
@@ -5891,7 +6099,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.SERVER,
     )
     async def command_getkeys(
-        self, command: ValueT, arguments: Iterable[ValueT]
+        self, command: StringT, arguments: Iterable[ValueT]
     ) -> Tuple[AnyStr, ...]:
         """
         Extract keys given a full Redis command
@@ -5907,7 +6115,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.SERVER,
         response_callback=CommandCallback(),
     )
-    async def command_info(self, *command_names: ValueT) -> Dict[AnyStr, Command]:
+    async def command_info(self, *command_names: StringT) -> Dict[AnyStr, Command]:
         """
         Get specific Redis command details, or all when no argument is given.
 
@@ -5922,7 +6130,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         group=CommandGroup.SERVER,
         response_callback=DictCallback(pairs_to_dict),
     )
-    async def config_get(self, parameters: Iterable[ValueT]) -> Dict[AnyStr, AnyStr]:
+    async def config_get(self, parameters: Iterable[StringT]) -> Dict[AnyStr, AnyStr]:
         """
         Get the values of configuration parameters
         """
@@ -5935,7 +6143,7 @@ class CoreCommands(CommandMixin[AnyStr]):
         response_callback=SimpleStringCallback(),
         cluster=ClusterCommandConfig(pipeline=False),
     )
-    async def config_set(self, parameter_values: Dict[ValueT, ValueT]) -> bool:
+    async def config_set(self, parameter_values: Dict[StringT, ValueT]) -> bool:
         """Sets configuration parameters to the given values"""
         return await self.execute_command(
             "CONFIG SET", *itertools.chain(*parameter_values.items())

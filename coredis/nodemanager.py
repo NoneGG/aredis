@@ -85,10 +85,14 @@ class NodeManager:
     def random_startup_node(self):
         return random.choice(self.startup_nodes)
 
-    def random_startup_node_iter(self):
+    def random_startup_node_iter(self, primary=False):
         """A generator that returns a random startup nodes"""
+        if primary:
+            options = list(self.all_primaries())
+        else:
+            options = self.startup_nodes
         while True:
-            yield random.choice(self.startup_nodes)
+            yield random.choice(options)
 
     def random_node(self):
         return random.choice(list(self.nodes.values()))

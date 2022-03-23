@@ -40,6 +40,7 @@ R = TypeVar("R")
 
 KeyT: TypeAlias = Union[str, bytes]
 ValueT: TypeAlias = Union[str, bytes, int, float]
+StringT: TypeAlias = KeyT
 
 
 def add_runtime_checks(func: Callable[P, R]) -> Callable[P, R]:

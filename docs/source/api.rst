@@ -69,6 +69,14 @@ Scripting
    :no-inherited-members:
    :class-doc-from: both
 
+Functions
+---------
+.. autoclass:: coredis.commands.function.Library
+   :class-doc-from: both
+
+.. autoclass:: coredis.commands.function.Function
+   :class-doc-from: both
+
 Transactions
 ------------
 

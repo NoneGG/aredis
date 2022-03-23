@@ -674,23 +674,31 @@ class ClusterConnectionPool(ConnectionPool):
 
         return sum([i for i in self._created_connections_per_node.values()])
 
-    def get_random_connection(self):
+    def get_random_connection(self, primary=False):
         """Opens new connection to random redis server"""
 
         if self._cluster_available_connections:
-            node_name = random.choice(list(self._cluster_available_connections.keys()))
-            conn_list = self._cluster_available_connections[node_name]
+            filter = []
+            if primary:
+                filter = [node["name"] for node in self.nodes.all_primaries()]
+            node_name = random.choice(
+                list(
+                    node
+                    for node in self._cluster_available_connections.keys()
+                    if not filter or node in filter
+                )
+            )
+            conn_list = node_name and self._cluster_available_connections[node_name]
             # check it in case of empty connection list
 
             if conn_list:
                 return conn_list.pop()
 
-        for node in self.nodes.random_startup_node_iter():
+        for node in self.nodes.random_startup_node_iter(primary):
             connection = self.get_connection_by_node(node)
 
             if connection:
                 return connection
-
         raise Exception("Cant reach a single startup node.")
 
     def get_connection_by_key(self, key):

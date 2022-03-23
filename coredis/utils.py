@@ -1,6 +1,7 @@
 import datetime
 import enum
 import time
+from collections import UserDict
 from functools import wraps
 from typing import (
     Callable,
@@ -30,6 +31,30 @@ try:
     _C_EXTENSION_SPEEDUP = True
 except Exception:
     pass
+
+
+class AnyDict(UserDict):
+    def __init__(self, dict=None, /, encoding="utf=8", **kwargs):
+        self.encoding = encoding
+        super(AnyDict, self).__init__(dict, **kwargs)
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            return self.data.get(item, self.data.get(item.encode(self.encoding)))
+        return self.data[item]
+
+    def __setitem__(self, item, value):
+        if item in self.data:
+            self.data[item] = value
+        elif isinstance(item, str) and item.encode(self.encoding) in self.data:
+            self.data[item.encode(self.encoding)] = value
+        else:
+            self.data[item] = value
+
+    def __contains__(self, key):
+        if isinstance(key, str):
+            return key in self.data or key.encode(self.encoding) in self.data
+        return key in self.data
 
 
 def b(x) -> bytes:

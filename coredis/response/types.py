@@ -2,7 +2,17 @@ import dataclasses
 import datetime
 import re
 import shlex
-from typing import Dict, Literal, NamedTuple, Optional, Tuple, TypedDict, Union
+from typing import (
+    Dict,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Set,
+    Tuple,
+    TypedDict,
+    Union,
+)
 
 from typing_extensions import OrderedDict, TypeAlias
 
@@ -33,6 +43,7 @@ from typing_extensions import OrderedDict, TypeAlias
 #: - ``user``: the authenticated username of the client
 #: - ``redir``: client id of current client tracking redirection
 #: - ``resp``: client RESP protocol version. Added in Redis 7.0
+
 ClientInfo = TypedDict(
     "ClientInfo",
     {
@@ -63,6 +74,19 @@ ClientInfo = TypedDict(
         "resp": str,
     },
 )
+
+
+class FunctionDefinition(TypedDict):
+    name: Union[str, bytes]
+    description: Union[str, bytes]
+    flags: Set[Union[str, bytes]]
+
+
+class LibraryDefinition(TypedDict):
+    name: Union[str, bytes]
+    description: Union[str, bytes]
+    functions: List[FunctionDefinition]
+    library_code: Optional[Union[str, bytes]]
 
 
 class ScoredMember(NamedTuple):

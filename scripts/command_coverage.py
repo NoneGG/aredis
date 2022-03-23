@@ -42,9 +42,9 @@ from coredis.response.types import (
     StreamEntry,
     StreamInfo,
     StreamPending,
-    StreamPendingExt,
+    StreamPendingExt, LibraryDefinition,
 )
-from coredis.typing import OrderedDict, ValueT, KeyT
+from coredis.typing import OrderedDict, ValueT, KeyT, StringT
 from coredis import PureToken, NodeFlag  # noqa
 
 MAX_SUPPORTED_VERSION = version.parse("7.999.999")
@@ -64,10 +64,10 @@ SKIP_COMMANDS = [
 
 REDIS_ARGUMENT_TYPE_MAPPING = {
     "array": Sequence,
-    "simple-string": ValueT,
-    "bulk-string": ValueT,
-    "string": ValueT,
-    "pattern": ValueT,
+    "simple-string": StringT,
+    "bulk-string": StringT,
+    "string": StringT,
+    "pattern": StringT,
     "key": KeyT,
     "integer": int,
     "double": Union[int, float],
@@ -99,26 +99,31 @@ REDIS_ARGUMENT_NAME_OVERRIDES = {
 }
 REDIS_ARGUMENT_TYPE_OVERRIDES = {
     "CLIENT KILL": {"skipme": bool},
-    "COMMAND GETKEYS": {"arguments": Union[ValueT, int]},
+    "COMMAND GETKEYS": {"arguments": ValueT},
+    "FUNCTION RESTORE": {"serialized_value": bytes},
     "MSET": {"key_values": Dict[KeyT, ValueT]},
     "MSETNX": {"key_values": Dict[KeyT, ValueT]},
-    "HMSET": {"field_values": Dict[ValueT, ValueT]},
-    "HSET": {"field_values": Dict[ValueT, ValueT]},
+    "HMSET": {"field_values": Dict[StringT, ValueT]},
+    "HSET": {"field_values": Dict[StringT, ValueT]},
     "MIGRATE": {"port": int},
     "RESTORE": {"serialized_value": bytes},
-    "XADD": {"field_values": Dict[ValueT, ValueT], "threshold": Optional[int]},
+    "SORT": {"gets": KeyT},
+    "SORT_RO": {"gets": KeyT},
+    "XADD": {"field_values": Dict[StringT, ValueT], "threshold": Optional[int]},
     "XAUTOCLAIM": {"min_idle_time": Union[int, datetime.timedelta]},
     "XCLAIM": {"min_idle_time": Union[int, datetime.timedelta]},
     "XREAD": {"streams": Dict[ValueT, ValueT]},
     "XREADGROUP": {"streams": Dict[ValueT, ValueT]},
     "XTRIM": {"threshold": int},
-    "ZADD": {"member_scores": Dict[ValueT, float]},
+    "ZADD": {"member_scores": Dict[StringT, float]},
     "ZCOUNT": {"min": Union[ValueT, float], "max": Union[ValueT, float]},
     "ZREVRANGE": {"min": Union[int, ValueT], "max": Union[int, ValueT]},
     "ZRANGE": {"min": Union[int, ValueT], "max": Union[int, ValueT]},
     "ZRANGESTORE": {"min": Union[int, ValueT], "max": Union[int, ValueT]},
 }
 IGNORED_ARGUMENTS = {
+    "FCALL": ["numkeys"],
+    "FCALL_RO": ["numkeys"],
     "LMPOP": ["numkeys"],
     "BLMPOP": ["numkeys"],
     "BZMPOP": ["numkeys"],
@@ -166,6 +171,9 @@ REDIS_RETURN_OVERRIDES = {
     "EXPIRE": bool,
     "EXPIREAT": bool,
     "EXPIRETIME": datetime.datetime,
+    "FUNCTION DUMP": bytes,
+    "FUNCTION STATS": Dict[AnyStr, Union[AnyStr, Dict]],
+    "FUNCTION LIST": Dict[AnyStr, LibraryDefinition],
     "GEODIST": Optional[float],
     "GEOPOS": Tuple[Optional[GeoCoordinates], ...],
     "GEOSEARCH": Union[int, Tuple[Union[AnyStr, GeoSearchResult], ...]],
@@ -240,6 +248,8 @@ ARGUMENT_DEFAULTS_NON_OPTIONAL = {
 ARGUMENT_OPTIONALITY = {
     "EVAL_RO": {"key": True, "arg": True},
     "EVALSHA_RO": {"key": True, "arg": True},
+    "FCALL": {"key": True, "arg": True},
+    "FCALL_RO": {"key": True, "arg": True},
     "MIGRATE": {"keys": False},
     "XADD": {"id_or_auto": True},
     "SCAN": {"cursor": True},
@@ -267,6 +277,8 @@ REDIS_ARGUMENT_FORCED_ORDER = {
         "skipme",
     ],
     "CLIENT LIST": ["type_", "identifiers"],
+    "FCALL": ["function", "keys", "args"],
+    "FCALL_RO": ["function", "keys", "args"],
 }
 REDIS_ARGUMENT_FORCED = {
     "COMMAND GETKEYS": [
@@ -763,9 +775,14 @@ def get_type(arg, command):
     if arg["name"] in ["seconds", "milliseconds"] and inferred_type == int:
         return Union[int, datetime.timedelta]
 
-    if arg["name"] == "yes/no" and inferred_type == ValueT:
+    if arg["name"] == "yes/no" and inferred_type in [StringT, ValueT]:
         return bool
-
+    if (
+        arg["name"]
+        in ["value", "element", "pivot", "member", "id", "min", "max", "start", "end", "argument", "arg", "port"]
+        and inferred_type == StringT
+    ):
+        return ValueT
     return inferred_type
 
 
@@ -831,7 +848,7 @@ def get_argument(
             else:
                 if len(child_types) == 1:
                     annotation = Iterable[child_types[0]]
-                elif len(child_types) == 2 and child_types[0] == ValueT:
+                elif len(child_types) == 2 and child_types[0] in [StringT, ValueT]:
                     annotation = Dict[child_types[0], child_types[1]]
                 else:
                     child_types_repr = ",".join(
@@ -857,7 +874,13 @@ def get_argument(
 
         else:
             plist_d = []
-
+            if len(arg["arguments"]) == 1 and not arg.get("multiple"):
+                synthetic_parent = arg.copy()
+                synthetic_parent["type"] = "pure-token"
+                synthetic_parent.pop("arguments")
+                plist_p, declist, vmap = get_argument(synthetic_parent, parent, command, arg_type, False)
+                param_list.extend(plist_p)
+                meta_mapping.update(vmap)
             for child in sorted(
                 arg["arguments"], key=lambda v: int(v.get("optional") == True)
             ):

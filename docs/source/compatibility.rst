@@ -2806,6 +2806,186 @@ Execute a read-only Lua script server side
 
 
 
+FCALL
+*****
+
+Invoke a function
+
+- Documentation: `FCALL <https://redis.io/commands/fcall>`_
+- Implementation: :meth:`~coredis.Redis.fcall`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FCALL_RO
+********
+
+Invoke a read-only function
+
+- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
+- Implementation: :meth:`~coredis.Redis.fcall_ro`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION DELETE
+***************
+
+Delete a function by name
+
+- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
+- Implementation: :meth:`~coredis.Redis.function_delete`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION DUMP
+*************
+
+Dump all functions into a serialized binary payload
+
+- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
+- Implementation: :meth:`~coredis.Redis.function_dump`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION FLUSH
+**************
+
+Deleting all functions
+
+- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
+- Implementation: :meth:`~coredis.Redis.function_flush`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION KILL
+*************
+
+Kill the function currently in execution.
+
+- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
+- Implementation: :meth:`~coredis.Redis.function_kill`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION LIST
+*************
+
+List information about all the functions
+
+- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
+- Implementation: :meth:`~coredis.Redis.function_list`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION LOAD
+*************
+
+Create a function with the given arguments (name, code, description)
+
+- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
+- Implementation: :meth:`~coredis.Redis.function_load`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION RESTORE
+****************
+
+Restore all the functions on the given payload
+
+- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
+- Implementation: :meth:`~coredis.Redis.function_restore`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
+FUNCTION STATS
+**************
+
+Return information about the function currently running (name, description, duration)
+
+- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
+- Implementation: :meth:`~coredis.Redis.function_stats`
+
+- New in redis: 7.0.0
+
+
+
+- .. versionadded:: 3.0.0
+
+
+
+
+
 SCRIPT DEBUG
 ************
 
@@ -2876,106 +3056,6 @@ Load the specified Lua script into the script cache.
 
 
 
-
-
-FCALL [X]
-*********
-
-Invoke a function
-
-- Documentation: `FCALL <https://redis.io/commands/fcall>`_
- 
-- Not Implemented
-
-
-FCALL_RO [X]
-************
-
-Invoke a read-only function
-
-- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
- 
-- Not Implemented
-
-
-FUNCTION DELETE [X]
-*******************
-
-Delete a function by name
-
-- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
- 
-- Not Implemented
-
-
-FUNCTION DUMP [X]
-*****************
-
-Dump all functions into a serialized binary payload
-
-- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
- 
-- Not Implemented
-
-
-FUNCTION FLUSH [X]
-******************
-
-Deleting all functions
-
-- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
- 
-- Not Implemented
-
-
-FUNCTION KILL [X]
-*****************
-
-Kill the function currently in execution.
-
-- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
- 
-- Not Implemented
-
-
-FUNCTION LIST [X]
-*****************
-
-List information about all the functions
-
-- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
- 
-- Not Implemented
-
-
-FUNCTION LOAD [X]
-*****************
-
-Create a function with the given arguments (name, code, description)
-
-- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
- 
-- Not Implemented
-
-
-FUNCTION RESTORE [X]
-********************
-
-Restore all the functions on the given payload
-
-- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
- 
-- Not Implemented
-
-
-FUNCTION STATS [X]
-******************
-
-Return information about the function currently running (name, description, duration)
-
-- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
- 
-- Not Implemented
 
 
 
@@ -5127,106 +5207,6 @@ Execute a Lua script server side
 
 
 
-
-
-FCALL [X]
-*********
-
-Invoke a function
-
-- Documentation: `FCALL <https://redis.io/commands/fcall>`_
- 
-- Not Implemented
-
-
-FCALL_RO [X]
-************
-
-Invoke a read-only function
-
-- Documentation: `FCALL_RO <https://redis.io/commands/fcall_ro>`_
- 
-- Not Implemented
-
-
-FUNCTION DELETE [X]
-*******************
-
-Delete a function by name
-
-- Documentation: `FUNCTION DELETE <https://redis.io/commands/function-delete>`_
- 
-- Not Implemented
-
-
-FUNCTION DUMP [X]
-*****************
-
-Dump all functions into a serialized binary payload
-
-- Documentation: `FUNCTION DUMP <https://redis.io/commands/function-dump>`_
- 
-- Not Implemented
-
-
-FUNCTION FLUSH [X]
-******************
-
-Deleting all functions
-
-- Documentation: `FUNCTION FLUSH <https://redis.io/commands/function-flush>`_
- 
-- Not Implemented
-
-
-FUNCTION KILL [X]
-*****************
-
-Kill the function currently in execution.
-
-- Documentation: `FUNCTION KILL <https://redis.io/commands/function-kill>`_
- 
-- Not Implemented
-
-
-FUNCTION LIST [X]
-*****************
-
-List information about all the functions
-
-- Documentation: `FUNCTION LIST <https://redis.io/commands/function-list>`_
- 
-- Not Implemented
-
-
-FUNCTION LOAD [X]
-*****************
-
-Create a function with the given arguments (name, code, description)
-
-- Documentation: `FUNCTION LOAD <https://redis.io/commands/function-load>`_
- 
-- Not Implemented
-
-
-FUNCTION RESTORE [X]
-********************
-
-Restore all the functions on the given payload
-
-- Documentation: `FUNCTION RESTORE <https://redis.io/commands/function-restore>`_
- 
-- Not Implemented
-
-
-FUNCTION STATS [X]
-******************
-
-Return information about the function currently running (name, description, duration)
-
-- Documentation: `FUNCTION STATS <https://redis.io/commands/function-stats>`_
- 
-- Not Implemented
 
 
 
