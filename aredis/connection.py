@@ -17,7 +17,7 @@ from aredis.exceptions import (ConnectionError, TimeoutError,
                                InvalidResponse, AskError,
                                MovedError, TryAgainError,
                                ClusterDownError, ClusterCrossSlotError)
-from aredis.utils import b, nativestr, LOOP_DEPRECATED
+from aredis.utils import b, nativestr, LOOP_DEPRECATED, LOOP_DEPRECATED_OPEN_CONNECTION
 
 try:
     import hiredis
@@ -593,11 +593,18 @@ class Connection(BaseConnection):
         self.socket_keepalive_options = socket_keepalive_options or {}
 
     async def _connect(self):
-        reader, writer = await exec_with_timeout(
-            asyncio.open_connection(host=self.host,
+        if LOOP_DEPRECATED_OPEN_CONNECTION:
+            coro=asyncio.open_connection(host=self.host,
+                                    port=self.port,
+                                    ssl=self.ssl_context)
+        else:
+            coro=asyncio.open_connection(host=self.host,
                                     port=self.port,
                                     ssl=self.ssl_context,
-                                    loop=self.loop),
+                                    loop=self.loop)
+
+        reader, writer = await exec_with_timeout(coro
+            ,
             self._connect_timeout,
             loop=self.loop
         )
