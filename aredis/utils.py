@@ -12,6 +12,7 @@ except Exception:
     pass
 
 LOOP_DEPRECATED = sys.version_info >= (3, 8)
+LOOP_DEPRECATED_OPEN_CONNECTION=sys.version_info >= (3, 10)
 
 
 def b(x):
