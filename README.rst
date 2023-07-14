@@ -50,6 +50,8 @@ single node client
 
     async def example():
         client = StrictRedis(host='127.0.0.1', port=6379, db=0)
+        # If not anonymous
+        # client = StrictRedis(host='127.0.0.1', port=6379, db=0, username='user', password='password')
         await client.flushdb()
         await client.set('foo', 1)
         assert await client.exists('foo') is True
