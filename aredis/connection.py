@@ -436,7 +436,10 @@ class BaseConnection:
 
         # if a password is specified, authenticate
         if self.password:
-            await self.send_command('AUTH', self.username, self.password)
+            if self.username:
+                await self.send_command('AUTH', self.username, self.password)
+            else:
+                await self.send_command('AUTH', self.password)
             if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Password')
 
