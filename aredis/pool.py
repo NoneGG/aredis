@@ -47,9 +47,9 @@ class ConnectionPool:
 
         For example::
 
-        redis://[user:password]@localhost:6379/0
-        rediss://[user:password]@localhost:6379/0
-        unix://[user:password]@/path/to/socket.sock?db=0
+        redis://[username:password]@localhost:6379/0
+        rediss://[username:password]@localhost:6379/0
+        unix://[username:password]@/path/to/socket.sock?db=0
 
         Three URL schemes are supported:
 
