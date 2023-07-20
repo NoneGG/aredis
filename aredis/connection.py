@@ -372,6 +372,7 @@ class BaseConnection:
         self._stream_timeout = stream_timeout
         self._reader = None
         self._writer = None
+        self.username = None
         self.password = ''
         self.db = ''
         self.pid = os.getpid()
@@ -435,7 +436,10 @@ class BaseConnection:
 
         # if a password is specified, authenticate
         if self.password:
-            await self.send_command('AUTH', self.password)
+            if self.username:
+                await self.send_command('AUTH', self.username, self.password)
+            else:
+                await self.send_command('AUTH', self.password)
             if nativestr(await self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Password')
 
@@ -515,7 +519,7 @@ class BaseConnection:
         self._writer = None
 
     def pack_command(self, *args):
-        "Pack a series of arguments into the Redis protocol"
+        """Pack a series of arguments into the Redis protocol."""
         output = []
         # the client might have included 1 or more literal arguments in
         # the command name, e.g., 'CONFIG GET'. The Redis server expects these
@@ -569,7 +573,7 @@ class BaseConnection:
 class Connection(BaseConnection):
     description = 'Connection<host={host},port={port},db={db}>'
 
-    def __init__(self, host='127.0.0.1', port=6379, password=None,
+    def __init__(self, host='127.0.0.1', port=6379, username=None, password=None,
                  db=0, retry_on_timeout=False, stream_timeout=None, connect_timeout=None,
                  ssl_context=None, parser_class=DefaultParser, reader_read_size=65535,
                  encoding='utf-8', decode_responses=False, socket_keepalive=None,
@@ -580,6 +584,7 @@ class Connection(BaseConnection):
                                          loop=loop)
         self.host = host
         self.port = port
+        self.username = username
         self.password = password
         self.db = db
         self.ssl_context = ssl_context

@@ -92,7 +92,7 @@ class StrictRedis(*mixins):
         return cls(connection_pool=connection_pool)
 
     def __init__(self, host='localhost', port=6379,
-                 db=0, password=None, stream_timeout=None,
+                 db=0, username=None, password=None, stream_timeout=None,
                  connect_timeout=None, connection_pool=None,
                  unix_socket_path=None, encoding='utf-8',
                  decode_responses=False, ssl=False, ssl_context=None,
@@ -104,6 +104,7 @@ class StrictRedis(*mixins):
         if not connection_pool:
             kwargs = {
                 'db': db,
+                'username': username,
                 'password': password,
                 'encoding': encoding,
                 'stream_timeout': stream_timeout,

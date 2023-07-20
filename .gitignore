@@ -4,6 +4,7 @@ aredis.egg-info
 build/
 dist/
 .idea/
+venv/
 env/
 env3.6/
 dump.rdb
