@@ -13,9 +13,26 @@ except Exception:
 
 LOOP_DEPRECATED = sys.version_info >= (3, 8)
 
+# Cache for common string to bytes conversions to reduce encoding overhead
+_BYTES_CACHE = {}
+_BYTES_CACHE_SIZE_LIMIT = 256  # Limit cache size to prevent memory bloat
 
 def b(x):
-    return x.encode('latin-1') if not isinstance(x, bytes) else x
+    """Convert string to bytes with caching for common values"""
+    if isinstance(x, bytes):
+        return x
+    
+    # Cache small, commonly used strings
+    if isinstance(x, str) and len(x) < 32:
+        if x not in _BYTES_CACHE:
+            if len(_BYTES_CACHE) < _BYTES_CACHE_SIZE_LIMIT:
+                _BYTES_CACHE[x] = x.encode('latin-1')
+            else:
+                # Cache full, don't store
+                return x.encode('latin-1')
+        return _BYTES_CACHE[x]
+    
+    return x.encode('latin-1')
 
 
 def nativestr(x):
