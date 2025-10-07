@@ -44,10 +44,17 @@ async def exec_with_timeout(coroutine, timeout, *, loop=None):
 
 
 class SocketBuffer:
+    # Pre-allocate buffer with reasonable default size to reduce reallocations
+    _INITIAL_BUFFER_SIZE = 8192
+    
     def __init__(self, stream_reader, read_size):
         self._stream = stream_reader
         self.read_size = read_size
+        # Pre-allocate buffer to reduce memory allocations
         self._buffer = BytesIO()
+        # Hint to BytesIO about expected size for better memory management
+        self._buffer.truncate(self._INITIAL_BUFFER_SIZE)
+        self._buffer.seek(0)
         # number of bytes written to the buffer from the socket
         self.bytes_written = 0
         # number of bytes read from the buffer
@@ -118,8 +125,10 @@ class SocketBuffer:
         return data[:-2]
 
     def purge(self):
+        # Reset buffer position and keep pre-allocated size
         self._buffer.seek(0)
-        self._buffer.truncate()
+        self._buffer.truncate(self._INITIAL_BUFFER_SIZE)
+        self._buffer.seek(0)
         self.bytes_written = 0
         self.bytes_read = 0
 
@@ -528,41 +537,50 @@ class BaseConnection:
         else:
             args = (b(command),) + args[1:]
 
-        buff = SYM_EMPTY.join(
-            (SYM_STAR, b(str(len(args))), SYM_CRLF))
+        # Pre-calculate total args to avoid repeated conversions
+        args_len = str(len(args)).encode('latin-1')
+        buff = bytearray(SYM_STAR)
+        buff.extend(args_len)
+        buff.extend(SYM_CRLF)
+        
         for arg in map(self.encode, args):
+            arg_len = str(len(arg)).encode('latin-1')
             # to avoid large string mallocs, chunk the command into the
             # output list if we're sending large values
             if len(buff) > 6000 or len(arg) > 6000:
-                buff = SYM_EMPTY.join(
-                    (buff, SYM_DOLLAR, b(str(len(arg))), SYM_CRLF))
-                output.append(buff)
+                buff.extend(SYM_DOLLAR)
+                buff.extend(arg_len)
+                buff.extend(SYM_CRLF)
+                output.append(bytes(buff))
                 output.append(b(arg))
-                buff = SYM_CRLF
+                buff = bytearray(SYM_CRLF)
             else:
-                buff = SYM_EMPTY.join((buff, SYM_DOLLAR, b(str(len(arg))),
-                                       SYM_CRLF, b(arg), SYM_CRLF))
-        output.append(buff)
+                buff.extend(SYM_DOLLAR)
+                buff.extend(arg_len)
+                buff.extend(SYM_CRLF)
+                buff.extend(b(arg))
+                buff.extend(SYM_CRLF)
+        output.append(bytes(buff))
         return output
 
     def pack_commands(self, commands):
         "Pack multiple commands into the Redis protocol"
         output = []
-        pieces = []
+        buff = bytearray()
         buffer_length = 0
 
         for cmd in commands:
             for chunk in self.pack_command(*cmd):
-                pieces.append(chunk)
+                buff.extend(chunk)
                 buffer_length += len(chunk)
 
             if buffer_length > 6000:
-                output.append(SYM_EMPTY.join(pieces))
+                output.append(bytes(buff))
+                buff = bytearray()
                 buffer_length = 0
-                pieces = []
 
-        if pieces:
-            output.append(SYM_EMPTY.join(pieces))
+        if buff:
+            output.append(bytes(buff))
         return output
 
 

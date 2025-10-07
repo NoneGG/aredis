@@ -151,9 +151,11 @@ class StrictRedis(*mixins):
         pool = self.connection_pool
         command_name = args[0]
         connection = pool.get_connection()
+        # Cache callback lookup to avoid repeated dict access
+        callback = self.response_callbacks.get(command_name)
         try:
             await connection.send_command(*args)
-            return await self.parse_response(connection, command_name, **options)
+            return await self._parse_response_with_callback(connection, callback, **options)
         except CancelledError:
             # do not retry when coroutine is cancelled
             connection.disconnect()
@@ -163,15 +165,22 @@ class StrictRedis(*mixins):
             if not connection.retry_on_timeout and isinstance(e, TimeoutError):
                 raise
             await connection.send_command(*args)
-            return await self.parse_response(connection, command_name, **options)
+            return await self._parse_response_with_callback(connection, callback, **options)
         finally:
             pool.release(connection)
 
     async def parse_response(self, connection, command_name, **options):
         """Parses a response from the Redis server"""
         response = await connection.read_response()
-        if command_name in self.response_callbacks:
-            callback = self.response_callbacks[command_name]
+        callback = self.response_callbacks.get(command_name)
+        if callback:
+            return callback(response, **options)
+        return response
+    
+    async def _parse_response_with_callback(self, connection, callback, **options):
+        """Optimized parse response when callback is already resolved"""
+        response = await connection.read_response()
+        if callback:
             return callback(response, **options)
         return response
 
@@ -326,8 +335,9 @@ class StrictRedisCluster(StrictRedis, *cluster_mixins):
         """
         `res` is a dict with the following structure Dict(NodeName, CommandResult)
         """
-        if command in self.result_callbacks:
-            return self.result_callbacks[command](res, **kwargs)
+        callback = self.result_callbacks.get(command)
+        if callback:
+            return callback(res, **kwargs)
 
         # Default way to handle result
         return first_key(res)

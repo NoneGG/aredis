@@ -7,6 +7,7 @@ import warnings
 import time
 import random
 import threading
+from collections import deque
 from itertools import chain
 from urllib.parse import (parse_qs,
                           unquote,
@@ -196,7 +197,7 @@ class ConnectionPool:
     def reset(self):
         self.pid = os.getpid()
         self._created_connections = 0
-        self._available_connections = []
+        self._available_connections = deque()  # Use deque for O(1) append/pop
         self._in_use_connections = set()
         self._check_lock = threading.Lock()
 
@@ -337,7 +338,7 @@ class ClusterConnectionPool(ConnectionPool):
         """Resets the connection pool back to a clean state"""
         self.pid = os.getpid()
         self._created_connections_per_node = {}  # Dict(Node, Int)
-        self._available_connections = {}  # Dict(Node, List)
+        self._available_connections = {}  # Dict(Node, deque) - Use deque for O(1) operations
         self._in_use_connections = {}  # Dict(Node, Set)
         self._check_lock = threading.Lock()
         self.initialized = False
@@ -367,15 +368,19 @@ class ClusterConnectionPool(ConnectionPool):
 
         self._checkpid()
 
+        node_name = node["name"]
+        if node_name not in self._available_connections:
+            self._available_connections[node_name] = deque()
+        
         try:
-            connection = self._available_connections.get(node["name"], []).pop()
+            connection = self._available_connections[node_name].pop()
         except IndexError:
             connection = self.make_connection(node)
 
-        if node['name'] not in self._in_use_connections:
-            self._in_use_connections[node['name']] = set()
+        if node_name not in self._in_use_connections:
+            self._in_use_connections[node_name] = set()
 
-        self._in_use_connections[node['name']].add(connection)
+        self._in_use_connections[node_name].add(connection)
 
         return connection
 
@@ -423,7 +428,10 @@ class ClusterConnectionPool(ConnectionPool):
             if self.max_connections_per_node and self._created_connections_per_node.get(connection.node['name']):
                 self._created_connections_per_node[connection.node['name']] -= 1
         else:
-            self._available_connections.setdefault(connection.node["name"], []).append(connection)
+            node_name = connection.node["name"]
+            if node_name not in self._available_connections:
+                self._available_connections[node_name] = deque()
+            self._available_connections[node_name].append(connection)
 
     def disconnect(self):
         """Closes all connectins in the pool"""
@@ -446,10 +454,10 @@ class ClusterConnectionPool(ConnectionPool):
         """Opens new connection to random redis server"""
         if self._available_connections:
             node_name = random.choice(list(self._available_connections.keys()))
-            conn_list = self._available_connections[node_name]
-            # check it in case of empty connection list
-            if conn_list:
-                return conn_list.pop()
+            conn_deque = self._available_connections[node_name]
+            # check it in case of empty connection deque
+            if conn_deque:
+                return conn_deque.pop()
         for node in self.nodes.random_startup_node_iter():
             connection = self.get_connection_by_node(node)
 
@@ -481,13 +489,17 @@ class ClusterConnectionPool(ConnectionPool):
         self._checkpid()
         self.nodes.set_node_name(node)
 
+        node_name = node["name"]
+        if node_name not in self._available_connections:
+            self._available_connections[node_name] = deque()
+        
         try:
             # Try to get connection from existing pool
-            connection = self._available_connections.get(node["name"], []).pop()
+            connection = self._available_connections[node_name].pop()
         except IndexError:
             connection = self.make_connection(node)
 
-        self._in_use_connections.setdefault(node["name"], set()).add(connection)
+        self._in_use_connections.setdefault(node_name, set()).add(connection)
 
         return connection
 
