@@ -33,8 +33,7 @@ class TransactionCommandMixin:
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
                         await asyncio.sleep(
-                            watch_delay,
-                            loop=self.connection_pool.loop
+                            watch_delay
                         )
                     continue
 
@@ -75,7 +74,6 @@ class ClusterTransactionCommandMixin(TransactionCommandMixin):
                 except WatchError:
                     if watch_delay is not None and watch_delay > 0:
                         await asyncio.sleep(
-                            watch_delay,
-                            loop=self.connection_pool.loop
+                            watch_delay
                         )
                     continue
