@@ -416,7 +416,7 @@ class BaseConnection:
         except aredis.compat.CancelledError:
             raise
         except Exception as exc:
-            raise ConnectionError()
+            raise ConnectionError() from exc
         # run any user callbacks. right now the only internal callback
         # is for pubsub channel/pattern resubscription
         for callback in self._connect_callbacks:
@@ -593,13 +593,23 @@ class Connection(BaseConnection):
         self.socket_keepalive_options = socket_keepalive_options or {}
 
     async def _connect(self):
+        if LOOP_DEPRECATED:
+            conn_coro = asyncio.open_connection(
+                host=self.host,
+                port=self.port,
+                ssl=self.ssl_context,
+            )
+        else:
+            conn_coro = asyncio.open_connection(
+                host=self.host,
+                port=self.port,
+                ssl=self.ssl_context,
+                loop=self.loop,
+            )
         reader, writer = await exec_with_timeout(
-            asyncio.open_connection(host=self.host,
-                                    port=self.port,
-                                    ssl=self.ssl_context,
-                                    loop=self.loop),
+            conn_coro,
             self._connect_timeout,
-            loop=self.loop
+            loop=self.loop,
         )
         self._reader = reader
         self._writer = writer
@@ -642,12 +652,21 @@ class UnixDomainSocketConnection(BaseConnection):
         }
 
     async def _connect(self):
+        if LOOP_DEPRECATED:
+            conn_coro = asyncio.open_unix_connection(
+                path=self.path,
+                ssl=self.ssl_context,
+            )
+        else:
+            conn_coro = asyncio.open_unix_connection(
+                path=self.path,
+                ssl=self.ssl_context,
+                loop=self.loop,
+            )
         reader, writer = await exec_with_timeout(
-            asyncio.open_unix_connection(path=self.path,
-                                         ssl=self.ssl_context,
-                                         loop=self.loop),
+            conn_coro,
             self._connect_timeout,
-            loop=self.loop
+            loop=self.loop,
         )
         self._reader = reader
         self._writer = writer

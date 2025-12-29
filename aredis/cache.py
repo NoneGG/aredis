@@ -175,13 +175,16 @@ class BasicCache:
         Deletes cache according to pattern in redis,
         delete `count` keys each time
         """
-        cursor = '0'
+        cursor = 0
         count_deleted = 0
-        while cursor != 0:
+        while True:
             cursor, identities = await self.client.scan(
                 cursor=cursor, match=pattern, count=count
             )
-            count_deleted += await self.client.delete(*identities)
+            if identities:
+                count_deleted += await self.client.delete(*identities)
+            if cursor == 0:
+                break
         return count_deleted
 
     async def exist(self, key, param=None):

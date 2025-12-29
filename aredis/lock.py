@@ -119,7 +119,7 @@ class Lock:
                 return False
             if stop_trying_at is not None and mod_time.time() > stop_trying_at:
                 return False
-            await asyncio.sleep(sleep, loop=self.redis.connection_pool.loop)
+            await asyncio.sleep(sleep)
 
     async def do_acquire(self, token):
         if self.timeout:
@@ -347,7 +347,7 @@ class ClusterLock(LuaLock):
                     return False
             if not blocking or mod_time.time() > stop_trying_at:
                 return False
-            await asyncio.sleep(sleep, loop=self.redis.connection_pool.loop)
+            await asyncio.sleep(sleep)
 
     async def do_release(self, expected_token):
         await super(ClusterLock, self).do_release(expected_token)

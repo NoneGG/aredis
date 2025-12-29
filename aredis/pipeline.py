@@ -200,7 +200,7 @@ class BasePipeline:
                     # typing.Awaitable is not available in Python3.5
                     # so use inspect.isawaitable instead
                     # according to issue https://github.com/NoneGG/aredis/issues/77
-                    if inspect.isawaitable(response):
+                    if inspect.isawaitable(r):
                         r = await r
             data.append(r)
         return data
